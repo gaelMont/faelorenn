@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Les registres de Faelorenn</title>
+<meta name="description" content="Les outils de Faelorenn : créer ses personnages, tenir la campagne à plusieurs, tirer les rencontres.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,600;0,700;1,400&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root{
+  --paper:#F4F2EA; --surface:#FFFFFF; --fill:#E9EFE8; --ink:#1B1C18; --muted:#6B7469;
+  --forest:#1F3D2B; --sage:#4A6B52; --rule:#CBD6C9; --rust:#9A4A28; --gold:#8A6D2F;
+  --shadow:0 1px 2px rgba(31,61,43,.07);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#131713; --surface:#1B211C; --fill:#212A22; --ink:#E6E7DF; --muted:#94A08F;
+    --forest:#9DC2A6; --sage:#7FA88A; --rule:#2E3A30; --rust:#D98A63; --gold:#C9A758;
+    --shadow:0 1px 2px rgba(0,0,0,.4);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#131713; --surface:#1B211C; --fill:#212A22; --ink:#E6E7DF; --muted:#94A08F;
+  --forest:#9DC2A6; --sage:#7FA88A; --rule:#2E3A30; --rust:#D98A63; --gold:#C9A758;
+  --shadow:0 1px 2px rgba(0,0,0,.4);
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:15.5px;line-height:1.55}
+.wrap{max-width:760px;margin:0 auto;padding-inline:20px;padding-block:44px 56px}
+.sur{font-family:Spectral,Georgia,serif;font-style:italic;color:var(--sage);margin:0;font-size:17px}
+h1{font-family:Spectral,Georgia,serif;font-weight:700;font-size:clamp(32px,6vw,46px);line-height:1.08;color:var(--forest);margin:2px 0 10px;letter-spacing:-.01em;text-wrap:balance}
+.intro{max-width:58ch;margin:0;color:var(--ink)}
+header{border-bottom:2px solid var(--forest);padding-bottom:22px;margin-bottom:28px}
+h2{font-family:Spectral,Georgia,serif;font-size:21px;color:var(--forest);margin:34px 0 8px;text-wrap:balance}
+p{margin:0 0 10px;max-width:65ch}
+.registres{display:flex;flex-direction:column;gap:0;border-top:1px solid var(--rule)}
+.registre{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 18px;align-items:baseline;padding:16px 4px;border-bottom:1px solid var(--rule);text-decoration:none;color:inherit}
+.registre:hover .rnom,.registre:focus-visible .rnom{text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:4px}
+.registre:focus-visible{outline:2px solid var(--sage);outline-offset:2px}
+.rnom{font-family:Spectral,Georgia,serif;font-size:22px;font-weight:600;color:var(--forest)}
+.rquoi{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--sage);white-space:nowrap}
+.rdesc{grid-column:1 / -1;color:var(--muted);font-size:14.5px;max-width:62ch}
+ol{padding-left:22px;margin:6px 0 12px}
+ol li{margin:6px 0;max-width:62ch}
+.chemins li b{color:var(--forest)}
+.note{font-size:13.5px;color:var(--muted)}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.92em;background:var(--fill);padding:1px 5px;border-radius:2px;overflow-wrap:anywhere}
+.encart{border:1px solid var(--rule);background:var(--surface);border-radius:3px;padding:14px 16px;box-shadow:var(--shadow);margin-top:10px}
+.encart p:last-child{margin-bottom:0}
+a{color:var(--forest)}
+footer{margin-top:44px;padding-top:12px;border-top:1px solid var(--rule);font-size:12.5px;color:var(--muted)}
+@media (max-width:520px){
+  .registre{grid-template-columns:1fr}
+  .rquoi{white-space:normal}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <p class="sur">Faelorenn</p>
+  <h1>Les registres de la table</h1>
+  <p class="intro">Trois outils pour jouer, solo avec l’Oracle ou à plusieurs : créer ses Marchefleurs, tenir la campagne séance après séance, tirer ce qui se dresse sur la route.</p>
+</header>
+
+<nav class="registres" aria-label="Les registres">
+  <a class="registre" href="table.html">
+    <span class="rnom">Registre de la Table</span>
+    <span class="rquoi">la campagne</span>
+    <span class="rdesc">Le compte rendu des séances avec les jets, les dégâts et les PV dedans, les personnages, les fiches de PNJ et le réseau de leurs liens, la progression. À plusieurs, chacun sur son ordinateur.</span>
+  </a>
+  <a class="registre" href="createur.html">
+    <span class="rnom">Registre du Havre</span>
+    <span class="rquoi">les personnages</span>
+    <span class="rdesc">Créer un personnage selon le livre, l’imprimer, l’exporter en Word, ou l’enregistrer en .json pour le faire entrer dans la Table.</span>
+  </a>
+  <a class="registre" href="rencontres.html">
+    <span class="rnom">Registre des Rencontres</span>
+    <span class="rquoi">les adversaires</span>
+    <span class="rdesc">Tirer une rencontre à la mesure du groupe, tenir le bestiaire maison et ses familles, donner des traits à une créature.</span>
+  </a>
+</nav>
+
+<h2>Jouer à plusieurs</h2>
+<p>Chaque navigateur garde sa propre copie de la table. Pour la partager, le Registre de la Table propose trois chemins :</p>
+<ol class="chemins">
+  <li><b>Par GitHub.</b> Un dépôt privé garde la table. Chaque changement y part tout seul, les autres le reçoivent dans les dix à trente secondes, et chaque version reste dans l’historique du dépôt.</li>
+  <li><b>Par un dossier partagé.</b> Le fichier de table posé dans Drive, OneDrive ou Dropbox, synchronisé sur chaque ordinateur. Il faut Chrome ou Edge.</li>
+  <li><b>Par un .json.</b> On l’enregistre, on l’envoie, l’autre l’importe. Tout se fusionne sans rien écraser.</li>
+</ol>
+
+<h2>Relier la table à GitHub</h2>
+<ol>
+  <li>Crée un dépôt <b>privé</b>, <code>faelorenn-table</code> par exemple, et coche « Add a README file » pour qu’il ne soit pas vide.</li>
+  <li>Crée un jeton : Settings, Developer settings, Personal access tokens, <a href="https://github.com/settings/personal-access-tokens/new" rel="noopener">Fine-grained tokens</a>, Generate new token. Dans <i>Repository access</i>, choisis seulement ce dépôt. Dans <i>Permissions</i>, mets <i>Contents</i> en <i>Read and write</i>. Donne-lui une date d’expiration.</li>
+  <li>Dans le Registre de la Table, section « La table », ouvre « Synchroniser par GitHub », colle <code>ton-nom/faelorenn-table</code> et le jeton, puis « Relier à GitHub ».</li>
+  <li>Donne le même dépôt et le même jeton à ceux qui jouent avec toi, par un message privé. Un jeton à accès fin ne sert que pour les dépôts de son propriétaire : les autres ne peuvent pas s’en faire un pour le tien.</li>
+</ol>
+<div class="encart">
+  <p>Le jeton n’ouvre que ce dépôt-là, et il reste dans le navigateur où on l’a collé. S’il se perd, supprime-le sur GitHub et crée-en un autre : la table n’en souffre pas.</p>
+  <p class="note">GitHub accepte 500 écritures par heure et par jeton. La table regroupe les changements et n’écrit jamais deux fois en moins de quinze secondes, ce qui laisse de la marge même à deux pendant une séance chargée.</p>
+</div>
+
+<h2>Ce que ce site montre</h2>
+<p>Le site est public : avec un compte GitHub gratuit, le dépôt qui l’héberge doit l’être, et n’importe qui peut lire le code des registres, avec ce qu’il contient du livre (peuples, Pratiques, bestiaire).</p>
+<p>Vos personnages et vos séances ne sont jamais dans ce dépôt-là. Ils restent dans vos navigateurs, et dans votre dépôt privé si vous reliez la table à GitHub.</p>
+
+<footer>Faelorenn · mis à jour le 22 septembre 2026</footer>
+</div>
+</body>
+</html>

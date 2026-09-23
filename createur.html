@@ -1,0 +1,1644 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Registre du Havre</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,600;0,700;1,400&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root{
+  --paper:#F4F2EA; --surface:#FFFFFF; --fill:#E9EFE8; --ink:#1B1C18; --muted:#6B7469;
+  --forest:#1F3D2B; --sage:#4A6B52; --rule:#CBD6C9; --rust:#9A4A28; --gold:#8A6D2F;
+  --shadow:0 1px 2px rgba(31,61,43,.07);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#131713; --surface:#1B211C; --fill:#212A22; --ink:#E6E7DF; --muted:#94A08F;
+    --forest:#9DC2A6; --sage:#7FA88A; --rule:#2E3A30; --rust:#D98A63; --gold:#C9A758;
+    --shadow:0 1px 2px rgba(0,0,0,.4);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#131713; --surface:#1B211C; --fill:#212A22; --ink:#E6E7DF; --muted:#94A08F;
+  --forest:#9DC2A6; --sage:#7FA88A; --rule:#2E3A30; --rust:#D98A63; --gold:#C9A758;
+  --shadow:0 1px 2px rgba(0,0,0,.4);
+}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:15px;line-height:1.5}
+.wrap{max-width:940px;margin:0 auto;padding-inline:18px;padding-block:28px 140px}
+h1{font-family:Spectral,Georgia,serif;font-weight:700;font-size:clamp(28px,5vw,40px);color:var(--forest);margin:0;letter-spacing:-.01em;text-wrap:balance}
+.sub{font-family:Spectral,Georgia,serif;font-style:italic;color:var(--sage);margin:2px 0 0}
+header{border-bottom:2px solid var(--forest);padding-bottom:12px;margin-bottom:26px}
+section{margin-bottom:26px}
+h2{font-family:Spectral,Georgia,serif;font-size:19px;color:var(--forest);margin:0 0 2px;display:flex;align-items:baseline;gap:10px;text-wrap:balance}
+h2 .num{font-size:12px;font-weight:600;letter-spacing:.14em;color:var(--sage);font-family:"IBM Plex Sans",sans-serif;border:1px solid var(--rule);border-radius:2px;padding:1px 6px}
+.hint{color:var(--muted);font-size:13px;margin:0 0 12px}
+.card{background:var(--surface);border:1px solid var(--rule);border-radius:3px;padding:14px 16px;box-shadow:var(--shadow)}
+.row{display:flex;flex-wrap:wrap;gap:12px}
+.row>*{flex:1 1 220px;min-width:0}
+label.f{display:block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+select,input[type=text]{width:100%;font:inherit;font-size:15px;padding:7px 9px;border:1px solid var(--rule);border-radius:2px;background:var(--surface);color:var(--ink)}
+select:focus-visible,input:focus-visible,button:focus-visible{outline:2px solid var(--sage);outline-offset:1px}
+.facts{display:grid;grid-template-columns:auto 1fr;gap:3px 14px;font-size:13.5px;margin-top:10px}
+.facts dt{color:var(--muted);white-space:nowrap}
+.facts dd{margin:0}
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+th{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--sage);text-align:left;font-weight:600;padding:6px 8px;background:var(--fill);border-bottom:1px solid var(--rule)}
+td{padding:4px 8px;border-bottom:1px solid var(--rule);font-size:14px}
+td.n,th.n{text-align:right;width:62px}
+tr.grp td{background:var(--fill);font-family:Spectral,Georgia,serif;font-style:italic;color:var(--sage);font-size:13px;padding:3px 8px}
+.stepper{display:flex;align-items:center;gap:0;justify-content:flex-end}
+.stepper button{width:26px;height:26px;border:1px solid var(--rule);background:var(--surface);color:var(--forest);font-size:15px;line-height:1;cursor:pointer;border-radius:2px}
+.stepper button:hover:not(:disabled){background:var(--fill)}
+.stepper button:disabled{opacity:.3;cursor:default}
+.stepper .v{min-width:40px;text-align:center;font-variant-numeric:tabular-nums;font-weight:500}
+.pick{font:inherit;font-size:13px;font-weight:600;min-width:38px;height:26px;padding:0 6px;border:1px dashed var(--rule);background:transparent;color:var(--muted);border-radius:2px;cursor:pointer;font-variant-numeric:tabular-nums;opacity:.55}
+.pick:hover:not(:disabled){opacity:1;border-style:solid;border-color:var(--sage);color:var(--forest)}
+.pick.on{opacity:1;border-style:solid;border-color:var(--forest);background:var(--fill);color:var(--forest)}
+.pick:disabled{opacity:.18;cursor:default}
+.scroll{overflow-x:auto}
+.bar{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--rule);padding:10px 18px calc(10px + env(safe-area-inset-bottom,0px));z-index:9}
+.bar .in{max-width:940px;margin:0 auto;display:flex;flex-wrap:wrap;gap:8px 20px;align-items:center;font-size:13px}
+.pill{display:inline-flex;align-items:baseline;gap:6px;border:1px solid var(--rule);border-radius:2px;padding:3px 9px;background:var(--paper)}
+.pill b{font-size:15px;font-variant-numeric:tabular-nums}
+.pill.warn{border-color:var(--rust);color:var(--rust)}
+.pill.ok{border-color:var(--sage)}
+.note{font-size:12.5px;color:var(--muted);margin-top:8px}
+.warn{color:var(--rust)}
+.tick{display:flex;gap:8px;align-items:flex-start;padding:7px 0;border-bottom:1px solid var(--rule)}
+.tick:last-child{border-bottom:0}
+.tick input{margin-top:4px;accent-color:var(--sage)}
+.tick .nm{font-weight:600}
+.tick .pc{font-size:11px;letter-spacing:.06em;color:var(--gold);border:1px solid var(--rule);border-radius:2px;padding:0 4px;margin-left:6px;white-space:nowrap}
+.tick .de{color:var(--muted);font-size:13px}
+.tick .jt{font-size:11px;color:var(--sage);border:1px solid var(--rule);border-radius:2px;padding:0 5px;margin-left:6px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.tick.donne{background:var(--fill);border-bottom:0;padding:7px 8px;border-radius:2px}
+.tick.donne .pc{color:var(--forest);border-color:var(--forest)}
+.tick .recu{color:var(--forest);font-weight:700;margin-top:1px;flex:0 0 auto}
+.btn{font:inherit;font-size:14px;padding:8px 14px;border:1px solid var(--forest);background:var(--forest);color:var(--paper);border-radius:2px;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--forest)}
+/* ============ la fiche, calquee sur le Word ============ */
+.fiche{
+  --fp:#FFFFFF; --fi:#1A1A1A; --fl:#6B7469; --fh:#1F3D2B; --fh2:#2E5A3E;
+  --fr:#C3D2C6; --ff:#F1F5F1; --fhd:#E6EDE7;
+  background:var(--fp);color:var(--fi);font-family:Spectral,Cambria,Georgia,serif;
+  font-size:12.5px;line-height:1.3;padding:20px 22px;border:1px solid var(--rule);border-radius:3px;
+  print-color-adjust:exact;-webkit-print-color-adjust:exact
+}
+.fiche .ft{font-size:25px;font-weight:700;color:var(--fh);line-height:1.1;margin-bottom:1px;text-wrap:balance}
+.fiche .fsub{font-style:italic;color:var(--fh2);font-size:12px;border-bottom:2px solid var(--fh);padding-bottom:6px;margin-bottom:4px}
+.fiche .fh{font-family:"IBM Plex Sans",sans-serif;font-size:10.5px;font-weight:700;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--fh);border-bottom:1px solid var(--fh);padding-bottom:2px;margin:13px 0 5px}
+.fiche .fnote{font-size:11.5px;color:var(--fl);margin:0 0 5px}
+.fiche .fnote b{color:var(--fh2)}
+.fiche .fsm{font-size:10.5px;font-style:italic;color:var(--fl);margin:4px 0 0}
+.fiche .fsm b{font-style:normal;color:var(--fh2)}
+.fiche table.fx{width:100%;border-collapse:collapse;margin:0 0 5px;table-layout:fixed;font-variant-numeric:tabular-nums}
+.fiche table.fx + table.fx{margin-top:-1px}
+.fiche .fx th,.fiche .fx td{border:1px solid var(--fr);padding:3px 6px;vertical-align:top;text-align:left;
+  font-weight:400;font-size:12px;overflow-wrap:break-word}
+.fiche .fx th{background:var(--fhd);font-family:"IBM Plex Sans",sans-serif;font-size:9px;font-weight:600;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--fh)}
+.fiche .fx th.c,.fiche .fx td.c{text-align:center}
+.fiche .fx th.c{white-space:nowrap;letter-spacing:.04em}
+.fiche .fx td.b,.fiche .fx th.b{font-weight:700}
+.fiche .lb{font-family:"IBM Plex Sans",sans-serif;font-size:8.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--fl);margin-bottom:2px}
+.fiche td.fd .vl{font-size:12.5px;min-height:15px}
+.fiche td.notes{height:62px}
+.fiche .car th{text-align:center;font-size:7.5px;letter-spacing:.02em}
+.fiche .big2,.fiche .fx td.big2{font-size:17px;font-weight:700;color:var(--fh);text-align:center;line-height:1.15}
+.fiche .car .sub2{text-align:center;font-size:9.5px;color:var(--fl)}
+.fiche .der td.dv{background:var(--ff);text-align:center}
+.fiche .der .lb{text-align:center}
+.fiche .der .dvs{font-size:9.5px;font-style:italic;color:var(--fl);margin-bottom:1px;line-height:1.2}
+.fiche .sk td.grp{background:var(--ff);color:var(--fh2);font-size:11.5px}
+.fiche .sk td.grp i{font-size:10px;color:var(--fl)}
+.fiche .sk td.nte{font-size:10px;font-style:italic;color:var(--fl)}
+.fiche .exp td{text-align:center;font-weight:700;padding:5px 2px}
+.fiche .exp td.el{border:0;border-top:1px solid var(--fr);font-family:"IBM Plex Sans",sans-serif;
+  font-size:9px;font-weight:600;letter-spacing:.08em;color:var(--fh2);padding:2px}
+.fiche .exp .e0{background:#FFFFFF;color:var(--fl);font-weight:400}
+.fiche .exp .e1,.fiche .exp .e2{background:#EDF2EC}
+.fiche .exp .e3,.fiche .exp .e4,.fiche .exp .e5,.fiche .exp .e6{background:#F7EFD6}
+.fiche .exp .e7,.fiche .exp .e8,.fiche .exp .e9{background:#F3E0D2}
+.fiche .exp .e10{background:#EED8D2}
+.fiche .prt td.de,.fiche .arm td.de{font-size:11px;color:var(--fl)}
+.fiche td.vide{height:19px}
+.fiche .chg td{height:24px}
+.fiche ul.sac{margin:2px 0 0;padding-left:16px}
+.fiche ul.sac li{margin:0}
+.fiche .am td.amc{background:var(--ff);width:50%;padding:6px 8px}
+.fiche .am p{margin:0 0 1px;font-size:11px;line-height:1.28}
+.fiche .am p.amb{font-weight:700;font-size:11.5px}
+.fiche .am p.ami{font-style:italic;color:var(--fl);font-size:10px;margin-top:3px}
+.fiche .brk{height:0}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]) .fiche{--fp:#1B211C;--fi:#E6E7DF;--fl:#94A08F;--fh:#9DC2A6;--fh2:#7FA88A;--fr:#2E3A30;--ff:#212A22;--fhd:#253027}
+  :root:not([data-theme="light"]) .fiche .exp td[class^="e"]{background:#212A22;color:#E6E7DF}
+}
+:root[data-theme="dark"] .fiche{--fp:#1B211C;--fi:#E6E7DF;--fl:#94A08F;--fh:#9DC2A6;--fh2:#7FA88A;--fr:#2E3A30;--ff:#212A22;--fhd:#253027}
+:root[data-theme="dark"] .fiche .exp td[class^="e"]{background:#212A22;color:#E6E7DF}
+
+@page{size:A4;margin:11mm}
+@media print{
+  .bar,.noprint{display:none!important}
+  html,body{background:#fff;color:#000}
+  .wrap{padding:0;max-width:none}
+  section{margin:0}
+  .fiche{--fp:#FFFFFF;--fi:#1A1A1A;--fl:#6B7469;--fh:#1F3D2B;--fh2:#2E5A3E;--fr:#C3D2C6;--ff:#F1F5F1;--fhd:#E6EDE7;
+    border:0;border-radius:0;padding:0;font-size:8.9pt;line-height:1.26}
+  .fiche .ft{font-size:19pt}
+  .fiche .fx th,.fiche .fx td{font-size:8.4pt;padding:2px 5px}
+  .fiche .fx th{font-size:7.4pt;letter-spacing:.05em}
+  .fiche .big2,.fiche .fx td.big2{font-size:13pt}
+  .fiche .car th{font-size:6.8pt;letter-spacing:.01em}
+  .fiche .am p{font-size:7.8pt}
+  .fiche .brk{break-before:page;page-break-before:always}
+  .fiche tr,.fiche .fh,.fiche .ft{break-inside:avoid}
+  .fiche .fh{break-after:avoid}
+  .fiche table.fx{break-inside:auto}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<nav class="fae-site" aria-label="Les registres de Faelorenn">
+  <a class="fae-accueil" href="./">Faelorenn</a>
+  <a href="table.html">Registre de la Table</a>
+  <a href="createur.html" aria-current="page">Registre du Havre</a>
+  <a href="rencontres.html">Registre des Rencontres</a>
+</nav>
+<style>
+.fae-site{display:flex;flex-wrap:wrap;gap:4px 18px;align-items:baseline;max-width:980px;margin:0 auto;padding:12px 18px 0;font:13px/1.4 "IBM Plex Sans",system-ui,sans-serif}
+.fae-site a{color:var(--sage,#4A6B52);text-decoration:none;border-bottom:1px solid transparent;padding-bottom:1px}
+.fae-site a:hover,.fae-site a:focus-visible{border-bottom-color:currentColor}
+.fae-site a[aria-current]{color:var(--forest,#1F3D2B);font-weight:600}
+.fae-site .fae-accueil{font-family:Spectral,Georgia,serif;font-weight:700;font-size:15px;color:var(--forest,#1F3D2B);margin-right:4px}
+@media print{.fae-site{display:none!important}}
+</style>
+
+<div class="wrap">
+<header class="noprint">
+  <h1>Registre du Havre</h1>
+  <p class="sub">Faelorenn · inscription d'un nouveau Marchefleur</p>
+</header>
+
+<section class="noprint">
+  <h2><span class="num">1</span> Qui tu es</h2>
+  <p class="hint">Le peuple donne les chiffres et les contraintes, la Voie donne le métier et le paquetage.</p>
+  <div class="card">
+    <div class="row">
+      <div><label class="f" for="nom">Nom</label><input type="text" id="nom" placeholder="Toum'Balin"></div>
+      <div><label class="f" for="peuple">Peuple</label><select id="peuple"></select></div>
+      <div><label class="f" for="voie">Voie</label><select id="voie"></select></div>
+    </div>
+    <div class="row" id="subChoices" style="margin-top:12px"></div>
+    <dl class="facts" id="peupleFacts"></dl>
+  </div>
+</section>
+
+<section class="noprint">
+  <h2><span class="num">2</span> Caractéristiques</h2>
+  <p class="hint">Vingt-et-un points à répartir. Elles démarrent à 8 et ne dépassent pas 15 à la création. Le bonus de peuple s'ajoute après, et peut passer au-dessus.</p>
+  <p class="hint" id="carHint" hidden style="color:var(--forest);font-weight:500"></p>
+  <div class="card scroll">
+    <table id="carTable">
+      <thead><tr><th>Caractéristique</th><th class="n">Base</th><th class="n">Peuple</th><th class="n">Valeur</th><th class="n">×2</th><th class="n">mod</th></tr></thead>
+      <tbody></tbody>
+    </table>
+    <p class="note">Ton mod, c'est la caractéristique divisée par cinq, arrondie vers le bas comme tout le reste. C'est lui qui s'ajoute aux dégâts.</p>
+  </div>
+</section>
+
+<section class="noprint">
+  <h2><span class="num">3</span> Compétences</h2>
+  <p class="hint">Cent points à répartir, quarante au maximum sur une même compétence. Les bonus de ta Voie et de tes traits s'ajoutent par-dessus, sans rien coûter.</p>
+  <div class="card scroll">
+    <table id="skillTable">
+      <thead><tr><th>Compétence</th><th class="n">Payé</th><th class="n">Voie</th><th class="n">Trait</th><th class="n">Total</th><th class="n">d20</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+  <div id="traitChoice"></div>
+</section>
+
+<section class="noprint">
+  <h2><span class="num">4</span> Pratiques</h2>
+  <p class="hint" id="pratHint">Trois à la création. Une Pratique démarre à +20, et ton domaine ajoute +20, ou +10 pour l'école d'un humain.</p>
+  <div class="card" id="pratBox"></div>
+</section>
+
+<section class="noprint">
+  <h2><span class="num">5</span> Ce que tu emportes</h2>
+  <p class="hint">Le paquetage vient de ta Voie, et ton peuple ajoute le sien.</p>
+  <div class="card" id="gearBox"></div>
+</section>
+
+<section class="noprint">
+  <h2><span class="num">6</span> La fiche</h2>
+  <p class="hint">Voilà ce qui sort de l'imprimante, et rien d'autre. Dans la fenêtre d'impression, décoche « En-têtes et pieds de page » et choisis le format A4.</p>
+  <div style="display:flex;gap:10px;flex-wrap:wrap">
+    <button class="btn" id="print">Imprimer la fiche</button>
+    <button class="btn ghost" id="word">Exporter en Word</button>
+    <button class="btn ghost" id="wcopy">Copier pour Word</button>
+    <button class="btn ghost" id="json">Enregistrer en .json</button>
+    <button class="btn ghost" id="copy">Copier en texte</button>
+    <button class="btn ghost" id="reset">Repartir de zéro</button>
+  </div>
+  <p class="note" id="wordNote"></p>
+</section>
+
+<section id="ficheWrap">
+  <div class="fiche" id="fiche"></div>
+</section>
+</div>
+
+<div class="bar noprint">
+  <div class="in">
+    <span class="pill" id="pCar"><span>Caractéristiques</span><b>21</b></span>
+    <span class="pill" id="pSkill"><span>Compétences</span><b>100</b></span>
+    <span class="pill" id="pPrat"><span>Pratiques</span><b>0/3</b></span>
+    <span class="pill"><span>PV</span><b id="pPv">8</b></span>
+    <span class="pill"><span>PC</span><b id="pPc">4</b></span>
+    <span class="pill"><span>Réduction</span><b id="pRed">0</b></span>
+  </div>
+</div>
+
+<script>
+const PRATIQUES = {"de la Sève (Écorciens et Élytris)":{"_":[{"n":"Ortie","d":"des orties poussent sur ta cible à vue. La sensation la fait se gratter, et elle s'ouvre la peau : 1d4. L'armure n'y change rien.","j":"Contenance","pc":0,"base":true},{"n":"Le dard","d":"2d6 à vue. Une épine part de ton avant-bras.","j":"Dextérité","pc":1},{"n":"Greffer","d":"contact, rends 1d6+2 PV à un allié. Tu ne perds aucun PV, ça passe par toi.","j":"aucun jet","pc":1},{"n":"Les Racines","d":"à vue, 2 rounds. Des racines saisissent une cible ou un objet : elle ne se déplace plus, une porte ne s'ouvre plus, une roue ne tourne plus. Un jet de FOR par round pour se libérer.","j":"la cible teste","pc":1},{"n":"La Ronce","d":"zone de 3 pas à vue, 2 rounds. Qui y entre subit 1d6.","j":"les cibles testent","pc":2},{"n":"Écorcer","d":"contact, 3 rounds. La cible perd 2 de réduction, tu en gagnes 2.","j":"Force","pc":2},{"n":"Sève noire","d":"contact, 3 rounds. La cible perd 1d4 par round et ne récupère aucun PV tant que ça dure.","j":"Contenance","pc":2}]},"de l'eau (Nyréens)":{"Commune au 3 variant de Nyréen":[{"n":"La Prise du Courant","d":"zone de 3 pas, 3 rounds. Qui s'y déplace fait un jet de DEX ou tombe : à terre, action perdue.","j":"les cibles testent","pc":2},{"n":"Brume","d":"un épais brouillard pendant 1 tour. Les personnages dans la zone ne peuvent pas attaquer.","j":"les cibles testent","pc":2},{"n":"Gouttelettes perçantes","d":"zone de 3 pas. Tu fais pleuvoir une petite quantité d'eau à très haute vitesse, qui en devient tranchante : 1d6 à chacun dans la zone.","j":"les cibles testent","pc":2},{"n":"Givrer","d":"à vue. Une flaque, une surface, une gourde gèle. Sur une créature mouillée, elle perd son déplacement au round suivant.","j":"Contenance","pc":1}],"Les Larges, la mer":[{"n":"Saumure","d":"tu projettes de l'eau lourdement salée dans les yeux de ta cible à vue. Elle se plie de douleur : 1d4. L'armure n'y change rien.","j":"Dextérité","pc":0,"base":true},{"n":"Écumeur","d":"tu ignores un point de réduction d'armure sur toutes tes attaques.","j":"aucun jet","pc":0},{"n":"Prendre l'eau","d":"une cible que tu as touchée ce round ne récupère aucun PV jusqu'à la fin du combat.","j":"aucun jet","pc":0},{"n":"Le Grand Large","d":"une fois par combat, relance tous les dés de dégâts d'une attaque et garde le meilleur total.","j":"aucun jet","pc":0},{"n":"Marée montante","d":"ce round, tu n'attaques pas. Au round suivant, ton attaque fait +1d6.","j":"aucun jet","pc":0},{"n":"Ressac","d":"la première fois qu'on te touche au contact dans un combat, ta prochaine attaque fait +1d6.","j":"aucun jet","pc":0},{"n":"Amarre","d":"tu accroches une cible à dix pas et tu la tires de cinq pas vers toi.","j":"Dextérité","pc":1},{"n":"Inondation","d":"ta prochaine attaque fait +1d6.","j":"aucun jet","pc":1},{"n":"Déferlement","d":"ta prochaine attaque fait le double de dégâts, et tu ne te déplaces pas au round suivant.","j":"aucun jet","pc":2},{"n":"Raz-de-marée","d":"tout ce qui est devant toi tente un jet de FOR. Échec, 2d6 et repoussé de 5 pas.","j":"les cibles testent","pc":2},{"n":"Maelstrom","d":"2d6 sur chaque adversaire autour de toi, l'un après l'autre.","j":"les cibles testent","pc":2}],"Les Vifs, la rivière":[{"n":"Galet","d":"tu lances un galet d'eau qui rebondit sur jusqu'à trois ennemis à vue, 1d4 chacun. La réduction s'applique.","j":"Dextérité","pc":0,"base":true},{"n":"Rupture de courant","d":"si tu t'es déplacé avant d'attaquer, ton attaque fait 2d4.","j":"aucun jet","pc":0},{"n":"Flux critique","d":"pendant 2 rounds, chaque attaque réussie élargit ton critique d'une face. Une attaque ratée remet à zéro.","j":"aucun jet","pc":0},{"n":"Cascade","d":"attaque 2d4. Si la cible tombe, tu te déplaces jusqu'à une seconde cible et ton critique gagne une face.","j":"aucun jet","pc":0},{"n":"Courant meurtrier","d":"attaque 1d4. Si tu changes de cible par rapport au round précédent, +1d4 et ton critique gagne deux faces.","j":"aucun jet","pc":0},{"n":"Contre-courant","d":"une fois par combat, tu prends une deuxième réaction dans le même round.","j":"aucun jet","pc":0},{"n":"Ricochet","d":"quand tu touches, tu te déplaces de trois pas sans que personne ne puisse réagir.","j":"aucun jet","pc":0},{"n":"Crue soudaine","d":"au premier round d'un combat, tu attaques deux fois.","j":"aucun jet","pc":0},{"n":"Saignée","d":"sur un critique, la cible perd 1d4 par round jusqu'à ce qu'on la soigne.","j":"aucun jet","pc":0},{"n":"Remous","d":"si tu t'es déplacé ce round, ton esquive réussit aussi sur un échec de moins de 4.","j":"aucun jet","pc":0},{"n":"Tourbillon","d":"1d6 sur chaque adversaire autour de toi, l'un après l'autre.","j":"les cibles testent","pc":1}],"Les Dormants, le lac":[{"n":"Eau dormante","d":"l'eau que ta cible à vue porte sur elle et en elle s'alourdit d'un coup. Elle tousse et perd son souffle : 1d4. L'armure n'y change rien.","j":"Contenance","pc":0,"base":true},{"n":"Délier","d":"contact. Tu retires une altération d'état d'un allié et tu prends 1d4.","j":"aucun jet","pc":0},{"n":"Le Regard sous l'eau","d":"tu vois à travers l'eau et la brume sans jet, et tu repères ce qui s'y cache.","j":"aucun jet","pc":0},{"n":"Eau lourde","d":"la cible perd 1d4 à ses dégâts pendant 2 rounds.","j":"Contenance","pc":1},{"n":"Sommeil du lac","d":"la cible n'a pas de réaction au round suivant.","j":"Contenance","pc":1},{"n":"Noyade sèche","d":"la cible suffoque sans raison. −4 au d20 sur tout pendant 1 round.","j":"Contenance","pc":1},{"n":"Immobilité","d":"la cible tente un jet de FOR. Échec, elle ne se déplace pas au round suivant.","j":"la cible teste","pc":1},{"n":"Miroir noyé","d":"pendant 2 rounds, la cible ne peut pas viser deux rounds de suite le même adversaire.","j":"Contenance","pc":1},{"n":"Marque d'eau","d":"tu poses une marque sur quelqu'un que tu as touché. Tant qu'elle tient, tu sais où il est.","j":"aucun jet","pc":1},{"n":"Veillée","d":"un rituel de dix minutes. Un allié présent gagne +10 à une compétence jusqu'à la fin de la scène.","j":"aucun jet","pc":1},{"n":"Reflet perdu","d":"la cible ne distingue plus les siens et attaque son allié le plus proche pendant 1 round. Elle résiste sur Contenance fois deux.","j":"la cible teste","pc":3}]},"de la Mue (Ori'Ican)":{"Cornu":[{"n":"Phalange","d":"tu te fais pousser une nouvelle phalange et tu la propulses sur une cible à vue, 1d4. La réduction s'applique.","j":"Dextérité","pc":0,"base":true},{"n":"Muer","d":"une fois par scénario, jusqu'à la mue suivante : +2 dégâts · Réduction 2 · +10 Acrobatie · Voir dans le noir. Sur un échec, la mue se fait quand même : le MJ choisit, et tu subis 1d6.","j":"Contenance","pc":1},{"n":"Charger","d":"tu traverses 10 pas en ligne droite. La première créature subit 1d6+2 et tombe.","j":"Force","pc":1},{"n":"Broyer","d":"contact, 1d6+2. L'arme ou l'armure de la cible perd un dé ou un point de réduction jusqu'à réparation.","j":"Force","pc":1},{"n":"Fendre","d":"contact, 1d6+2 sur deux cibles côte à côte.","j":"Force","pc":1},{"n":"Encorner","d":"contact, 2d6. Tes cornes poussent temporairement. Si tu as chargé ce round, la cible tombe.","j":"Force","pc":1},{"n":"Peau qui repousse","d":"3 rounds. Tu récupères 1d4 PV par round.","j":"aucun jet","pc":1}],"Ritualiste":[{"n":"Verrue","d":"une verrue pousse sur ta cible à vue, elle gonfle et elle éclate : 1d4. L'armure n'y change rien.","j":"Contenance","pc":0,"base":true},{"n":"Que la Mue soit","d":"à vue. La cible résiste sur Contenance fois deux. Si elle rate, elle mue 3 rounds selon un d4 : 1 : +2 dégâts subis · 2 : demi-vitesse · 3 : −2 dégâts infligés · 4 : son arme ou son armure se déforme","j":"la cible teste","pc":1},{"n":"Hâter la Mue","d":"contact, 3 rounds. Un allié gagne +2 dégâts, ou réduction 2, ou +10 Acrobatie.","j":"aucun jet","pc":1},{"n":"Déformer","d":"la matière mue. Tu changes la forme d'un objet sans changer sa matière, une barre devient une clé ; ou tu la fais céder, et une porte, un mur, une arme ou un mécanisme lâche.","j":"aucun jet","pc":1,"pct":"1 PC au contact, 2 PC à vue"},{"n":"Emprunter la forme","d":"dix minutes. Tu prends l'apparence de quelqu'un que tu as vu. Ta voix ne change pas.","j":"aucun jet","pc":1},{"n":"Refaire","d":"contact, dix minutes. Une blessure se referme, 1d6+2 PV. Une fois par personne et par jour.","j":"aucun jet","pc":1},{"n":"Défaire la Forme","d":"à vue, 3 rounds. Un membre de la cible se déforme : −4 au d20 sur tout ce qui l'utilise.","j":"Contenance","pc":2}],"Figé":[{"n":"Le défaut","d":"tu vois le point où un corps ne tient pas, celui que ta propre mue t'a appris, et tu frappes là, au contact : 1d4. La réduction s'applique.","j":"Dextérité","pc":0,"base":true},{"n":"Anticipé","d":"quand un combat s'engage, tu agis une fois avant la distribution des cartes.","j":"aucun jet","pc":1},{"n":"Emprunt","d":"3 rounds. Ton corps tente la forme d'un autre type sans y parvenir tout à fait : tu gagnes soit les cornes, contact 1d6+2, soit la peau, réduction 2. Puis ça retombe.","j":"aucun jet","pc":1},{"n":"Se faufiler","d":"réaction. Tu ne prends que la moitié des dégâts et tu te déplaces de 5 pas.","j":"Dextérité","pc":1},{"n":"Insensible","d":"3 rounds, réduction 2. Tu ne peux être ni mis à terre, ni ralenti, ni repoussé.","j":"aucun jet","pc":2},{"n":"Résilience","d":"réaction. Quand tu tombes à 0 PV, tu restes debout à 1 PV jusqu'à la fin du round.","j":"aucun jet","pc":2},{"n":"Deux lames","d":"3 rounds. Avec une arme légère, tu frappes deux fois par round.","j":"aucun jet","pc":2}]},"du feu (Ilvès et Eshar)":{"_":[{"n":"Escarbille","d":"une braise saute de ta main sur ta cible à vue, 1d4, et ce qu'elle porte prend feu si ça peut brûler. Le feu traverse l'armure.","j":"Contenance","pc":0,"base":true},{"n":"La Braise Jetée","d":"2d6 de feu à vue.","j":"Dextérité","pc":1},{"n":"Chauffer","d":"contact. L'objet devient brûlant : qui le tient le lâche, ou prend 1d6+2 par round. Maintiens trois rounds et le métal coule : une arme, une grille, une serrure ou une armure perd un point de réduction, définitivement.","j":"Contenance","pc":1},{"n":"Brûlant","d":"3 rounds. Qui te touche ou t'attaque au contact prend 1d4.","j":"aucun jet","pc":1},{"n":"Le Mur de feu","d":"mur de 6 pas, 3 rounds. Le traverser coûte 2d6.","j":"les cibles testent","pc":2},{"n":"La Fièvre","d":"à vue, 3 rounds. 1d4 par round et −4 au d20 sur tout.","j":"Contenance","pc":2},{"n":"Embrasement","d":"zone de 3 pas à vue. 1d6+2 à tout le monde dedans.","j":"les cibles testent","pc":2}]},"du vent (Vaellen et Velh)":{"_":[{"n":"Fil d'air","d":"une lame d'air fine passe sur ta cible à vue, une coupure nette qu'on ne voit qu'après : 1d4. La réduction s'applique.","j":"Dextérité","pc":0,"base":true},{"n":"Lame de Vent","d":"2d6 à vue.","j":"Dextérité","pc":1},{"n":"Suivre le Vent","d":"2 rounds, vitesse doublée, pour toi et ceux qui te suivent.","j":"aucun jet","pc":1},{"n":"Effacer l'odeur","d":"une heure. Rien ne te suit à l'odeur.","j":"aucun jet","pc":1},{"n":"La Spirale","d":"zone de 3 pas, 1 round. Tout ce qui est léger s'envole, et personne n'y voit plus rien.","j":"les cibles testent","pc":1},{"n":"Bourrasque","d":"1d6+2 à vue. La cible est repoussée de 5 pas et tombe. Elle perd son déplacement au round suivant.","j":"Dextérité","pc":2},{"n":"Le Mur d'air","d":"3 rounds. Les flèches et tout ce qui vole s'arrêtent devant toi.","j":"aucun jet","pc":2}]},"de l'onde (Zhern)":{"_":[{"n":"Arc sec","d":"un arc part de ta main et trouve le métal le plus proche de ta cible à vue, 1d4. L'onde traverse l'armure.","j":"Dextérité","pc":0,"base":true},{"n":"L'Arc","d":"2d6 à vue. 2d6+2 si la cible porte du métal ou a les pieds dans l'eau.","j":"Dextérité","pc":1},{"n":"Le Choc","d":"contact, 1d6+2. La cible perd sa réaction du round.","j":"Contenance","pc":1},{"n":"Onde de choc","d":"une onde part de toi et repousse l'adversaire qui vient au contact. 1 tour.","j":"Contenance","pc":1},{"n":"Le Fil","d":"dix minutes. Tu parles à un allié que tu as touché avant de partir, où qu'il soit.","j":"aucun jet","pc":1},{"n":"Coup de jus","d":"contact. La cible tente un jet de Constitution fois deux. Si elle rate, elle tombe inconsciente pendant 3 rounds.","j":"la cible teste","pc":2},{"n":"Rappeler","d":"contact. Un allié tombé à 0 depuis moins d'une minute revient à 1 PV. Une seule fois par personne et par jour.","j":"aucun jet","pc":2}]},"de la pierre (Cimérans et Khaor)":{"_":[{"n":"Éclat de roche","d":"un éclat part du sol ou du mur le plus proche de ta cible à vue, 1d4. La réduction s'applique.","j":"Dextérité","pc":0,"base":true},{"n":"Peau de pierre","d":"3 rounds, réduction 3. Tu te déplaces à demi-vitesse.","j":"aucun jet","pc":1},{"n":"L'Éclat","d":"2d6+1 jusqu'à 10 pas. Il te faut de la pierre à portée : sur un plancher ou un pont de bois, la Pratique ne part pas.","j":"Dextérité","pc":1},{"n":"Percer","d":"dix minutes par pas d'épaisseur. Un tunnel d'homme à travers la roche.","j":"aucun jet","pc":1},{"n":"Le Rempart","d":"3 rounds. Tout le reste du groupe a réduction 2, tant que tu ne te déplaces pas.","j":"aucun jet","pc":2},{"n":"Ancrer","d":"3 rounds. Tes alliés à 5 pas de la pierre récupèrent 1 PV par round. Elle ne bouge pas.","j":"aucun jet","pc":2},{"n":"Impulsion","d":"le sol bouge, et personne ne tient debout dans la zone. 1 tour.","j":"les cibles testent","pc":2}]},"du sacré (Église d'Ysse)":{"_":[{"n":"Châtiment","d":"une lumière brève tombe sur ta cible à vue et ne brûle qu'elle, 1d4. Le sacré traverse l'armure.","j":"Contenance","pc":0,"base":true},{"n":"Soin","d":"rends 1d6+2 PV à un allié.","j":"aucun jet","pc":1},{"n":"Protection sacrée","d":"protège un allié de la prochaine attaque.","j":"aucun jet","pc":1},{"n":"Relever","d":"contact. Un allié à terre se relève et récupère sa réaction du round.","j":"aucun jet","pc":1},{"n":"Le Sursis","d":"réaction. Les dégâts qu'un allié vient de subir ne s'appliquent qu'à la fin du round suivant. S'il a été soigné d'ici là, il teste sous Constitution fois deux : réussite, les dégâts ne tombent jamais. Échec, ils tombent quand même.","j":"aucun jet","pc":1},{"n":"La Bénédiction","d":"3 rounds. Un allié à vue a +4 au d20 sur tout. Jamais sur toi-même.","j":"aucun jet","pc":2},{"n":"L'Onction","d":"dix minutes. Un allié ne peut pas tomber sous 1 PV pendant le prochain combat.","j":"aucun jet","pc":3}]},"de l'ombre (Nïhr)":{"_":[{"n":"Morsure d'ombre","d":"l'ombre de ta cible à vue se referme une seconde sur celle qui la porte, 1d4. L'ombre traverse l'armure.","j":"Contenance","pc":0,"base":true},{"n":"Éteindre","d":"à vue. Une source de lumière s'éteint, et rien ne la rallume pendant 3 rounds.","j":"aucun jet","pc":1},{"n":"Se fondre","d":"tant que tu avances sans attaquer, on ne te voit pas. Ta première attaque en sortant fait +1d6.","j":"aucun jet","pc":1},{"n":"La Chose derrière toi","d":"à vue, 1 round. La cible voit ce qui n'existe pas et perd son action. Elle résiste sur Contenance fois deux.","j":"la cible teste","pc":2},{"n":"Doubler","d":"3 rounds. Une silhouette de toi se tient à cinq pas. La première attaque qui te vise chaque round frappe la silhouette et ne te fait rien.","j":"aucun jet","pc":2},{"n":"Le Voile","d":"zone de 3 pas, 3 rounds. Personne n'y voit rien, sauf toi.","j":"les cibles testent","pc":2},{"n":"Le Passager","d":"3 rounds. Une ombre se lève et frappe une cible à vue, 1d6+2 par round. Elle n'a pas de carte, elle agit sur ton tour, et rien ne l'atteint.","j":"Contenance","pc":3}]},"de la Bannière de l'Or":{"_":[{"n":"Scelleur","d":"tu scelles un accord avec une partie consentante, et tu choisis en le posant ce qui arrive à celui qui le rompt.","j":"aucun jet","pc":0},{"n":"Dompteur","d":"tu apposes un sceau sur un être vivant dépourvu de conscience et non altéré, qui t'obéit tant que le sceau tient. Une seule bête à la fois.","j":"aucun jet","pc":0},{"n":"Serrurier","d":"tu rends un objet impossible à ouvrir, ou tu en forces l'ouverture.","j":"aucun jet","pc":0},{"n":"Péager","d":"tu poses un sceau sur le sol ou un mur, et un passage se ferme d'un bord à l'autre, de la largeur d'une porte charretière. Rien de solide ne traverse, ni corps ni objet ; la lumière, le son et la chaleur passent. Le barrage tient sans toi jusqu'à ce que tu le lèves. Un seul à la fois.","j":"aucun jet","pc":0},{"n":"Passeur","d":"tu apposes un sceau sur un objet et tu peux le faire venir à toi, où que tu sois. Il reste ensuite là où tu l'as appelé. Un seul objet à la fois, et il ne vient pas si quelqu'un le tient.","j":"aucun jet","pc":0}]},"de la Bannière du Sang":{"_":[{"n":"Second","d":"tu dépenses ta réaction du round pour qu'un allié en ait une deuxième.","j":"aucun jet","pc":0},{"n":"Vétéran","d":"sur un échec de défense de moins de 4, tu attaques quand même au round suivant. Et rien ne te met en fuite.","j":"aucun jet","pc":0},{"n":"Affûteur","d":"tu passes la main sur une lame et elle mord. +1d4 aux dégâts, jusqu'à la fin du combat.","j":"aucun jet","pc":0},{"n":"Armurier","d":"tu renforces une pièce d'équipement. +1 de réduction, jusqu'à la fin du combat.","j":"aucun jet","pc":0},{"n":"Bretteur","d":"une fois par combat, tu attaques deux fois dans le même tour.","j":"aucun jet","pc":0},{"n":"Avant-garde","d":"au premier round d'un combat, tu agis avant tout le monde, quelle que soit ta carte.","j":"aucun jet","pc":0},{"n":"Duelliste","d":"réussite critique en combat sur 1 et 2 plutôt que sur 1 seulement.","j":"aucun jet","pc":0}]}};
+
+const CARS = ['Force','Dextérité','Constitution','Intelligence','Sagesse','Charisme','Contenance'];
+const ABBR = {Force:'FOR','Dextérité':'DEX',Constitution:'CON',Intelligence:'INT',Sagesse:'SAG',Charisme:'CHA',Contenance:'CNT'};
+const SKILLS = {
+  Force:['Athlétisme','Combat'],
+  'Dextérité':['Acrobatie','Discrétion','Artisanat','Tir'],
+  Constitution:[],
+  Intelligence:['Savoir','Investigation','Nature','Récits','Connaissance des Floraisons'],
+  Sagesse:['Perception','Empathie','Médecine','Survie',"Sentir l'Énergie"],
+  Charisme:['Persuasion','Tromperie','Intimidation','Représentation'],
+  Contenance:[]
+};
+const SOCIAL = ['Persuasion','Tromperie','Intimidation','Représentation'];
+const ALLSKILLS = [];
+CARS.forEach(c => SKILLS[c].forEach(s => ALLSKILLS.push({s:s, car:c})));
+
+const VOIES = {
+  'Éclaireur':{b:{'Discrétion':20,'Perception':20,'Survie':20},paq:'Une dague (d4), une corde de dix pas, une lanterne sourde au volet grippé, de la craie, 10 argents.'},
+  'Chercheur':{b:{'Nature':20,'Savoir':20,'Connaissance des Floraisons':20},paq:'Un bâton (d4), un registre épais, trois flacons vides pour prélever, une loupe de verre, 15 argents.'},
+  'Chasseur':{b:{'Tir':20,'Athlétisme':20,'Survie':20},paq:'Un arc (d6) et douze flèches, un couteau (d4), des collets, une peau huilée, 8 argents.'},
+  'Secouriste':{b:{'Médecine':40,'Empathie':20},paq:"Un couteau (d4), aiguilles, fil et linges, deux fioles de Havre, le carnet de relevé du groupe, 12 argents."},
+  'Porte-parole':{b:{'Persuasion':20,'Représentation':20,'Tromperie':20},paq:'Une épée courte (d6), des habits propres, un sceau de recommandation de son Havre, 30 argents.'},
+  'Marchand':{b:{'Tromperie':40,'Perception':20},paq:'Une dague (d4), une balance à main et ses poids, un registre de dettes, 40 argents.'},
+  'Garde':{b:{'Combat':20,'Athlétisme':20,'Intimidation':20},paq:'Une lance (d6), un bouclier, un cuir matelassé, un sifflet, 8 argents.'},
+  'Artisan':{b:{'Artisanat':40,'Savoir':20},paq:'Un marteau (d6), une caisse d’outils, de la corde et du fil de fer, de la colle de sève, 15 argents.'}
+};
+
+const ECOLES = {
+  'Eshar · le feu':'du feu (Ilvès et Eshar)',
+  'Zhern · l’onde':"de l'onde (Zhern)",
+  'Velh · le vent':'du vent (Vaellen et Velh)',
+  'Khaor · la pierre':'de la pierre (Cimérans et Khaor)',
+  'Nïhr · l’ombre':"de l'ombre (Nïhr)",
+  'Église d’Ysse · le sacré':"du sacré (Église d'Ysse)"
+};
+
+const PEUPLES = {
+  'Humains':{car:{pick:2,val:1},traits:'Ambition (1 relance par séance)',contrainte:'Les dégâts d’une Pratique comptent une fois et demie',
+    armure:'Toutes, jusqu’aux plates',red:0,pv:0,comp:'',
+    paq:'L’insigne de sa Bannière, la baguette de son école s’il en a une, et 20 argents de plus',
+    dom:null,sub:[{k:'ban',l:'Bannière',o:["L'Or",'Le Sang']},{k:'ecole',l:'École ou Église',o:Object.keys(ECOLES)}],
+    note:'Un humain choisit trois Pratiques dans son école, plus une compétence de sa Bannière. Sans sa baguette, il ne pratique pas.'},
+  'Élytris':{car:{'Dextérité':1,'Sagesse':1},traits:'Carapace (réduction 1) · Antennes (+20 Sentir l’Énergie) · Ailes (aucun dégât de chute)',
+    contrainte:'Les dégâts physiques comptent une fois et demie',armure:'Jusqu’au cuir : les élytres doivent pouvoir s’ouvrir',
+    red:1,pv:0,sk:{"Sentir l'Énergie":20},dom:'de la Sève (Écorciens et Élytris)',
+    comp:'Élytres (1 PC) : quinze pas dans la direction que tu veux. · Héliotrope : trois rounds immobile en pleine lumière, tu récupères 1d4 PC, une fois par jour.',
+    paq:'Une lame de chitine taillée dans sa propre mue : arme légère, d4. Personne d’autre ne peut s’en servir.'},
+  'Nyréens':{car:{},traits:'Écailles (réduction 1) · Formation (+10 à une compétence)',
+    contrainte:'La puissance de ses Pratiques suit l’eau disponible',armure:'Jusqu’au cuir clouté : il faut pouvoir nager, et ressortir de l’eau',
+    red:1,pv:0,dom:"de l'eau (Nyréens)",choixSk:{label:'Formation, +10 à une compétence',list:null},
+    sub:[{k:'branche',l:'Branche',o:['Les Larges, la mer','Les Vifs, la rivière','Les Dormants, le lac']}],
+    comp:'Boire la Mémoire : contact avec de l’eau ayant séjourné là. · L’Arme d’eau : 10 rounds, le dé de l’eau disponible plus mod FOR.',
+    paq:'Sa gourde de combat, et la fiole qu’il traite comme son âme.',
+    note:'Un Nyréen prend ses trois Pratiques parmi les communes et celles de sa branche.'},
+  "Ori'Ican":{car:{},traits:'Vision de ruine · Endurci (+10 Survie)',contrainte:'Soigné, il peut partir en fureur',
+    armure:'Jusqu’à la maille : une armure ajustée ne l’est plus après la mue',red:0,pv:0,sk:{'Survie':10},
+    dom:"de la Mue (Ori'Ican)",sub:[{k:'type',l:'Type',o:['Cornu','Ritualiste','Figé']}],comp:'',
+    paq:'Un fragment de totem qui le stabilise.',
+    paqSub:{Cornu:'Sa lance de première mue (d8).'}},
+  'Cimérans':{car:{Force:1,Constitution:1},traits:'Carrure (+8 PV) · Ami de tous (+10 à une compétence sociale)',
+    contrainte:'En morne, il agit un tour sur deux',armure:'Toutes, jusqu’aux plates',red:0,pv:8,
+    choixSk:{label:'Ami de tous, +10 à une compétence sociale',list:SOCIAL},dom:'de la pierre (Cimérans et Khaor)',
+    comp:'Darguer : contact, dégâts égaux à ta Charge, et elle retombe à zéro. · Dorner : tu portes la moitié des dégâts de tes alliés, automatiquement.',
+    paq:'Le sel et le gobelet de corne de sa dargue, et un objet qu’on lui a confié et qu’il n’a jamais rendu.',
+    note:'La Charge se suit sur une piste à part. Capacité : tes PV maximum.'},
+  'Ilvès':{car:{Contenance:1,'Dextérité':1},traits:'Sentir la chaleur (+20 Perception pour repérer un corps vivant) · La Tournée (+20 Représentation)',
+    contrainte:'Puiser à vide coûte des PV',armure:'Jusqu’au cuir clouté : le métal chauffe contre eux jusqu’à devenir une torture',
+    red:0,pv:0,sk:{'Représentation':20},dom:'du feu (Ilvès et Eshar)',
+    comp:'Attiser (1 PC) : contact, tu dépenses 1 PC, l’allié en gagne 2. · Danse pyrétique. · Jongleur ardent (1 PC).',
+    paq:'Son matériel de tournée : trois boules, un foulard, un pot à braises.',
+    note:'Le +20 de Perception ne vaut que pour repérer un corps vivant : il n’est pas compté dans le tableau.'},
+  'Vaellen':{car:{'Dextérité':1,'Sagesse':1},traits:'Vol (aucun dégât de chute) · Lire le paysage (+20 Perception en hauteur)',
+    contrainte:'Chargé, il ne vole pas',armure:'Cuir. Au-delà il peut, mais il ne vole plus',red:0,pv:0,
+    dom:'du vent (Vaellen et Velh)',
+    comp:'Porter : tu emportes en vol une créature de ta taille ou moins sur vingt pas. · Attaque en piqué : tu plonges depuis la hauteur, 2d6+2, et tu te poses.',
+    paq:'Un tube à messages et un sac ridicule.',
+    note:'Le +20 de Perception ne vaut qu’en hauteur : il n’est pas compté dans le tableau.'},
+  'Écorciens':{car:{Constitution:2},traits:'Écorce (réduction 2) · Croissance (tu changes ta taille)',
+    contrainte:'Le feu compte double',armure:'Aucune. Son écorce grandit avec lui, rien ne reste ajusté',red:2,pv:0,
+    dom:'de la Sève (Écorciens et Élytris)',
+    comp:'S’enraciner : 3 rounds, réduction 4, +1d6 PV par round, rien ne te déplace. · Croissance forcée (1x/jour) : 2d6+1 jusqu’à 10 pas.',
+    paq:'Rien. Il n’a pas de poches. Ses graines, s’il en produit.'}
+};
+
+const TYPES = {Cornu:{Force:2},Ritualiste:{Contenance:1,Sagesse:1},'Figé':{'Dextérité':2}};
+const BRANCHES = {'Les Larges, la mer':{Force:2},'Les Vifs, la rivière':{'Dextérité':2},'Les Dormants, le lac':{Contenance:1,Sagesse:1}};
+
+const S = {nom:'',peuple:'Humains',voie:'Éclaireur',car:{},sk:{},prat:[],sub:{},humCar:[],skChoice:'',banComp:''};
+CARS.forEach(c => S.car[c] = 0);
+ALLSKILLS.forEach(o => S.sk[o.s] = 0);
+
+const GESTE = {'Force':'Combat', 'Dextérité':'Tir'};
+const ABR_JET = {'Force':'FOR', 'Dextérité':'DEX', 'Contenance':'CNT'};
+const $ = id => document.getElementById(id);
+const near = n => Math.floor(n);   /* tout arrondi se fait vers le bas */
+const d20 = t => Math.floor(t / 5);
+
+function save(){ try{ localStorage.setItem('faelorenn.perso', JSON.stringify(S)); }catch(e){} }
+function load(){ try{ const r = localStorage.getItem('faelorenn.perso'); if(r) Object.assign(S, JSON.parse(r)); }catch(e){} }
+
+function peupleBonus(){
+  const p = PEUPLES[S.peuple], b = {};
+  CARS.forEach(c => b[c] = 0);
+  if(S.peuple === 'Humains'){ (S.humCar||[]).forEach(c => b[c] += 1); }
+  else { Object.keys(p.car||{}).forEach(c => b[c] += p.car[c]); }
+  if(S.peuple === "Ori'Ican" && TYPES[S.sub.type]) Object.keys(TYPES[S.sub.type]).forEach(c => b[c] += TYPES[S.sub.type][c]);
+  if(S.peuple === 'Nyréens' && BRANCHES[S.sub.branche]) Object.keys(BRANCHES[S.sub.branche]).forEach(c => b[c] += BRANCHES[S.sub.branche][c]);
+  return b;
+}
+const carVal = c => 8 + (S.car[c]||0) + peupleBonus()[c];
+const carSpent = () => CARS.reduce((a,c) => a + (S.car[c]||0), 0);
+const skSpent = () => ALLSKILLS.reduce((a,o) => a + (S.sk[o.s]||0), 0);
+
+function skBonus(name){
+  const p = PEUPLES[S.peuple];
+  let v = (VOIES[S.voie] && VOIES[S.voie].b[name]) || 0;
+  let t = (p.sk && p.sk[name]) || 0;
+  if(p.choixSk && S.skChoice === name) t += (S.peuple === 'Cimérans' ? 10 : 10);
+  return {voie:v, trait:t};
+}
+function skTotal(name){
+  const o = ALLSKILLS.find(x => x.s === name), b = skBonus(name);
+  return carVal(o.car) * 2 + (S.sk[name]||0) + b.voie + b.trait;
+}
+const pv = () => carVal('Constitution') + PEUPLES[S.peuple].pv;
+const pc = () => Math.floor(carVal('Contenance') / 2);
+const domaine = () => S.peuple === 'Humains' ? ECOLES[S.sub.ecole] : PEUPLES[S.peuple].dom;
+
+/* ce qu'on peut choisir : sa branche ou son type seulement, et jamais l'attaque de base,
+   qui est donnee d'office */
+function pratList(){
+  const d = domaine(); if(!d || !PRATIQUES[d]) return [];
+  const g = PRATIQUES[d], out = [];
+  Object.keys(g).forEach(k => {
+    if(S.peuple === 'Nyréens' && k !== 'Commune au 3 variant de Nyréen' && S.sub.branche && k !== S.sub.branche) return;
+    if(S.peuple === "Ori'Ican" && S.sub.type && k !== S.sub.type) return;
+    const items = g[k].filter(it => !it.base);
+    if(items.length) out.push({grp:k === '_' ? '' : k, items:items});
+  });
+  return out;
+}
+/* l'attaque de base de ta liste : celle de ta branche, de ton type ou de ton ecole */
+function attaqueBase(){
+  const d = domaine(); if(!d || !PRATIQUES[d]) return null;
+  const g = PRATIQUES[d];
+  const cles = Object.keys(g).filter(k => {
+    if(S.peuple === 'Nyréens') return S.sub.branche === k;
+    if(S.peuple === "Ori'Ican") return S.sub.type === k;
+    return true;
+  });
+  for(let i = 0; i < cles.length; i++){
+    const b = g[cles[i]].find(it => it.base);
+    if(b) return b;
+  }
+  return null;
+}
+/* ce qui figure sur la fiche : l'attaque de base, puis les trois choisies */
+function pratNoms(){
+  const b = attaqueBase();
+  return (b ? [b.n] : []).concat(S.prat);
+}
+/* le paquetage du peuple, avec ce que son type ou sa branche ajoute */
+function paqPeuple(){
+  const p = PEUPLES[S.peuple];
+  let t = p.paq;
+  if(p.paqSub) Object.keys(p.paqSub).forEach(k => {
+    if(Object.keys(S.sub || {}).some(x => S.sub[x] === k)) t += ' ' + p.paqSub[k];
+  });
+  return t;
+}
+
+function el(tag, cls, txt){ const e = document.createElement(tag); if(cls) e.className = cls; if(txt != null) e.textContent = txt; return e; }
+
+function stepper(get, set, min, max, step){
+  const w = el('div','stepper');
+  const m = el('button', null, '−'); m.type = 'button'; m.setAttribute('aria-label','moins');
+  const v = el('span','v', String(get()));
+  const p = el('button', null, '+'); p.type = 'button'; p.setAttribute('aria-label','plus');
+  m.disabled = get() <= min; p.disabled = get() >= max;
+  m.onclick = () => { set(Math.max(min, get() - step)); draw(); };
+  p.onclick = () => { set(Math.min(max, get() + step)); draw(); };
+  w.append(m, v, p); return w;
+}
+
+function drawSelects(){
+  const ps = $('peuple'), vs = $('voie');
+  if(!ps.options.length){
+    Object.keys(PEUPLES).forEach(k => ps.add(new Option(k, k)));
+    Object.keys(VOIES).forEach(k => vs.add(new Option(k, k)));
+    ps.onchange = () => { S.peuple = ps.value; S.prat = []; S.sub = {}; S.humCar = []; S.skChoice = ''; S.banComp = ''; draw(); };
+    vs.onchange = () => { S.voie = vs.value; draw(); };
+    $('nom').oninput = e => { S.nom = e.target.value; drawFiche(); save(); };
+  }
+  ps.value = S.peuple; vs.value = S.voie; $('nom').value = S.nom;
+
+  const box = $('subChoices'); box.innerHTML = '';
+  const p = PEUPLES[S.peuple];
+  (p.sub || []).forEach(sub => {
+    const d = el('div'); d.append(Object.assign(el('label','f', sub.l), {htmlFor:'sub_' + sub.k}));
+    const s = el('select'); s.id = 'sub_' + sub.k;
+    s.add(new Option('à choisir', ''));
+    sub.o.forEach(o => s.add(new Option(o, o)));
+    s.value = S.sub[sub.k] || '';
+    s.onchange = () => { S.sub[sub.k] = s.value; if(sub.k === 'ecole' || sub.k === 'branche' || sub.k === 'type') S.prat = []; draw(); };
+    d.append(s); box.append(d);
+  });
+
+  const f = $('peupleFacts'); f.innerHTML = '';
+  const add = (k, v) => { if(!v) return; f.append(el('dt', null, k), el('dd', null, v)); };
+  add('Traits', p.traits); add('Contrainte', p.contrainte); add('Armure', p.armure);
+  add('Compétence de peuple', p.comp); add('Domaine', domaine() ? 'Pratiques ' + domaine() : 'choisis ton école');
+  if(p.note) add('À savoir', p.note);
+}
+
+function drawCars(){
+  const tb = $('carTable').querySelector('tbody'); tb.innerHTML = '';
+  const bon = peupleBonus();
+  const hum = S.peuple === 'Humains';
+  const pris = hum ? (S.humCar||[]).length : 0;
+
+  const hint = $('carHint');
+  if(hum){
+    hint.hidden = false;
+    hint.textContent = pris >= 2
+      ? 'Humain : tes deux +1 sont placés. Clique sur un +1 pour le reprendre.'
+      : 'Humain : clique dans la colonne Peuple pour placer tes deux +1. Il t’en reste ' + (2 - pris) + '.';
+  } else {
+    hint.hidden = true; hint.textContent = '';
+  }
+
+  CARS.forEach(c => {
+    const tr = el('tr');
+    tr.append(el('td', null, c + '  ' + ABBR[c]));
+    const tdB = el('td','n');
+    tdB.append(stepper(() => S.car[c], v => { S.car[c] = v; }, 0, 7, 1));
+    tr.append(tdB);
+    if(hum){
+      const td = el('td','n');
+      const on = (S.humCar||[]).indexOf(c) >= 0;
+      const b = el('button','pick' + (on ? ' on' : ''), '+1');
+      b.type = 'button';
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+      b.setAttribute('aria-label', (on ? 'retirer le +1 en ' : 'placer un +1 en ') + c);
+      b.disabled = !on && pris >= 2;
+      b.onclick = () => {
+        S.humCar = S.humCar || [];
+        if(on) S.humCar = S.humCar.filter(x => x !== c);
+        else if(S.humCar.length < 2) S.humCar.push(c);
+        draw();
+      };
+      td.append(b); tr.append(td);
+    } else {
+      tr.append(el('td','n', bon[c] ? '+' + bon[c] : '–'));
+    }
+    const v = carVal(c);
+    const tdV = el('td','n'); tdV.append(el('b', null, String(v))); tr.append(tdV);
+    tr.append(el('td','n', String(v * 2)));
+    tr.append(el('td','n', (near(v/5) >= 0 ? '+' : '') + near(v/5)));
+    tb.append(tr);
+  });
+}
+
+function drawSkills(){
+  const tb = $('skillTable').querySelector('tbody'); tb.innerHTML = '';
+  CARS.forEach(c => {
+    if(!SKILLS[c].length) return;
+    const g = el('tr','grp'); const td = el('td', null, c + ' · base ' + (carVal(c)*2)); td.colSpan = 6; g.append(td); tb.append(g);
+    SKILLS[c].forEach(s => {
+      const b = skBonus(s), tr = el('tr');
+      tr.append(el('td', null, s));
+      const tdP = el('td','n');
+      tdP.append(stepper(() => S.sk[s], v => { S.sk[s] = v; }, 0, 40, 5));
+      tr.append(tdP);
+      tr.append(el('td','n', b.voie ? '+' + b.voie : '–'));
+      tr.append(el('td','n', b.trait ? '+' + b.trait : '–'));
+      const t = skTotal(s);
+      const tdT = el('td','n'); tdT.append(el('b', null, String(t))); tr.append(tdT);
+      tr.append(el('td','n', String(d20(t))));
+      tb.append(tr);
+    });
+  });
+  const box = $('traitChoice'); box.innerHTML = '';
+  const p = PEUPLES[S.peuple];
+  if(p.choixSk){
+    const c = el('div','card'); c.style.marginTop = '10px';
+    c.append(el('label','f', p.choixSk.label));
+    const s = el('select'); s.id = 'skchoice';
+    s.add(new Option('à choisir',''));
+    (p.choixSk.list || ALLSKILLS.map(o => o.s)).forEach(n => s.add(new Option(n, n)));
+    s.value = S.skChoice || '';
+    s.onchange = () => { S.skChoice = s.value; draw(); };
+    c.append(s); box.append(c);
+  }
+}
+
+function drawPrat(){
+  const box = $('pratBox'); box.innerHTML = '';
+  const groups = pratList();
+  if(!groups.length){ box.append(el('p','note','Choisis d’abord ton école pour voir tes Pratiques.')); return; }
+  const bonus = pratBonus();
+  const base = attaqueBase();
+  if(base){
+    box.append(Object.assign(el('h3', null, 'Ton attaque de base, donnée d’office'),
+      {style:'font-family:Spectral,serif;font-style:italic;color:var(--sage);margin:0 0 2px;font-size:14px'}));
+    const row = el('div','tick donne');
+    row.append(Object.assign(el('span','recu','✓'), {title:'donnée avec ta liste'}));
+    const lab = el('div'); lab.style.flex = '1';
+    lab.append(el('span','nm', base.n));
+    lab.append(el('span','pc', 'de base'));
+    const vb = pratValeur(base);
+    lab.append(el('span','jt', vb.val == null ? vb.jet : ABR_JET[vb.jet] + ' ' + vb.val + ' \u00b7 d20 ' + d20(vb.val) + (vb.par ? ' (' + vb.par + ')' : '')));
+    lab.append(el('div','de', base.d));
+    row.append(lab);
+    box.append(row);
+    box.append(Object.assign(el('h3', null, 'Tes trois Pratiques'),
+      {style:'font-family:Spectral,serif;font-style:italic;color:var(--sage);margin:14px 0 2px;font-size:14px'}));
+  }
+  $('pratHint').textContent = 'Trois à la création, plus l’attaque de base de ta liste, donnée et gratuite. Bonus +' + bonus +
+    (S.peuple === 'Humains' ? ' (+20 de base, +10 par ton école).' : ' (+20 de base, +20 par ton domaine).') +
+    ' Chaque Pratique se lance sous la caractéristique de son geste, ou sous ta compétence du même geste si elle est plus haute. La valeur et le d20 sont écrits à côté.';
+  groups.forEach(g => {
+    if(g.grp) box.append(Object.assign(el('h3', null, g.grp), {style:'font-family:Spectral,serif;font-style:italic;color:var(--sage);margin:12px 0 2px;font-size:14px'}));
+    g.items.forEach(it => {
+      const row = el('div','tick');
+      const cb = el('input'); cb.type = 'checkbox'; cb.id = 'pr_' + it.n.replace(/\W/g,'');
+      cb.checked = S.prat.indexOf(it.n) >= 0;
+      cb.disabled = !cb.checked && S.prat.length >= 3;
+      cb.onchange = () => {
+        if(cb.checked) S.prat.push(it.n);
+        else S.prat = S.prat.filter(x => x !== it.n);
+        draw();
+      };
+      const lab = el('label'); lab.htmlFor = cb.id; lab.style.flex = '1';
+      const nm = el('span','nm', it.n);
+      lab.append(nm);
+      lab.append(el('span','pc', coutTxt(it)));
+      const v = pratValeur(it);
+      lab.append(el('span','jt', v.val == null ? v.jet : ABR_JET[v.jet] + ' ' + v.val + ' \u00b7 d20 ' + d20(v.val) + (v.par ? ' (' + v.par + ')' : '')));
+      lab.append(el('div','de', it.d));
+      row.append(cb, lab); box.append(row);
+    });
+  });
+  if(S.peuple === 'Humains'){
+    const b = S.sub.ban === "L'Or" ? "de la Bannière de l'Or" : S.sub.ban === 'Le Sang' ? 'de la Bannière du Sang' : null;
+    if(b && PRATIQUES[b]){
+      box.append(Object.assign(el('h3', null, 'Ta compétence de Bannière, une seule'), {style:'font-family:Spectral,serif;font-style:italic;color:var(--sage);margin:14px 0 2px;font-size:14px'}));
+      PRATIQUES[b]._.forEach(it => {
+        const row = el('div','tick');
+        const rb = el('input'); rb.type = 'radio'; rb.name = 'bancomp'; rb.id = 'bc_' + it.n.replace(/\W/g,'');
+        rb.checked = S.banComp === it.n;
+        rb.onchange = () => { S.banComp = it.n; draw(); };
+        const lab = el('label'); lab.htmlFor = rb.id; lab.style.flex = '1';
+        lab.append(el('span','nm', it.n), el('div','de', it.d));
+        row.append(rb, lab); box.append(row);
+      });
+    }
+  }
+}
+
+function drawGear(){
+  const box = $('gearBox'); box.innerHTML = '';
+  const v = VOIES[S.voie], p = PEUPLES[S.peuple];
+  const d = el('dl','facts'); d.style.marginTop = '0';
+  d.append(el('dt', null, 'Ta Voie'), el('dd', null, v.paq));
+  d.append(el('dt', null, 'Ton peuple'), el('dd', null, paqPeuple()));
+  d.append(el('dt', null, 'Armure'), el('dd', null, p.armure));
+  box.append(d);
+}
+
+function drawBar(){
+  const cr = 21 - carSpent(), sr = 100 - skSpent();
+  const a = $('pCar'), b = $('pSkill'), c = $('pPrat');
+  a.querySelector('b').textContent = cr;
+  a.className = 'pill' + (cr === 0 ? ' ok' : cr < 0 ? ' warn' : '');
+  b.querySelector('b').textContent = sr;
+  b.className = 'pill' + (sr === 0 ? ' ok' : sr < 0 ? ' warn' : '');
+  c.querySelector('b').textContent = S.prat.length + '/3';
+  c.className = 'pill' + (S.prat.length === 3 ? ' ok' : '');
+  $('pPv').textContent = pv(); $('pPc').textContent = pc(); $('pRed').textContent = PEUPLES[S.peuple].red;
+}
+
+/* la fiche est construite dans fiche.js */
+
+function drawWarn(){
+  const cr = 21 - carSpent(), sr = 100 - skSpent();
+  let msgs = [];
+  if(cr > 0) msgs.push('Il te reste ' + cr + ' point' + (cr>1?'s':'') + ' de caractéristique.');
+  if(cr < 0) msgs.push('Tu dépasses de ' + (-cr) + ' points de caractéristique.');
+  if(sr > 0) msgs.push('Il te reste ' + sr + ' points de compétence.');
+  if(sr < 0) msgs.push('Tu dépasses de ' + (-sr) + ' points de compétence.');
+  if(S.prat.length < 3 && domaine()) msgs.push('Il te manque ' + (3 - S.prat.length) + ' Pratique' + (3-S.prat.length>1?'s':'') + '.');
+  return msgs;
+}
+
+function draw(){
+  drawSelects(); drawCars(); drawSkills(); drawPrat(); drawGear(); drawBar(); drawFiche(); noteWord(); save();
+}
+
+$('print').onclick = () => window.print();
+$('word').onclick = exporterWord;
+$('wcopy').onclick = copierPourWord;
+$('json').onclick = exporterJson;
+$('reset').onclick = () => {
+  if(!confirm('Effacer ce personnage et repartir de zéro ?')) return;
+  S.nom = ''; S.prat = []; S.sub = {}; S.humCar = []; S.skChoice = ''; S.banComp = '';
+  CARS.forEach(c => S.car[c] = 0); ALLSKILLS.forEach(o => S.sk[o.s] = 0);
+  draw();
+};
+$('copy').onclick = () => {
+  const lines = [];
+  lines.push((S.nom || 'Sans nom') + ' · ' + S.peuple + ', ' + S.voie);
+  Object.keys(S.sub).forEach(k => { if(S.sub[k]) lines.push(k + ' : ' + S.sub[k]); });
+  lines.push('');
+  lines.push(CARS.map(c => ABBR[c] + ' ' + carVal(c)).join(' · '));
+  lines.push('PV ' + pv() + ' · PC ' + pc() + ' · Réduction ' + PEUPLES[S.peuple].red);
+  lines.push('');
+  ALLSKILLS.forEach(o => { const t = skTotal(o.s); if(t > carVal(o.car)*2) lines.push(o.s + ' : ' + t + ' (d20 ' + d20(t) + ')'); });
+  if(pratNoms().length){ lines.push(''); lines.push('Pratiques : ' + pratNoms().join(', ')); }
+  if(S.banComp) lines.push('Bannière : ' + S.banComp);
+  lines.push(''); lines.push('Paquetage : ' + VOIES[S.voie].paq + ' ' + paqPeuple());
+  const txt = lines.join('\n');
+  navigator.clipboard.writeText(txt).then(
+    () => { $('copy').textContent = 'Copié'; setTimeout(() => { $('copy').textContent = 'Copier en texte'; }, 1400); },
+    () => { $('copy').textContent = 'Copie refusée'; setTimeout(() => { $('copy').textContent = 'Copier en texte'; }, 1400); }
+  );
+};
+
+load();
+if(!S.peuple || !PEUPLES[S.peuple]) S.peuple = 'Humains';
+/* une Pratique qui n'existe plus, ou qui n'est plus de ta branche, ne reste pas cochée */
+(function(){
+  if(!Array.isArray(S.prat) || !S.prat.length) return;
+  const ok = {};
+  pratList().forEach(g => g.items.forEach(it => ok[it.n] = true));
+  if(Object.keys(ok).length) S.prat = S.prat.filter(n => ok[n]);
+})();
+if(!S.voie || !VOIES[S.voie]) S.voie = 'Éclaireur';
+if(!S.nom){
+  S.nom = 'Toum’Balin'; S.peuple = "Ori'Ican"; S.voie = 'Chasseur'; S.sub = {type:'Cornu'};
+  S.car = {Force:7,'Dextérité':7,Constitution:7,Intelligence:0,Sagesse:0,Charisme:0,Contenance:0};
+  ALLSKILLS.forEach(o => S.sk[o.s] = 0);
+  S.sk['Combat'] = 40; S.sk['Tir'] = 40; S.sk['Intimidation'] = 20;
+  S.prat = ['Muer','Fendre','Peau qui repousse'];
+}
+draw();
+dispoTelechargement();
+
+/* ============ la fiche imprimable, calquee sur le Word ============ */
+
+function fh(txt){ return el('h3','fh', txt); }
+function fnote(bold, rest){
+  const p = el('p','fnote');
+  if(bold) p.append(el('b', null, bold + ' '));
+  if(rest) p.append(document.createTextNode(rest));
+  return p;
+}
+function fsm(txt, strong){
+  const p = el('p','fsm');
+  p.append(document.createTextNode(txt));
+  if(strong) p.append(el('b', null, ' ' + strong));
+  return p;
+}
+function fld(label, value, w){
+  const td = el('td','fd');
+  if(w) td.style.width = w;
+  if(label) td.append(el('div','lb', label));
+  const v = el('div','vl');
+  (String(value == null || value === '' ? '\u2013' : value)).split('\n').forEach((line, i) => {
+    if(i) v.append(el('br'));
+    v.append(document.createTextNode(line));
+  });
+  td.append(v); return td;
+}
+function cols(t, widths){
+  const cg = el('colgroup');
+  widths.forEach(w => { const c = el('col'); c.style.width = w; cg.append(c); });
+  t.append(cg); return t;
+}
+function frow(cells){ const t = el('table','fx'), tr = el('tr'); cells.forEach(c => tr.append(c)); t.append(tr); return t; }
+
+/* ---- petits calculs de la fiche ---- */
+function domCourt(){
+  const d = domaine(); if(!d) return '';
+  return 'Pratiques ' + d.replace(/\s*\([^)]*\)\s*$/, '');
+}
+function bonusPeupleTxt(){
+  const b = peupleBonus(), out = [];
+  CARS.forEach(c => { if(b[c]) out.push('+' + b[c] + ' ' + ABBR[c]); });
+  return out.join(' · ');
+}
+function pratBonus(){ return 20 + (S.peuple === 'Humains' ? 10 : 20); }
+function pratTotal(){ return carVal('Contenance') * 2 + pratBonus(); }
+/* ce que lance une Pratique, et sous quelle valeur : le meilleur de la Pratique et de la competence du meme geste */
+function pratValeur(it){
+  const j = (it && it.j) || '';
+  if(j === 'Force' || j === 'Dextérité' || j === 'Contenance'){
+    const propre = carVal(j) * 2 + pratBonus();
+    const comp = GESTE[j] ? skTotal(GESTE[j]) : 0;
+    return {jet:j, val:Math.max(propre, comp), par: comp > propre ? GESTE[j] : ''};
+  }
+  return {jet: j || 'aucun jet', val:null, par:''};
+}
+function coutTxt(it){ return it.base ? 'de base' : (it.pct ? it.pct : (it.pc ? it.pc + ' PC' : 'gratuit')); }
+function pratIndex(){
+  const ix = {};
+  pratList().forEach(g => g.items.forEach(it => ix[it.n] = it));
+  const base = attaqueBase();
+  if(base) ix[base.n] = base;
+  const b = S.sub.ban === "L'Or" ? "de la Bannière de l'Or" : S.sub.ban === 'Le Sang' ? 'de la Bannière du Sang' : null;
+  if(b && PRATIQUES[b]) PRATIQUES[b]._.forEach(it => ix[it.n] = it);
+  return ix;
+}
+/* extrait les armes des paquetages : « un arc (d6) et douze fleches » */
+function armesDuPaquetage(){
+  const src = [VOIES[S.voie].paq, paqPeuple()].join(' ');
+  const out = [];
+  src.split(/(?:\.\s|,\s|\s:\s)/).forEach(frag => {
+    const m = frag.match(/\(?\bd(\d+)\)?/);
+    if(!m) return;
+    if(/^Un Cornu/.test(frag.trim()) && S.sub.type !== 'Cornu') return;
+    let nom = frag.slice(0, m.index).replace(/[\s(]+$/,'').trim();
+    let notes = frag.slice(m.index + m[0].length).replace(/^[\s)]+/,'').replace(/^et\s+/,'').replace(/^[.\s]+|[.\s]+$/g,'').trim();
+    if(!nom){ nom = notes; notes = ''; }
+    nom = nom.replace(/^Un Cornu ajoute sa\s+/i, 'Sa ').replace(/^[.\s]+/,'');
+    out.push({ nom: nom.charAt(0).toUpperCase() + nom.slice(1), de: 'd' + m[1], notes: notes });
+  });
+  return out;
+}
+function bourse(){
+  let n = 0;
+  [VOIES[S.voie].paq, paqPeuple()].forEach(s => {
+    const m = s.match(/(\d+)\s+argents/g);
+    if(m) m.forEach(x => n += parseInt(x, 10));
+  });
+  return n ? n + ' argents' : '\u2013';
+}
+/* ce qui reste du paquetage une fois les armes et la monnaie sortis */
+function resteDuSac(){
+  const armes = armesDuPaquetage().map(a => a.nom.toLowerCase());
+  const out = [];
+  [VOIES[S.voie].paq, paqPeuple()].forEach(s => {
+    s.split(/(?:\.\s|,\s)/).forEach(frag => {
+      const f = frag.replace(/\.$/,'').trim();
+      if(!f) return;
+      if(/\d+\s+argents/.test(f)) return;
+      if(/\(?\bd\d+\)?/.test(f)) return;
+      if(armes.indexOf(f.toLowerCase()) >= 0) return;
+      out.push(f.charAt(0).toUpperCase() + f.slice(1));
+    });
+  });
+  return out;
+}
+
+function drawFiche(){
+  const box = $('fiche'); box.innerHTML = '';
+  const p = PEUPLES[S.peuple], v = VOIES[S.voie];
+
+  /* ---------- titre ---------- */
+  box.append(el('div','ft', S.nom ? 'Fiche de ' + S.nom : 'Fiche de personnage'));
+  box.append(el('div','fsub', 'Faelorenn · le jeu des Marchefleurs'));
+
+  /* ---------- identite ---------- */
+  box.append(fh('Identité'));
+  box.append(frow([fld('Nom', S.nom, '40%'), fld('Peuple', S.peuple, '30%'), fld('Voie', S.voie, '30%')]));
+  box.append(frow([
+    fld('Bannière · humains', S.peuple === 'Humains' ? S.sub.ban : null, '25%'),
+    fld('École ou Église · humains', S.peuple === 'Humains' ? S.sub.ecole : null, '25%'),
+    fld('Type · Ori\u2019Ican', S.peuple === "Ori'Ican" ? S.sub.type : null, '25%'),
+    fld('Branche · Nyréens', S.peuple === 'Nyréens' ? S.sub.branche : null, '25%')
+  ]));
+
+  /* ---------- ce que le peuple apporte ---------- */
+  box.append(fh('Ce que ton peuple apporte'));
+  box.append(frow([
+    fld('Caractéristique', bonusPeupleTxt(), '25%'),
+    fld('Traits chiffrés', p.traits, '37%'),
+    fld('Domaine et bonus', domCourt() ? domCourt() + (S.peuple === 'Humains' ? ' · +10 par son école' : ' · +20') : null, '19%'),
+    fld('Contrainte', p.contrainte, '19%')
+  ]));
+  box.append(frow([
+    fld('Compétence de peuple', p.comp || (S.peuple === 'Humains' && S.banComp ? S.banComp + ' (Bannière)' : null), '50%'),
+    fld('Armure que ton corps supporte', p.armure, '25%'),
+    fld('Ce que ton peuple ajoute au sac', paqPeuple(), '25%')
+  ]));
+
+  /* ---------- caracteristiques ---------- */
+  box.append(fh('Caractéristiques'));
+  box.append(fnote('21 points à répartir.', 'Elles démarrent à 8 et ne dépassent pas 15 à la création. Le bonus de peuple s\u2019ajoute après. Plafond 18 en cours de jeu.'));
+  const tc = el('table','fx car');
+  const r1 = el('tr'), r2 = el('tr'), r3 = el('tr');
+  CARS.forEach(c => {
+    r1.append(el('th', null, c));
+    const val = carVal(c);
+    r2.append(el('td','big2', String(val)));
+    r3.append(el('td','sub2', '×2 ' + (val * 2) + ' · mod ' + (near(val/5) >= 0 ? '+' : '') + near(val/5)));
+  });
+  tc.append(r1, r2, r3); box.append(tc);
+
+  const td2 = el('table','fx der');
+  const rd = el('tr');
+  [['Points de vie','ta Constitution', pv()],
+   ['Points de Contenance','la moitié de ta Contenance', pc()],
+   ['Réduction d\u2019armure','ta pièce, plus ton armure naturelle', p.red]].forEach(x => {
+    const td = el('td','dv');
+    td.append(el('div','lb', x[0]), el('div','dvs', x[1]), el('div','big2', String(x[2])));
+    rd.append(td);
+  });
+  td2.append(rd); box.append(td2);
+  box.append(fsm('Ton mod, c\u2019est ta caractéristique divisée par cinq. La même division que pour le d20, et un seul arrondi dans tout le jeu : vers le bas.'));
+
+  /* ---------- competences ---------- */
+  box.append(fh('Les vingt compétences'));
+  box.append(fnote('100 points de bonus à répartir, aucune dépense au-dessus de +40 dans une compétence. Voie, peuple et trait s’ajoutent par-dessus.', 'Total = caractéristique fois deux, plus le bonus. Le d20 est ce total divisé par cinq.'));
+
+  const GA = [['Force',SKILLS['Force']],['Dextérité',SKILLS['Dextérité']],['Intelligence',SKILLS['Intelligence']]];
+  const DR = [['Sagesse',SKILLS['Sagesse']],['Charisme',SKILLS['Charisme']]];
+  const flat = gs => { const o = []; gs.forEach(g => { o.push({head:g[0]}); g[1].forEach(s => o.push({skill:s})); }); return o; };
+  const L = flat(GA), R = flat(DR);
+  R.push({note:'Constitution et Contenance n\u2019ont aucune compétence.'});
+  R.push({note:'La Contenance sert à lancer les Pratiques.'});
+
+  const ts = el('table','fx sk');
+  cols(ts, ['23%','9%','9%','9%','23%','9%','9%','9%']);
+  const hr = el('tr');
+  ['Compétence','Bonus','Total','d20','Compétence','Bonus','Total','d20'].forEach((h, i) => {
+    const th = el('th', i % 4 ? 'c' : null, h); ts.append; hr.append(th);
+  });
+  ts.append(hr);
+  const side = (e, tr) => {
+    if(!e){ for(let i=0;i<4;i++) tr.append(el('td')); return; }
+    if(e.head){
+      const td = el('td','grp'); td.colSpan = 4;
+      td.append(el('b', null, e.head), el('i', null, '  base ×2 ' + (carVal(e.head) * 2)));
+      tr.append(td); return;
+    }
+    if(e.note){ const td = el('td','nte', e.note); td.colSpan = 4; tr.append(td); return; }
+    const b = skBonus(e.skill), tot = (S.sk[e.skill]||0) + b.voie + b.trait, t = skTotal(e.skill);
+    tr.append(el('td', null, e.skill));
+    tr.append(el('td','c', tot ? '+' + tot : ''));
+    tr.append(el('td','c b', String(t)));
+    tr.append(el('td','c', String(d20(t))));
+  };
+  for(let i = 0; i < Math.max(L.length, R.length); i++){
+    const tr = el('tr'); side(L[i], tr); side(R[i], tr); ts.append(tr);
+  }
+  box.append(ts);
+
+  /* ---------- pratiques ---------- */
+  box.append(el('div','brk'));
+  box.append(fh('Pratiques'));
+  box.append(fnote('L\u2019attaque de base d\u2019office, plus trois Pratiques choisies dans la liste de ton domaine.',
+    'Une Pratique démarre à +20, ton peuple ajoute +20 sur son domaine, l\u2019école d\u2019un humain +10. Elle se lance sous la caractéristique de son geste, fois deux, plus ce bonus, ou sous ta compétence du même geste si elle est plus haute. Ce qui n\u2019a pas de cible hostile ne se lance pas, et une zone fait tester ceux qui sont dedans. Un échec consomme le PC, sauf l\u2019attaque de base, qui ne coûte rien et se contente de rater.'));
+  box.append(fsm('La Sève, l\u2019eau, la pierre, le vent et la Mue envoient de la matière : la réduction d\u2019armure s\u2019applique.', 'Le feu, l\u2019onde, l\u2019ombre et le sacré traversent les armures.'));
+  const tp = el('table','fx prt'); cols(tp, ['21%','12%','8%','7%','52%']);
+  const hp = el('tr');
+  ['Pratique','Se lance','Valeur','d20','Ce qu\u2019elle fait'].forEach((h, i) => hp.append(el('th', i > 0 && i < 4 ? 'c' : null, h)));
+  tp.append(hp);
+  const ix = pratIndex();
+  const lignes = pratNoms();
+  if(S.banComp) lignes.push(S.banComp);
+  lignes.forEach(n => {
+    const it = ix[n] || {}, tr = el('tr'), v = pratValeur(it);
+    const td = el('td');
+    td.append(el('b', null, n));
+    td.append(el('i', null, ' (' + coutTxt(it) + ')'));
+    tr.append(td);
+    if(v.val == null){
+      tr.append(el('td','c', v.jet), el('td','c', '\u2013'), el('td','c', '\u2013'));
+    } else {
+      tr.append(el('td','c', ABR_JET[v.jet] + (v.par ? ' \u00b7 ' + v.par : '')), el('td','c b', String(v.val)), el('td','c', String(d20(v.val))));
+    }
+    tr.append(el('td','de', it.d || ''));
+    tp.append(tr);
+  });
+  for(let i = lignes.length; i < 5; i++){
+    const tr = el('tr'); for(let j = 0; j < 5; j++) tr.append(el('td','vide')); tp.append(tr);
+  }
+  box.append(tp);
+
+  /* ---------- armes ---------- */
+  box.append(fh('Armes'));
+  box.append(fnote('', 'Dégâts = dé de l\u2019arme + mod FOR, ou mod DEX pour une arme légère et l\u2019arbalète, moins la réduction d\u2019armure de la cible. Minimum 0. On retire la réduction, puis la contrainte du corps, et on arrondit vers le bas.'));
+  const ta = el('table','fx arm'); cols(ta, ['32%','8%','60%']);
+  const ha = el('tr');
+  ['Arme','Dé','Notes'].forEach((h, i) => ha.append(el('th', i === 1 ? 'c' : null, h)));
+  ta.append(ha);
+  const armes = armesDuPaquetage();
+  armes.forEach(a => {
+    const tr = el('tr');
+    tr.append(el('td', null, a.nom), el('td','c b', a.de), el('td','de', a.notes));
+    ta.append(tr);
+  });
+  for(let i = armes.length; i < 4; i++){
+    const tr = el('tr'); for(let j = 0; j < 3; j++) tr.append(el('td','vide')); ta.append(tr);
+  }
+  box.append(ta);
+  box.append(fsm('Légère d4 · à une main d6 · de guerre d8 · à deux mains d10 · arc court et arc de chasse d6 · arc long d8, et 12 en Force pour le bander · arbalète d8, une action pour recharger · lance ori’ican d8, d10 ou d12 selon les mues. On vise à la Dextérité, on blesse à la Force, sauf l’arme légère et l’arbalète qui blessent à la Dextérité.'));
+
+  /* ---------- armure et equipement ---------- */
+  box.append(fh('Armure et équipement'));
+  box.append(fnote('Chaque pièce a ses propres chiffres.', 'Les réductions s\u2019additionnent : ta pièce plus ton armure naturelle. Ton corps supporte ' + p.armure.charAt(0).toLowerCase() + p.armure.slice(1) + '.'));
+  const tq = el('table','fx arm'); cols(tq, ['30%','14%','56%']);
+  const hq = el('tr');
+  ['Pièce','Réduction','Ce qu\u2019elle coûte, ce qu\u2019elle apporte'].forEach((h, i) => hq.append(el('th', i === 1 ? 'c' : null, h)));
+  tq.append(hq);
+  let nq = 0;
+  if(p.red){
+    const tr = el('tr');
+    tr.append(el('td', null, 'Ton armure naturelle'), el('td','c b', String(p.red)), el('td','de', p.traits.split('·')[0].trim()));
+    tq.append(tr); nq++;
+  }
+  for(let i = nq; i < 4; i++){
+    const tr = el('tr'); for(let j = 0; j < 3; j++) tr.append(el('td','vide')); tq.append(tr);
+  }
+  box.append(tq);
+  box.append(fsm('Cuir ou matelassé 1 · cuir clouté ou écailles 2, \u221210 Discrétion · maille 3, \u221210 Discrétion et Acrobatie · plates 4, \u221210 Discrétion et \u221220 Acrobatie · bouclier +1, occupe une main.'));
+
+  /* ---------- sac et bourse ---------- */
+  const reste = resteDuSac();
+  const ul = el('ul','sac');
+  reste.forEach(x => ul.append(el('li', null, x)));
+  const tsac = el('table','fx'), trs = el('tr');
+  const tdS = el('td','fd'); tdS.style.width = '75%';
+  tdS.append(el('div','lb','Le reste du sac'));
+  if(reste.length) tdS.append(ul); else tdS.append(el('div','vl','\u2013'));
+  const tdB = el('td','fd'); tdB.style.width = '25%';
+  tdB.append(el('div','lb','Bourse · ors et argents'), el('div','big2', bourse()));
+  trs.append(tdS, tdB); tsac.append(trs); box.append(tsac);
+
+  /* ---------- charge, cimerans seulement ---------- */
+  if(S.peuple === 'Cimérans'){
+    box.append(el('div','brk'));
+    box.append(fh('La Charge'));
+    box.append(fnote('Une piste à part, à côté de tes PV.', 'Capacité : tes PV maximum, soit ' + pv() + '. Tu portes automatiquement la moitié des dégâts d\u2019un allié à dix pas, réduction déduite. Les soins n\u2019y touchent pas. Au-delà de ta capacité tu passes en morne, et le surplus te rentre dedans en dégâts réels.'));
+    const tch = el('table','fx chg'), rch = el('tr');
+    for(let i = 0; i < 10; i++) rch.append(el('td','vide'));
+    tch.append(rch); box.append(tch);
+    box.append(fsm('Se vider : Darguer, ou la dargue du festin, hors combat, trois convives au minimum. Un Ciméran seul ne se vide pas.'));
+  }
+
+  /* ---------- notes ---------- */
+  if(S.peuple !== 'Cimérans') box.append(el('div','brk'));
+  box.append(fh('Notes'));
+  const tn = el('table','fx'), rn = el('tr'), tdn = el('td','fd notes');
+  rn.append(tdn); tn.append(rn); box.append(tn);
+
+  /* ---------- aide-memoire ---------- */
+  box.append(fh('Aide-mémoire'));
+  const AM = [
+    ['La règle unique', ['**Tu lances sous une valeur.**','Ta valeur, c\u2019est ta caractéristique fois deux, plus ton bonus.','Hors combat d100, en combat d20 sous la même valeur divisée par cinq.','//01 à 05 réussite critique, 96 à 100 échec critique. Au d20 : 1 et 20 naturels.']],
+    ['Ce qui compte, c\u2019est de combien tu rates', ['Marge de 1 à 10, au d20 de 1 à 2 : ça ne marche pas, rien de mauvais.','Marge de 11 à 30, au d20 de 3 à 6 : ça ne marche pas, et ça coûte.','Marge de 31 et plus, au d20 de 7 et plus : la situation empire.','//Rater le jet ne veut pas dire échouer.']],
+    ['Quand l\u2019ennemi attaque', ['Il touche d\u2019office. C\u2019est toi qui lances, une seule réaction par round.','d20 sous Acrobatie divisée par cinq pour esquiver, sous Combat pour parer.','//Réussite : aucun dégât. Échec de moins de 4 : aucun dégât, mais tu n\u2019attaques pas au prochain round. Échec de 4 ou plus : tu prends les dégâts.']],
+    ['Tomber à zéro', ['À 0 PV tu tombes, inconscient, tu ne joues plus.','Un allié peut te stabiliser pendant le combat : un soin, une fiole, un jet de Médecine.','//En groupe, personne ne l\u2019a fait avant la fin du combat : tu meurs. En solo, on tire ce qui t\u2019est arrivé pendant que tu n\u2019étais pas là.']],
+    ['Ce que rend le repos', ['Court, une heure : 1d6 PV et 1d4 PC.','Long, une nuit complète : tous tes PV et tous tes PC.','//Le repos ne rend rien d\u2019autre : ce qu\u2019une Floraison t\u2019a fait ne part pas en dormant.']],
+    ['Progression', ['Les points se gagnent en bouclant des missions. Le Havre annonce combien avant le départ.','Une compétence jusqu\u2019à +40 : 1 point par +1. De +41 à +60 : 2 points. Au-delà : 3 points.','Une Pratique de plus : 10 points, et quelqu\u2019un pour te l\u2019enseigner. Une caractéristique de +1 : 20 points, une fois chacune, plafond 18. +5 PV : 20 points.','//Il n\u2019y a pas de niveaux.']]
+  ];
+  const tam = el('table','fx am');
+  for(let i = 0; i < AM.length; i += 2){
+    const tr = el('tr');
+    [AM[i], AM[i+1]].forEach(c => {
+      const td = el('td','amc');
+      if(!c){ tr.append(td); return; }
+      td.append(el('div','lb', c[0]));
+      c[1].forEach(line => {
+        if(line.slice(0,2) === '**') td.append(el('p','amb', line.replace(/\*\*/g,'')));
+        else if(line.slice(0,2) === '//') td.append(el('p','ami', line.slice(2)));
+        else td.append(el('p', null, line));
+      });
+      tr.append(td);
+    });
+    tam.append(tr);
+  }
+  box.append(tam);
+}
+
+/* ============ export Word (.docx) ============
+   On ecrit l'OOXML a la main et on le zippe sans compression.
+   Aucune bibliotheque, aucun appel reseau. ============ */
+
+/* ---------- zip, methode « stored » ---------- */
+const CRCT = (function(){
+  const t = new Uint32Array(256);
+  for(let n = 0; n < 256; n++){
+    let c = n;
+    for(let k = 0; k < 8; k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+    t[n] = c >>> 0;
+  }
+  return t;
+})();
+function crc32(buf){
+  let c = 0xFFFFFFFF;
+  for(let i = 0; i < buf.length; i++) c = CRCT[(c ^ buf[i]) & 0xFF] ^ (c >>> 8);
+  return (c ^ 0xFFFFFFFF) >>> 0;
+}
+function utf8(str){
+  if(typeof TextEncoder !== 'undefined') return new TextEncoder().encode(str);
+  const b = []; // repli
+  for(let i = 0; i < str.length; i++){
+    let c = str.charCodeAt(i);
+    if(c < 128) b.push(c);
+    else if(c < 2048){ b.push(192 | (c >> 6), 128 | (c & 63)); }
+    else { b.push(224 | (c >> 12), 128 | ((c >> 6) & 63), 128 | (c & 63)); }
+  }
+  return new Uint8Array(b);
+}
+function zipStore(fichiers){
+  const parts = [], central = [];
+  let offset = 0;
+  fichiers.forEach(f => {
+    const nom = utf8(f.nom), data = utf8(f.txt), crc = crc32(data);
+    const lfh = new Uint8Array(30 + nom.length);
+    const v = new DataView(lfh.buffer);
+    v.setUint32(0, 0x04034b50, true);
+    v.setUint16(4, 20, true); v.setUint16(6, 0x0800, true); v.setUint16(8, 0, true);
+    v.setUint16(10, 0, true); v.setUint16(12, 0x2821, true);   // 2020-01-01
+    v.setUint32(14, crc, true); v.setUint32(18, data.length, true); v.setUint32(22, data.length, true);
+    v.setUint16(26, nom.length, true); v.setUint16(28, 0, true);
+    lfh.set(nom, 30);
+    parts.push(lfh, data);
+
+    const cd = new Uint8Array(46 + nom.length);
+    const c = new DataView(cd.buffer);
+    c.setUint32(0, 0x02014b50, true);
+    c.setUint16(4, 20, true); c.setUint16(6, 20, true);
+    c.setUint16(8, 0x0800, true); c.setUint16(10, 0, true);
+    c.setUint16(12, 0, true); c.setUint16(14, 0x2821, true);
+    c.setUint32(16, crc, true); c.setUint32(20, data.length, true); c.setUint32(24, data.length, true);
+    c.setUint16(28, nom.length, true); c.setUint16(30, 0, true); c.setUint16(32, 0, true);
+    c.setUint16(34, 0, true); c.setUint16(36, 0, true); c.setUint32(38, 0, true);
+    c.setUint32(42, offset, true);
+    cd.set(nom, 46);
+    central.push(cd);
+    offset += lfh.length + data.length;
+  });
+  const cdTaille = central.reduce((a, x) => a + x.length, 0);
+  const eocd = new Uint8Array(22);
+  const e = new DataView(eocd.buffer);
+  e.setUint32(0, 0x06054b50, true);
+  e.setUint16(4, 0, true); e.setUint16(6, 0, true);
+  e.setUint16(8, fichiers.length, true); e.setUint16(10, fichiers.length, true);
+  e.setUint32(12, cdTaille, true); e.setUint32(16, offset, true); e.setUint16(20, 0, true);
+
+  const tout = parts.concat(central, [eocd]);
+  const total = tout.reduce((a, x) => a + x.length, 0);
+  const out = new Uint8Array(total);
+  let p = 0;
+  tout.forEach(x => { out.set(x, p); p += x.length; });
+  return out;
+}
+
+/* ---------- briques OOXML ---------- */
+const WC = {h1:'1F3D2B', h2:'2E5A3E', txt:'1A1A1A', lbl:'6B7469', fill:'F1F5F1', head:'E6EDE7', line:'C3D2C6'};
+const WLARG = 10506;
+const xe = s => String(s == null ? '' : s)
+  .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+function wr(txt, o){
+  o = o || {};
+  let pr = '<w:rFonts w:ascii="Cambria" w:hAnsi="Cambria"/>';
+  if(o.b) pr += '<w:b/>';
+  if(o.i) pr += '<w:i/>';
+  if(o.caps) pr += '<w:caps/>';
+  pr += '<w:color w:val="' + (o.c || WC.txt) + '"/>';
+  const sz = o.sz || 18;
+  pr += '<w:sz w:val="' + sz + '"/><w:szCs w:val="' + sz + '"/>';
+  if(o.sp) pr += '<w:spacing w:val="' + o.sp + '"/>';
+  return '<w:r><w:rPr>' + pr + '</w:rPr><w:t xml:space="preserve">' + xe(txt) + '</w:t></w:r>';
+}
+function wp(runs, o){
+  o = o || {};
+  let pr = '<w:spacing w:before="' + (o.before || 0) + '" w:after="' +
+    (o.after === undefined ? 0 : o.after) + '" w:line="' + (o.line || 240) + '" w:lineRule="auto"/>';
+  if(o.align) pr += '<w:jc w:val="' + o.align + '"/>';
+  if(o.bord) pr += '<w:pBdr><w:bottom w:val="single" w:sz="' + o.bord.sz + '" w:space="' +
+    o.bord.space + '" w:color="' + o.bord.c + '"/></w:pBdr>';
+  return '<w:p><w:pPr>' + pr + '</w:pPr>' + (Array.isArray(runs) ? runs.join('') : runs) + '</w:p>';
+}
+function wlbl(txt){ return wp(wr(txt, {sz:13, caps:true, c:WC.lbl, sp:24}), {after:20}); }
+function wvide(n, line){
+  let s = '';
+  for(let i = 0; i < (n || 1); i++) s += wp(wr('', {sz:18}), {line: line || 300});
+  return s;
+}
+const BORD = 'w:val="single" w:sz="4" w:color="' + WC.line + '"';
+function wtc(kids, larg, o){
+  o = o || {};
+  let pr = '<w:tcW w:w="' + larg + '" w:type="dxa"/>';
+  if(o.span) pr += '<w:gridSpan w:val="' + o.span + '"/>';
+  if(o.hautSeul) pr += '<w:tcBorders><w:top ' + BORD + '/><w:left w:val="nil"/><w:bottom w:val="nil"/><w:right w:val="nil"/></w:tcBorders>';
+  if(o.fill) pr += '<w:shd w:val="clear" w:color="auto" w:fill="' + o.fill + '"/>';
+  pr += '<w:tcMar><w:top w:w="' + (o.mt === undefined ? 60 : o.mt) + '" w:type="dxa"/>' +
+        '<w:left w:w="90" w:type="dxa"/><w:bottom w:w="' + (o.mb === undefined ? 60 : o.mb) + '" w:type="dxa"/>' +
+        '<w:right w:w="90" w:type="dxa"/></w:tcMar>';
+  return '<w:tc><w:tcPr>' + pr + '</w:tcPr>' + (Array.isArray(kids) ? kids.join('') : kids) + '</w:tc>';
+}
+function wtr(cells){ return '<w:tr>' + cells.join('') + '</w:tr>'; }
+function wtbl(rows, larges){
+  const total = larges.reduce((a, b) => a + b, 0);
+  return '<w:tbl><w:tblPr><w:tblW w:w="' + total + '" w:type="dxa"/><w:tblLayout w:type="fixed"/>' +
+    '<w:tblBorders><w:top ' + BORD + '/><w:left ' + BORD + '/><w:bottom ' + BORD + '/><w:right ' + BORD +
+    '/><w:insideH ' + BORD + '/><w:insideV ' + BORD + '/></w:tblBorders>' +
+    '<w:tblCellMar><w:left w:w="90" w:type="dxa"/><w:right w:w="90" w:type="dxa"/></w:tblCellMar></w:tblPr>' +
+    '<w:tblGrid>' + larges.map(w => '<w:gridCol w:w="' + w + '"/>').join('') + '</w:tblGrid>' +
+    rows.join('') + '</w:tbl>';
+}
+function wgap(h){ return '<w:p><w:pPr><w:spacing w:after="' + (h || 60) + '" w:line="20" w:lineRule="auto"/></w:pPr><w:r><w:rPr><w:sz w:val="4"/></w:rPr><w:t/></w:r></w:p>'; }
+function wh2(txt){
+  return wp(wr(txt, {sz:17, b:true, caps:true, c:WC.h1, sp:40}),
+    {before:110, after:55, bord:{sz:6, space:3, c:WC.h1}});
+}
+function wnote(runs){ return wp(runs, {after:55}); }
+function wtete(txt, larg, ctr){
+  return wtc(wp(wr(txt, {sz:13, b:true, caps:true, c:WC.h1}), {align: ctr ? 'center' : undefined}),
+    larg, {fill:WC.head, mt:30, mb:30});
+}
+/* une case remplie : intitule minuscule puis la valeur */
+function wchamp(label, valeur, larg, o){
+  o = o || {};
+  const k = [];
+  if(label) k.push(wlbl(label));
+  const v = valeur == null || valeur === '' ? '–' : String(valeur);
+  k.push(wp(wr(v, {sz:18}), {line:260}));
+  return wtc(k, larg, {mb:40, fill:o.fill});
+}
+
+/* ---------- le document ---------- */
+function docxCorps(){
+  const p = PEUPLES[S.peuple], B = [];
+
+  /* titre */
+  B.push('<w:p><w:pPr><w:spacing w:after="20" w:line="240" w:lineRule="auto"/></w:pPr>' +
+    wr(S.nom ? 'Fiche de ' + S.nom : 'Fiche de personnage', {sz:40, b:true, c:WC.h1}).replace(/^<w:r>/,'<w:r>') + '</w:p>');
+  B.push(wp(wr('Faelorenn · le jeu des Marchefleurs', {sz:17, i:true, c:WC.h2}),
+    {after:140, bord:{sz:12, space:5, c:WC.h1}}));
+
+  /* identite */
+  B.push(wh2('Identité'));
+  B.push(wtbl([wtr([
+    wchamp('Nom', S.nom, 4206), wchamp('Peuple', S.peuple, 3150), wchamp('Voie', S.voie, 3150)
+  ])], [4206, 3150, 3150]));
+  B.push(wgap(60));
+  B.push(wtbl([wtr([
+    wchamp('Bannière · humains', S.peuple === 'Humains' ? S.sub.ban : null, 2626),
+    wchamp('École ou Église · humains', S.peuple === 'Humains' ? S.sub.ecole : null, 2626),
+    wchamp('Type · Ori’Ican', S.peuple === "Ori'Ican" ? S.sub.type : null, 2627),
+    wchamp('Branche · Nyréens', S.peuple === 'Nyréens' ? S.sub.branche : null, 2627)
+  ])], [2626, 2626, 2627, 2627]));
+
+  /* ce que le peuple apporte */
+  B.push(wh2('Ce que ton peuple apporte'));
+  B.push(wtbl([wtr([
+    wchamp('Caractéristique', bonusPeupleTxt(), 2626),
+    wchamp('Traits chiffrés', p.traits, 3940),
+    wchamp('Domaine et bonus', domCourt() ? domCourt() + (S.peuple === 'Humains' ? ' · +10 par son école' : ' · +20') : null, 1970),
+    wchamp('Contrainte', p.contrainte, 1970)
+  ])], [2626, 3940, 1970, 1970]));
+  B.push(wgap(60));
+  B.push(wtbl([wtr([
+    wchamp('Compétence de peuple', p.comp || (S.peuple === 'Humains' && S.banComp ? S.banComp + ' (Bannière)' : null), 5253),
+    wchamp('Armure que ton corps supporte', p.armure, 2626),
+    wchamp('Ce que ton peuple ajoute au sac', paqPeuple(), 2627)
+  ])], [5253, 2626, 2627]));
+
+  /* caracteristiques */
+  B.push(wh2('Caractéristiques'));
+  B.push(wnote([
+    wr('21 points à répartir. ', {sz:16, b:true, c:WC.h2}),
+    wr('Elles démarrent à 8 et ne dépassent pas 15 à la création. Le bonus de peuple s’ajoute après. Plafond 18 en cours de jeu.', {sz:16, c:WC.lbl})
+  ]));
+  const cw = Math.floor(WLARG / 7), cws = [];
+  for(let i = 0; i < 7; i++) cws.push(i === 6 ? WLARG - cw * 6 : cw);
+  B.push(wtbl([
+    wtr(CARS.map((c, i) => wtete(c, cws[i], true))),
+    wtr(CARS.map((c, i) => wtc(wp(wr(String(carVal(c)), {sz:26, b:true, c:WC.h1}), {align:'center', line:300}), cws[i], {mt:46, mb:46}))),
+    wtr(CARS.map((c, i) => {
+      const v = carVal(c), m = near(v / 5);
+      return wtc(wp(wr('×2 ' + (v * 2) + ' · mod ' + (m >= 0 ? '+' : '') + m, {sz:13, c:WC.lbl}), {align:'center', line:300}), cws[i], {mt:28, mb:36});
+    }))
+  ], cws));
+
+  B.push(wgap(80));
+  const dvw = [3502, 3502, 3502];
+  const derive = (titre, sub, val, w) => wtc([
+    wp(wr(titre, {sz:14, caps:true, b:true, c:WC.h1}), {align:'center', after:20}),
+    wp(wr(sub, {sz:13, i:true, c:WC.lbl}), {align:'center', after:40}),
+    wp(wr(String(val), {sz:24, b:true, c:WC.h1}), {align:'center', line:300})
+  ], w, {fill:WC.fill});
+  B.push(wtbl([wtr([
+    derive('Points de vie', 'ta Constitution', pv(), dvw[0]),
+    derive('Points de Contenance', 'la moitié de ta Contenance', pc(), dvw[1]),
+    derive('Réduction d’armure', 'ta pièce, plus ton armure naturelle', p.red, dvw[2])
+  ])], dvw));
+  B.push(wp([
+    wr('Ton mod, c’est ta caractéristique divisée par cinq. ', {sz:14, b:true, c:WC.h2}),
+    wr('La même division que pour le d20, et un seul arrondi dans tout le jeu : vers le bas.', {sz:14, c:WC.lbl})
+  ], {before:55}));
+
+  /* competences */
+  B.push(wh2('Les vingt compétences'));
+  B.push(wnote([
+    wr('100 points de bonus à répartir, aucune dépense au-dessus de +40 dans une compétence. Voie, peuple et trait s’ajoutent par-dessus. ', {sz:16, b:true, c:WC.h2}),
+    wr('Total = caractéristique fois deux, plus le bonus. Le d20 est ce total divisé par cinq.', {sz:16, c:WC.lbl})
+  ]));
+  const SW = [3253, 700, 700, 600, 3253, 700, 700, 600];
+  const plat = gs => { const o = []; gs.forEach(g => { o.push({head:g[0]}); g[1].forEach(s => o.push({skill:s})); }); return o; };
+  const L = plat([['Force',SKILLS['Force']],['Dextérité',SKILLS['Dextérité']],['Intelligence',SKILLS['Intelligence']]]);
+  const R = plat([['Sagesse',SKILLS['Sagesse']],['Charisme',SKILLS['Charisme']]]);
+  R.push({note:'Constitution et Contenance n’ont aucune compétence.'});
+  R.push({note:'La Contenance sert à lancer les Pratiques.'});
+
+  const cote = (e, i0) => {
+    if(!e) return [0,1,2,3].map(k => wtc(wp(wr('')), SW[i0 + k]));
+    if(e.head) return [wtc(wp([
+      wr(e.head, {sz:15, b:true, c:WC.h2}),
+      wr('   base ×2 ' + (carVal(e.head) * 2), {sz:12, i:true, c:WC.lbl})
+    ]), SW[i0], {span:4, fill:WC.fill, mt:28, mb:28})];
+    if(e.note) return [wtc(wp(wr(e.note, {sz:13, i:true, c:WC.lbl})), SW[i0], {span:4, mt:32, mb:32})];
+    const b = skBonus(e.skill), bo = (S.sk[e.skill]||0) + b.voie + b.trait, t = skTotal(e.skill);
+    return [
+      wtc(wp(wr(e.skill, {sz:16})), SW[i0], {mt:32, mb:32}),
+      wtc(wp(wr(bo ? '+' + bo : '', {sz:16}), {align:'center'}), SW[i0+1], {mt:32, mb:32}),
+      wtc(wp(wr(String(t), {sz:16, b:true}), {align:'center'}), SW[i0+2], {mt:32, mb:32}),
+      wtc(wp(wr(String(d20(t)), {sz:16}), {align:'center'}), SW[i0+3], {mt:32, mb:32})
+    ];
+  };
+  const skRows = [wtr([
+    wtete('Compétence', SW[0]), wtete('Bonus', SW[1], true), wtete('Total', SW[2], true), wtete('d20', SW[3], true),
+    wtete('Compétence', SW[4]), wtete('Bonus', SW[5], true), wtete('Total', SW[6], true), wtete('d20', SW[7], true)
+  ])];
+  for(let i = 0; i < Math.max(L.length, R.length); i++) skRows.push(wtr(cote(L[i], 0).concat(cote(R[i], 4))));
+  B.push(wtbl(skRows, SW));
+
+  /* pratiques */
+  B.push('<w:p><w:r><w:br w:type="page"/></w:r></w:p>');
+  B.push(wh2('Pratiques'));
+  B.push(wnote([
+    wr('L’attaque de base d’office, plus trois Pratiques choisies dans la liste de ton domaine. ', {sz:16, b:true, c:WC.h2}),
+    wr('Une Pratique démarre à +20, ton peuple ajoute +20 sur son domaine, l’école d’un humain +10. Elle se lance sous la caractéristique de son geste, fois deux, plus ce bonus, ou sous ta compétence du même geste si elle est plus haute. Ce qui n’a pas de cible hostile ne se lance pas, et une zone fait tester ceux qui sont dedans. Un échec consomme le PC, sauf l’attaque de base, qui ne coûte rien et se contente de rater.', {sz:16, c:WC.lbl})
+  ]));
+  B.push(wp([
+    wr('La Sève, l’eau, la pierre, le vent et la Mue envoient de la matière : la réduction d’armure s’applique. ', {sz:14, c:WC.lbl}),
+    wr('Le feu, l’onde, l’ombre et le sacré traversent les armures.', {sz:14, b:true, c:WC.h2})
+  ], {before:10, after:90}));
+  const pw = [2700, 1200, 700, 560, 5346];
+  const ix = pratIndex();
+  const noms = pratNoms();
+  if(S.banComp) noms.push(S.banComp);
+  const pRows = [wtr([
+    wtete('Pratique', pw[0]), wtete('Se lance', pw[1], true), wtete('Valeur', pw[2], true),
+    wtete('d20', pw[3], true), wtete('Ce qu’elle fait', pw[4])
+  ])];
+  noms.forEach(n => {
+    const it = ix[n] || {}, v = pratValeur(it);
+    const jet = v.val == null ? v.jet : ABR_JET[v.jet] + (v.par ? ' · ' + v.par : '');
+    pRows.push(wtr([
+      wtc(wp([wr(n, {sz:16, b:true}), wr(' (' + coutTxt(it) + ')', {sz:14, i:true, c:WC.lbl})]), pw[0], {mt:40, mb:40}),
+      wtc(wp(wr(jet, {sz:14}), {align:'center'}), pw[1], {mt:40, mb:40}),
+      wtc(wp(wr(v.val == null ? '–' : String(v.val), {sz:16, b:true}), {align:'center'}), pw[2], {mt:40, mb:40}),
+      wtc(wp(wr(v.val == null ? '–' : String(d20(v.val)), {sz:16}), {align:'center'}), pw[3], {mt:40, mb:40}),
+      wtc(wp(wr(it.d || '', {sz:14, c:WC.lbl}), {line:230}), pw[4], {mt:40, mb:40})
+    ]));
+  });
+  for(let i = noms.length; i < 6; i++) pRows.push(wtr(pw.map(w => wtc(wp(wr('')), w, {mt:50, mb:50}))));
+  B.push(wtbl(pRows, pw));
+
+  /* armes */
+  B.push(wh2('Armes'));
+  B.push(wnote([wr('Dégâts = dé de l’arme + mod FOR, ou mod DEX pour une arme légère et l’arbalète, moins la réduction d’armure de la cible. Minimum 0. On retire la réduction, puis la contrainte du corps, et on arrondit vers le bas.', {sz:16, c:WC.lbl})]));
+  const aw = [3400, 900, 6206];
+  const armes = armesDuPaquetage();
+  const aRows = [wtr([wtete('Arme', aw[0]), wtete('Dé', aw[1], true), wtete('Notes', aw[2])])];
+  armes.forEach(a => aRows.push(wtr([
+    wtc(wp(wr(a.nom, {sz:16})), aw[0], {mt:44, mb:44}),
+    wtc(wp(wr(a.de, {sz:16, b:true}), {align:'center'}), aw[1], {mt:44, mb:44}),
+    wtc(wp(wr(a.notes, {sz:14, c:WC.lbl})), aw[2], {mt:44, mb:44})
+  ])));
+  for(let i = armes.length; i < 5; i++) aRows.push(wtr(aw.map(w => wtc(wp(wr('')), w, {mt:48, mb:48}))));
+  B.push(wtbl(aRows, aw));
+  B.push(wp(wr('Légère d4 · à une main d6 · de guerre d8 · à deux mains d10 · arc court et arc de chasse d6 · arc long d8, et 12 en Force pour le bander · arbalète d8, une action pour recharger · lance ori’ican d8, d10 ou d12 selon les mues. On vise à la Dextérité, on blesse à la Force, sauf l’arme légère et l’arbalète qui blessent à la Dextérité.',
+    {sz:14, i:true, c:WC.lbl}), {before:50}));
+
+  /* armure */
+  B.push(wh2('Armure et équipement'));
+  B.push(wnote([
+    wr('Chaque pièce a ses propres chiffres. ', {sz:16, b:true, c:WC.h2}),
+    wr('Les réductions s’additionnent : ta pièce plus ton armure naturelle. Ton corps supporte ' +
+      p.armure.charAt(0).toLowerCase() + p.armure.slice(1) + '.', {sz:16, c:WC.lbl})
+  ]));
+  const eq = [3400, 900, 6206];
+  const eRows = [wtr([wtete('Pièce', eq[0]), wtete('Réduction', eq[1], true), wtete('Ce qu’elle coûte, ce qu’elle apporte', eq[2])])];
+  let ne = 0;
+  if(p.red){
+    eRows.push(wtr([
+      wtc(wp(wr('Ton armure naturelle', {sz:16})), eq[0], {mt:44, mb:44}),
+      wtc(wp(wr(String(p.red), {sz:16, b:true}), {align:'center'}), eq[1], {mt:44, mb:44}),
+      wtc(wp(wr(p.traits.split('·')[0].trim(), {sz:14, c:WC.lbl})), eq[2], {mt:44, mb:44})
+    ]));
+    ne = 1;
+  }
+  for(let i = ne; i < 5; i++) eRows.push(wtr(eq.map(w => wtc(wp(wr('')), w, {mt:48, mb:48}))));
+  B.push(wtbl(eRows, eq));
+  B.push(wp(wr('Cuir ou matelassé 1 · cuir clouté ou écailles 2, −10 Discrétion · maille 3, −10 Discrétion et Acrobatie · plates 4, −10 Discrétion et −20 Acrobatie · bouclier +1, occupe une main.',
+    {sz:14, i:true, c:WC.lbl}), {before:50}));
+  B.push(wgap(60));
+
+  /* sac et bourse */
+  const reste = resteDuSac();
+  const sacK = [wlbl('Le reste du sac')];
+  if(reste.length) reste.forEach(x => sacK.push(wp(wr('·  ' + x, {sz:18}), {line:260})));
+  else sacK.push(wp(wr('–', {sz:18}), {line:260}));
+  sacK.push(wvide(1, 260));
+  B.push(wtbl([wtr([
+    wtc(sacK, 7879, {mb:40}),
+    wtc([wlbl('Bourse · ors et argents'), wp(wr(bourse(), {sz:24, b:true, c:WC.h1}), {align:'center', line:300})], 2627, {mb:40})
+  ])], [7879, 2627]));
+
+  /* page 3 */
+  B.push('<w:p><w:r><w:br w:type="page"/></w:r></w:p>');
+
+  if(S.peuple === 'Cimérans'){
+    B.push(wh2('La Charge'));
+    B.push(wnote([
+      wr('Une piste à part, à côté de tes PV. ', {sz:16, b:true, c:WC.h2}),
+      wr('Capacité : tes PV maximum, soit ' + pv() + '. Tu portes automatiquement la moitié des dégâts d’un allié à dix pas, réduction déduite. Les soins n’y touchent pas. Au-delà de ta capacité tu passes en morne, et le surplus te rentre dedans en dégâts réels.', {sz:16, c:WC.lbl})
+    ]));
+    const chw = Math.floor(WLARG / 10), chws = [];
+    for(let i = 0; i < 10; i++) chws.push(i === 9 ? WLARG - chw * 9 : chw);
+    B.push(wtbl([wtr(chws.map(w => wtc(wp(wr('', {sz:20}), {align:'center'}), w, {mt:60, mb:60})))], chws));
+    B.push(wp(wr('Se vider : Darguer, ou la dargue du festin, hors combat, trois convives au minimum. Un Ciméran seul ne se vide pas.',
+      {sz:14, i:true, c:WC.lbl}), {before:50}));
+  }
+
+  /* notes */
+  B.push(wh2('Notes'));
+  B.push(wtbl([wtr([wtc(wvide(4, 300), WLARG, {mb:40})])], [WLARG]));
+
+  /* aide-memoire */
+  B.push(wh2('Aide-mémoire'));
+  const AM = [
+    ['La règle unique', [
+      ['Tu lances sous une valeur.', {sz:16, b:true}],
+      ['Ta valeur, c’est ta caractéristique fois deux, plus ton bonus.', {sz:15}],
+      ['Hors combat d100, en combat d20 sous la même valeur divisée par cinq.', {sz:15}],
+      ['01 à 05 réussite critique, 96 à 100 échec critique. Au d20 : 1 et 20 naturels.', {sz:14, i:true, c:WC.lbl}]]],
+    ['Ce qui compte, c’est de combien tu rates', [
+      ['Marge de 1 à 10, au d20 de 1 à 2 : ça ne marche pas, rien de mauvais.', {sz:15}],
+      ['Marge de 11 à 30, au d20 de 3 à 6 : ça ne marche pas, et ça coûte.', {sz:15}],
+      ['Marge de 31 et plus, au d20 de 7 et plus : la situation empire.', {sz:15}],
+      ['Rater le jet ne veut pas dire échouer.', {sz:14, i:true, c:WC.lbl}]]],
+    ['Quand l’ennemi attaque', [
+      ['Il touche d’office. C’est toi qui lances, une seule réaction par round.', {sz:15}],
+      ['d20 sous Acrobatie divisée par cinq pour esquiver, sous Combat pour parer.', {sz:15}],
+      ['Réussite : aucun dégât. Échec de moins de 4 : aucun dégât, mais tu n’attaques pas au prochain round. Échec de 4 ou plus : tu prends les dégâts.', {sz:14, c:WC.lbl}]]],
+    ['Tomber à zéro', [
+      ['À 0 PV tu tombes, inconscient, tu ne joues plus.', {sz:15}],
+      ['Un allié peut te stabiliser pendant le combat : un soin, une fiole, un jet de Médecine.', {sz:15}],
+      ['En groupe, personne ne l’a fait avant la fin du combat : tu meurs. En solo, on tire ce qui t’est arrivé pendant que tu n’étais pas là.', {sz:14, c:WC.lbl}]]],
+    ['Ce que rend le repos', [
+      ['Court, une heure : 1d6 PV et 1d4 PC.', {sz:15}],
+      ['Long, une nuit complète : tous tes PV et tous tes PC.', {sz:15}],
+      ['Le repos ne rend rien d’autre : ce qu’une Floraison t’a fait ne part pas en dormant.', {sz:14, i:true, c:WC.lbl}]]],
+    ['Progression', [
+      ['Les points se gagnent en bouclant des missions. Le Havre annonce combien avant le départ.', {sz:15}],
+      ['Une compétence jusqu’à +40 : 1 point par +1. De +41 à +60 : 2 points. Au-delà : 3 points.', {sz:15}],
+      ['Une Pratique de plus : 10 points, et quelqu’un pour te l’enseigner. Une caractéristique de +1 : 20 points, une fois chacune, plafond 18. +5 PV : 20 points.', {sz:15}],
+      ['Il n’y a pas de niveaux.', {sz:14, i:true, c:WC.lbl}]]]
+  ];
+  const amRows = [];
+  for(let i = 0; i < AM.length; i += 2){
+    amRows.push(wtr([AM[i], AM[i+1]].map(c => {
+      if(!c) return wtc(wp(wr('')), 5253, {fill:WC.fill});
+      const k = [wlbl(c[0])];
+      c[1].forEach(l => k.push(wp(wr(l[0], l[1]), {line:262, before: l[1].i || l[1].c === WC.lbl ? 30 : 0})));
+      return wtc(k, 5253, {fill:WC.fill, mb:60});
+    })));
+  }
+  B.push(wtbl(amRows, [5253, 5253]));
+
+  B.push('<w:p><w:pPr><w:spacing w:after="0" w:line="20" w:lineRule="auto"/></w:pPr></w:p>');
+  return B.join('');
+}
+
+function docxOctets(){
+  const doc = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+    '<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">' +
+    '<w:body>' + docxCorps() +
+    '<w:sectPr><w:pgSz w:w="11906" w:h="16838"/>' +
+    '<w:pgMar w:top="700" w:right="700" w:bottom="600" w:left="700" w:header="0" w:footer="0" w:gutter="0"/>' +
+    '</w:sectPr></w:body></w:document>';
+
+  const types = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+    '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">' +
+    '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>' +
+    '<Default Extension="xml" ContentType="application/xml"/>' +
+    '<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>' +
+    '<Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/>' +
+    '<Override PartName="/docProps/core.xml" ContentType="application/vnd.openxmlformats-package.core-properties+xml"/>' +
+    '</Types>';
+
+  const rels = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+    '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
+    '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>' +
+    '<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" Target="docProps/core.xml"/>' +
+    '</Relationships>';
+
+  const drels = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+    '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
+    '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>' +
+    '</Relationships>';
+
+  const styles = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+    '<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">' +
+    '<w:docDefaults><w:rPrDefault><w:rPr>' +
+    '<w:rFonts w:ascii="Cambria" w:hAnsi="Cambria" w:cs="Cambria"/>' +
+    '<w:color w:val="' + WC.txt + '"/><w:sz w:val="18"/><w:szCs w:val="18"/>' +
+    '<w:lang w:val="fr-BE"/></w:rPr></w:rPrDefault>' +
+    '<w:pPrDefault><w:pPr><w:spacing w:after="0" w:line="240" w:lineRule="auto"/></w:pPr></w:pPrDefault>' +
+    '</w:docDefaults>' +
+    '<w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/><w:qFormat/></w:style>' +
+    '</w:styles>';
+
+  const core = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+    '<cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties"' +
+    ' xmlns:dc="http://purl.org/dc/elements/1.1/">' +
+    '<dc:title>' + xe(S.nom ? 'Fiche de ' + S.nom : 'Fiche de personnage') + '</dc:title>' +
+    '<dc:creator>Faelorenn</dc:creator><cp:lastModifiedBy>Faelorenn</cp:lastModifiedBy>' +
+    '</cp:coreProperties>';
+
+  return zipStore([
+    {nom:'[Content_Types].xml', txt:types},
+    {nom:'_rels/.rels', txt:rels},
+    {nom:'docProps/core.xml', txt:core},
+    {nom:'word/_rels/document.xml.rels', txt:drels},
+    {nom:'word/document.xml', txt:doc},
+    {nom:'word/styles.xml', txt:styles}
+  ]);
+}
+
+/* la page hebergee tourne dans un cadre : le telechargement direct y est bloque,
+   mais l'hote offre une capacite « downloads » qui, elle, marche. */
+function estEncadre(){ try { return window.self !== window.top; } catch(e){ return true; } }
+
+var DL;   /* undefined tant qu'on n'a pas demande, puis l'objet ou null */
+function dispoTelechargement(){
+  if(DL !== undefined) return Promise.resolve(DL);
+  try {
+    if(typeof claude === 'undefined' || !claude || typeof claude.use !== 'function'){
+      DL = null; return Promise.resolve(null);
+    }
+    return claude.use('downloads').then(
+      function(ns){ DL = ns || null; noteWord(); return DL; },
+      function(){ DL = null; noteWord(); return null; }
+    );
+  } catch(e){ DL = null; return Promise.resolve(null); }
+}
+
+function nomFichier(){
+  return (S.nom ? 'Fiche de ' + S.nom : 'Fiche de personnage').replace(/[\\/:*?"<>|]/g, ' ');
+}
+
+function noteWord(){
+  const n = $('wordNote');
+  if(!n) return;
+  n.textContent = (DL === null && estEncadre())
+    ? 'L\u2019export donne un vrai .docx, mis en page comme la fiche du livre. Le téléchargement est bloqué depuis cette page-ci : utilise « Copier pour Word », puis Coller dans un document vide. Depuis le fichier posé sur ton ordinateur, le bouton Word télécharge directement.'
+    : 'L\u2019export donne un vrai .docx, mis en page comme la fiche du livre, modifiable dans Word. « Copier pour Word » sert à coller la fiche dans un document qui existe déjà.';
+}
+
+var minuterie;
+function direWord(t, ms){
+  const btn = $('word');
+  btn.textContent = t;
+  clearTimeout(minuterie);
+  minuterie = setTimeout(function(){ btn.textContent = 'Exporter en Word'; }, ms || 2200);
+}
+
+function exporterWord(){
+  const nom = nomFichier() + '.docx';
+  let bytes;
+  try { bytes = docxOctets(); }
+  catch(e){ direWord('Export impossible', 3000); return; }
+  const blob = new Blob([bytes], {type:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
+  direWord('Préparation\u2026', 14000);
+
+  dispoTelechargement().then(function(ns){
+    if(ns){
+      ns.save({filename: nom, data: blob}).then(
+        function(){ direWord('Fichier enregistré'); },
+        function(err){
+          const c = err && err.code;
+          direWord(c === 'declined' ? 'Annulé' : c === 'rate_limited' ? 'Réessaie dans un instant' : 'Enregistrement refusé', 2800);
+        }
+      );
+      return;
+    }
+    try {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = nom; a.style.display = 'none';
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(function(){ a.remove(); URL.revokeObjectURL(url); }, 4000);
+      const enc = estEncadre();
+      direWord(enc ? 'Bloqué ici : voir ci-dessous' : 'Fichier envoyé', enc ? 3200 : 2200);
+    } catch(e){ direWord('Export impossible', 3000); }
+  });
+}
+
+/* repli : on met la fiche mise en forme dans le presse-papiers, a coller dans Word */
+function copierPourWord(){
+  const btn = $('wcopy');
+  const dire = (t, ms) => { btn.textContent = t; setTimeout(() => { btn.textContent = 'Copier pour Word'; }, ms || 2000); };
+  const css = Array.prototype.map.call(document.querySelectorAll('style'), s => s.textContent).join('\n');
+  const html = '<html xmlns:o="urn:schemas-microsoft-com:office:office" ' +
+    'xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">' +
+    '<head><meta charset="utf-8"><title>' + xe(nomFichier()) + '</title>' +
+    '<style>@page{size:A4;margin:11mm}body{font-family:Cambria,Georgia,serif}' + css + '</style></head>' +
+    '<body>' + $('fiche').outerHTML + '</body></html>';
+  try {
+    navigator.clipboard.write([new ClipboardItem({
+      'text/html': new Blob([html], {type:'text/html'}),
+      'text/plain': new Blob([$('fiche').innerText], {type:'text/plain'})
+    })]).then(() => dire('Copié, colle dans Word'), () => dire('Copie refusée', 2600));
+  } catch(e){
+    dire('Copie refusée', 2600);
+  }
+}
+
+if(typeof module !== 'undefined' && module.exports) module.exports = {docxOctets: () => docxOctets()};
+
+/* ============ export .json : la fiche, pour le suivi de campagne ============ */
+
+function personneJson(){
+  const p = PEUPLES[S.peuple], ix = pratIndex();
+  const car = {}; CARS.forEach(c => car[c] = carVal(c));
+  const comp = {}; ALLSKILLS.forEach(o => comp[o.s] = skTotal(o.s));
+  const prats = pratNoms().map(n => {
+    const it = ix[n] || {};
+    return {n:n, j:it.j || 'aucun jet', pc:it.pc || 0, pct:it.pct || '', d:it.d || '', base:!!it.base};
+  });
+  if(S.banComp && ix[S.banComp]) prats.push({n:S.banComp, j:'aucun jet', pc:0, pct:'', d:ix[S.banComp].d || '', banniere:true});
+  return {
+    format:'faelorenn-personnage', version:1, exporte:new Date().toISOString(),
+    nom:S.nom, peuple:S.peuple, voie:S.voie, sub:JSON.parse(JSON.stringify(S.sub || {})),
+    car:car, comp:comp, bonusPratique:pratBonus(), domaine:domaine() || '',
+    pratiques:prats, pv:pv(), pc:pc(), red:p.red,
+    armes:armesDuPaquetage(), sac:resteDuSac(), bourse:bourse(),
+    traits:p.traits || '', contrainte:p.contrainte || '', armure:p.armure || '', peupleComp:p.comp || ''
+  };
+}
+
+function exporterJson(){
+  const btn = $('json');
+  const dire = (t, ms) => { btn.textContent = t; setTimeout(() => { btn.textContent = 'Enregistrer en .json'; }, ms || 2200); };
+  const nom = nomFichier() + '.json';
+  const blob = new Blob([JSON.stringify(personneJson(), null, 2)], {type:'application/json'});
+  dispoTelechargement().then(function(ns){
+    if(ns){
+      ns.save({filename:nom, data:blob}).then(
+        function(){ dire('Fichier enregistré'); },
+        function(err){ const c = err && err.code; dire(c === 'declined' ? 'Annulé' : 'Enregistrement refusé', 2800); }
+      );
+      return;
+    }
+    try{
+      const url = URL.createObjectURL(blob), a = document.createElement('a');
+      a.href = url; a.download = nom; a.style.display = 'none';
+      document.body.appendChild(a); a.click();
+      setTimeout(function(){ a.remove(); URL.revokeObjectURL(url); }, 4000);
+      dire(estEncadre() ? 'Bloqué ici : voir ci-dessous' : 'Fichier envoyé', estEncadre() ? 3200 : 2200);
+    }catch(e){ dire('Export impossible', 3000); }
+  });
+}
+</script>
+</body>
+</html>

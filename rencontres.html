@@ -1,0 +1,2302 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Registre des Rencontres</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,600;0,700;1,400&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root{
+  --paper:#F4F2EA; --surface:#FFFFFF; --fill:#E9EFE8; --ink:#1B1C18; --muted:#6B7469;
+  --forest:#1F3D2B; --sage:#4A6B52; --rule:#CBD6C9; --rust:#9A4A28; --gold:#8A6D2F;
+  --shadow:0 1px 2px rgba(31,61,43,.07);
+  --r1:#7C8B78; --r2:#5E7F63; --r3:#8A6D2F; --r4:#9A4A28; --r5:#6B2F3A;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#131713; --surface:#1B211C; --fill:#212A22; --ink:#E6E7DF; --muted:#94A08F;
+    --forest:#9DC2A6; --sage:#7FA88A; --rule:#2E3A30; --rust:#D98A63; --gold:#C9A758;
+    --shadow:0 1px 2px rgba(0,0,0,.4);
+    --r1:#93A18E; --r2:#7FB489; --r3:#C9A758; --r4:#D98A63; --r5:#C97182;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#131713; --surface:#1B211C; --fill:#212A22; --ink:#E6E7DF; --muted:#94A08F;
+  --forest:#9DC2A6; --sage:#7FA88A; --rule:#2E3A30; --rust:#D98A63; --gold:#C9A758;
+  --shadow:0 1px 2px rgba(0,0,0,.4);
+  --r1:#93A18E; --r2:#7FB489; --r3:#C9A758; --r4:#D98A63; --r5:#C97182;
+}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:15px;line-height:1.5}
+.wrap{max-width:900px;margin:0 auto;padding-inline:18px;padding-block:28px 40px}
+h1{font-family:Spectral,Georgia,serif;font-weight:700;font-size:clamp(27px,5vw,38px);color:var(--forest);margin:0;letter-spacing:-.01em;text-wrap:balance}
+.sub{font-family:Spectral,Georgia,serif;font-style:italic;color:var(--sage);margin:2px 0 0}
+header{border-bottom:2px solid var(--forest);padding-bottom:12px;margin-bottom:22px}
+section{margin-bottom:22px}
+h2{font-family:Spectral,Georgia,serif;font-size:19px;color:var(--forest);margin:0 0 2px;display:flex;align-items:baseline;gap:10px;text-wrap:balance}
+h2 .num{font-size:12px;font-weight:600;letter-spacing:.14em;color:var(--sage);font-family:"IBM Plex Sans",sans-serif;border:1px solid var(--rule);border-radius:2px;padding:1px 6px}
+.hint{color:var(--muted);font-size:13px;margin:0 0 12px}
+.card{background:var(--surface);border:1px solid var(--rule);border-radius:3px;padding:14px 16px;box-shadow:var(--shadow)}
+label.f{display:block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+button{font:inherit}
+select:focus-visible,input:focus-visible,button:focus-visible{outline:2px solid var(--sage);outline-offset:1px}
+
+/* groupe et intensite */
+.setup{display:flex;flex-wrap:wrap;gap:18px}
+.setup>div{flex:1 1 240px;min-width:0}
+.stepper{display:flex;align-items:center;gap:0}
+.stepper button{width:30px;height:30px;border:1px solid var(--rule);background:var(--surface);color:var(--forest);font-size:16px;line-height:1;cursor:pointer;border-radius:2px}
+.stepper button:hover:not(:disabled){background:var(--fill)}
+.stepper button:disabled{opacity:.3;cursor:default}
+.stepper .v{min-width:52px;text-align:center;font-variant-numeric:tabular-nums;font-weight:600;font-size:17px}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button{padding:6px 11px;border:1px solid var(--rule);background:transparent;color:var(--muted);border-radius:2px;cursor:pointer;font-size:14px}
+.seg button:hover{border-color:var(--sage);color:var(--forest)}
+.seg button[aria-pressed=true]{border-color:var(--forest);background:var(--fill);color:var(--forest);font-weight:600}
+.budget{font-family:Spectral,Georgia,serif;font-size:15px;color:var(--sage);margin-top:12px;border-top:1px solid var(--rule);padding-top:10px}
+.budget b{font-size:22px;color:var(--forest);font-family:Spectral,serif}
+
+/* composition a la main */
+.scroll{overflow-x:auto}
+.mix{width:100%;min-width:430px;border-collapse:collapse;font-variant-numeric:tabular-nums}
+.mix th{font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--sage);text-align:left;font-weight:600;padding:5px 7px;background:var(--fill);border-bottom:1px solid var(--rule)}
+.mix td{padding:4px 7px;border-bottom:1px solid var(--rule);font-size:14px}
+.mix td.n,.mix th.n{text-align:right}
+.mix tr:last-child td{border-bottom:0}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:7px;vertical-align:baseline}
+.d1{background:var(--r1)}.d2{background:var(--r2)}.d3{background:var(--r3)}.d4{background:var(--r4)}.d5{background:var(--r5)}
+
+.btn{font-size:15px;padding:10px 16px;border:1px solid var(--forest);background:var(--forest);color:var(--paper);border-radius:2px;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--forest)}
+.btn.sm{font-size:13px;padding:6px 11px}
+.acts{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+
+/* la rencontre */
+.enc{background:var(--surface);border:1px solid var(--rule);border-radius:3px;padding:16px 18px;box-shadow:var(--shadow);
+  print-color-adjust:exact;-webkit-print-color-adjust:exact}
+.enc .eh{font-family:Spectral,Georgia,serif;font-size:21px;font-weight:700;color:var(--forest);line-height:1.15;text-wrap:balance}
+.enc .em{font-family:Spectral,Georgia,serif;font-style:italic;color:var(--rust);font-size:15px;margin:3px 0 0}
+.enc .ec{font-size:12.5px;color:var(--muted);margin-top:2px}
+.enc hr{border:0;border-top:1px solid var(--rule);margin:12px 0}
+.adv{display:flex;gap:12px;align-items:flex-start;padding:11px 0;border-bottom:1px solid var(--rule)}
+.adv:last-child{border-bottom:0}
+.adv.ko{opacity:.42}
+.rk{flex:0 0 64px;width:64px;text-align:center;border:1px solid var(--rule);border-radius:2px;padding:3px 1px;background:var(--fill)}
+.rk .rn{font-size:19px;font-weight:700;font-family:Spectral,serif;line-height:1}
+.rk .rl{font-size:7px;letter-spacing:.01em;text-transform:uppercase;color:var(--muted);display:block;margin-top:1px;overflow-wrap:anywhere;line-height:1.1}
+.rk1 .rn{color:var(--r1)}.rk2 .rn{color:var(--r2)}.rk3 .rn{color:var(--r3)}.rk4 .rn{color:var(--r4)}.rk5 .rn{color:var(--r5)}
+.adv .body{flex:1;min-width:0}
+.adv .nm{font-family:Spectral,Georgia,serif;font-size:16.5px;font-weight:600;color:var(--ink);line-height:1.2}
+.adv.ko .nm{text-decoration:line-through}
+.adv .st{font-size:12.5px;color:var(--muted);margin-top:1px;font-variant-numeric:tabular-nums}
+.adv .st b{color:var(--ink);font-weight:600}
+.adv .atq{margin-top:5px;display:flex;flex-direction:column;gap:2px}
+.adv .at{font-size:12.5px;line-height:1.35;display:flex;flex-wrap:wrap;gap:0 7px;align-items:baseline}
+.adv .at b{font-weight:600}
+.adv .ty{font-size:8.5px;letter-spacing:.09em;text-transform:uppercase;font-weight:600;border:1px solid var(--rule);
+  border-radius:2px;padding:0 4px;white-space:nowrap;flex:0 0 auto;min-width:56px;text-align:center}
+.adv .ty.tphy{color:var(--sage)}
+.adv .ty.tmag{color:var(--rust);border-color:var(--rust)}
+.adv .po{color:var(--muted);font-size:11.5px;font-variant-numeric:tabular-nums}
+.adv .ef{color:var(--muted);font-size:12px;flex:1 1 auto;min-width:0}
+.adv .pa{font-size:13px;margin-top:5px;line-height:1.38;color:var(--muted);font-style:italic}
+.adv select.chg{margin-top:6px;font:inherit;font-size:12.5px;padding:3px 6px;border:1px solid var(--rule);
+  border-radius:2px;background:var(--surface);color:var(--muted);max-width:100%}
+.adv select.chg:hover{color:var(--ink);border-color:var(--sage)}
+.pvbox{flex:0 0 auto;display:flex;align-items:center;gap:4px}
+.pvbox .cur{font-family:Spectral,serif;font-size:21px;font-weight:700;min-width:40px;text-align:right;font-variant-numeric:tabular-nums;color:var(--forest)}
+.pvbox .max{font-size:11.5px;color:var(--muted);margin-right:2px}
+.pvbox button{width:27px;height:27px;border:1px solid var(--rule);background:var(--surface);color:var(--forest);font-size:12px;cursor:pointer;border-radius:2px;line-height:1}
+.pvbox button:hover:not(:disabled){background:var(--fill)}
+.pvbox button:disabled{opacity:.3;cursor:default}
+.re{border:1px solid var(--rule);background:transparent;color:var(--muted);border-radius:2px;width:27px;height:27px;cursor:pointer;font-size:13px;line-height:1}
+.re:hover{border-color:var(--sage);color:var(--forest)}
+.vide{color:var(--muted);font-style:italic;font-family:Spectral,Georgia,serif}
+
+/* ============ le bestiaire ============ */
+.adv .nm .maison{font-family:"IBM Plex Sans",sans-serif;font-size:8.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--gold);border:1px solid var(--gold);border-radius:2px;padding:0 4px;margin-left:8px;vertical-align:2px}
+.adv .rf{font-size:12.5px;margin-top:4px;color:var(--ink)}
+.btete{display:flex;flex-wrap:wrap;gap:4px 16px;align-items:baseline;justify-content:space-between}
+.bcompte{font-family:Spectral,Georgia,serif;font-size:17px;font-weight:600;color:var(--forest);margin:0}
+#bestDepuis,#bestRecherche{font:inherit;font-size:14px;padding:7px 9px;border:1px solid var(--rule);border-radius:2px;background:var(--surface);color:var(--ink);max-width:100%}
+#bestDepuis{flex:1 1 220px;min-width:0}
+#bestRecherche{flex:1 1 180px;min-width:0}
+.grang{font-family:Spectral,Georgia,serif;font-size:15px;color:var(--sage);font-style:italic;margin:18px 0 4px;border-bottom:1px solid var(--rule);padding-bottom:3px}
+.bcarte{border-bottom:1px solid var(--rule);padding-bottom:8px}
+.bcarte .adv{border-bottom:0;padding-bottom:4px}
+.bcarte.flash{animation:flash 1.6s ease-out}
+@keyframes flash{from{background:var(--fill)}to{background:transparent}}
+.bfam{display:flex;flex-wrap:wrap;gap:4px;margin:0 0 6px 76px}
+.bfam span{font-size:10.5px;letter-spacing:.06em;color:var(--muted);border:1px solid var(--rule);border-radius:2px;padding:0 5px}
+.bact{display:flex;flex-wrap:wrap;gap:6px;margin-left:76px}
+.btn.danger{border-color:var(--rust);color:var(--rust)}
+.bexport{border-top:1px solid var(--rule);margin-top:16px;padding-top:12px}
+.lab{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:0 0 6px;display:block}
+.coche{display:flex;gap:8px;align-items:center;font-size:14px;margin:0 0 10px;cursor:pointer}
+.coche input{accent-color:var(--sage)}
+.note.ok{color:var(--forest)}
+.note.err{color:var(--rust)}
+
+/* l'editeur */
+.editeur{border:1px solid var(--forest);border-radius:3px;padding:14px 16px;margin:0 0 16px;background:var(--paper)}
+.edtete h3{font-family:Spectral,Georgia,serif;font-size:19px;color:var(--forest);margin:0 0 10px}
+.edgrille{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:18px;align-items:start}
+.edcote{position:sticky;top:12px}
+.editeur fieldset{border:0;padding:0;margin:0 0 14px}
+.editeur legend{font-family:Spectral,Georgia,serif;font-size:15px;font-weight:600;color:var(--forest);padding:0;margin-bottom:6px}
+.editeur details{border-top:1px solid var(--rule);padding-top:10px;margin-bottom:12px}
+.editeur summary{font-family:Spectral,Georgia,serif;font-size:15px;font-weight:600;color:var(--forest);cursor:pointer;margin-bottom:8px}
+.fld{margin-bottom:10px;min-width:0}
+.fld label,.fld .lab{display:block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.fld input,.fld textarea{width:100%;font:inherit;font-size:14.5px;padding:7px 9px;border:1px solid var(--rule);border-radius:2px;background:var(--surface);color:var(--ink);resize:vertical}
+.fld textarea{line-height:1.4}
+.fld input:focus-visible,.fld textarea:focus-visible,#bestDepuis:focus-visible,#bestRecherche:focus-visible{outline:2px solid var(--sage);outline-offset:1px}
+.fld [aria-invalid=true]{border-color:var(--rust)}
+.aide{font-size:12px;color:var(--muted);margin:4px 0 0;line-height:1.4}
+.err{font-size:12.5px;color:var(--rust);margin:4px 0 0}
+.lien{background:none;border:0;padding:0;margin-top:4px;color:var(--sage);font:inherit;font-size:12.5px;text-decoration:underline;cursor:pointer}
+.ligne2{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:10px}
+.ligne4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.rseg{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px}
+.rseg button{text-align:left;padding:6px 9px;border:1px solid var(--rule);background:var(--surface);color:var(--ink);border-radius:2px;cursor:pointer;display:flex;flex-direction:column;gap:1px}
+.rseg button b{font-size:13.5px;font-weight:600}
+.rseg button span{font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+.rseg button.on{border-color:var(--forest);background:var(--fill)}
+.rseg button.on b{color:var(--forest)}
+.edact{margin-top:6px}
+.apercu{padding:10px 14px;margin-bottom:12px}
+.ligneLivre{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11.5px;line-height:1.45;white-space:pre-wrap;overflow-wrap:anywhere;
+  background:var(--surface);border:1px solid var(--rule);border-radius:2px;padding:8px 10px;margin:0;color:var(--ink)}
+.bestprint{display:none}
+
+/* les traits */
+.editeur fieldset.traits{border:1px solid var(--rule);border-radius:3px;padding:10px 12px;background:var(--surface)}
+.editeur fieldset.traits>.aide{margin:0 0 12px}
+.traits .tgr{margin-bottom:10px}
+.traits .tgr:last-of-type{margin-bottom:6px}
+.traits .lab{display:block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.traits .tsous{font-size:11.5px;color:var(--muted);font-style:italic;margin:4px 0 3px}
+.traits .seg button{font-size:13px;padding:4px 9px}
+.traits .seg button:disabled{opacity:.35;cursor:default}
+.traits .aide{margin-top:5px}
+.tacts{margin-top:10px}
+.tinfo{border-top:1px solid var(--rule);padding-top:7px;margin-top:8px;color:var(--sage)}
+.btr{margin:0 0 4px 76px;font-size:12px;color:var(--muted)}
+
+/* les familles */
+.fm::before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--gold);margin-right:6px;vertical-align:1px}
+.seg button.ajout{border-style:dashed;color:var(--sage)}
+.seg button.ajout:hover{border-color:var(--forest);color:var(--forest)}
+.famnew{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:8px}
+.fld .famnew input{flex:1 1 200px;width:auto;min-width:0}
+.bfamilles{border-top:1px solid var(--rule);margin-top:16px;padding-top:12px}
+.bftete{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;justify-content:space-between}
+#famCompte{letter-spacing:.04em}
+.famrow{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:flex-start;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--rule)}
+.famrow:last-child{border-bottom:0}
+.famrow.flash{animation:flash 1.6s ease-out}
+.famtxt{flex:1 1 260px;min-width:0}
+.famnm{font-family:Spectral,Georgia,serif;font-size:16.5px;font-weight:600;color:var(--ink);line-height:1.25}
+.famct{font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums;margin-top:1px}
+.famd{font-size:13px;color:var(--muted);font-style:italic;margin-top:3px;line-height:1.4}
+.bact.famact{margin-left:0}
+.btn:disabled{opacity:.4;cursor:default}
+.famavert{flex:1 1 100%;margin:0;color:var(--rust)}
+.famm{margin-top:4px}
+.famm .lab{margin-bottom:2px}
+.famaide{margin:0 0 8px}
+.editeur details.famrang{border-top:1px solid var(--rule);padding-top:7px;margin:0 0 8px}
+.editeur .famrang summary{font-size:14px;color:var(--sage);margin-bottom:6px}
+.famrn{font-family:"IBM Plex Sans",sans-serif;font-size:12px;font-weight:600;color:var(--forest)}
+.famgrille{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:5px 14px}
+.famgrille .coche{margin:0;font-size:13.5px;align-items:flex-start;line-height:1.3}
+.famgrille .coche input{margin:2px 0 0;flex:0 0 auto}
+@media (max-width:720px){
+  .edgrille{grid-template-columns:1fr}
+  .edcote{position:static}
+  .ligne4{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (max-width:560px){
+  .bfam,.bact,.btr{margin-left:0}
+  .ligne2{grid-template-columns:1fr}
+}
+.warnline{color:var(--rust);font-size:13px;margin-top:10px}
+.note{font-size:12.5px;color:var(--muted);margin:8px 0 0;line-height:1.45}
+
+@media (max-width:560px){
+  .adv{flex-wrap:wrap}
+  .adv .body{flex:1 1 100%;order:2}
+  .rk{order:1}
+  .pvbox{order:1;margin-left:auto}
+  .mix th,.mix td{padding:4px 4px;font-size:13px}
+  .mix .stepper .v{min-width:34px}
+  .mix .stepper button{width:27px;height:27px}
+}
+@page{size:A4;margin:14mm}
+@media print{
+  body.imprime-bestiaire .sec-rencontre{display:none!important}
+  body.imprime-bestiaire .bestprint{display:block}
+  .bestprint{--surface:#FFFFFF;--fill:#F1F5F1;--ink:#1A1A1A;--muted:#6B7469;--forest:#1F3D2B;--sage:#4A6B52;--rule:#C3D2C6;--rust:#9A4A28;--gold:#8A6D2F;
+    --r1:#7C8B78;--r2:#5E7F63;--r3:#8A6D2F;--r4:#9A4A28;--r5:#6B2F3A;color:#1A1A1A;font-size:10pt;
+    print-color-adjust:exact;-webkit-print-color-adjust:exact}
+  .bestprint .bp-titre{font-family:Spectral,Georgia,serif;font-size:24pt;color:#1F3D2B;margin:0}
+  .bestprint .bp-sous{font-family:Spectral,Georgia,serif;font-style:italic;color:#4A6B52;margin:0 0 10px;border-bottom:2px solid #1F3D2B;padding-bottom:6px}
+  .bestprint .bp-rang{break-before:page}
+  .bestprint .bp-rang:first-of-type{break-before:auto}
+  .bestprint h3{font-family:Spectral,Georgia,serif;font-size:15pt;color:#1F3D2B;margin:10px 0 2px;border-bottom:1px solid #1F3D2B}
+  .bestprint .bp-stats{font-size:9pt;color:#6B7469;margin:0 0 6px}
+  .bestprint .bp-carte{break-inside:avoid;border-bottom:1px solid #C3D2C6;padding-bottom:6px;margin-bottom:6px}
+  .bestprint .bp-carte .adv{border-bottom:0;padding:6px 0 2px}
+  .bestprint .bp-lore{display:grid;grid-template-columns:auto 1fr;gap:1px 10px;margin:2px 0 0 76px;font-size:9pt}
+  .bestprint .bp-lore dt{color:#6B7469;font-size:7.5pt;letter-spacing:.08em;text-transform:uppercase;padding-top:2px}
+  .bestprint .bp-lore dd{margin:0}
+  .bestprint .bp-tr{margin:0 0 1px 76px;font-size:8pt;color:#6B7469}
+  .bestprint .bp-fam{margin:0 0 2px 76px;font-size:7pt;letter-spacing:.08em;text-transform:uppercase;color:#6B7469}
+  .bestprint .bp-famille{break-inside:avoid;margin:0 0 9px}
+  .bestprint .bp-fnom{font-family:Spectral,Georgia,serif;font-weight:700;font-size:11.5pt;color:#1F3D2B;margin:8px 0 0}
+  .bestprint .bp-fdesc{font-style:italic;color:#6B7469;margin:0}
+  .bestprint .bp-fr{margin:1px 0 0}
+  .bestprint .bp-fl{font-size:7pt;letter-spacing:.08em;text-transform:uppercase;color:#6B7469;margin-right:7px}
+}
+@media print{
+  .noprint{display:none!important}
+  html,body{background:#fff;color:#000}
+  .wrap{padding:0;max-width:none}
+  section{margin:0}
+  .enc{border:0;box-shadow:none;padding:0;font-size:10pt;
+    --surface:#FFFFFF;--fill:#F1F5F1;--ink:#1A1A1A;--muted:#6B7469;--forest:#1F3D2B;--rule:#C3D2C6;--rust:#9A4A28;
+    --r1:#7C8B78;--r2:#5E7F63;--r3:#8A6D2F;--r4:#9A4A28;--r5:#6B2F3A;
+    background:#fff;color:#1A1A1A}
+  .adv{break-inside:avoid}
+  .pvbox button,.re{display:none}
+  .pvbox .cur{color:#1A1A1A}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<nav class="fae-site" aria-label="Les registres de Faelorenn">
+  <a class="fae-accueil" href="./">Faelorenn</a>
+  <a href="table.html">Registre de la Table</a>
+  <a href="createur.html">Registre du Havre</a>
+  <a href="rencontres.html" aria-current="page">Registre des Rencontres</a>
+</nav>
+<style>
+.fae-site{display:flex;flex-wrap:wrap;gap:4px 18px;align-items:baseline;max-width:980px;margin:0 auto;padding:12px 18px 0;font:13px/1.4 "IBM Plex Sans",system-ui,sans-serif}
+.fae-site a{color:var(--sage,#4A6B52);text-decoration:none;border-bottom:1px solid transparent;padding-bottom:1px}
+.fae-site a:hover,.fae-site a:focus-visible{border-bottom-color:currentColor}
+.fae-site a[aria-current]{color:var(--forest,#1F3D2B);font-weight:600}
+.fae-site .fae-accueil{font-family:Spectral,Georgia,serif;font-weight:700;font-size:15px;color:var(--forest,#1F3D2B);margin-right:4px}
+@media print{.fae-site{display:none!important}}
+</style>
+
+<div class="wrap">
+<header class="noprint">
+  <h1>Registre des Rencontres</h1>
+  <p class="sub">Faelorenn · monter un combat qui tient debout</p>
+</header>
+
+<section class="noprint">
+  <h2><span class="num">1</span> Le groupe</h2>
+  <p class="hint">Le budget dépend du nombre de personnages, jamais du rang des adversaires seul.</p>
+  <div class="card">
+    <div class="setup">
+      <div>
+        <label class="f" id="lblPj">Combien de personnages</label>
+        <div class="stepper" id="pjStep" role="group" aria-labelledby="lblPj"></div>
+      </div>
+      <div>
+        <label class="f" id="lblInt">Quel genre de combat</label>
+        <div class="seg" id="intSeg" role="group" aria-labelledby="lblInt"></div>
+      </div>
+    </div>
+    <p class="budget" id="budget"></p>
+  </div>
+</section>
+
+<section class="noprint">
+  <h2><span class="num">2</span> Qui se présente</h2>
+  <p class="hint">Tire au sort, ou compose toi-même. Chaque adversaire posé se change ensuite un par un.</p>
+  <div class="card">
+    <label class="f" id="lblSrc">D'où ils sortent</label>
+    <div class="seg" id="srcSeg" role="group" aria-labelledby="lblSrc" style="margin-bottom:12px"></div>
+    <label class="f" id="lblFam">Qui peut se présenter</label>
+    <div class="seg" id="famSeg" role="group" aria-labelledby="lblFam" style="margin-bottom:6px"></div>
+    <p class="note" id="famNote" style="margin:0 0 12px"></p>
+    <div class="acts" style="margin-bottom:12px">
+      <button class="btn" id="roll">Tirer une rencontre</button>
+      <button class="btn ghost sm" id="tetes">Changer les têtes</button>
+      <button class="btn ghost sm" id="motif">Relancer le pourquoi</button>
+      <button class="btn ghost sm" id="clear">Vider</button>
+    </div>
+    <div class="scroll">
+    <table class="mix">
+      <thead><tr><th>Rang</th><th class="n">Coût</th><th class="n">PV</th><th class="n">Dégâts</th><th class="n">Réd.</th><th class="n">Cartes</th><th class="n">Combien</th></tr></thead>
+      <tbody id="mixBody"></tbody>
+    </table>
+    </div>
+    <p class="warnline" id="mixWarn" hidden></p>
+  </div>
+</section>
+
+<section class="sec-rencontre">
+  <h2 class="noprint"><span class="num">3</span> La rencontre</h2>
+  <p class="hint noprint">Les PV se suivent ici pendant le combat. Chaque adversaire a deux attaques et n'en utilise qu'une par round.</p>
+  <div class="acts noprint" style="margin-bottom:12px">
+    <button class="btn ghost sm" id="print">Imprimer</button>
+    <button class="btn ghost sm" id="copy">Copier en texte</button>
+    <button class="btn ghost sm" id="heal">Remettre les PV au plein</button>
+  </div>
+  <div class="enc" id="enc"></div>
+</section>
+
+<section class="noprint" id="bestiaire">
+  <h2><span class="num">4</span> Ton bestiaire</h2>
+  <p class="hint">Tes créatures et tes familles entrent dans les tirages comme celles du livre. L'export Word en fait un bestiaire à relire ou à imprimer.</p>
+  <div class="card">
+    <div class="btete">
+      <p class="bcompte" id="bestCompte"></p>
+      <p class="note" id="bestEtat" style="margin:0"></p>
+    </div>
+    <div class="acts" style="margin:12px 0">
+      <button class="btn" id="bestNouveau" type="button">Nouvelle créature</button>
+      <select id="bestDepuis" aria-label="Partir d'une entrée du livre"></select>
+      <input type="search" id="bestRecherche" placeholder="Chercher dans les tiennes" aria-label="Chercher dans ton bestiaire">
+    </div>
+    <div id="bestEditeur" class="editeur" hidden></div>
+    <div id="bestListe"></div>
+    <div class="bfamilles" id="bestFamilles">
+      <div class="bftete">
+        <p class="lab" style="margin:0">Tes familles<span id="famCompte"></span></p>
+        <button class="btn ghost sm" id="famNouvelle" type="button">Nouvelle famille</button>
+      </div>
+      <p class="note" style="margin:4px 0 10px">Une famille regroupe ceux qui se présentent ensemble. Tu y mets tes créatures et celles du livre, et elle s'ajoute aux choix de « Qui peut se présenter ». Les sept familles du livre ne changent pas.</p>
+      <div id="famEditeur" class="editeur" hidden></div>
+      <div id="famListe"></div>
+    </div>
+    <div class="bexport">
+      <p class="lab">En tirer un bestiaire</p>
+      <label class="coche"><input type="checkbox" id="bestLivre" checked> Inclure les cinquante entrées du livre</label>
+      <div class="acts">
+        <button class="btn ghost sm" id="bestWord" type="button">Exporter en Word</button>
+        <button class="btn ghost sm" id="bestImprimer" type="button">Imprimer le bestiaire</button>
+        <button class="btn ghost sm" id="bestTexte" type="button">Texte pour le livre</button>
+      </div>
+      <p class="lab" style="margin-top:14px">Sauvegarder ou partager</p>
+      <div class="acts">
+        <button class="btn ghost sm" id="bestJson" type="button">Sauvegarde .json</button>
+        <button class="btn ghost sm" id="bestImport" type="button">Importer un .json</button>
+        <input type="file" id="bestFichier" accept=".json,application/json" hidden>
+      </div>
+      <p class="note" id="bestMsg" hidden></p>
+      <p class="note">« Texte pour le livre » met tes créatures au format du Livre VII, prêtes à coller. La sauvegarde .json, créatures et familles, se réimporte ici, sur un autre appareil ou chez Océane.</p>
+    </div>
+  </div>
+</section>
+
+<div id="bestPrint" class="bestprint"></div>
+</div>
+
+<script>
+const ADV = {"rangs": [{"r": 1, "nom": "Nuisance", "pv": 4, "deg": "d4", "red": 0, "cartes": 1}, {"r": 2, "nom": "Ordinaire", "pv": 8, "deg": "d6", "red": 1, "cartes": 1}, {"r": 3, "nom": "Sérieux", "pv": 14, "deg": "d6+2", "red": 2, "cartes": 1}, {"r": 4, "nom": "Lourd", "pv": 22, "deg": "d8+2", "red": 3, "cartes": 1}, {"r": 5, "nom": "Exceptionnel", "pv": 35, "deg": "d10+2", "red": 3, "cartes": 2}], "pourquoi": ["Ils chassent, et vous êtes sur leur territoire", "Ils gardent quelque chose que vous voulez voir", "Ils fuient autre chose, et ils vous rentrent dedans", "On les a envoyés pour vous", "Ils veulent ce que vous portez", "Ils sont sortis de la Floraison hier", "Ils vous prennent pour quelqu'un d'autre", "Ils sont là depuis plus longtemps que le village", "Ils veulent vous empêcher d'arriver, pas vous tuer", "Ils sont blessés, et ça les rend imprévisibles", "Ils ne vous ont pas encore vus", "Ils veulent parler d'abord"], "creatures": {"1": [{"n": "Rôdeur de bordure", "p": "Il a faim depuis trois jours. Un repas le fait changer de camp", "t": ["gens", "horsloi"], "a2": {"n": "Jet de pierre", "p": "10 pas", "t": "phy", "e": "le dé du rang"}}, {"n": "Chien de ferme altéré", "p": "Il ne lâche plus ce qu'il a mordu. Un jet de FOR par round pour s'en défaire", "t": ["bete", "floraison"], "a2": {"n": "Serrer", "p": "contact", "t": "phy", "e": "aucun dégât, la cible ne se dégage qu'à un jet de FOR"}}, {"n": "Nuée de mouches de sève", "p": "Les armes ne lui font rien. Le feu, le vent et l'eau la dispersent d'un coup", "t": ["floraison"], "a2": {"n": "Envahir", "p": "contact", "t": "mag", "e": "le dé du rang, et rien n'arrête la nuée"}}, {"n": "Gamin armé d'une faux", "p": "Il frappe à d6, pas à d4, et il ne sait pas s'arrêter", "t": ["gens"], "a2": {"n": "Moulinet", "p": "contact", "t": "phy", "e": "d6 au lieu du dé du rang, sur deux cibles côte à côte"}}, {"n": "Rat de ruine", "p": "Il vole un objet et part avec. Il faut le rattraper, pas le tuer", "t": ["bete"], "a2": {"n": "Détrousser", "p": "contact", "t": "phy", "e": "aucun dégât, il emporte un objet et fuit"}}, {"n": "Pilleur isolé", "p": "Il se rend dès qu'il tombe sous la moitié de ses PV", "t": ["gens", "horsloi"], "a2": {"n": "Sommation", "p": "10 pas", "t": "phy", "e": "aucun dégât, il exige ce que tu portes"}}, {"n": "Corbeau de Floraison", "p": "Il vole ce qui brille et le rapporte à son nid, avec le reste", "t": ["bete", "floraison"], "a2": {"n": "Fondre dessus", "p": "contact", "t": "phy", "e": "le dé du rang, puis il reprend de la hauteur"}}, {"n": "Lièvre de pierre", "p": "Réduction 2 au lieu de 0, mais il ne fait aucun dégât. Il veut juste passer", "t": ["bete", "floraison"], "a2": {"n": "Ruer", "p": "contact", "t": "phy", "e": "aucun dégât, la cible recule de 5 pas"}}, {"n": "Fiévreux", "p": "Quelqu'un qu'une Floraison a traversé. Ce qui sort de lui ne suit aucune intention", "t": ["gens", "floraison"], "a2": {"n": "Décharge", "p": "5 pas", "t": "mag", "e": "le dé du rang, et il ne vise personne en particulier"}}, {"n": "Chien errant, et sa meute", "p": "Ils sont cinq. Un seul qui tombe, les quatre autres partent", "t": ["bete"], "a2": {"n": "Encercler", "p": "contact", "t": "phy", "e": "le dé du rang, et la meute prend la cible à revers"}}], "2": [{"n": "Garde de péage", "p": "Il veut votre argent, pas votre peau. Il sonne du cor au deuxième round", "t": ["gens", "soldat"], "a2": {"n": "Sonner du cor", "p": "aucune", "t": "phy", "e": "aucun dégât, des renforts arrivent au round suivant"}}, {"n": "Bandit de route", "p": "Il attaque toujours celui qui porte le sac le plus lourd", "t": ["gens", "horsloi"], "a2": {"n": "Croc-en-jambe", "p": "contact", "t": "phy", "e": "aucun dégât, la cible tombe"}}, {"n": "Sanglier d'ombre", "p": "Invisible tant qu'il ne charge pas. Une lumière vive le fige un round", "t": ["bete", "floraison"], "a2": {"n": "Charge d'ombre", "p": "10 pas", "t": "mag", "e": "le dé du rang, et il redevient invisible"}}, {"n": "Chien de guerre du Sang", "p": "Dressé pour désarmer. S'il touche, tu lâches ton arme", "t": ["bete", "soldat"], "a2": {"n": "Désarmer", "p": "contact", "t": "phy", "e": "aucun dégât, la cible lâche son arme"}}, {"n": "Contrebandier", "p": "Il porte un catalyseur volé et s'en sert mal : 1d6 de feu autour de lui s'il tombe", "t": ["gens", "horsloi", "pratique"], "a2": {"n": "Catalyseur mal tenu", "p": "5 pas", "t": "mag", "e": "1d6 de feu, à lui aussi s'il rate"}}, {"n": "Mante de sève", "p": "Réduction 3 de face, 0 de dos", "t": ["bete", "floraison"], "a2": {"n": "Faux de sève", "p": "contact", "t": "mag", "e": "le dé du rang, et seulement de face"}}, {"n": "Loup de bordure", "p": "Il n'attaque jamais seul, et jamais de face", "t": ["bete"], "a2": {"n": "Harceler", "p": "contact", "t": "phy", "e": "le dé du rang, uniquement si un autre loup est au contact"}}, {"n": "Milicien de village", "p": "Il se bat mal, mais il connaît chaque pierre du lieu", "t": ["gens", "soldat"], "a2": {"n": "Connaître le terrain", "p": "10 pas", "t": "phy", "e": "aucun dégât, il se place où tu ne peux pas le suivre"}}, {"n": "Bête de Floraison végétale", "p": "Elle repousse : 1d4 PV par round tant que la Floraison brûle encore", "t": ["floraison"], "a2": {"n": "Repousse", "p": "aucune", "t": "mag", "e": "aucun dégât, elle récupère 1d4 PV"}}, {"n": "Déserteur", "p": "Il connaît les ordres de la Bannière, et il les vendra pour un passage", "t": ["gens", "soldat", "horsloi"], "a2": {"n": "Marchander", "p": "aucune", "t": "phy", "e": "aucun dégât, il propose un passage contre un service"}}], "3": [{"n": "Sergent du Sang", "p": "Les Ordinaires autour de lui gagnent +2 aux dégâts tant qu'il tient debout", "t": ["gens", "soldat"], "a2": {"n": "Ordre", "p": "aucune", "t": "phy", "e": "aucun dégât, les Ordinaires autour de lui gagnent +2 aux dégâts"}}, {"n": "Ours de brume", "p": "On ne le voit qu'à trois pas. À trois pas, il est déjà au contact", "t": ["bete", "floraison"], "a2": {"n": "Sortir de la brume", "p": "contact", "t": "phy", "e": "le dé du rang, et personne ne l'a vu venir"}}, {"n": "Golem de chantier", "p": "Réduction 4. Il ne poursuit personne au-delà du chantier", "t": ["golem"], "a2": {"n": "Coup de masse", "p": "contact", "t": "phy", "e": "d8 au lieu du dé du rang, mais il ne se déplace pas"}}, {"n": "Braconnier de Floraison", "p": "Il connaît la Floraison mieux que vous, et il a posé des pièges partout", "t": ["gens", "horsloi"], "a2": {"n": "Déclencher un piège", "p": "à vue", "t": "phy", "e": "le dé du rang, sur qui marche là où il a posé"}}, {"n": "Cerf-roi altéré", "p": "Il charge en ligne droite, 2d6, et il traverse tout ce qui est sur le chemin", "t": ["bete", "floraison"], "a2": {"n": "Charge en ligne", "p": "20 pas", "t": "phy", "e": "2d6, et il traverse tout ce qui est sur le chemin"}}, {"n": "Scelleur véreux", "p": "Il pose un sceau par combat : une porte se ferme, ou une arme reste au fourreau", "t": ["gens", "horsloi", "pratique"], "a2": {"n": "Poser un sceau", "p": "à vue", "t": "mag", "e": "aucun dégât, une porte se ferme ou une arme reste au fourreau"}}, {"n": "Ilvès renégat", "p": "Un souffle de feu à vue, 2d6, une fois tous les trois rounds", "t": ["gens", "pratique"], "a2": {"n": "Souffle de feu", "p": "à vue", "t": "mag", "e": "2d6, une fois tous les trois rounds"}}, {"n": "Pirate des Larges", "p": "Il vous pousse à l'eau dès qu'il y a de l'eau", "t": ["gens", "horsloi"], "a2": {"n": "Crocheter", "p": "contact", "t": "phy", "e": "aucun dégât, la cible est poussée à l'eau s'il y en a"}}, {"n": "Ce qui vit dans les cales", "p": "Il éteint les lumières avant d'attaquer", "t": ["floraison"], "a2": {"n": "Éteindre", "p": "à vue", "t": "mag", "e": "aucun dégât, toutes les lumières meurent pour 3 rounds"}}, {"n": "Mercenaire vétéran", "p": "Il a une réaction de plus que tout le monde", "t": ["gens", "soldat"], "a2": {"n": "Seconde réaction", "p": "aucune", "t": "phy", "e": "il pare ou esquive une fois de plus que tout le monde"}}], "4": [{"n": "Capitaine du Sang", "p": "Il arrive avec quatre Ordinaires, et il les envoie devant", "t": ["gens", "soldat"], "a2": {"n": "Envoyer devant", "p": "aucune", "t": "phy", "e": "aucun dégât, ses quatre Ordinaires attaquent à sa place"}}, {"n": "Golem de carrière", "p": "Réduction 5. Chaque coup qu'il encaisse lui arrache un éclat : ses dégâts baissent de 1", "t": ["golem"], "a2": {"n": "Éclat de carrière", "p": "10 pas", "t": "phy", "e": "le dé du rang, et il perd 1 à ses dégâts"}}, {"n": "Ori'Ican en fureur", "p": "Il ne peut plus s'arrêter. Il frappe l'allié le plus proche si aucun ennemi n'est à portée", "t": ["gens"], "a2": {"n": "Fureur", "p": "contact", "t": "phy", "e": "le dé du rang sur l'allié le plus proche si aucun ennemi n'est à portée"}}, {"n": "Bête-mère", "p": "Elle appelle 1d4 Nuisances au premier round, puis encore autant au troisième", "t": ["bete", "floraison"], "a2": {"n": "Appeler", "p": "aucune", "t": "mag", "e": "aucun dégât, 1d4 Nuisances arrivent"}}, {"n": "Écorcien qui a brûlé", "p": "Le feu l'a rendu fou. Réduction 4, mais le feu compte double contre lui", "t": ["gens", "floraison"], "a2": {"n": "Flambée", "p": "5 pas", "t": "mag", "e": "le dé du rang, et le feu compte double contre lui en retour"}}, {"n": "Maître de Nïhr", "p": "Une silhouette de lui se tient à cinq pas. La première attaque de chaque round frappe la fausse", "t": ["gens", "pratique"], "a2": {"n": "Ombre double", "p": "à vue", "t": "mag", "e": "le dé du rang, et la première attaque de chaque round frappe la fausse silhouette"}}, {"n": "Ce qui habite la ruine", "p": "Le bâtiment se réorganise autour de lui : les portes changent de place chaque round", "t": ["floraison"], "a2": {"n": "Refermer la ruine", "p": "aucune", "t": "mag", "e": "aucun dégât, les portes changent de place"}}, {"n": "Chef de bande", "p": "Il prend les otages avant de se battre", "t": ["gens", "horsloi"], "a2": {"n": "Prendre en otage", "p": "contact", "t": "phy", "e": "aucun dégât, il tient quelqu'un devant lui"}}, {"n": "Aurochs de mythril", "p": "Sa peau vaut une fortune, et elle vaut réduction 5", "t": ["bete", "floraison"], "a2": {"n": "Encorner", "p": "contact", "t": "phy", "e": "le dé du rang, et la cible recule de 10 pas"}}, {"n": "Praticien de Zhern, banni", "p": "Un arc à vue, 2d6+2 sur qui porte du métal. Il vise les armures d'abord", "t": ["gens", "pratique"], "a2": {"n": "Arc de Zhern", "p": "à vue", "t": "mag", "e": "2d6+2 sur qui porte du métal"}}], "5": [{"n": "Un Assis", "p": "Il ne vous attaque pas. Il mange la Floraison, et ce qui est entre lui et elle est écrasé", "t": ["floraison"], "a2": {"n": "Écraser", "p": "contact", "t": "phy", "e": "le dé du rang sur ce qui est entre lui et la Floraison"}}, {"n": "Golem d'un vieux chantier", "p": "Réduction 6. Il finit un ouvrage dont personne ne se souvient, et il ne s'arrêtera pas", "t": ["golem"], "a2": {"n": "Poursuivre l'ouvrage", "p": "contact", "t": "phy", "e": "le dé du rang, et rien ne l'arrête"}}, {"n": "Le centre d'une Floraison Vivant", "p": "Tant qu'elle est alimentée, il revient à 10 PV la nuit suivante", "t": ["floraison"], "a2": {"n": "Refleurir", "p": "aucune", "t": "mag", "e": "aucun dégât, il revient à 10 PV la nuit suivante"}}, {"n": "Un Confondu", "p": "Quelqu'un qui ne se distingue plus tout à fait de la Floraison. Tout ce qu'il touche s'altère, et il ne le veut pas", "t": ["gens", "floraison"], "a2": {"n": "Altérer", "p": "contact", "t": "mag", "e": "le dé du rang, et ce qu'il touche change sans qu'il le veuille"}}, {"n": "Colonne du Sang", "p": "Douze soldats qui agissent comme un seul. Deux cartes, et ils encerclent", "t": ["gens", "soldat"], "a2": {"n": "Encercler", "p": "contact", "t": "phy", "e": "le dé du rang, et la colonne referme la ligne"}}, {"n": "La Chose de la canopée", "p": "Elle attaque d'en haut et remonte. Impossible à atteindre entre deux passages", "t": ["bete", "floraison"], "a2": {"n": "Piqué", "p": "d'en haut", "t": "phy", "e": "le dé du rang, puis elle remonte hors de portée"}}, {"n": "Le Gardien d'une ruine de l'Avant", "p": "Il ne sort jamais. À l'intérieur, il connaît chaque angle", "t": ["golem"], "a2": {"n": "Connaître chaque angle", "p": "à vue", "t": "phy", "e": "le dé du rang, depuis un endroit que tu n'avais pas vu"}}, {"n": "Marchefleur retourné", "p": "Une Floraison l'a gardé trop longtemps. Il a toutes vos Pratiques, et aucun contrôle sur elles", "t": ["gens", "pratique", "floraison"], "a2": {"n": "Pratique volée", "p": "à vue", "t": "mag", "e": "le dé du rang, avec une de vos Pratiques et aucun contrôle"}}, {"n": "Ce qui pousse dans les terres creuses", "p": "Il n'a pas de forme fixe. La réduction qui marche change chaque round", "t": ["floraison"], "a2": {"n": "Changer de forme", "p": "contact", "t": "mag", "e": "le dé du rang, et la réduction qui marche change chaque round"}}, {"n": "La bête que le village nourrit", "p": "Elle est là depuis quatre générations, et le village se battra pour elle", "t": ["bete", "floraison"], "a2": {"n": "Ce qu'on lui a appris", "p": "contact", "t": "phy", "e": "le dé du rang, et le village la défendra"}}]}, "familles": [{"k": "gens", "l": "Gens"}, {"k": "horsloi", "l": "Hors-la-loi"}, {"k": "soldat", "l": "Soldats"}, {"k": "bete", "l": "Bêtes"}, {"k": "floraison", "l": "Floraison"}, {"k": "pratique", "l": "Praticiens"}, {"k": "golem", "l": "Golems"}], "attaques": {"regle": "Un adversaire a deux attaques et n'en utilise qu'une par round. L'attaque de rang est au contact, physique, au dé de son rang. L'attaque propre est ci-dessous.", "armure": "La réduction d'armure s'applique au physique. Elle s'applique aussi au magique quand l'élément envoie de la matière : Sève, eau, pierre, vent, Mue. Le feu, l'onde, l'ombre et le sacré la traversent.", "humain": "Un humain compte une fois et demie les dégâts magiques."}};
+
+/* ============ fabrique de .docx, sans bibliotheque ============ */
+const DX = (function(){
+  const T = new Uint32Array(256);
+  for(let n = 0; n < 256; n++){ let c = n; for(let k = 0; k < 8; k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1); T[n] = c >>> 0; }
+  const crc32 = b => { let c = 0xFFFFFFFF; for(let i = 0; i < b.length; i++) c = T[(c ^ b[i]) & 0xFF] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; };
+  const utf8 = s => new TextEncoder().encode(s);
+
+  function zip(fichiers){
+    const parts = [], central = []; let off = 0;
+    fichiers.forEach(f => {
+      const nom = utf8(f.nom), data = utf8(f.txt), crc = crc32(data);
+      const h = new Uint8Array(30 + nom.length), v = new DataView(h.buffer);
+      v.setUint32(0, 0x04034b50, true); v.setUint16(4, 20, true); v.setUint16(6, 0x0800, true);
+      v.setUint16(12, 0x2821, true); v.setUint32(14, crc, true);
+      v.setUint32(18, data.length, true); v.setUint32(22, data.length, true); v.setUint16(26, nom.length, true);
+      h.set(nom, 30); parts.push(h, data);
+      const c = new Uint8Array(46 + nom.length), w = new DataView(c.buffer);
+      w.setUint32(0, 0x02014b50, true); w.setUint16(4, 20, true); w.setUint16(6, 20, true); w.setUint16(8, 0x0800, true);
+      w.setUint16(14, 0x2821, true); w.setUint32(16, crc, true); w.setUint32(20, data.length, true);
+      w.setUint32(24, data.length, true); w.setUint16(28, nom.length, true); w.setUint32(42, off, true);
+      c.set(nom, 46); central.push(c);
+      off += h.length + data.length;
+    });
+    const cd = central.reduce((a, x) => a + x.length, 0);
+    const e = new Uint8Array(22), z = new DataView(e.buffer);
+    z.setUint32(0, 0x06054b50, true); z.setUint16(8, fichiers.length, true); z.setUint16(10, fichiers.length, true);
+    z.setUint32(12, cd, true); z.setUint32(16, off, true);
+    const tout = parts.concat(central, [e]);
+    const out = new Uint8Array(tout.reduce((a, x) => a + x.length, 0));
+    let p = 0; tout.forEach(x => { out.set(x, p); p += x.length; });
+    return out;
+  }
+
+  const C = {h1:'1F3D2B', h2:'2E5A3E', txt:'1A1A1A', lbl:'6B7469', fill:'F1F5F1', head:'E6EDE7', line:'C3D2C6', rust:'9A4A28'};
+  const W = 10506;
+  const xe = s => String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+  function r(txt, o){
+    o = o || {};
+    let pr = '<w:rFonts w:ascii="Cambria" w:hAnsi="Cambria"/>';
+    if(o.b) pr += '<w:b/>'; if(o.i) pr += '<w:i/>'; if(o.caps) pr += '<w:caps/>';
+    pr += '<w:color w:val="' + (o.c || C.txt) + '"/>';
+    const sz = o.sz || 19; pr += '<w:sz w:val="' + sz + '"/><w:szCs w:val="' + sz + '"/>';
+    if(o.sp) pr += '<w:spacing w:val="' + o.sp + '"/>';
+    return '<w:r><w:rPr>' + pr + '</w:rPr><w:t xml:space="preserve">' + xe(txt) + '</w:t></w:r>';
+  }
+  function p(runs, o){
+    o = o || {};
+    let pr = '<w:spacing w:before="' + (o.before || 0) + '" w:after="' + (o.after == null ? 60 : o.after) + '" w:line="' + (o.line || 260) + '" w:lineRule="auto"/>';
+    if(o.keep) pr += '<w:keepNext/>';
+    if(o.align) pr += '<w:jc w:val="' + o.align + '"/>';
+    if(o.bord) pr += '<w:pBdr><w:bottom w:val="single" w:sz="' + o.bord.sz + '" w:space="' + o.bord.space + '" w:color="' + o.bord.c + '"/></w:pBdr>';
+    if(o.shade) pr += '<w:shd w:val="clear" w:color="auto" w:fill="' + o.shade + '"/>';
+    if(o.ind) pr += '<w:ind w:left="' + o.ind + '"/>';
+    return '<w:p><w:pPr>' + pr + '</w:pPr>' + (Array.isArray(runs) ? runs.join('') : runs) + '</w:p>';
+  }
+  const saut = () => '<w:p><w:r><w:br w:type="page"/></w:r></w:p>';
+  const titre = t => p(r(t, {sz:44, b:true, c:C.h1}), {after:20});
+  const h2 = t => p(r(t, {sz:26, b:true, c:C.h1}), {before:120, after:60, keep:true, bord:{sz:8, space:3, c:C.h1}});
+  const lbl = t => r(t + '  ', {sz:14, caps:true, c:C.lbl, sp:20});
+
+  /* un bloc encadre : une table d'une seule cellule */
+  function bloc(inner){
+    const B = 'w:val="single" w:sz="4" w:color="' + C.line + '"';
+    return '<w:tbl><w:tblPr><w:tblW w:w="' + W + '" w:type="dxa"/><w:tblLayout w:type="fixed"/>' +
+      '<w:tblBorders><w:top ' + B + '/><w:left ' + B + '/><w:bottom ' + B + '/><w:right ' + B + '/></w:tblBorders>' +
+      '<w:tblCellMar><w:top w:w="90" w:type="dxa"/><w:left w:w="140" w:type="dxa"/><w:bottom w:w="70" w:type="dxa"/><w:right w:w="140" w:type="dxa"/></w:tblCellMar></w:tblPr>' +
+      '<w:tblGrid><w:gridCol w:w="' + W + '"/></w:tblGrid><w:tr><w:trPr><w:cantSplit/></w:trPr><w:tc><w:tcPr><w:tcW w:w="' + W + '" w:type="dxa"/></w:tcPr>' +
+      inner + '</w:tc></w:tr></w:tbl>' + p('', {after:80, line:120});
+  }
+
+  function paquet(corps, nomDoc){
+    const doc = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+      '<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>' + corps +
+      '<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="700" w:right="700" w:bottom="700" w:left="700" w:header="0" w:footer="0" w:gutter="0"/></w:sectPr>' +
+      '</w:body></w:document>';
+    const types = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">' +
+      '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/>' +
+      '<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>' +
+      '<Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/>' +
+      '<Override PartName="/docProps/core.xml" ContentType="application/vnd.openxmlformats-package.core-properties+xml"/></Types>';
+    const rels = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
+      '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>' +
+      '<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" Target="docProps/core.xml"/></Relationships>';
+    const drels = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
+      '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>';
+    const styles = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">' +
+      '<w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="Cambria" w:hAnsi="Cambria" w:cs="Cambria"/><w:color w:val="' + C.txt + '"/>' +
+      '<w:sz w:val="19"/><w:szCs w:val="19"/><w:lang w:val="fr-BE"/></w:rPr></w:rPrDefault>' +
+      '<w:pPrDefault><w:pPr><w:spacing w:after="60" w:line="260" w:lineRule="auto"/></w:pPr></w:pPrDefault></w:docDefaults>' +
+      '<w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/><w:qFormat/></w:style></w:styles>';
+    const core = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/">' +
+      '<dc:title>' + xe(nomDoc) + '</dc:title><dc:creator>Faelorenn</dc:creator></cp:coreProperties>';
+    return zip([
+      {nom:'[Content_Types].xml', txt:types}, {nom:'_rels/.rels', txt:rels}, {nom:'docProps/core.xml', txt:core},
+      {nom:'word/_rels/document.xml.rels', txt:drels}, {nom:'word/document.xml', txt:doc}, {nom:'word/styles.xml', txt:styles}
+    ]);
+  }
+
+  return {C:C, r:r, p:p, saut:saut, titre:titre, h2:h2, lbl:lbl, bloc:bloc, paquet:paquet};
+})();
+
+const $ = id => document.getElementById(id);
+const el = (tag, cls, txt) => { const e = document.createElement(tag); if(cls) e.className = cls; if(txt != null) e.textContent = txt; return e; };
+const pick = a => a[Math.floor(Math.random() * a.length)];
+
+const COUT = [0, 1, 2, 4, 8, 16];
+const INTENSITES = [
+  {k:'esc', l:'Escarmouche', pts:2, d:'deux points par personnage'},
+  {k:'ser', l:'Sérieux',     pts:4, d:'quatre points par personnage'},
+  {k:'mor', l:'Mortel',      pts:8, d:'huit points par personnage, quelqu’un peut y rester'}
+];
+const SOURCES = [
+  {k:'tout',   l:'Le livre et les miennes'},
+  {k:'livre',  l:'Le livre seul'},
+  {k:'maison', l:'Les miennes seules'}
+];
+const RANG = {};
+ADV.rangs.forEach(r => RANG[r.r] = r);
+
+/* les entrees du livre recoivent un identifiant stable */
+for(let r = 1; r <= 5; r++) ADV.creatures[r].forEach((c, i) => { c.src = 'livre'; c.id = 'livre-' + r + '-' + (i + 1); c.r = r; });
+
+/* les creatures et les familles maison, remplies par bestiaire.js */
+let MAISON = [];
+let FAM_MAISON = [];
+
+/* ---------- les familles : celles du livre, puis les tiennes ---------- */
+function familles(){ return ADV.familles.concat(FAM_MAISON); }
+function famille(k){ return ADV.familles.find(f => f.k === k) || FAM_MAISON.find(f => f.k === k) || null; }
+function estMaisonFam(k){ return FAM_MAISON.some(f => f.k === k); }
+/* tes creatures entrent dans une famille par leurs etiquettes,
+   celles du livre entrent dans une famille maison par la liste de la famille */
+function membre(c, k){
+  if((c.t || []).indexOf(k) >= 0) return true;
+  if(c.src !== 'livre') return false;
+  const f = FAM_MAISON.find(x => x.k === k);
+  return !!(f && f.livre.indexOf(c.id) >= 0);
+}
+function famillesDe(c){ return familles().filter(f => membre(c, f.k)); }
+
+/* ---------- etat de la rencontre ---------- */
+const S = {pj:2, inten:'ser', liste:[], pourquoi:'', fam:[], source:'tout'};
+function save(){ try{ localStorage.setItem('faelorenn.rencontre', JSON.stringify(S)); }catch(e){} }
+function load(){ try{ const r = localStorage.getItem('faelorenn.rencontre'); if(r) Object.assign(S, JSON.parse(r)); }catch(e){} }
+
+const intensite = () => INTENSITES.find(i => i.k === S.inten) || INTENSITES[1];
+const budget = () => S.pj * intensite().pts;
+const depense = () => S.liste.reduce((a, x) => a + COUT[x.r], 0);
+const compte = r => S.liste.filter(x => x.r === r).length;
+
+/* ---------- le catalogue : le livre et les creatures maison ---------- */
+function toutRang(r){ return ADV.creatures[r].concat(MAISON.filter(c => c.r === r)); }
+function catalogue(r){
+  if(S.source === 'livre') return ADV.creatures[r].slice();
+  if(S.source === 'maison') return MAISON.filter(c => c.r === r);
+  return toutRang(r);
+}
+function trouveId(id){
+  for(let r = 1; r <= 5; r++){ const c = ADV.creatures[r].find(x => x.id === id); if(c) return c; }
+  return MAISON.find(x => x.id === id) || null;
+}
+/* ce que vaut une creature une fois ses ajustements appliques */
+function statsDe(c){
+  const base = RANG[c.r], m = c.mod || {};
+  const num = v => (v === null || v === undefined || v === '' || isNaN(+v)) ? null : +v;
+  return {
+    pv:     num(m.pv)     != null ? num(m.pv)     : base.pv,
+    red:    num(m.red)    != null ? num(m.red)    : base.red,
+    cartes: num(m.cartes) != null ? num(m.cartes) : base.cartes,
+    deg:    (m.deg && String(m.deg).trim()) ? String(m.deg).trim() : base.deg
+  };
+}
+function effetDe(c, st){ return c.a2 && c.a2.e ? c.a2.e.replace(/le dé du rang/g, st.deg) : ''; }
+
+/* ---------- tirage ---------- */
+/* les familles retenues, et tout le catalogue du rang si le filtre ne laisse personne */
+function vivier(r){
+  const tout = catalogue(r);
+  if(!S.fam || !S.fam.length) return {liste:tout, force:false};
+  const f = tout.filter(c => S.fam.some(k => membre(c, k)));
+  return f.length ? {liste:f, force:false} : {liste:tout, force:true};
+}
+function rangsDisponibles(){
+  const out = [];
+  for(let r = 1; r <= 5; r++){ const v = vivier(r); if(!v.force && v.liste.length) out.push(r); }
+  return out;
+}
+function entree(c, r){
+  return {r:r, n:c.n, p:c.p, pv:statsDe(c).pv, id:Math.random().toString(36).slice(2, 8), cid:c.id};
+}
+/* on evite de tirer deux fois la meme creature dans un meme rang */
+function creature(r, evite){
+  let pool = vivier(r).liste;
+  if(!pool.length) pool = toutRang(r);
+  if(!pool.length) pool = ADV.creatures[r];
+  const pris = evite || S.liste.filter(x => x.r === r).map(x => x.cid);
+  const libres = pool.filter(c => pris.indexOf(c.id) < 0);
+  return entree(pick(libres.length ? libres : pool), r);
+}
+function ajouter(r){ S.liste.push(creature(r)); }
+function retirer(r){
+  for(let i = S.liste.length - 1; i >= 0; i--){ if(S.liste[i].r === r){ S.liste.splice(i, 1); return; } }
+}
+const plusGros = b => { for(let i = 5; i >= 1; i--) if(COUT[i] <= b) return i; return 0; };
+function plusGrosDispo(b){
+  const ok = rangsDisponibles();
+  for(let i = 5; i >= 1; i--) if(COUT[i] <= b && ok.indexOf(i) >= 0) return i;
+  return plusGros(b);
+}
+
+function grandir(reste, rangsOk){
+  let garde = 0;
+  while(reste > 0 && garde++ < 60){
+    const ordre = S.liste.map((a, i) => i).sort((x, y) => S.liste[x].r - S.liste[y].r);
+    let fait = false;
+    for(const i of ordre){
+      const r0 = S.liste[i].r;
+      for(let r = 5; r > r0; r--){
+        const diff = COUT[r] - COUT[r0];
+        if(diff <= reste && rangsOk.indexOf(r) >= 0){ S.liste[i] = creature(r); reste -= diff; fait = true; break; }
+      }
+      if(fait) break;
+    }
+    if(!fait) break;
+  }
+  return reste;
+}
+
+function tirerComposition(){
+  const B = budget();
+  S.liste = [];
+  if(B < 1) return;
+  let reste = B;
+  const ok = rangsDisponibles();
+  const add = (r, n) => { for(let i = 0; i < n; i++){
+    if(r >= 1 && COUT[r] <= reste && S.liste.length < 12 && ok.indexOf(r) >= 0){ ajouter(r); reste -= COUT[r]; }
+  } };
+  /* dernier recours : on termine le budget meme hors des familles retenues */
+  const addForce = r => { if(r >= 1 && COUT[r] <= reste && S.liste.length < 12){ ajouter(r); reste -= COUT[r]; } };
+  const forme = pick(['solo','duo','chef','bande','melange','melange']);
+
+  if(forme === 'solo'){
+    add(plusGrosDispo(reste), 1);
+  } else if(forme === 'duo'){
+    const r = plusGrosDispo(Math.floor(reste / 2));
+    add(r || 1, 2);
+  } else if(forme === 'chef'){
+    const r = plusGrosDispo(reste);
+    add(r, 1);
+    const s = Math.max(1, r - 2);
+    add(s, Math.min(6, Math.floor(reste / COUT[s])));
+  } else if(forme === 'bande'){
+    const r = Math.max(1, plusGrosDispo(reste) - 2);
+    add(r, Math.min(8, Math.floor(reste / COUT[r])));
+  } else {
+    let garde = 0;
+    while(reste > 0 && S.liste.length < 8 && garde++ < 40){
+      const hi = plusGrosDispo(reste);
+      add(1 + Math.floor(Math.random() * hi), 1);
+    }
+  }
+  let garde = 0;
+  while(reste > 0 && S.liste.length < 12 && garde++ < 40) addForce(plusGrosDispo(reste));
+  /* douze au plus : quand la place manque, on fait grandir les plus petits,
+     dans les familles retenues d'abord, hors d'elles en dernier recours */
+  reste = grandir(reste, ok);
+  if(reste > 0) reste = grandir(reste, [1, 2, 3, 4, 5]);
+
+  S.liste.sort((a, b) => b.r - a.r);
+  S.pourquoi = pick(ADV.pourquoi);
+}
+
+/* ---------- rendu ---------- */
+function stepper(get, set, min, max){
+  const w = el('div','stepper');
+  const m = el('button', null, '−'); m.type = 'button'; m.setAttribute('aria-label','moins');
+  const v = el('span','v', String(get()));
+  const p = el('button', null, '+'); p.type = 'button'; p.setAttribute('aria-label','plus');
+  m.disabled = get() <= min; p.disabled = get() >= max;
+  m.onclick = () => { set(get() - 1); draw(); };
+  p.onclick = () => { set(get() + 1); draw(); };
+  w.append(m, v, p); return w;
+}
+
+function drawSetup(){
+  const box = $('pjStep'); box.innerHTML = '';
+  box.append(stepper(() => S.pj, v => { S.pj = Math.max(1, Math.min(6, v)); }, 1, 6));
+
+  const seg = $('intSeg'); seg.innerHTML = '';
+  INTENSITES.forEach(i => {
+    const b = el('button', null, i.l); b.type = 'button';
+    b.setAttribute('aria-pressed', S.inten === i.k ? 'true' : 'false');
+    b.onclick = () => { S.inten = i.k; draw(); };
+    seg.append(b);
+  });
+
+  const B = budget(), dep = depense();
+  const p = $('budget'); p.innerHTML = '';
+  p.append(document.createTextNode('Budget : '));
+  p.append(el('b', null, String(B)));
+  p.append(document.createTextNode(' points, ' + intensite().d + '. Posé sur la table : ' + dep + '.'));
+}
+
+function drawFam(){
+  const src = $('srcSeg'); src.innerHTML = '';
+  SOURCES.forEach(s => {
+    const b = el('button', null, s.l + (s.k === 'maison' ? ' (' + MAISON.length + ')' : '')); b.type = 'button';
+    b.setAttribute('aria-pressed', S.source === s.k ? 'true' : 'false');
+    b.disabled = s.k === 'maison' && !MAISON.length;
+    b.onclick = () => { S.source = s.k; draw(); };
+    src.append(b);
+  });
+  if(S.source === 'maison' && !MAISON.length) S.source = 'tout';
+
+  /* une famille supprimee ailleurs ne reste pas cochee */
+  if(BST.pret) S.fam = S.fam.filter(k => famille(k));
+
+  const seg = $('famSeg'); seg.innerHTML = '';
+  const mk = (k, l, fm) => {
+    const b = el('button', fm ? 'fm' : null, l); b.type = 'button';
+    const on = k === null ? !S.fam.length : S.fam.indexOf(k) >= 0;
+    b.setAttribute('aria-pressed', on ? 'true' : 'false');
+    b.onclick = () => {
+      if(k === null) S.fam = [];
+      else if(on) S.fam = S.fam.filter(x => x !== k);
+      else S.fam = S.fam.concat([k]);
+      draw();
+    };
+    seg.append(b);
+  };
+  mk(null, 'Tout');
+  familles().forEach(f => mk(f.k, f.l, estMaisonFam(f.k)));
+  const plus = el('button', 'ajout', '+ Nouvelle famille'); plus.type = 'button'; plus.id = 'famPlus';
+  plus.onclick = () => ouvrirFamille({}, true);
+  seg.append(plus);
+
+  const n = $('famNote');
+  const manquants = [];
+  let total = 0;
+  for(let r = 1; r <= 5; r++){ const v = vivier(r); if(v.force || !v.liste.length) manquants.push(r); else total += v.liste.length; }
+  if(!total){
+    n.textContent = 'Personne ne répond à ce choix pour l’instant : le tirage reprend tout le catalogue.' +
+      (S.fam.some(estMaisonFam) ? ' Mets des adversaires dans ta famille, plus bas dans ton bestiaire.' : '');
+    return;
+  }
+  n.textContent = total + ' entrée' + (total > 1 ? 's' : '') + ' dans la pioche.' +
+    (manquants.length ? ' Rien à ce choix au rang ' + manquants.join(', ') +
+      ' : le tirage évite ces rangs, et si tu en poses un à la main il reprend tout le catalogue.' : '');
+}
+
+function drawMix(){
+  const tb = $('mixBody'); tb.innerHTML = '';
+  ADV.rangs.forEach(r => {
+    const tr = el('tr');
+    const td = el('td');
+    td.append(el('span','dot d' + r.r), document.createTextNode(r.r + ' · ' + r.nom));
+    tr.append(td);
+    tr.append(el('td','n', String(COUT[r.r])));
+    tr.append(el('td','n', String(r.pv)));
+    tr.append(el('td','n', r.deg));
+    tr.append(el('td','n', String(r.red)));
+    tr.append(el('td','n', String(r.cartes)));
+    const tdc = el('td','n');
+    const w = el('div','stepper'); w.style.justifyContent = 'flex-end';
+    const m = el('button', null, '−'); m.type = 'button'; m.setAttribute('aria-label','un ' + r.nom + ' de moins');
+    const v = el('span','v', String(compte(r.r)));
+    const p = el('button', null, '+'); p.type = 'button'; p.setAttribute('aria-label','un ' + r.nom + ' de plus');
+    m.disabled = compte(r.r) === 0;
+    p.disabled = S.liste.length >= 12;
+    m.onclick = () => { retirer(r.r); draw(); };
+    p.onclick = () => { ajouter(r.r); if(!S.pourquoi) S.pourquoi = pick(ADV.pourquoi); draw(); };
+    w.append(m, v, p); tdc.append(w); tr.append(tdc);
+    tb.append(tr);
+  });
+
+  const B = budget(), dep = depense(), warn = $('mixWarn');
+  if(!S.liste.length || dep === B){ warn.hidden = true; warn.textContent = ''; }
+  else {
+    warn.hidden = false;
+    warn.textContent = dep < B
+      ? 'Il reste ' + (B - dep) + ' point' + (B - dep > 1 ? 's' : '') + ' à placer.'
+      : 'Tu dépasses le budget de ' + (dep - B) + ' point' + (dep - B > 1 ? 's' : '') + '.';
+  }
+}
+
+function motPluriel(n){
+  const m = ['aucun','Un','Deux','Trois','Quatre','Cinq','Six','Sept','Huit','Neuf','Dix','Onze','Douze'];
+  return m[n] || String(n);
+}
+
+/* une carte d'adversaire, commune a la rencontre et a l'apercu de l'editeur */
+function carteAdv(c, opts){
+  opts = opts || {};
+  const st = statsDe(c), rg = RANG[c.r];
+  const row = el('div','adv' + (opts.pv != null && opts.pv <= 0 ? ' ko' : ''));
+
+  const rk = el('div','rk rk' + c.r);
+  rk.append(el('div','rn', String(c.r)));
+  rk.append(el('span','rl', rg.nom));
+  row.append(rk);
+
+  const b = el('div','body');
+  const nm = el('div','nm', c.n || 'Sans nom');
+  if(c.src === 'maison') nm.append(el('span','maison noprint', 'maison'));
+  b.append(nm);
+  const info = el('div','st');
+  info.append(document.createTextNode('Réduction '));
+  info.append(el('b', null, String(st.red)));
+  info.append(document.createTextNode(' · ' + st.cartes + ' carte' + (st.cartes > 1 ? 's' : '')));
+  if(opts.pv == null) { info.append(document.createTextNode(' · ')); info.append(el('b', null, st.pv + ' PV')); }
+  b.append(info);
+
+  const atq = el('div','atq');
+  const ligne = (tag, nom, portee, effet) => {
+    const l = el('div','at');
+    l.append(el('span','ty t' + tag, tag === 'mag' ? 'magique' : 'physique'));
+    l.append(el('b', null, nom));
+    l.append(el('span','po', portee));
+    l.append(el('span','ef', effet));
+    return l;
+  };
+  atq.append(ligne('phy', 'Attaque de rang', 'contact', st.deg));
+  if(c.a2 && c.a2.n) atq.append(ligne(c.a2.t || 'phy', c.a2.n, porteeDe(c.a2), effetDe(c, st)));
+  b.append(atq);
+
+  if(c.p) b.append(el('div','pa', c.p));
+  if(c.renf) b.append(el('div','rf', 'Renforts : ' + c.renf));
+  row.append(b);
+  return {row:row, body:b, stats:st};
+}
+
+function drawEnc(){
+  const box = $('enc'); box.innerHTML = '';
+  if(!S.liste.length){
+    box.append(el('p','vide','Rien en face pour l’instant. Tire une rencontre, ou compose la tienne.'));
+    return;
+  }
+  const dep = depense(), B = budget();
+  const cartes = S.liste.reduce((a, x) => { const c = trouveId(x.cid); return a + (c ? statsDe(c).cartes : RANG[x.r].cartes); }, 0);
+  box.append(el('div','eh', motPluriel(S.liste.length) + ' contre ' + (S.pj === 1 ? 'toi' : motPluriel(S.pj).toLowerCase() + ' personnages')));
+  if(S.pourquoi) box.append(el('p','em', S.pourquoi));
+  box.append(el('p','ec', dep + ' points sur les ' + B + ' du budget · ' + intensite().l.toLowerCase() +
+    ' · ' + cartes + ' carte' + (cartes > 1 ? 's' : '') + ' à distribuer en face'));
+  box.append(el('hr'));
+
+  S.liste.forEach((a, i) => {
+    const c = trouveId(a.cid) || {r:a.r, n:a.n, p:a.p, src:'livre'};
+    const k = carteAdv(c, {pv:a.pv});
+    const st = k.stats;
+
+    const pvb = el('div','pvbox');
+    const mk = (lbl, n) => {
+      const x = el('button', null, lbl); x.type = 'button';
+      x.setAttribute('aria-label', lbl + ' PV à ' + c.n);
+      x.disabled = (n < 0 && a.pv <= 0) || (n > 0 && a.pv >= st.pv);
+      x.onclick = () => { a.pv = Math.max(0, Math.min(st.pv, a.pv + n)); draw(); };
+      return x;
+    };
+    pvb.append(mk('−5', -5), mk('−1', -1));
+    pvb.append(el('span','cur', String(a.pv)));
+    pvb.append(el('span','max', '/ ' + st.pv));
+    pvb.append(mk('+1', 1));
+
+    /* choisir exactement qui c'est, dans le livre ou dans les tiennes */
+    const sel = el('select','chg noprint');
+    sel.setAttribute('aria-label', 'changer cet adversaire de rang ' + a.r);
+    const gl = el('optgroup'); gl.label = 'Le livre';
+    ADV.creatures[a.r].forEach(x => { const o = new Option(x.n, x.id); o.selected = x.id === a.cid; gl.append(o); });
+    sel.append(gl);
+    const miennes = MAISON.filter(x => x.r === a.r);
+    if(miennes.length){
+      const gm = el('optgroup'); gm.label = 'Les miennes';
+      miennes.forEach(x => { const o = new Option(x.n, x.id); o.selected = x.id === a.cid; gm.append(o); });
+      sel.append(gm);
+    }
+    sel.onchange = () => {
+      const x = trouveId(sel.value);
+      if(x) S.liste[i] = {r:a.r, n:x.n, p:x.p, pv:Math.min(a.pv, statsDe(x).pv), id:a.id, cid:x.id};
+      draw();
+    };
+    k.body.append(sel);
+
+    const re = el('button','re noprint','↻'); re.type = 'button';
+    re.title = 'Retirer un autre adversaire de ce rang';
+    re.setAttribute('aria-label','retirer un autre adversaire de rang ' + a.r);
+    re.onclick = () => { S.liste[i] = creature(a.r); draw(); };
+    pvb.append(re);
+    k.row.append(pvb);
+
+    box.append(k.row);
+  });
+}
+
+function draw(){ drawSetup(); drawFam(); drawMix(); drawEnc(); drawBestiaire(); save(); }
+
+/* ---------- actions ---------- */
+$('roll').onclick = () => { tirerComposition(); draw(); };
+$('tetes').onclick = () => {
+  const neuf = [];
+  S.liste.forEach(a => neuf.push(creature(a.r, neuf.filter(x => x.r === a.r).map(x => x.cid))));
+  S.liste = neuf; draw();
+};
+$('motif').onclick = () => { S.pourquoi = pick(ADV.pourquoi); draw(); };
+$('clear').onclick = () => { S.liste = []; S.pourquoi = ''; draw(); };
+$('heal').onclick = () => { S.liste.forEach(a => { const c = trouveId(a.cid); a.pv = c ? statsDe(c).pv : RANG[a.r].pv; }); draw(); };
+$('print').onclick = () => { document.body.classList.remove('imprime-bestiaire'); window.print(); };
+$('copy').onclick = () => {
+  const L = [];
+  L.push(motPluriel(S.liste.length) + ' contre ' + S.pj + ' personnage' + (S.pj > 1 ? 's' : '') +
+    ' · ' + depense() + '/' + budget() + ' points · ' + intensite().l.toLowerCase());
+  if(S.pourquoi) L.push(S.pourquoi);
+  L.push('');
+  S.liste.forEach(a => {
+    const c = trouveId(a.cid) || {r:a.r, n:a.n, p:a.p};
+    const st = statsDe(c);
+    L.push('Rang ' + a.r + ' · ' + c.n + ' : ' + st.pv + ' PV, réduction ' + st.red + ', ' + st.cartes + ' carte' + (st.cartes > 1 ? 's' : ''));
+    L.push('   physique · attaque de rang · contact · ' + st.deg);
+    if(c.a2 && c.a2.n) L.push('   ' + (c.a2.t === 'mag' ? 'magique' : 'physique') + ' · ' + c.a2.n + ' · ' + porteeDe(c.a2) + ' · ' + effetDe(c, st));
+    if(c.p) L.push('   ' + c.p);
+    if(c.renf) L.push('   Renforts : ' + c.renf);
+  });
+  navigator.clipboard.writeText(L.join('\n')).then(
+    () => { $('copy').textContent = 'Copié'; setTimeout(() => { $('copy').textContent = 'Copier en texte'; }, 1400); },
+    () => { $('copy').textContent = 'Copie refusée'; setTimeout(() => { $('copy').textContent = 'Copier en texte'; }, 1400); }
+  );
+};
+
+/* ============ les traits : ils remplissent la creature a ta place ============
+   Chaque trait vient d'une entree du livre, citee dans « modele ». Ce qui va plus loin
+   que le livre porte valider:true et se retrouve dans le brouillon des traits. */
+
+const ELEMENTS = [
+  {k:'seve',   l:'Sève',   de:'de sève',   matiere:true,  modele:'la Mante de sève'},
+  {k:'eau',    l:'Eau',    de:"d'eau",     matiere:true,  modele:'la règle de l’armure'},
+  {k:'pierre', l:'Pierre', de:'de pierre', matiere:true,  modele:'la règle de l’armure'},
+  {k:'vent',   l:'Vent',   de:'de vent',   matiere:true,  modele:'la règle de l’armure'},
+  {k:'mue',    l:'Mue',    de:'de Mue',    matiere:true,  modele:'la règle de l’armure'},
+  {k:'feu',    l:'Feu',    de:'de feu',    matiere:false, modele:'l’Ilvès renégat'},
+  {k:'onde',   l:'Onde',   de:"d'onde",    matiere:false, modele:'le Praticien de Zhern'},
+  {k:'ombre',  l:'Ombre',  de:"d'ombre",   matiere:false, modele:'le Sanglier d’ombre'},
+  {k:'sacre',  l:'Sacré',  adj:{m:'sacré', f:'sacrée'}, matiere:false, modele:'la règle de l’armure'}
+];
+const ELEM = {};
+ELEMENTS.forEach(e => ELEM[e.k] = e);
+
+const DES = [4, 6, 8, 10, 12];
+/* le cran de dé au-dessus : d4 devient d6, d6+2 devient d8+2 */
+function cran(de, n){
+  const m = /^(\d*)d(\d+)(.*)$/i.exec(String(de || '').trim());
+  if(!m) return String(de || '');
+  const i = DES.indexOf(+m[2]);
+  const face = i < 0 ? +m[2] : DES[Math.min(DES.length - 1, i + (n || 1))];
+  return (m[1] || '') + 'd' + face + (m[3] || '');
+}
+function rangNom(r, pluriel){
+  const n = RANG[r] ? RANG[r].nom : '';
+  return pluriel && n && !/x$/.test(n) ? n + 's' : n;
+}
+
+const TRAITS = [
+  /* ---------- sa façon d'attaquer : celles qui blessent ---------- */
+  {k:'coup', g:'facon', sub:'blesse', l:'Frapper fort', n:'Coup puissant', ne:['Frappe','f'], p:'contact', t:'phy',
+   e:x => cran(x.deg) + ", mais il ne se déplace pas du round", modele:'le Golem de chantier', valider:true},
+  {k:'balayer', g:'facon', sub:'blesse', l:'Balayer', n:'Balayage', ne:['Vague','f'], p:'contact', t:'phy',
+   e:() => 'le dé du rang, sur deux cibles côte à côte', modele:'le Gamin armé d’une faux'},
+  {k:'charge', g:'facon', sub:'blesse', l:'Charger', n:'Charge', ne:['Charge','f'], p:'10 pas', t:'phy',
+   e:() => 'le dé du rang, et il traverse tout ce qui est sur le chemin', modele:'le Cerf-roi altéré'},
+  {k:'tir', g:'facon', sub:'blesse', l:'Tirer', n:'Tir', ne:['Trait','m'], p:'10 pas', t:'phy',
+   e:() => 'le dé du rang', modele:'le Rôdeur de bordure'},
+  {k:'souffle', g:'facon', sub:'blesse', l:'Souffler', n:'Volée', ne:['Souffle','m'], p:'5 pas', t:'phy',
+   e:() => 'le dé du rang, sur tous ceux qui sont devant lui, une fois tous les trois rounds', modele:'l’Ilvès renégat', valider:true},
+  {k:'pique', g:'facon', sub:'blesse', l:'Fondre d’en haut', n:'Piqué', ne:null, p:"d'en haut", t:'phy',
+   e:() => 'le dé du rang, puis il reprend de la hauteur', modele:'le Corbeau de Floraison'},
+  {k:'surgir', g:'facon', sub:'blesse', l:'Surgir', n:'Surgir', ne:null, p:'contact', t:'phy',
+   e:() => "le dé du rang, et personne ne l'a vu venir", modele:'l’Ours de brume'},
+  {k:'pieger', g:'facon', sub:'blesse', l:'Piéger', n:'Déclencher un piège', ne:['Piège','m'], p:'à vue', t:'phy',
+   e:() => 'le dé du rang, sur qui marche là où il a posé', modele:'le Braconnier de Floraison'},
+  {k:'repousser', g:'facon', sub:'blesse', l:'Repousser', n:'Encorner', ne:['Poussée','f'], p:'contact', t:'phy',
+   e:() => 'le dé du rang, et la cible recule de 10 pas', modele:'l’Aurochs de mythril'},
+
+  /* ---------- sa façon d'attaquer : celles qui changent la scène ---------- */
+  {k:'saisir', g:'facon', sub:'scene', l:'Saisir', n:'Serrer', ne:['Étreinte','f'], p:'contact', t:'phy',
+   e:() => "aucun dégât, la cible ne se dégage qu'à un jet de FOR", modele:'le Chien de ferme altéré'},
+  {k:'tomber', g:'facon', sub:'scene', l:'Faire tomber', n:'Croc-en-jambe', ne:null, p:'contact', t:'phy',
+   e:() => 'aucun dégât, la cible tombe', modele:'le Bandit de route'},
+  {k:'desarmer', g:'facon', sub:'scene', l:'Désarmer', n:'Désarmer', ne:null, p:'contact', t:'phy',
+   e:() => "aucun dégât, la cible lâche son arme", modele:'le Chien de guerre du Sang'},
+  {k:'derober', g:'facon', sub:'scene', l:'Dérober', n:'Détrousser', ne:null, p:'contact', t:'phy',
+   e:() => 'aucun dégât, il emporte un objet et fuit', modele:'le Rat de ruine'},
+  {k:'appeler', g:'facon', sub:'scene', l:'Appeler', n:'Appeler', ne:null, p:'aucune', t:'phy',
+   e:() => 'aucun dégât, 1d4 Nuisances arrivent', modele:'la Bête-mère', valider:true},
+  {k:'envoyer', g:'facon', sub:'scene', l:'Envoyer devant', n:'Envoyer devant', ne:null, p:'aucune', t:'phy',
+   e:() => "aucun dégât, ceux qui l'accompagnent attaquent à sa place", modele:'le Capitaine du Sang', min:3, requiert:['escorte'], valider:true},
+  {k:'eteindre', g:'facon', sub:'scene', l:'Éteindre', n:'Éteindre', ne:null, p:'à vue', t:'mag',
+   e:() => 'aucun dégât, toutes les lumières meurent pour 3 rounds', modele:'Ce qui vit dans les cales'},
+  {k:'refaire', g:'facon', sub:'scene', l:'Se refaire', n:'Se refaire', ne:null, p:'aucune', t:'mag',
+   e:() => 'aucun dégât, il récupère 1d4 PV', modele:'la Bête de Floraison végétale'},
+  {k:'sceller', g:'facon', sub:'scene', l:'Sceller', n:'Poser un sceau', ne:null, p:'à vue', t:'mag',
+   e:() => 'aucun dégât, une porte se ferme ou une arme reste au fourreau', modele:'le Scelleur véreux'},
+  {k:'otage', g:'facon', sub:'scene', l:'Prendre en otage', n:'Prendre en otage', ne:null, p:'contact', t:'phy',
+   e:() => "aucun dégât, il tient quelqu'un devant lui", modele:'le Chef de bande'},
+
+  /* ---------- son corps ---------- */
+  {k:'blinde', g:'corps', l:'Blindé', red:r => r + 1, excl:['carapace'], modele:'le Golem de chantier et l’Aurochs de mythril'},
+  {k:'carapace', g:'corps', l:'Carapace', excl:['blinde'], phrase:r => 'Réduction ' + (r + 1) + ' de face, 0 de dos', modele:'la Mante de sève'},
+  {k:'lourde', g:'corps', l:'Frappe lourde', cran:1, modele:'le Gamin armé d’une faux'},
+  {k:'volant', g:'corps', l:'Volant', phrase:() => "Il vole : entre deux attaques il reprend de la hauteur, et une chute ne lui fait rien",
+   modele:'le Corbeau de Floraison et la règle des chutes', valider:true},
+  {k:'cache', g:'corps', l:'Caché', phrase:() => "On ne le voit pas tant qu'il n'attaque pas", modele:'le Sanglier d’ombre'},
+  {k:'nuee', g:'corps', l:'Nuée', phrase:() => "Les armes ne lui font rien. Le feu, le vent et l'eau le dispersent d'un coup",
+   modele:'la Nuée de mouches de sève'},
+  {k:'repousse', g:'corps', l:'Il repousse', phrase:() => 'Il récupère 1d4 PV par round tant que la Floraison brûle encore',
+   modele:'la Bête de Floraison végétale'},
+  {k:'lumiere', g:'corps', l:'Craint la lumière', phrase:() => 'Une lumière vive le fige un round', modele:'le Sanglier d’ombre'},
+  {k:'craintfeu', g:'corps', l:'Craint le feu', phrase:() => 'Le feu compte double contre lui', modele:'l’Écorcien qui a brûlé'},
+
+  /* ---------- sa conduite ---------- */
+  {k:'meute', g:'conduite', l:'En meute', phrase:() => "Il n'attaque jamais seul, et jamais de face", modele:'le Loup de bordure'},
+  {k:'lache', g:'conduite', l:'Lâche', phrase:() => "Il se rend dès qu'il tombe sous la moitié de ses PV", modele:'le Pilleur isolé'},
+  {k:'gardien', g:'conduite', l:'Gardien', phrase:() => "Il ne poursuit personne au-delà de ce qu'il garde", modele:'le Golem de chantier'},
+  {k:'meneur', g:'conduite', l:'Meneur', min:2,
+   phrase:r => 'Les ' + rangNom(r - 1, true) + " autour de lui gagnent +2 aux dégâts tant qu'il tient debout",
+   modele:'le Sergent du Sang', valider:true},
+  {k:'escorte', g:'conduite', l:'Escorte', min:3, renf:r => 'Il arrive avec quatre ' + rangNom(r - 2, true),
+   modele:'le Capitaine du Sang', valider:true},
+  {k:'furieux', g:'conduite', l:'Furieux',
+   phrase:() => "Il ne peut plus s'arrêter. Il frappe l'allié le plus proche si aucun ennemi n'est à portée", modele:'l’Ori’Ican en fureur'},
+  {k:'cupide', g:'conduite', l:'Cupide', phrase:() => 'Il attaque toujours celui qui porte le sac le plus lourd', modele:'le Bandit de route'},
+  {k:'monnayable', g:'conduite', l:'Monnayable', phrase:() => "Il change de camp si on lui offre ce qu'il veut",
+   modele:'le Rôdeur de bordure et le Déserteur', valider:true},
+  {k:'instable', g:'conduite', l:'Instable', phrase:() => "S'il tombe, ce qu'il porte éclate : 1d6 sur tout ce qui l'entoure",
+   modele:'le Contrebandier', valider:true}
+].concat(ELEMENTS.map(e => ({k:e.k, g:'element', l:e.l, modele:e.modele})));
+
+const TRAIT = {};
+TRAITS.forEach(t => TRAIT[t.k] = t);
+/* quand il n'y a qu'un élément et aucune façon : une frappe de cet élément, au contact */
+const FRAPPE_ELEM = {n:'Frappe', ne:['Frappe','f'], p:'contact', t:'mag', e:() => 'le dé du rang'};
+
+const GROUPES = [
+  {g:'facon', l:'Sa façon d’attaquer', sous:[{k:'blesse', l:'qui blessent'}, {k:'scene', l:'qui changent la scène'}], seul:true},
+  {g:'element', l:'Ce qui l’anime', seul:true, vide:'Rien de magique',
+   aide:'Sève, eau, pierre, vent et Mue : l’armure les arrête. Feu, onde, ombre et sacré : ils la traversent.'},
+  {g:'corps', l:'Son corps'},
+  {g:'conduite', l:'Sa conduite'}
+];
+
+function traitsDe(c){ return (c.tr || []).map(k => TRAIT[k]).filter(Boolean); }
+function nomsTraits(c){ return traitsDe(c).map(t => t.l).join(' · '); }
+function traitPossible(t, r){ return !t.min || r >= t.min; }
+
+/* le nom d'une attaque, avec ou sans élément */
+function nomAttaque(f, el){
+  if(!el || !f.ne) return f.n;
+  const base = f.ne[0], genre = f.ne[1];
+  return base + ' ' + (el.de || el.adj[genre]);
+}
+/* la portée telle qu'on la lit, avec ce que l'armure fait de l'élément */
+function porteeDe(a2){
+  if(!a2) return '';
+  const p = a2.p || '';
+  const e = a2.el && ELEM[a2.el];
+  /* l'armure ne dit rien d'une attaque qui ne blesse pas */
+  if(!e || /aucun dégât/i.test(a2.e || '')) return p;
+  return p + (p ? ' · ' : '') + (e.matiere ? 'l’armure l’arrête' : 'traverse l’armure');
+}
+
+/* ---------- ce que les traits donnent, pour cette créature ---------- */
+function produitTraits(c){
+  const tr = traitsDe(c), rg = RANG[c.r] || RANG[2];
+  const out = {a2:null, red:'', deg:'', phrases:{}, renfs:{}};
+  tr.forEach(t => {
+    if(t.red) out.red = String(t.red(c.r));
+    if(t.cran) out.deg = cran(rg.deg, t.cran);
+  });
+  tr.forEach(t => {
+    if(t.phrase) out.phrases[t.k] = t.phrase(c.r);
+    if(t.renf) out.renfs[t.k] = t.renf(c.r);
+  });
+  const fa = tr.find(t => t.g === 'facon'), el = tr.find(t => t.g === 'element');
+  if(fa || el){
+    const f = fa || FRAPPE_ELEM;
+    const e = el ? ELEM[el.k] : null;
+    out.a2 = {n:nomAttaque(f, e), p:f.p, t:e ? 'mag' : f.t, e:f.e({r:c.r, deg:out.deg || rg.deg}), el:e ? e.k : ''};
+  }
+  return out;
+}
+
+/* ---------- appliquer un changement sans écraser ce que tu as écrit ---------- */
+function memeA2(a, b){
+  if(!a || !b) return false;
+  return a.n === b.n && a.p === b.p && a.t === b.t && a.e === b.e && (a.el || '') === (b.el || '');
+}
+function a2Vide(a){ return !a || (!String(a.n || '').trim() && !String(a.e || '').trim()); }
+function oterPhrase(txt, ph){
+  let t = txt || '';
+  if(!ph || t.indexOf(ph) < 0) return t;
+  let out = t.replace('. ' + ph, '');
+  if(out === t) out = t.replace(ph + '. ', '');
+  if(out === t) out = t.replace(ph, '');
+  return out.replace(/\s{2,}/g, ' ').replace(/^[\s.]+/, '').trim();
+}
+function ajouterPhrase(txt, ph){
+  const base = String(txt || '').replace(/[\s.]+$/, '').trim();
+  return base ? base + '. ' + ph : ph;
+}
+function retoucherTexte(txt, avant, apres){
+  let t = String(txt || '');
+  Object.keys(avant).forEach(k => {
+    if(!(k in apres)) t = oterPhrase(t, avant[k]);
+    else if(apres[k] !== avant[k] && t.indexOf(avant[k]) >= 0) t = t.split(avant[k]).join(apres[k]);
+  });
+  Object.keys(apres).forEach(k => { if(!(k in avant) && t.indexOf(apres[k]) < 0) t = ajouterPhrase(t, apres[k]); });
+  return t;
+}
+function appliquerProduit(c, avant, apres, force){
+  force = force || {};
+  if(force.a2 || a2Vide(c.a2) || memeA2(c.a2, avant.a2))
+    c.a2 = apres.a2 ? Object.assign({}, apres.a2) : {n:'', t:'phy', p:'contact', e:'', el:''};
+  ['red', 'deg'].forEach(k => {
+    if(force[k] || c.mod[k] === '' || c.mod[k] === avant[k]) c.mod[k] = apres[k];
+  });
+  c.p = retoucherTexte(c.p, avant.phrases, apres.phrases);
+  c.renf = retoucherTexte(c.renf, avant.renfs, apres.renfs);
+}
+
+/* la liste des traits une fois nettoyée : un seul par groupe unique, rien d'impossible à ce rang */
+function trierTraits(tr, r){
+  const out = [];
+  tr.forEach(k => {
+    const t = TRAIT[k];
+    if(!t || !traitPossible(t, r) || out.indexOf(k) >= 0) return;
+    out.push(k);
+  });
+  /* ce qui exige un autre trait tombe si celui-ci n'est plus là */
+  return out.filter(k => {
+    const t = TRAIT[k];
+    return !t.requiert || t.requiert.every(q => out.indexOf(q) >= 0);
+  });
+}
+
+/* ============ le bestiaire maison ============ */
+
+const PORTEES = ['contact', '5 pas', '10 pas', '20 pas', 'à vue', 'd’en haut', 'zone de 3 pas', 'aucune'];
+const LORE = [
+  {k:'desc',  l:'À quoi il ressemble', ph:'Ce qu’on voit en premier, ce qu’on entend, ce qui reste en mémoire.'},
+  {k:'ou',    l:'Où on le croise',     ph:'Terrain, région, registre de Floraison, moment de la journée.'},
+  {k:'veut',  l:'Ce qu’il veut',  ph:'Pourquoi il est là, comment il se bat, quand il s’arrête.'},
+  {k:'fuit',  l:'Ce qui le fait fuir', ph:'Sa faiblesse, ce qui le fait céder, reculer ou changer de camp.'},
+  {k:'butin', l:'Ce qu’il laisse', ph:'Butin, trophée, ce qui se revend et à qui.'},
+  {k:'notes', l:'Notes pour le MJ',    ph:'Idées de scène, variantes, pièges à éviter.'}
+];
+const BST = {mode:'local', db:null, pret:false, erreur:'', recherche:'', inclureLivre:true, aSupprimer:null, famASupprimer:null};
+let ED = null;   /* la creature en cours d'edition : {c, nouveau} */
+let FED = null;  /* la famille en cours d'edition : {f, nouveau, livre, miennes} */
+const CLE_OK = /^[A-Za-z0-9_.~:@+-]{1,120}$/;
+
+/* ---------- forme d'une creature maison ---------- */
+function nouvelId(){ return 'm-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 6); }
+function vide(){
+  return {id:nouvelId(), src:'maison', n:'', r:2, t:[], tr:[], p:'',
+    a2:{n:'', t:'phy', p:'contact', e:'', el:''}, mod:{pv:'', red:'', deg:'', cartes:''}, renf:'',
+    desc:'', ou:'', veut:'', fuit:'', butin:'', notes:'', maj:0};
+}
+function normalise(o){
+  const c = vide();
+  if(!o || typeof o !== 'object') return c;
+  const txt = v => (v == null ? '' : String(v));
+  c.id = CLE_OK.test(o.id || '') ? o.id : nouvelId();
+  c.n = txt(o.n).slice(0, 120);
+  c.r = [1,2,3,4,5].indexOf(+o.r) >= 0 ? +o.r : 2;
+  /* on garde les etiquettes d'une famille pas encore chargee : l'affichage ignore celles qui n'existent pas */
+  c.t = Array.isArray(o.t) ? o.t.filter((x, i, a) => typeof x === 'string' && CLE_OK.test(x) && a.indexOf(x) === i).slice(0, 40) : [];
+  /* les traits : on garde ceux du catalogue, au rang où ils tiennent */
+  c.tr = Array.isArray(o.tr) ? trierTraits(o.tr.filter(x => typeof x === 'string'), c.r) : [];
+  c.p = txt(o.p);
+  const a = o.a2 || {};
+  c.a2 = {n:txt(a.n), t:a.t === 'mag' ? 'mag' : 'phy', p:txt(a.p) || 'contact', e:txt(a.e),
+    el: ELEM[a.el] ? a.el : ''};
+  if(c.a2.el) c.a2.t = 'mag';
+  const m = o.mod || {};
+  c.mod = {pv:txt(m.pv), red:txt(m.red), deg:txt(m.deg), cartes:txt(m.cartes)};
+  ['renf'].concat(LORE.map(x => x.k)).forEach(k => c[k] = txt(o[k]));
+  c.maj = +o.maj || 0;
+  return c;
+}
+
+/* ---------- forme d'une famille maison ---------- */
+function nouvelleCle(){ return 'f-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 6); }
+function normaliseFam(o){
+  const txt = v => (v == null ? '' : String(v));
+  o = o && typeof o === 'object' ? o : {};
+  const k = typeof o.k === 'string' ? o.k : '';
+  return {
+    k: CLE_OK.test(k) && !ADV.familles.some(x => x.k === k) ? k : nouvelleCle(),
+    l: txt(o.l).trim().slice(0, 60),
+    d: txt(o.d).trim().slice(0, 300),
+    livre: Array.isArray(o.livre) ? o.livre.filter((id, i, a) => typeof id === 'string' && /^livre-[1-5]-\d{1,2}$/.test(id) && a.indexOf(id) === i) : [],
+    maj: +o.maj || 0
+  };
+}
+
+/* ---------- stockage : avec la page quand c'est possible, sinon dans ce navigateur ----------
+   Ce navigateur garde une copie, plus deux listes : ce qui n'est pas encore parti avec la page
+   (attente) et ce qui a ete supprime ici sans que la page l'ait encore su (supprimes).
+   Tout le reste vient de la page : ce qui a ete supprime ailleurs ne revient pas. */
+const MAGS = {
+  creatures: {col:'creatures', cle:'faelorenn.bestiaire', champ:'id', norm:o => normalise(o),
+    get:() => MAISON, set:l => { MAISON = l; }, attente:[], supprimes:[], pret:false},
+  familles:  {col:'familles', cle:'faelorenn.familles', champ:'k', norm:o => normaliseFam(o),
+    get:() => FAM_MAISON, set:l => { FAM_MAISON = l; }, attente:[], supprimes:[], pret:false}
+};
+function lireMag(m){
+  let o = null;
+  try{ const t = localStorage.getItem(m.cle); o = t ? JSON.parse(t) : null; }catch(e){}
+  const ids = a => Array.isArray(a) ? a.filter(x => typeof x === 'string') : [];
+  /* l'ancien format, une simple liste : rien ne dit que tout est parti avec la page */
+  if(Array.isArray(o)){ const items = o.map(m.norm); return {items:items, attente:items.map(x => x[m.champ]), supprimes:[]}; }
+  if(o && typeof o === 'object' && Array.isArray(o.items)) return {items:o.items.map(m.norm), attente:ids(o.attente), supprimes:ids(o.supprimes)};
+  return {items:[], attente:[], supprimes:[]};
+}
+function ecrireMag(m){
+  try{ localStorage.setItem(m.cle, JSON.stringify({format:2, items:m.get(), attente:m.attente, supprimes:m.supprimes})); }catch(e){}
+}
+function corpsDb(m, x){ const o = JSON.parse(JSON.stringify(x)); delete o[m.champ]; return o; }
+function echec(e, relancer, essai){
+  const code = e && e.code || 'unavailable';
+  if(code === 'unavailable' && !essai){ setTimeout(relancer, 400 + Math.random() * 800); return; }
+  BST.erreur = code; drawEtat();
+}
+/* on envoie toujours la version du moment, jamais une copie restee en route */
+function pousser(m, id, essai){
+  if(!BST.db) return;
+  const x = m.get().find(y => y[m.champ] === id);
+  if(!x) return;
+  const maj = x.maj || 0;
+  BST.db.collection(m.col).doc(id).set(corpsDb(m, x)).then(() => {
+    const ici = m.get().find(y => y[m.champ] === id);
+    if(!ici || (ici.maj || 0) <= maj){ m.attente = m.attente.filter(y => y !== id); ecrireMag(m); }
+  }, e => echec(e, () => pousser(m, id, true), essai));
+}
+function effacer(m, id, essai){
+  if(!BST.db) return;
+  BST.db.collection(m.col).doc(id).delete().then(() => {
+    m.supprimes = m.supprimes.filter(y => y !== id); ecrireMag(m);
+  }, e => echec(e, () => effacer(m, id, true), essai));
+}
+/* ce que montre la page, corrige de ce qui attend encore ici */
+function fusion(m, docs){
+  const loc = m.get(), garde = [], vus = {};
+  docs.forEach(d => {
+    const id = d[m.champ];
+    vus[id] = true;
+    if(m.supprimes.indexOf(id) >= 0) return;
+    const l = m.attente.indexOf(id) >= 0 ? loc.find(y => y[m.champ] === id) : null;
+    if(l && (l.maj || 0) > (d.maj || 0)) garde.push(l);
+    else { garde.push(d); if(l) m.attente = m.attente.filter(y => y !== id); }
+  });
+  loc.forEach(l => { const id = l[m.champ]; if(!vus[id] && m.attente.indexOf(id) >= 0) garde.push(l); });
+  m.supprimes = m.supprimes.filter(id => vus[id]);
+  return garde;
+}
+
+function demarrerStockage(){
+  Object.keys(MAGS).forEach(n => { const m = MAGS[n], o = lireMag(m); m.set(o.items); m.attente = o.attente; m.supprimes = o.supprimes; });
+  let attente = null;
+  try{ if(typeof claude !== 'undefined' && claude && typeof claude.use === 'function') attente = claude.use('db'); }catch(e){}
+  if(!attente){ BST.mode = 'local'; BST.pret = true; return; }
+  const local = () => { BST.mode = 'local'; BST.db = null; BST.pret = true; draw(); };
+  Promise.resolve(attente).then(db => {
+    if(!db) return local();
+    BST.db = db; BST.mode = 'db';
+    const noms = Object.keys(MAGS);
+    const charge = m => { if(m.pret) return; m.pret = true; if(noms.every(n => MAGS[n].pret)) BST.pret = true; };
+    noms.forEach(n => {
+      const m = MAGS[n];
+      let premier = true;
+      try{
+        db.collection(m.col).onSnapshot(snap => {
+          const docs = snap.docs.filter(d => d.exists).map(d => m.norm(Object.assign({}, d.data(), {[m.champ]: d.id})));
+          m.set(fusion(m, docs));
+          if(premier){
+            premier = false;
+            /* ce qui attendait ici part maintenant, une fois */
+            m.attente.slice().forEach(id => pousser(m, id));
+            m.supprimes.slice().forEach(id => effacer(m, id));
+            charge(m);
+          }
+          ecrireMag(m);
+          draw();
+        }, err => { BST.erreur = err && err.code || 'unavailable'; BST.mode = 'local'; BST.db = null; charge(m); draw(); });
+      }catch(e){ BST.erreur = 'unavailable'; charge(m); local(); }
+    });
+  }, local);
+}
+
+function enregistrerDans(m, x){
+  x = m.norm(x); x.maj = Date.now();
+  const id = x[m.champ];
+  const l = m.get().slice(), i = l.findIndex(y => y[m.champ] === id);
+  if(i >= 0) l[i] = x; else l.push(x);
+  m.set(l);
+  if(m.attente.indexOf(id) < 0) m.attente.push(id);
+  m.supprimes = m.supprimes.filter(y => y !== id);
+  ecrireMag(m);
+  if(BST.mode === 'db') pousser(m, id);
+  return x;
+}
+function supprimerDans(m, id){
+  m.set(m.get().filter(y => y[m.champ] !== id));
+  m.attente = m.attente.filter(y => y !== id);
+  if(m.supprimes.indexOf(id) < 0) m.supprimes.push(id);
+  if(m.supprimes.length > 500) m.supprimes = m.supprimes.slice(-500);
+  ecrireMag(m);
+  if(BST.mode === 'db') effacer(m, id);
+}
+function enregistrer(c){ return enregistrerDans(MAGS.creatures, c); }
+function supprimer(id){ supprimerDans(MAGS.creatures, id); }
+function enregistrerFam(f){ return enregistrerDans(MAGS.familles, f); }
+
+/* supprimer une famille : elle quitte aussi tes creatures, et les tirages */
+function supprimerFamille(k){
+  MAISON.slice().forEach(c => {
+    if(c.t.indexOf(k) < 0) return;
+    const d = normalise(c); d.t = d.t.filter(x => x !== k); enregistrer(d);
+  });
+  supprimerDans(MAGS.familles, k);
+  S.fam = S.fam.filter(x => x !== k);
+  if(FED && FED.f.k === k) fermerFamille();
+  if(ED){ ED.c.t = ED.c.t.filter(x => x !== k); if(ED.redessinerFamilles) ED.redessinerFamilles(); }
+}
+function problemeNomFamille(nom, k){
+  const n = (nom || '').trim().toLowerCase();
+  if(!n) return 'Il lui faut un nom.';
+  if(familles().some(f => f.k !== k && f.l.trim().toLowerCase() === n)) return 'Une famille porte déjà ce nom.';
+  return '';
+}
+
+/* ---------- telecharger un fichier : par l'hote si possible, sinon par le navigateur ---------- */
+let DLNS;
+function espaceTelechargement(){
+  if(DLNS !== undefined) return Promise.resolve(DLNS);
+  try{
+    if(typeof claude === 'undefined' || !claude || typeof claude.use !== 'function'){ DLNS = null; return Promise.resolve(null); }
+    return claude.use('downloads').then(ns => (DLNS = ns || null), () => (DLNS = null));
+  }catch(e){ DLNS = null; return Promise.resolve(null); }
+}
+function telecharger(nom, contenu, type, bouton){
+  const libelle = bouton ? bouton.textContent : '';
+  const dire = t => { if(!bouton) return; bouton.textContent = t; setTimeout(() => { bouton.textContent = libelle; }, 2200); };
+  const blob = contenu instanceof Blob ? contenu : new Blob([contenu], {type:type});
+  return espaceTelechargement().then(ns => {
+    if(ns) return ns.save({filename:nom, data:blob}).then(() => dire('Enregistré'),
+      e => dire(e && e.code === 'declined' ? 'Annulé' : 'Refusé'));
+    const url = URL.createObjectURL(blob), a = document.createElement('a');
+    a.href = url; a.download = nom; a.style.display = 'none';
+    document.body.appendChild(a); a.click();
+    setTimeout(() => { a.remove(); URL.revokeObjectURL(url); }, 4000);
+    dire('Fichier envoyé');
+  });
+}
+
+/* ---------- l'editeur ---------- */
+function champ(parent, id, label, noeud, aide){
+  const w = el('div','fld');
+  const l = el('label', null, label); l.htmlFor = id;
+  noeud.id = id;
+  w.append(l, noeud);
+  if(aide) w.append(el('p','aide', aide));
+  const err = el('p','err'); err.id = id + '-err'; err.hidden = true;
+  w.append(err);
+  parent.append(w);
+  return noeud;
+}
+function saisie(type, val, ph){ const i = el('input'); i.type = type; i.value = val == null ? '' : val; if(ph) i.placeholder = ph; return i; }
+function zone(val, ph, lignes){ const t = el('textarea'); t.value = val || ''; if(ph) t.placeholder = ph; t.rows = lignes || 2; return t; }
+
+function ouvrirEditeur(c, nouveau){
+  ED = {c:normalise(c), nouveau:!!nouveau};
+  if(nouveau && c && c.id && trouveId(c.id)) ED.c.id = nouvelId();
+  const box = $('bestEditeur'); box.innerHTML = ''; box.hidden = false;
+  const c0 = ED.c;
+
+  const tete = el('div','edtete');
+  tete.append(el('h3', null, nouveau ? 'Nouvelle créature' : 'Modifier ' + (c0.n || 'la créature')));
+  box.append(tete);
+
+  const grille = el('div','edgrille');
+  const form = el('div','edform'), cote = el('div','edcote');
+  grille.append(form, cote); box.append(grille);
+
+  /* identite */
+  const g1 = el('fieldset'); g1.append(el('legend', null, 'Ce qui le définit'));
+  const nom = champ(g1, 'ed-nom', 'Nom', saisie('text', c0.n, 'Le Glaneur de verre'));
+  nom.maxLength = 120;
+  nom.oninput = () => { ED.c.n = nom.value; majApercu(); };
+
+  const rw = el('div','fld'); rw.append(el('span','lab','Rang'));
+  const rseg = el('div','rseg'); rseg.setAttribute('role','radiogroup'); rseg.setAttribute('aria-label','Rang');
+  ADV.rangs.forEach(r => {
+    const b = el('button', null); b.type = 'button'; b.id = 'ed-rang-' + r.r;
+    b.setAttribute('role','radio');
+    b.append(el('b', null, r.r + ' · ' + r.nom), el('span', null, r.pv + ' PV · ' + r.deg + ' · réd. ' + r.red + ' · ' + COUT[r.r] + ' pt' + (COUT[r.r] > 1 ? 's' : '')));
+    b.onclick = () => changerRang(r.r);
+    rseg.append(b);
+  });
+  rw.append(rseg); g1.append(rw);
+
+  const fw = el('div','fld'); fw.append(el('span','lab','Familles'));
+  const fseg = el('div','seg'); fseg.id = 'ed-familles';
+  fw.append(fseg);
+  /* creer une famille sans quitter la creature */
+  const fnew = el('div','famnew'); fnew.hidden = true;
+  const fnom = saisie('text', '', 'Les gens de la digue'); fnom.id = 'ed-famnom'; fnom.maxLength = 60;
+  fnom.setAttribute('aria-label', 'Nom de la nouvelle famille');
+  const fok = el('button','btn sm','Créer la famille'); fok.type = 'button'; fok.id = 'ed-famok';
+  const fnon = el('button','btn ghost sm','Annuler'); fnon.type = 'button';
+  const ferr = el('p','err'); ferr.id = 'ed-famnom-err'; ferr.hidden = true;
+  fnew.append(fnom, fok, fnon);
+  fw.append(fnew, ferr);
+  const replier = () => { fnew.hidden = true; ferr.hidden = true; fnom.value = ''; fnom.removeAttribute('aria-invalid'); };
+  const creer = () => {
+    const pb = problemeNomFamille(fnom.value, null);
+    if(pb){ ferr.textContent = pb; ferr.hidden = false; fnom.setAttribute('aria-invalid', 'true'); fnom.focus(); return; }
+    const f = enregistrerFam({l:fnom.value});
+    ED.c.t.push(f.k);
+    replier();
+    draw();
+    const b = $('ed-fam-' + f.k); if(b) b.focus();
+  };
+  fok.onclick = creer;
+  fnon.onclick = replier;
+  fnom.onkeydown = e => {
+    if(e.key === 'Enter'){ e.preventDefault(); creer(); }
+    else if(e.key === 'Escape'){ e.preventDefault(); replier(); }
+  };
+  ED.redessinerFamilles = () => chipsFamilles(fseg, () => { fnew.hidden = false; fnom.focus(); });
+  ED.redessinerFamilles();
+  fw.append(el('p','aide','Elles décident dans quels tirages il peut sortir. Un adversaire peut en avoir plusieurs.'));
+  g1.append(fw);
+
+  form.append(g1);
+
+  /* les traits : ils remplissent le reste */
+  const gT = el('fieldset','traits'); gT.append(el('legend', null, 'Ses traits'));
+  gT.append(el('p','aide','Choisis-les, et l’attaque propre, les chiffres, les renforts et une première phrase se remplissent tout seuls. Tu retouches ensuite ce que tu veux : les traits ne réécrivent pas ce que tu as écrit à la main.'));
+  const tbox = el('div'); tbox.id = 'ed-traits';
+  gT.append(tbox);
+  form.append(gT);
+
+  const gP = el('fieldset'); gP.append(el('legend', null, 'Ce qui fait la scène'));
+  const part = champ(gP, 'ed-part', 'Ce qu’il a de particulier', zone(c0.p, 'Une phrase qui fait la scène, comme dans le livre.', 3),
+    'C’est elle qui fait la scène. Le rang donne les chiffres.');
+  part.oninput = () => { ED.c.p = part.value; majApercu(); };
+  form.append(gP);
+
+  /* attaque propre */
+  const g2 = el('fieldset'); g2.append(el('legend', null, 'Son attaque propre'));
+  g2.append(el('p','aide','L’attaque de rang lui est donnée d’office : contact, physique, au dé de son rang. Celle-ci est la seconde, et il n’en utilise qu’une par round.'));
+  const l2 = el('div','ligne2');
+  const anom = champ(l2, 'ed-anom', 'Nom de l’attaque', saisie('text', c0.a2.n, 'Éclat de lune'));
+  anom.oninput = () => { ED.c.a2.n = anom.value; majApercu(); };
+  const port = champ(l2, 'ed-aport', 'Portée', saisie('text', c0.a2.p, 'contact'));
+  port.setAttribute('list', 'ed-portees');
+  const dl = el('datalist'); dl.id = 'ed-portees';
+  PORTEES.forEach(x => dl.append(new Option(x, x)));
+  l2.append(dl);
+  port.oninput = () => { ED.c.a2.p = port.value; majApercu(); };
+  g2.append(l2);
+
+  const tw = el('div','fld'); tw.append(el('span','lab','Type'));
+  const tseg = el('div','seg');
+  [['phy','Physique'],['mag','Magique']].forEach(([k, l]) => {
+    const b = el('button', null, l); b.type = 'button'; b.id = 'ed-atype-' + k;
+    b.setAttribute('aria-pressed', c0.a2.t === k ? 'true' : 'false');
+    b.onclick = () => {
+      ED.c.a2.t = k;
+      if(k === 'phy') ED.c.a2.el = '';
+      tseg.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === b ? 'true' : 'false'));
+      majApercu();
+    };
+    tseg.append(b);
+  });
+  tw.append(tseg);
+  tw.append(el('p','aide','La réduction arrête le physique. Elle n’arrête le magique que si l’élément envoie de la matière. Un humain compte le magique une fois et demie.'));
+  g2.append(tw);
+
+  const eff = champ(g2, 'ed-aeff', 'Ce qu’elle fait', zone(c0.a2.e, 'le dé du rang, et la cible recule de 5 pas', 2));
+  eff.oninput = () => { ED.c.a2.e = eff.value; majApercu(); };
+  const ins = el('button','lien','Insérer « le dé du rang »'); ins.type = 'button';
+  ins.onclick = () => {
+    const a = eff.selectionStart || eff.value.length, b = eff.selectionEnd || a;
+    eff.value = eff.value.slice(0, a) + 'le dé du rang' + eff.value.slice(b);
+    ED.c.a2.e = eff.value; eff.focus(); majApercu();
+  };
+  eff.parentNode.insertBefore(ins, eff.nextSibling);
+  eff.parentNode.append(el('p','aide','« le dé du rang » devient tout seul d6, d8+2 ou ce que vaut son rang, même s’il change de rang.'));
+  form.append(g2);
+
+  /* ajustements */
+  const g3 = el('details'); g3.id = 'ed-ajust';
+  const aj = c0.mod;
+  g3.open = !!(aj.pv || aj.red || aj.deg || aj.cartes || c0.renf);
+  g3.append(el('summary', null, 'Ajustements et renforts'));
+  g3.append(el('p','aide','Laisse vide pour garder ce que donne le rang. Le livre le fait aussi : « réduction 4 au lieu de 2 ».'));
+  const l3 = el('div','ligne4');
+  const ajuster = (k, id, lab, ph, type) => {
+    const i = champ(l3, id, lab, saisie(type || 'number', aj[k], ph));
+    if((type || 'number') === 'number'){ i.min = k === 'cartes' ? 1 : 0; i.max = k === 'cartes' ? 4 : 999; i.inputMode = 'numeric'; }
+    i.oninput = () => { ED.c.mod[k] = i.value.trim(); majApercu(); };
+    return i;
+  };
+  ajuster('pv', 'ed-pv', 'PV', '');
+  ajuster('red', 'ed-red', 'Réduction', '');
+  ajuster('deg', 'ed-deg', 'Dé de rang', '', 'text');
+  ajuster('cartes', 'ed-cartes', 'Cartes', '');
+  g3.append(l3);
+  const renf = champ(g3, 'ed-renf', 'Renforts', zone(c0.renf, 'Il arrive avec quatre Ordinaires, et il les envoie devant.', 2),
+    'Ils ne coûtent rien au budget : c’est déjà payé dans son rang.');
+  renf.oninput = () => { ED.c.renf = renf.value; majApercu(); };
+  form.append(g3);
+
+  /* pour le bestiaire */
+  const g4 = el('details'); g4.id = 'ed-lore';
+  g4.open = LORE.some(x => c0[x.k]);
+  g4.append(el('summary', null, 'Pour le bestiaire'));
+  g4.append(el('p','aide','Rien de tout ça n’est obligatoire. C’est ce qui sort dans l’export Word, pas dans la rencontre.'));
+  LORE.forEach(x => {
+    const t = champ(g4, 'ed-' + x.k, x.l, zone(c0[x.k], x.ph, x.k === 'desc' || x.k === 'notes' ? 3 : 2));
+    t.oninput = () => { ED.c[x.k] = t.value; };
+  });
+  form.append(g4);
+
+  /* boutons */
+  const act = el('div','acts edact');
+  const ok = el('button','btn', nouveau ? 'Ajouter au bestiaire' : 'Enregistrer'); ok.type = 'button'; ok.id = 'ed-ok';
+  const non = el('button','btn ghost sm','Annuler'); non.type = 'button'; non.id = 'ed-non';
+  ok.onclick = validerEditeur;
+  non.onclick = fermerEditeur;
+  const msg = el('p','err'); msg.id = 'ed-msg'; msg.hidden = true;
+  act.append(ok, non);
+  form.append(act, msg);
+
+  /* apercu */
+  cote.append(el('p','lab','Comme il sortira en rencontre'));
+  const ap = el('div','enc apercu'); ap.id = 'apercu';
+  cote.append(ap);
+  cote.append(el('p','lab','Comme il s’écrira dans le livre'));
+  const li = el('pre','ligneLivre'); li.id = 'ligneLivre';
+  cote.append(li);
+
+  majRang(); dessinerTraits(); majApercu();
+  box.scrollIntoView({block:'start', behavior:'smooth'});
+  nom.focus({preventScroll:true});
+}
+
+/* ---------- les traits dans l'editeur ---------- */
+function dessinerTraits(){
+  const box = $('ed-traits');
+  if(!box || !ED) return;
+  box.innerHTML = '';
+  const r = ED.c.r;
+  GROUPES.forEach(G => {
+    const w = el('div','tgr');
+    w.append(el('span','lab', G.l));
+    (G.sous || [{}]).forEach((sous, i) => {
+      if(sous.l) w.append(el('p','tsous', sous.l));
+      const seg = el('div','seg');
+      if(G.vide && !i){
+        const b = el('button', null, G.vide); b.type = 'button'; b.id = 'ed-tr-rien-' + G.g;
+        const aucun = !ED.c.tr.some(k => TRAIT[k] && TRAIT[k].g === G.g);
+        b.setAttribute('aria-pressed', aucun ? 'true' : 'false');
+        b.onclick = () => {
+          const cur = ED.c.tr.find(k => TRAIT[k] && TRAIT[k].g === G.g);
+          if(cur) basculerTrait(cur);
+        };
+        seg.append(b);
+      }
+      TRAITS.filter(t => t.g === G.g && (!sous.k || t.sub === sous.k)).forEach(t => {
+        const b = el('button', null, t.l); b.type = 'button'; b.id = 'ed-tr-' + t.k;
+        b.setAttribute('aria-pressed', ED.c.tr.indexOf(t.k) >= 0 ? 'true' : 'false');
+        if(!traitPossible(t, r)){ b.disabled = true; b.title = 'À partir du rang ' + t.min; }
+        else b.title = 'D’après ' + t.modele;
+        b.onclick = () => basculerTrait(t.k);
+        seg.append(b);
+      });
+      w.append(seg);
+    });
+    if(G.aide) w.append(el('p','aide', G.aide));
+    box.append(w);
+  });
+  const acts = el('div','acts tacts');
+  const hasard = el('button','btn ghost sm','Tirer des traits au hasard'); hasard.type = 'button'; hasard.id = 'ed-trhasard';
+  hasard.onclick = traitsAuHasard;
+  const vider = el('button','btn ghost sm','Enlever les traits'); vider.type = 'button'; vider.id = 'ed-trvider';
+  vider.disabled = !ED.c.tr.length;
+  vider.onclick = () => {
+    const avant = produitTraits(ED.c);
+    ED.c.tr = [];
+    ED.traitInfo = '';
+    appliquerProduit(ED.c, avant, produitTraits(ED.c), {});
+    dessinerTraits(); syncChamps(); majApercu();
+  };
+  acts.append(hasard, vider);
+  box.append(acts);
+  const info = el('p','aide tinfo', ED.traitInfo || '');
+  info.id = 'ed-traitinfo';
+  info.hidden = !ED.traitInfo;
+  box.append(info);
+}
+
+function infoTrait(t){
+  const r = ED.c.r, bouts = [];
+  if(t.g === 'facon') bouts.push(t.n + ' · ' + t.p + ' · ' + t.e({r:r, deg:RANG[r].deg}));
+  if(t.g === 'element') bouts.push(ELEM[t.k].matiere ? 'magique, et l’armure l’arrête' : 'magique, et ça traverse l’armure');
+  if(t.red) bouts.push('réduction ' + t.red(r) + ' au lieu de ' + RANG[r].red);
+  if(t.cran) bouts.push('dé du rang à ' + cran(RANG[r].deg, t.cran));
+  if(t.phrase) bouts.push(t.phrase(r));
+  if(t.renf) bouts.push(t.renf(r));
+  return t.l + ', d’après ' + t.modele + ' : ' + bouts.join(' · ') + (t.valider ? '. À valider.' : '');
+}
+
+function basculerTrait(k){
+  const t = TRAIT[k];
+  if(!t || !ED) return;
+  const avant = produitTraits(ED.c);
+  let tr = ED.c.tr.slice();
+  if(tr.indexOf(k) >= 0){
+    tr = tr.filter(x => x !== k);
+    ED.traitInfo = '';
+  } else {
+    if(t.g === 'facon' || t.g === 'element') tr = tr.filter(x => !TRAIT[x] || TRAIT[x].g !== t.g);
+    if(t.excl) tr = tr.filter(x => t.excl.indexOf(x) < 0);
+    tr.push(k);
+    (t.requiert || []).forEach(q => { if(tr.indexOf(q) < 0) tr.push(q); });
+    ED.traitInfo = infoTrait(t);
+  }
+  ED.c.tr = trierTraits(tr, ED.c.r);
+  appliquerProduit(ED.c, avant, produitTraits(ED.c),
+    {a2: t.g === 'facon' || t.g === 'element', red: !!t.red, deg: !!t.cran});
+  dessinerTraits(); syncChamps(); majApercu();
+}
+
+function traitsAuHasard(){
+  if(!ED) return;
+  const r = ED.c.r, avant = produitTraits(ED.c);
+  const ok = t => traitPossible(t, r);
+  const tr = [pick(TRAITS.filter(t => t.g === 'facon' && ok(t))).k];
+  if(Math.random() < 0.45) tr.push(pick(TRAITS.filter(t => t.g === 'element')).k);
+  const combien = Math.random() < 0.5 ? 1 : 2;
+  for(let i = 0; i < combien; i++){
+    const libres = TRAITS.filter(t => (t.g === 'corps' || t.g === 'conduite') && ok(t) &&
+      tr.indexOf(t.k) < 0 && !(t.excl && t.excl.some(x => tr.indexOf(x) >= 0)));
+    if(libres.length) tr.push(pick(libres).k);
+  }
+  tr.slice().forEach(k => (TRAIT[k].requiert || []).forEach(q => { if(tr.indexOf(q) < 0) tr.push(q); }));
+  ED.c.tr = trierTraits(tr, r);
+  ED.traitInfo = '';
+  appliquerProduit(ED.c, avant, produitTraits(ED.c), {a2:true, red:true, deg:true});
+  dessinerTraits(); syncChamps(); majApercu();
+}
+
+function changerRang(r){
+  if(!ED) return;
+  const avant = produitTraits(ED.c);
+  ED.c.r = r;
+  ED.c.tr = trierTraits(ED.c.tr, r);
+  appliquerProduit(ED.c, avant, produitTraits(ED.c), {});
+  majRang(); dessinerTraits(); syncChamps(); majApercu();
+}
+
+/* les champs suivent ce que les traits ont posé */
+function syncChamps(){
+  if(!ED) return;
+  const c = ED.c;
+  const set = (id, v) => { const n = $(id); if(n && n.value !== v) n.value = v; };
+  set('ed-anom', c.a2.n); set('ed-aport', c.a2.p); set('ed-aeff', c.a2.e);
+  set('ed-red', c.mod.red); set('ed-deg', c.mod.deg);
+  set('ed-renf', c.renf); set('ed-part', c.p);
+  ['phy','mag'].forEach(k => { const b = $('ed-atype-' + k); if(b) b.setAttribute('aria-pressed', c.a2.t === k ? 'true' : 'false'); });
+  if(c.mod.red || c.mod.deg || c.renf){ const aj = $('ed-ajust'); if(aj) aj.open = true; }
+}
+
+/* les familles qu'on coche pour la creature en cours, celles du livre puis les tiennes */
+function chipsFamilles(fseg, ouvrirCreation){
+  if(!ED) return;
+  fseg.innerHTML = '';
+  familles().forEach(f => {
+    const b = el('button', estMaisonFam(f.k) ? 'fm' : null, f.l); b.type = 'button'; b.id = 'ed-fam-' + f.k;
+    b.setAttribute('aria-pressed', ED.c.t.indexOf(f.k) >= 0 ? 'true' : 'false');
+    b.onclick = () => {
+      const i = ED.c.t.indexOf(f.k);
+      if(i >= 0) ED.c.t.splice(i, 1); else ED.c.t.push(f.k);
+      b.setAttribute('aria-pressed', ED.c.t.indexOf(f.k) >= 0 ? 'true' : 'false');
+      majApercu();
+    };
+    fseg.append(b);
+  });
+  const plus = el('button', 'ajout', '+ Nouvelle famille'); plus.type = 'button'; plus.id = 'ed-famplus';
+  plus.onclick = ouvrirCreation;
+  fseg.append(plus);
+}
+
+function majRang(){
+  ADV.rangs.forEach(r => {
+    const b = $('ed-rang-' + r.r);
+    if(b){ b.setAttribute('aria-checked', ED.c.r === r.r ? 'true' : 'false'); b.className = ED.c.r === r.r ? 'on' : ''; }
+  });
+  const rg = RANG[ED.c.r];
+  const ph = {pv:rg.pv, red:rg.red, deg:rg.deg, cartes:rg.cartes};
+  Object.keys(ph).forEach(k => { const i = $('ed-' + k); if(i) i.placeholder = String(ph[k]); });
+}
+
+function ligneLivre(c, n){
+  const st = statsDe(c), rg = RANG[c.r];
+  const aj = [];
+  if(st.pv !== rg.pv) aj.push(st.pv + ' PV au lieu de ' + rg.pv);
+  if(st.red !== rg.red) aj.push('réduction ' + st.red + ' au lieu de ' + rg.red);
+  if(st.deg !== rg.deg) aj.push('frappe à ' + st.deg + ', pas à ' + rg.deg);
+  if(st.cartes !== rg.cartes) aj.push(st.cartes + ' carte' + (st.cartes > 1 ? 's' : ''));
+  let part = (c.p || '').trim().replace(/\.$/, '');
+  if(aj.length) part += (part ? '. ' : '') + aj.join(', ').replace(/^./, x => x.toUpperCase());
+  if(c.renf) part += (part ? '. ' : '') + c.renf.trim().replace(/\.$/, '');
+  const at = c.a2 && c.a2.n ? '**' + c.a2.n + '**, ' + (c.a2.t === 'mag' ? 'magique' : 'physique') + ', ' + (c.a2.p || 'contact') + ' : ' + effetDe(c, st) : '';
+  return '| **' + (n || 'n°') + '** | ' + (c.n || '?') + ' | ' + part + ' | ' + at + ' |';
+}
+
+function majApercu(){
+  if(!ED) return;
+  const ap = $('apercu'); if(!ap) return;
+  ap.innerHTML = '';
+  ap.append(carteAdv(Object.assign({}, ED.c, {src:'maison'})).row);
+  $('ligneLivre').textContent = ligneLivre(ED.c);
+}
+
+function problemes(c){
+  const out = [];
+  if(!c.n.trim()) out.push(['ed-nom', 'Il lui faut un nom.']);
+  else if(MAISON.some(x => x.id !== c.id && x.n.trim().toLowerCase() === c.n.trim().toLowerCase()))
+    out.push(['ed-nom', 'Tu as déjà une créature qui porte ce nom.']);
+  if(!c.p.trim()) out.push(['ed-part', 'Écris ce qu’il a de particulier : c’est ce qui fait la scène.']);
+  const a = c.a2;
+  if(a.n.trim() && !a.e.trim()) out.push(['ed-aeff', 'Dis ce que fait son attaque propre.']);
+  if(!a.n.trim() && a.e.trim()) out.push(['ed-anom', 'Donne un nom à son attaque propre.']);
+  const m = c.mod, entier = (v, lo, hi) => v === '' || (/^\d+$/.test(v) && +v >= lo && +v <= hi);
+  if(!entier(m.pv, 1, 999)) out.push(['ed-pv', 'Des PV entiers, au moins 1.']);
+  if(!entier(m.red, 0, 20)) out.push(['ed-red', 'Une réduction entre 0 et 20.']);
+  if(!entier(m.cartes, 1, 4)) out.push(['ed-cartes', 'Entre 1 et 4 cartes.']);
+  if(m.deg && !/^\d*d\d+(\s*[+\-]\s*\d+)?$/i.test(m.deg.replace(/\s/g,''))) out.push(['ed-deg', 'Écris le dé comme dans le livre : d8, d6+2, 2d6.']);
+  return out;
+}
+
+function validerEditeur(){
+  document.querySelectorAll('#bestEditeur .err').forEach(e => { e.hidden = true; e.textContent = ''; });
+  document.querySelectorAll('#bestEditeur [aria-invalid]').forEach(e => e.removeAttribute('aria-invalid'));
+  const pb = problemes(ED.c);
+  if(pb.length){
+    pb.forEach(([id, t]) => {
+      const e = $(id + '-err'); if(e){ e.textContent = t; e.hidden = false; }
+      const f = $(id); if(f) f.setAttribute('aria-invalid', 'true');
+      if(['ed-pv','ed-red','ed-deg','ed-cartes'].indexOf(id) >= 0) $('ed-ajust').open = true;
+    });
+    const m = $('ed-msg'); m.textContent = pb.length === 1 ? 'Un point à corriger avant d’enregistrer.' : pb.length + ' points à corriger avant d’enregistrer.'; m.hidden = false;
+    const f = $(pb[0][0]); if(f) f.focus();
+    return;
+  }
+  /* une famille supprimee pendant qu'il etait ouvert ne reste pas collee a lui */
+  if(BST.pret) ED.c.t = ED.c.t.filter(k => famille(k));
+  const c = enregistrer(ED.c);
+  ED = null;
+  $('bestEditeur').hidden = true; $('bestEditeur').innerHTML = '';
+  BST.flash = c.id;
+  draw();
+  const k = document.querySelector('[data-cid="' + c.id + '"]');
+  if(k) k.scrollIntoView({block:'center', behavior:'smooth'});
+}
+function fermerEditeur(){
+  ED = null;
+  $('bestEditeur').hidden = true; $('bestEditeur').innerHTML = '';
+}
+
+/* ---------- la liste ---------- */
+function drawEtat(){
+  const e = $('bestEtat'); if(!e) return;
+  let t;
+  if(!BST.pret) t = 'Chargement du bestiaire…';
+  else if(BST.mode === 'db') t = 'Enregistré avec la page : tu retrouves tes créatures et tes familles sur n’importe quel appareil, et quiconque peut modifier la page les voit aussi.';
+  else t = 'Enregistré dans ce navigateur seulement. Fais une sauvegarde .json de temps en temps, c’est elle qui te permet de tout récupérer ailleurs.';
+  if(BST.erreur) t += ' Un enregistrement n’a pas pu partir avec la page : il reste dans ce navigateur, et la page le renverra à la prochaine ouverture.';
+  e.textContent = t;
+}
+
+function drawBestiaire(){
+  drawEtat();
+  drawFamilles();
+  if(ED && ED.redessinerFamilles) ED.redessinerFamilles();
+  const liste = $('bestListe'); if(!liste) return;
+  liste.innerHTML = '';
+  $('bestCompte').textContent = MAISON.length ? MAISON.length + ' créature' + (MAISON.length > 1 ? 's' : '') + ' à toi' : 'Aucune créature à toi pour l’instant';
+
+  /* le choix d'une entree du livre a copier */
+  const sel = $('bestDepuis');
+  if(sel && !sel.options.length){
+    sel.add(new Option('Partir d’une entrée du livre…', ''));
+    for(let r = 1; r <= 5; r++){
+      const g = el('optgroup'); g.label = 'Rang ' + r + ' · ' + RANG[r].nom;
+      ADV.creatures[r].forEach(c => g.append(new Option(c.n, c.id)));
+      sel.append(g);
+    }
+  }
+
+  const q = BST.recherche.trim().toLowerCase();
+  const vis = MAISON.filter(c => !q || [c.n, c.p, c.a2.n, c.desc, c.ou, nomsFamilles(c), nomsTraits(c)].join(' ').toLowerCase().indexOf(q) >= 0);
+  if(!MAISON.length){
+    liste.append(el('p','vide','Crée ta première créature, ou pars d’une entrée du livre pour en faire une variante. Elles entrent tout de suite dans les tirages.'));
+    return;
+  }
+  if(!vis.length){ liste.append(el('p','vide','Rien ne correspond à « ' + BST.recherche + ' ».')); return; }
+
+  for(let r = 1; r <= 5; r++){
+    const du = vis.filter(c => c.r === r).sort((a, b) => a.n.localeCompare(b.n, 'fr'));
+    if(!du.length) continue;
+    liste.append(el('h3','grang', 'Rang ' + r + ' · ' + RANG[r].nom));
+    du.forEach(c => {
+      const w = el('div','bcarte' + (BST.flash === c.id ? ' flash' : ''));
+      w.setAttribute('data-cid', c.id);
+      w.append(carteAdv(c).row);
+      const tn = nomsTraits(c);
+      if(tn) w.append(el('div','btr', 'Traits : ' + tn));
+      const fams = famillesDe(c);
+      if(fams.length){
+        const fam = el('div','bfam');
+        fams.forEach(f => fam.append(el('span', estMaisonFam(f.k) ? 'fm' : null, f.l)));
+        w.append(fam);
+      }
+      const act = el('div','bact');
+      const b1 = el('button','btn ghost sm','Modifier'); b1.type = 'button';
+      b1.onclick = () => ouvrirEditeur(c, false);
+      const b2 = el('button','btn ghost sm','Dupliquer'); b2.type = 'button';
+      b2.onclick = () => { const d = normalise(c); d.id = nouvelId(); d.n = c.n + ' (copie)'; ouvrirEditeur(d, true); };
+      const b3 = el('button','btn ghost sm','Mettre dans la rencontre'); b3.type = 'button';
+      b3.onclick = () => {
+        if(S.liste.length >= 12) return;
+        S.liste.push(entree(c, c.r)); S.liste.sort((a, b) => b.r - a.r);
+        if(!S.pourquoi) S.pourquoi = pick(ADV.pourquoi);
+        draw(); $('enc').scrollIntoView({block:'start', behavior:'smooth'});
+      };
+      const armee = BST.aSupprimer === c.id;
+      const b4 = el('button','btn ghost sm' + (armee ? ' danger' : ''), armee ? 'Confirmer la suppression' : 'Supprimer'); b4.type = 'button';
+      b4.onclick = () => {
+        if(BST.aSupprimer === c.id){ BST.aSupprimer = null; supprimer(c.id); draw(); }
+        else { BST.aSupprimer = c.id; drawBestiaire(); setTimeout(() => { if(BST.aSupprimer === c.id){ BST.aSupprimer = null; drawBestiaire(); } }, 5000); }
+      };
+      act.append(b1, b2, b3, b4);
+      w.append(act);
+      liste.append(w);
+    });
+  }
+  BST.flash = null;
+}
+
+/* ---------- tes familles ---------- */
+function compteMembres(f){
+  const nl = f.livre.filter(id => trouveId(id)).length;
+  const nm = MAISON.filter(c => c.t.indexOf(f.k) >= 0).length;
+  if(!nl && !nm) return {n:0, t:'Personne pour l’instant'};
+  const b = [];
+  if(nl) b.push(nl + ' du livre');
+  if(nm) b.push(nm + ' à toi');
+  return {n:nl + nm, t:b.join(' · ')};
+}
+function drawFamilles(){
+  const box = $('famListe'); if(!box) return;
+  box.innerHTML = '';
+  $('famCompte').textContent = FAM_MAISON.length ? ' · ' + FAM_MAISON.length : '';
+  if(!FAM_MAISON.length){
+    box.append(el('p','vide','Aucune famille à toi pour l’instant. Un clan, les bêtes d’une vallée, ce qui sort d’une même Floraison : ce qui se présente ensemble.'));
+    return;
+  }
+  FAM_MAISON.slice().sort((a, b) => a.l.localeCompare(b.l, 'fr')).forEach(f => {
+    const w = el('div','famrow' + (BST.flashFam === f.k ? ' flash' : ''));
+    w.setAttribute('data-fam', f.k);
+    const cm = compteMembres(f);
+    const t = el('div','famtxt');
+    t.append(el('div','famnm fm', f.l));
+    t.append(el('div','famct', cm.t));
+    if(f.d) t.append(el('div','famd', f.d));
+    w.append(t);
+
+    const act = el('div','bact famact');
+    const b1 = el('button','btn ghost sm','Modifier'); b1.type = 'button';
+    b1.onclick = () => ouvrirFamille(f, false);
+    const b2 = el('button','btn ghost sm','Tirer avec elle'); b2.type = 'button';
+    b2.disabled = !cm.n;
+    b2.title = cm.n ? 'Tirer une rencontre avec cette famille seule' : 'Mets d’abord des adversaires dans cette famille';
+    b2.onclick = () => {
+      S.fam = [f.k]; S.source = 'tout';
+      tirerComposition(); draw();
+      $('enc').scrollIntoView({block:'start', behavior:'smooth'});
+    };
+    const armee = BST.famASupprimer === f.k;
+    const b3 = el('button','btn ghost sm' + (armee ? ' danger' : ''), armee ? 'Confirmer la suppression' : 'Supprimer'); b3.type = 'button';
+    b3.onclick = () => {
+      if(BST.famASupprimer === f.k){ BST.famASupprimer = null; supprimerFamille(f.k); draw(); }
+      else { BST.famASupprimer = f.k; drawFamilles(); setTimeout(() => { if(BST.famASupprimer === f.k){ BST.famASupprimer = null; drawFamilles(); } }, 5000); }
+    };
+    act.append(b1, b2, b3);
+    w.append(act);
+    if(armee && MAISON.some(c => c.t.indexOf(f.k) >= 0))
+      w.append(el('p','note famavert','Tes créatures restent dans ton bestiaire : elles perdent seulement cette famille.'));
+    box.append(w);
+  });
+  BST.flashFam = null;
+}
+
+function ouvrirFamille(f, nouveau){
+  FED = {f:normaliseFam(f), nouveau:!!nouveau};
+  FED.livre = FED.f.livre.slice();
+  FED.miennes = MAISON.filter(c => c.t.indexOf(FED.f.k) >= 0).map(c => c.id);
+  const box = $('famEditeur'); box.innerHTML = ''; box.hidden = false;
+  box.append(el('h3', null, nouveau ? 'Nouvelle famille' : 'Modifier ' + FED.f.l));
+
+  const l2 = el('div','ligne2');
+  const nom = champ(l2, 'fam-nom', 'Nom', saisie('text', FED.f.l, 'Les gens de la digue'));
+  nom.maxLength = 60;
+  nom.oninput = () => { FED.f.l = nom.value; };
+  const desc = champ(l2, 'fam-desc', 'Ce qui les lie', saisie('text', FED.f.d, 'Un clan qui vit de la digue et la défend'));
+  desc.maxLength = 300;
+  desc.oninput = () => { FED.f.d = desc.value; };
+  box.append(l2);
+
+  const mw = el('div','famm');
+  const ml = el('p','lab');
+  mw.append(ml);
+  mw.append(el('p','aide famaide','Coche ceux qui se présentent avec elle, du livre ou à toi. Le point doré marque ce qui est à toi.'));
+  const total = () => FED.livre.length + FED.miennes.length;
+  const majCompte = () => {
+    ml.textContent = 'Qui en fait partie · ' + (total() ? total() + ' choisi' + (total() > 1 ? 's' : '') : 'personne encore');
+    for(let r = 1; r <= 5; r++){
+      const s = $('fam-rang-' + r + '-n');
+      if(!s) continue;
+      const n = ADV.creatures[r].filter(c => FED.livre.indexOf(c.id) >= 0).length + MAISON.filter(c => c.r === r && FED.miennes.indexOf(c.id) >= 0).length;
+      s.textContent = n ? ' · ' + n : '';
+    }
+  };
+  const coche = (c, liste) => {
+    const lab = el('label','coche');
+    const i = el('input'); i.type = 'checkbox'; i.id = 'fam-m-' + c.id;
+    i.checked = FED[liste].indexOf(c.id) >= 0;
+    i.onchange = () => {
+      const a = FED[liste], k = a.indexOf(c.id);
+      if(i.checked && k < 0) a.push(c.id);
+      else if(!i.checked && k >= 0) a.splice(k, 1);
+      majCompte();
+    };
+    lab.append(i, el('span', liste === 'miennes' ? 'fm' : null, c.n));
+    return lab;
+  };
+  for(let r = 1; r <= 5; r++){
+    const det = el('details','famrang'); det.open = true;
+    const sum = el('summary', null, 'Rang ' + r + ' · ' + RANG[r].nom);
+    const sn = el('span','famrn'); sn.id = 'fam-rang-' + r + '-n';
+    sum.append(sn);
+    det.append(sum);
+    const grille = el('div','famgrille');
+    ADV.creatures[r].forEach(c => grille.append(coche(c, 'livre')));
+    MAISON.filter(c => c.r === r).sort((a, b) => a.n.localeCompare(b.n, 'fr')).forEach(c => grille.append(coche(c, 'miennes')));
+    det.append(grille);
+    mw.append(det);
+  }
+  box.append(mw);
+
+  const act = el('div','acts edact');
+  const ok = el('button','btn', nouveau ? 'Créer la famille' : 'Enregistrer'); ok.type = 'button'; ok.id = 'fam-ok';
+  const non = el('button','btn ghost sm','Annuler'); non.type = 'button'; non.id = 'fam-non';
+  ok.onclick = validerFamille;
+  non.onclick = fermerFamille;
+  act.append(ok, non);
+  box.append(act);
+
+  majCompte();
+  box.scrollIntoView({block:'start', behavior:'smooth'});
+  nom.focus({preventScroll:true});
+}
+
+function validerFamille(){
+  const e = $('fam-nom-err'), champNom = $('fam-nom');
+  e.hidden = true; e.textContent = ''; champNom.removeAttribute('aria-invalid');
+  const pb = problemeNomFamille(FED.f.l, FED.f.k);
+  if(pb){ e.textContent = pb; e.hidden = false; champNom.setAttribute('aria-invalid', 'true'); champNom.focus(); return; }
+  const f = enregistrerFam(Object.assign({}, FED.f, {livre:FED.livre.slice()}));
+  const k = f.k;
+  /* tes creatures portent elles-memes leurs familles */
+  MAISON.slice().forEach(c => {
+    const veut = FED.miennes.indexOf(c.id) >= 0, a = c.t.indexOf(k) >= 0;
+    if(veut === a) return;
+    const d = normalise(c);
+    d.t = veut ? d.t.concat([k]) : d.t.filter(x => x !== k);
+    enregistrer(d);
+    /* la creature ouverte dans l'editeur suit le meme changement */
+    if(ED && ED.c.id === c.id){
+      if(veut && ED.c.t.indexOf(k) < 0) ED.c.t.push(k);
+      if(!veut) ED.c.t = ED.c.t.filter(x => x !== k);
+    }
+  });
+  FED = null;
+  $('famEditeur').hidden = true; $('famEditeur').innerHTML = '';
+  BST.flashFam = f.k;
+  draw();
+  const row = document.querySelector('[data-fam="' + f.k + '"]');
+  if(row) row.scrollIntoView({block:'center', behavior:'smooth'});
+}
+function fermerFamille(){
+  FED = null;
+  $('famEditeur').hidden = true; $('famEditeur').innerHTML = '';
+}
+
+/* ---------- ce qu'on exporte ---------- */
+function pourExport(){
+  const out = [];
+  for(let r = 1; r <= 5; r++){
+    const livre = BST.inclureLivre ? ADV.creatures[r] : [];
+    const miennes = MAISON.filter(c => c.r === r).sort((a, b) => a.n.localeCompare(b.n, 'fr'));
+    out.push({r:r, liste:livre.concat(miennes)});
+  }
+  return out;
+}
+function nomsFamilles(c){ return famillesDe(c).map(f => f.l).join(', '); }
+/* chaque famille, avec ses membres rang par rang, parmi ce qu'on exporte */
+function indexFamilles(){
+  const groupes = pourExport();
+  return familles().map(f => ({
+    f: f, maison: estMaisonFam(f.k),
+    rangs: groupes.map(g => ({r:g.r, noms:g.liste.filter(c => membre(c, f.k)).map(c => c.n)})).filter(g => g.noms.length)
+  })).filter(x => x.rangs.length);
+}
+
+function exporterWord(bouton){
+  const X = DX, C = X.C, B = [];
+  const total = pourExport().reduce((a, g) => a + g.liste.length, 0);
+  if(!total){ bouton.textContent = 'Rien à exporter'; setTimeout(() => { bouton.textContent = 'Exporter en Word'; }, 2000); return; }
+  B.push(X.titre('Bestiaire'));
+  B.push(X.p(X.r('Faelorenn · les adversaires' + (BST.inclureLivre ? '' : ' · créations maison'), {sz:20, i:true, c:C.h2}), {after:160, bord:{sz:12, space:5, c:C.h1}}));
+  B.push(X.p([X.r('Un adversaire a deux attaques et n’en utilise qu’une par round. ', {b:true, c:C.h2}),
+    X.r('L’attaque de rang est au contact, physique, au dé de son rang. L’attaque propre est celle que sa nature lui donne.')]));
+  B.push(X.p([X.r('La réduction d’armure s’applique au physique. ', {b:true, c:C.h2}),
+    X.r('Elle s’applique aussi au magique quand l’élément envoie de la matière : la Sève, l’eau, la pierre, le vent et la Mue. Un humain compte une fois et demie tout ce qui est magique.')]));
+  B.push(X.p([X.r('Le budget : ', {b:true, c:C.h2}),
+    X.r('quatre points par personnage pour un combat sérieux, deux pour une escarmouche, huit pour un combat qui peut tuer. Les renforts qu’un adversaire amène ne coûtent rien.')], {after:120}));
+
+  let premier = true;
+  pourExport().forEach(g => {
+    if(!g.liste.length) return;
+    const rg = RANG[g.r];
+    if(!premier) B.push(X.saut());
+    premier = false;
+    B.push(X.h2('Rang ' + g.r + ' · ' + rg.nom));
+    B.push(X.p(X.r(rg.pv + ' PV · attaque de rang ' + rg.deg + ' · réduction ' + rg.red + ' · ' + rg.cartes + ' carte' + (rg.cartes > 1 ? 's' : '') +
+      ' · coûte ' + COUT[g.r] + ' point' + (COUT[g.r] > 1 ? 's' : '') + ' au budget', {c:C.lbl, sz:18}), {after:120}));
+    g.liste.forEach(c => {
+      const st = statsDe(c), K = [];
+      const fam = nomsFamilles(c);
+      K.push(X.p([X.r(c.n, {b:true, sz:24, c:C.h1}), fam ? X.r('   ' + fam, {sz:14, caps:true, c:C.lbl, sp:20}) : ''], {after:30, keep:true}));
+      if(c.p) K.push(X.p(X.r(c.p, {i:true}), {after:50}));
+      const tn = nomsTraits(c);
+      if(tn) K.push(X.p([X.lbl('Traits'), X.r(tn)], {after:20}));
+      K.push(X.p([X.lbl('Attaque de rang'), X.r('physique · contact · ' + st.deg)], {after:20}));
+      if(c.a2 && c.a2.n) K.push(X.p([X.lbl('Attaque propre'),
+        X.r(c.a2.n, {b:true}), X.r(' · ' + (c.a2.t === 'mag' ? 'magique' : 'physique') + ' · ' + (porteeDe(c.a2) || 'contact') + ' · ' + effetDe(c, st), {})], {after:20}));
+      const aj = [];
+      if(st.pv !== rg.pv) aj.push(st.pv + ' PV au lieu de ' + rg.pv);
+      if(st.red !== rg.red) aj.push('réduction ' + st.red + ' au lieu de ' + rg.red);
+      if(st.deg !== rg.deg) aj.push('attaque de rang à ' + st.deg);
+      if(st.cartes !== rg.cartes) aj.push(st.cartes + ' carte' + (st.cartes > 1 ? 's' : ''));
+      if(aj.length) K.push(X.p([X.lbl('Ajustements'), X.r(aj.join(' · '))], {after:20}));
+      if(c.renf) K.push(X.p([X.lbl('Renforts'), X.r(c.renf), X.r('  (gratuits)', {c:C.lbl, i:true})], {after:20}));
+      LORE.forEach(x => { if(c[x.k]) K.push(X.p([X.lbl(x.l), X.r(c[x.k])], {before:40, after:20})); });
+      B.push(X.bloc(K.join('')));
+    });
+  });
+
+  /* l'index par famille, les tiennes comprises */
+  const idx = indexFamilles();
+  if(idx.length){
+    B.push(X.saut());
+    B.push(X.h2('Par famille'));
+    B.push(X.p(X.r('Qui peut se présenter ensemble. Un adversaire peut appartenir à plusieurs familles.', {i:true, c:C.lbl, sz:18}), {after:140}));
+    idx.forEach(x => {
+      B.push(X.p([X.r(x.f.l, {b:true, sz:22, c:C.h1}), x.maison ? X.r('   maison', {sz:14, caps:true, c:C.lbl, sp:20}) : ''], {after:20, keep:true}));
+      if(x.f.d) B.push(X.p(X.r(x.f.d, {i:true}), {after:30, keep:true}));
+      x.rangs.forEach((g, j) => B.push(X.p([X.lbl('Rang ' + g.r), X.r(g.noms.join(', '))],
+        {after:j === x.rangs.length - 1 ? 160 : 10, keep:j < x.rangs.length - 1})));
+    });
+  }
+  const octets = X.paquet(B.join(''), 'Bestiaire Faelorenn');
+  telecharger('Bestiaire Faelorenn.docx', new Blob([octets], {type:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'}), null, bouton);
+}
+
+function texteLivre(){
+  const L = ['# Ajouts au bestiaire', '',
+    'À coller dans le Livre VII, sous le rang correspondant. La numérotation reprend après les dix entrées du livre.', ''];
+  let n = 0;
+  for(let r = 1; r <= 5; r++){
+    const du = MAISON.filter(c => c.r === r).sort((a, b) => a.n.localeCompare(b.n, 'fr'));
+    if(!du.length) continue;
+    L.push('## Rang ' + r + ' · ' + RANG[r].nom + ' · ajouts', '');
+    L.push('| n° | Qui | Ce qu’il a de particulier | Son attaque propre |');
+    du.forEach((c, i) => { L.push(ligneLivre(c, 11 + i)); n++; });
+    L.push('');
+    const lore = du.filter(c => LORE.some(x => c[x.k]));
+    if(lore.length){
+      L.push('### Pour le MJ', '');
+      lore.forEach(c => {
+        L.push('**' + c.n + '.**' + LORE.filter(x => c[x.k]).map(x => ' ' + x.l + ' : ' + c[x.k].trim().replace(/\.$/, '') + '.').join(''));
+        L.push('');
+      });
+    }
+  }
+  return {texte:L.join('\n'), n:n};
+}
+
+function sauvegardeJson(){
+  return JSON.stringify({format:'faelorenn-bestiaire', version:2, exporte:new Date().toISOString(), familles:FAM_MAISON, creatures:MAISON}, null, 2);
+}
+function importerJson(texte){
+  let o;
+  try{ o = JSON.parse(texte); }catch(e){ return {ok:false, msg:'Ce fichier n’est pas une sauvegarde lisible.'}; }
+  const brut = Array.isArray(o) ? o : (o && Array.isArray(o.creatures) ? o.creatures : null);
+  if(!brut) return {ok:false, msg:'Ce fichier ne contient pas de bestiaire Faelorenn.'};
+  const brutF = !Array.isArray(o) && Array.isArray(o.familles) ? o.familles : [];
+  const MF = MAGS.familles, MC = MAGS.creatures;
+
+  /* les familles d'abord. Une famille qui porte le nom d'une des tiennes s'y fond,
+     et les creatures du fichier suivent vers la bonne famille */
+  const vers = {};
+  let fNeuves = 0, fMaj = 0, fPareilles = 0;
+  brutF.forEach(x => {
+    if(!x || typeof x !== 'object') return;
+    const k0 = typeof x.k === 'string' ? x.k : '';
+    if(ADV.familles.some(b => b.k === k0)) return;
+    const f = normaliseFam(x);
+    if(!f.l) return;
+    const pareil = y => y.l.trim().toLowerCase() === f.l.toLowerCase();
+    const duLivre = ADV.familles.find(pareil);
+    if(duLivre){ if(k0) vers[k0] = duLivre.k; fPareilles++; return; }
+    const deja = FAM_MAISON.find(y => y.k === f.k);
+    if(deja){
+      if(JSON.stringify(corpsDb(MF, deja)) === JSON.stringify(corpsDb(MF, Object.assign({}, f, {maj:deja.maj})))) fPareilles++;
+      else if((f.maj || 0) > (deja.maj || 0)){ enregistrerFam(f); fMaj++; }
+      else fPareilles++;
+      return;
+    }
+    const homonyme = FAM_MAISON.find(pareil);
+    if(homonyme){
+      if(k0) vers[k0] = homonyme.k;
+      const plus = f.livre.filter(id => homonyme.livre.indexOf(id) < 0);
+      if(plus.length){ enregistrerFam(Object.assign({}, homonyme, {livre:homonyme.livre.concat(plus)})); fMaj++; }
+      else fPareilles++;
+      return;
+    }
+    if(k0 && k0 !== f.k) vers[k0] = f.k;
+    enregistrerFam(f); fNeuves++;
+  });
+
+  let neuves = 0, maj = 0, pareilles = 0;
+  brut.forEach(x => {
+    const c = normalise(x);
+    if(!c.n.trim()) return;
+    c.t = c.t.map(k => vers[k] || k).filter((k, i, a) => a.indexOf(k) === i);
+    const deja = MAISON.find(m => m.id === c.id);
+    if(deja){
+      if(JSON.stringify(corpsDb(MC, deja)) === JSON.stringify(corpsDb(MC, Object.assign({}, c, {maj:deja.maj})))){ pareilles++; return; }
+      if((c.maj || 0) > (deja.maj || 0)){ enregistrer(c); maj++; return; }
+      c.id = nouvelId(); c.n = c.n + ' (importée)';
+    }
+    enregistrer(c); neuves++;
+  });
+  const pl = (n, un, plusieurs) => n + ' ' + (n > 1 ? plusieurs : un);
+  const bouts = [];
+  if(neuves) bouts.push(pl(neuves, 'créature ajoutée', 'créatures ajoutées'));
+  if(maj) bouts.push(pl(maj, 'créature mise à jour', 'créatures mises à jour'));
+  if(fNeuves) bouts.push(pl(fNeuves, 'famille ajoutée', 'familles ajoutées'));
+  if(fMaj) bouts.push(pl(fMaj, 'famille mise à jour', 'familles mises à jour'));
+  if(pareilles + fPareilles) bouts.push((pareilles + fPareilles) + ' déjà là');
+  return {ok:true, msg:bouts.length ? bouts.join(', ') + '.' : 'Rien de nouveau dans ce fichier.'};
+}
+
+/* ---------- impression du bestiaire ---------- */
+function preparerImpression(){
+  const box = $('bestPrint'); box.innerHTML = '';
+  box.append(el('h2','bp-titre','Bestiaire'));
+  box.append(el('p','bp-sous','Faelorenn · les adversaires' + (BST.inclureLivre ? '' : ' · créations maison')));
+  pourExport().forEach(g => {
+    if(!g.liste.length) return;
+    const rg = RANG[g.r];
+    const s = el('section','bp-rang');
+    s.append(el('h3', null, 'Rang ' + g.r + ' · ' + rg.nom));
+    s.append(el('p','bp-stats', rg.pv + ' PV · ' + rg.deg + ' · réduction ' + rg.red + ' · ' + rg.cartes + ' carte' + (rg.cartes > 1 ? 's' : '') + ' · ' + COUT[g.r] + ' point' + (COUT[g.r] > 1 ? 's' : '')));
+    g.liste.forEach(c => {
+      const k = el('div','bp-carte');
+      k.append(carteAdv(c).row);
+      const tn = nomsTraits(c);
+      if(tn) k.append(el('p','bp-tr', 'Traits : ' + tn));
+      const fams = nomsFamilles(c);
+      if(fams) k.append(el('p','bp-fam', fams));
+      const lore = LORE.filter(x => c[x.k]);
+      if(lore.length){
+        const dl = el('dl','bp-lore');
+        lore.forEach(x => dl.append(el('dt', null, x.l), el('dd', null, c[x.k])));
+        k.append(dl);
+      }
+      s.append(k);
+    });
+    box.append(s);
+  });
+  const idx = indexFamilles();
+  if(idx.length){
+    const s = el('section','bp-rang bp-index');
+    s.append(el('h3', null, 'Par famille'));
+    idx.forEach(x => {
+      const d = el('div','bp-famille');
+      d.append(el('p','bp-fnom', x.f.l));
+      if(x.f.d) d.append(el('p','bp-fdesc', x.f.d));
+      x.rangs.forEach(g => {
+        const p = el('p','bp-fr');
+        p.append(el('span','bp-fl', 'Rang ' + g.r), document.createTextNode(g.noms.join(', ')));
+        d.append(p);
+      });
+      s.append(d);
+    });
+    box.append(s);
+  }
+}
+
+/* ---------- les boutons de la section ---------- */
+function brancherBestiaire(){
+  $('bestNouveau').onclick = () => ouvrirEditeur(vide(), true);
+  $('bestDepuis').onchange = e => {
+    const c = trouveId(e.target.value);
+    e.target.value = '';
+    if(!c) return;
+    const d = normalise(Object.assign({}, c, {id:nouvelId(), src:'maison'}));
+    d.n = c.n + ' (variante)';
+    /* la variante garde toutes les familles de l'original, les tiennes comprises */
+    d.t = famillesDe(c).map(f => f.k);
+    ouvrirEditeur(d, true);
+  };
+  $('famNouvelle').onclick = () => ouvrirFamille({}, true);
+  $('bestRecherche').oninput = e => { BST.recherche = e.target.value; drawBestiaire(); };
+  $('bestLivre').onchange = e => { BST.inclureLivre = e.target.checked; };
+  $('bestWord').onclick = e => exporterWord(e.currentTarget);
+  $('bestTexte').onclick = e => {
+    const t = texteLivre();
+    if(!t.n){ e.currentTarget.textContent = 'Aucune créature à toi'; setTimeout(() => { $('bestTexte').textContent = 'Texte pour le livre'; }, 2000); return; }
+    telecharger('Ajouts au bestiaire.md', t.texte, 'text/markdown', e.currentTarget);
+    try{ navigator.clipboard.writeText(t.texte); }catch(x){}
+  };
+  $('bestJson').onclick = e => telecharger('bestiaire-faelorenn.json', sauvegardeJson(), 'application/json', e.currentTarget);
+  $('bestImport').onclick = () => $('bestFichier').click();
+  $('bestFichier').onchange = e => {
+    const f = e.target.files && e.target.files[0];
+    if(!f) return;
+    const lecteur = new FileReader();
+    lecteur.onload = () => {
+      const r = importerJson(String(lecteur.result));
+      const m = $('bestMsg'); m.textContent = r.msg; m.hidden = false; m.className = r.ok ? 'note ok' : 'note err';
+      setTimeout(() => { m.hidden = true; }, 6000);
+      e.target.value = '';
+      draw();
+    };
+    lecteur.readAsText(f);
+  };
+  $('bestImprimer').onclick = () => {
+    preparerImpression();
+    document.body.classList.add('imprime-bestiaire');
+    const fin = () => { document.body.classList.remove('imprime-bestiaire'); window.removeEventListener('afterprint', fin); };
+    window.addEventListener('afterprint', fin);
+    window.print();
+    setTimeout(fin, 1500);
+  };
+}
+
+/* ---------- demarrage, en dernier : tout ce qui precede est defini ---------- */
+load();
+/* les rencontres gardees par l'ancienne version n'avaient pas d'identifiant de creature */
+S.liste = (S.liste || []).map(a => {
+  if(a.cid) return a;
+  const c = ADV.creatures[a.r] && ADV.creatures[a.r].find(x => x.n === a.n);
+  return Object.assign({}, a, {cid: c ? c.id : ''});
+});
+if(['tout', 'livre', 'maison'].indexOf(S.source) < 0) S.source = 'tout';
+demarrerStockage();
+brancherBestiaire();
+if(!S.liste.length) tirerComposition();
+draw();
+</script>
+</body>
+</html>

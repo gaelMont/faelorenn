@@ -1,0 +1,3591 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Registre de la Table</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,600;0,700;1,400&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root{
+  --paper:#F4F2EA; --surface:#FFFFFF; --fill:#E9EFE8; --ink:#1B1C18; --muted:#6B7469;
+  --forest:#1F3D2B; --sage:#4A6B52; --rule:#CBD6C9; --rust:#9A4A28; --gold:#8A6D2F; --plum:#6B2F3A;
+  --shadow:0 1px 2px rgba(31,61,43,.07);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#131713; --surface:#1B211C; --fill:#212A22; --ink:#E6E7DF; --muted:#94A08F;
+    --forest:#9DC2A6; --sage:#7FA88A; --rule:#2E3A30; --rust:#D98A63; --gold:#C9A758; --plum:#C97182;
+    --shadow:0 1px 2px rgba(0,0,0,.4);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#131713; --surface:#1B211C; --fill:#212A22; --ink:#E6E7DF; --muted:#94A08F;
+  --forest:#9DC2A6; --sage:#7FA88A; --rule:#2E3A30; --rust:#D98A63; --gold:#C9A758; --plum:#C97182;
+  --shadow:0 1px 2px rgba(0,0,0,.4);
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--paper);color:var(--ink);font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:15px;line-height:1.5}
+.wrap{max-width:980px;margin:0 auto;padding-inline:18px;padding-block:26px 40px}
+h1{font-family:Spectral,Georgia,serif;font-weight:700;font-size:clamp(27px,5vw,38px);color:var(--forest);margin:0;letter-spacing:-.01em;text-wrap:balance}
+.sub{font-family:Spectral,Georgia,serif;font-style:italic;color:var(--sage);margin:2px 0 0}
+header{border-bottom:2px solid var(--forest);padding-bottom:12px;margin-bottom:18px}
+.saut{display:flex;flex-wrap:wrap;gap:4px 18px;margin-top:10px;font-size:13px}
+.saut a{color:var(--sage);text-decoration:none;border-bottom:1px solid transparent;padding-bottom:1px}
+.saut a:hover,.saut a:focus-visible{border-bottom-color:var(--sage)}
+section{margin-bottom:24px}
+h2{font-family:Spectral,Georgia,serif;font-size:19px;color:var(--forest);margin:0 0 2px;display:flex;align-items:baseline;gap:10px;text-wrap:balance}
+h2 .num{font-size:12px;font-weight:600;letter-spacing:.14em;color:var(--sage);font-family:"IBM Plex Sans",sans-serif;border:1px solid var(--rule);border-radius:2px;padding:1px 6px}
+h3{font-family:Spectral,Georgia,serif;font-size:16px;color:var(--forest);margin:14px 0 6px}
+.hint{color:var(--muted);font-size:13px;margin:0 0 12px}
+.card{background:var(--surface);border:1px solid var(--rule);border-radius:3px;padding:14px 16px;box-shadow:var(--shadow)}
+.lab{display:block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:0 0 4px}
+.note{font-size:12.5px;color:var(--muted);margin:8px 0 0;line-height:1.45}
+.note.ok{color:var(--forest)} .note.err{color:var(--rust)}
+.btn{font:inherit;font-size:14px;padding:8px 13px;border:1px solid var(--forest);background:var(--forest);color:var(--paper);border-radius:2px;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--forest)}
+.btn.sm{font-size:13px;padding:5px 10px}
+.btn.danger{border-color:var(--rust);color:var(--rust);background:transparent}
+.btn:disabled{opacity:.4;cursor:default}
+.acts{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+input,select,textarea{font:inherit;font-size:14.5px;padding:7px 9px;border:1px solid var(--rule);border-radius:2px;background:var(--surface);color:var(--ink);max-width:100%}
+textarea{width:100%;resize:vertical;line-height:1.45}
+input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-visible{outline:2px solid var(--sage);outline-offset:1px}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button{padding:6px 11px;border:1px solid var(--rule);background:transparent;color:var(--muted);border-radius:2px;cursor:pointer;font-size:14px}
+.seg button[aria-pressed=true]{border-color:var(--forest);background:var(--fill);color:var(--forest);font-weight:600}
+.vide{color:var(--muted);font-style:italic;font-family:Spectral,Georgia,serif}
+
+/* la barre de table */
+.table{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:flex-end}
+.table>div{flex:1 1 200px;min-width:0}
+.etatsync{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);margin-top:10px;flex-wrap:wrap}
+.pastille{width:8px;height:8px;border-radius:50%;background:var(--muted);flex:0 0 auto}
+.pastille.on{background:var(--sage)}
+.pastille.off{background:var(--rust)}
+
+/* personnages */
+.pgrille{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+.pcarte{border:1px solid var(--rule);border-radius:3px;padding:11px 13px;background:var(--surface);box-shadow:var(--shadow)}
+.pcarte.moi{border-color:var(--forest)}
+.pnom{font-family:Spectral,Georgia,serif;font-size:18px;font-weight:600;line-height:1.2}
+.pqui{font-size:12.5px;color:var(--muted)}
+.jauges{display:flex;gap:14px;margin-top:8px;flex-wrap:wrap}
+.jauge{flex:1 1 120px}
+.jauge .t{font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+.jauge .v{font-family:Spectral,serif;font-size:22px;font-weight:700;color:var(--forest);font-variant-numeric:tabular-nums}
+.jauge .v small{font-size:12px;color:var(--muted);font-weight:400}
+.jauge .cmd{display:flex;gap:4px;margin-top:3px}
+.jauge button{width:28px;height:26px;border:1px solid var(--rule);background:var(--surface);color:var(--forest);border-radius:2px;cursor:pointer;font-size:12px;line-height:1}
+.jauge button:hover:not(:disabled){background:var(--fill)}
+.jauge input{width:52px;padding:3px 5px;font-size:13px;text-align:center}
+.barre{height:4px;background:var(--fill);border-radius:2px;margin-top:4px;overflow:hidden}
+.barre i{display:block;height:100%;background:var(--sage)}
+.barre i.bas{background:var(--rust)}
+.pact{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.detail{border-top:1px solid var(--rule);margin-top:10px;padding-top:8px}
+.tab{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;font-size:13px}
+.tab th{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--sage);text-align:left;font-weight:600;padding:4px 6px;background:var(--fill);border-bottom:1px solid var(--rule)}
+.tab td{padding:3px 6px;border-bottom:1px solid var(--rule)}
+.tab td.n,.tab th.n{text-align:right}
+.tab tr:last-child td{border-bottom:0}
+.scroll{overflow-x:auto}
+.mini{font-size:12px;color:var(--muted)}
+.texte{white-space:pre-wrap;font-size:13.5px;line-height:1.45}
+
+/* la séance : un bureau, une page, et de quoi écrire */
+.card.seance{background:var(--fill)}
+.espace{flex:1 1 auto}
+.etats{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.etat{font-size:12.5px;padding:3px 9px;border:1px solid var(--rule);border-radius:2px;background:var(--surface);font-variant-numeric:tabular-nums;color:var(--muted)}
+.etat b{font-weight:600;color:var(--forest)}
+.etat.bas{border-color:var(--rust)} .etat.bas b{color:var(--rust)}
+.feuille{position:relative;margin-top:12px;background:var(--surface);border:1px solid var(--rule);border-radius:2px;box-shadow:var(--shadow);
+  padding:18px 22px 10px;max-height:max(300px, calc(100vh - 430px));overflow-y:auto;overscroll-behavior:contain;
+  font-family:Spectral,Georgia,serif;font-size:16px;line-height:1.6;color:var(--ink)}
+.feuille:focus{outline:none}
+.stitre{border-bottom:1px solid var(--rule);margin-bottom:14px;padding-bottom:6px}
+.stitre h3{font-size:20px;margin:0;line-height:1.25}
+.sdate{margin:2px 0 0;font-style:italic;color:var(--muted);font-size:14px}
+.feuille .vide{font-size:15px}
+.bloc{position:relative;margin:0 0 .8em;border-radius:2px}
+.bloc:hover{background:var(--fill);box-shadow:0 0 0 5px var(--fill)}
+.bloc p{margin:0;white-space:pre-wrap;overflow-wrap:anywhere}
+.b-scene p{font-weight:700}
+.b-achat p,.b-note p{font-family:"IBM Plex Sans",sans-serif;font-size:13px;font-style:italic;color:var(--muted)}
+.joints{font-family:"IBM Plex Sans",sans-serif;font-size:13px;color:var(--muted)}
+.joints.ok{color:var(--sage)} .joints.ko{color:var(--rust)}
+.encadre .sep{text-align:center;color:var(--muted);letter-spacing:.06em;margin:.35em 0}
+.encadre .joints{display:block}
+.bacts{position:absolute;right:-4px;top:-6px;display:flex;gap:1px;opacity:0;background:var(--surface);padding:2px;
+  border:1px solid var(--rule);border-radius:2px;box-shadow:var(--shadow);transition:opacity .12s}
+.bloc:hover .bacts,.bloc:focus-within .bacts{opacity:1}
+.bacts button{font-family:"IBM Plex Sans",sans-serif;font-size:12px;border:0;background:transparent;color:var(--forest);padding:3px 8px;cursor:pointer;border-radius:2px;line-height:1.2}
+.bacts button:hover{background:var(--fill)}
+.bacts button.danger{color:var(--rust);font-weight:600}
+@media (hover:none){
+  .bloc:hover{background:none;box-shadow:none}
+  .bacts{position:static;opacity:1;box-shadow:none;border:0;background:transparent;padding:0;margin-top:2px;justify-content:flex-end}
+}
+.bloc.retouche{background:var(--fill);box-shadow:0 0 0 6px var(--fill)}
+.bloc.retouche textarea{font-family:Spectral,Georgia,serif;font-size:16px}
+
+.compo{margin-top:12px;display:flex;flex-direction:column;gap:8px}
+.qui{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.qui button{font:inherit;font-size:13.5px;padding:5px 11px;border:1px solid var(--rule);background:var(--surface);color:var(--ink);border-radius:2px;cursor:pointer}
+.qui button:hover{border-color:var(--sage)}
+.qui button[aria-pressed=true]{background:var(--forest);border-color:var(--forest);color:var(--surface);font-weight:600}
+.qui input{width:160px;font-size:13.5px;padding:5px 9px}
+.qui input.actif{border-color:var(--forest);box-shadow:inset 0 0 0 1px var(--forest)}
+.genre button{font-size:13px;padding:4px 10px;background:var(--surface)}
+#coTexte{font-family:Spectral,Georgia,serif;font-size:16px;min-height:78px}
+.joint{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.puce{display:inline-flex;align-items:center;gap:4px;font-size:12.5px;padding:2px 3px 2px 9px;border:1px solid var(--rule);background:var(--surface);border-radius:2px;color:var(--ink)}
+.puce.ok{border-color:var(--sage);color:var(--sage)}
+.puce.ko{border-color:var(--rust);color:var(--rust)}
+.puce.vie{border-color:var(--gold);color:var(--gold)}
+.puce button{border:0;background:transparent;color:inherit;cursor:pointer;font-size:15px;line-height:1;padding:1px 5px;border-radius:2px}
+.puce button:hover{background:var(--fill)}
+.onlira{font-size:12.5px;color:var(--muted);font-style:italic;flex:1 1 100%}
+.btn.ghost.on{background:var(--surface);box-shadow:inset 0 0 0 1px var(--forest);font-weight:600}
+.panneau{border-top:1px dashed var(--rule);padding-top:10px}
+.verdict{margin-top:8px;font-size:13.5px;color:var(--muted)}
+.verdict b{font-family:Spectral,Georgia,serif;font-size:19px;color:var(--ink)}
+.verdict.ok b{color:var(--sage)} .verdict.ko b{color:var(--rust)}
+
+/* la synchro par GitHub */
+.gh{margin-top:12px;border-top:1px solid var(--rule);padding-top:10px}
+.gh summary{cursor:pointer;color:var(--forest);font-weight:500;font-size:14px}
+.gh .plus summary{font-weight:400;font-size:13px;color:var(--sage)}
+.ghcorps{margin-top:8px}
+.etapes{margin:6px 0 10px;padding-left:20px;font-size:13.5px;color:var(--ink)}
+.etapes li{margin:2px 0}
+.etapes a{color:var(--forest)}
+
+/* le paragraphe qu'on vient chercher depuis une fiche */
+.bloc.eclaire{background:var(--fill);box-shadow:0 0 0 6px var(--fill),0 0 0 7px var(--sage)}
+
+/* les PNJ */
+.pnjbarre{margin-bottom:4px}
+.ntete{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.att{font-size:11px;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border:1px solid var(--rule);border-radius:2px;white-space:nowrap;color:var(--muted);flex:0 0 auto}
+.att-amical{border-color:var(--sage);color:var(--sage)}
+.att-mefiant{border-color:var(--gold);color:var(--gold)}
+.att-hostile{border-color:var(--rust);color:var(--rust)}
+.ncarte.mort{opacity:.62}
+.ncarte.mort .pnom{text-decoration:line-through;text-decoration-thickness:1px}
+.nmeta{margin-top:4px}
+.lien{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--rule);font-size:13.5px;flex-wrap:wrap}
+.lien:last-of-type{border-bottom:0}
+.lien .q{flex:1 1 180px;min-width:0}
+.ltrait{width:22px;height:0;border-top:2px solid var(--muted);flex:0 0 auto}
+.ltrait.l-famille{border-top-color:var(--forest);border-top-width:3px}
+.ltrait.l-amour{border-top-color:var(--plum)}
+.ltrait.l-ami{border-top-color:var(--sage)}
+.ltrait.l-allie{border-top:2px dashed var(--sage)}
+.ltrait.l-rival{border-top:2px dashed var(--gold)}
+.ltrait.l-ennemi{border-top-color:var(--rust);border-top-width:3px}
+.ltrait.l-dette{border-top:2px dotted var(--muted)}
+.flien{margin-top:10px;padding:10px;border:1px dashed var(--rule);border-radius:2px;background:var(--paper)}
+
+/* le réseau */
+.rbarre{margin-bottom:10px}
+.rbarre .zoom{min-width:34px}
+.coche{display:inline-flex;align-items:center;gap:4px;font-size:13px;color:var(--muted);cursor:pointer}
+.rzone{display:grid;grid-template-columns:minmax(0,1fr) 270px;gap:12px;align-items:start}
+.rcadre{border:1px solid var(--rule);border-radius:2px;background:var(--paper);overflow:hidden}
+svg.reseau{display:block;width:100%;height:auto;max-height:74vh;min-height:280px;touch-action:pan-y;user-select:none;-webkit-user-select:none;cursor:grab;--k:1}
+svg.reseau:active{cursor:grabbing}
+.rfond{fill:transparent}
+.arete{stroke:var(--muted);stroke-width:1.6;fill:none;transition:opacity .15s}
+.arete.l-famille{stroke:var(--forest);stroke-width:2.6}
+.arete.l-amour{stroke:var(--plum);stroke-width:2}
+.arete.l-ami{stroke:var(--sage);stroke-width:2}
+.arete.l-allie{stroke:var(--sage);stroke-width:2;stroke-dasharray:7 4}
+.arete.l-rival{stroke:var(--gold);stroke-width:2;stroke-dasharray:7 4}
+.arete.l-ennemi{stroke:var(--rust);stroke-width:2.6}
+.arete.l-dette{stroke-dasharray:2 4}
+.fl{fill:var(--muted)}
+.fl.l-famille{fill:var(--forest)} .fl.l-amour{fill:var(--plum)} .fl.l-ami,.fl.l-allie{fill:var(--sage)}
+.fl.l-rival{fill:var(--gold)} .fl.l-ennemi{fill:var(--rust)}
+.elab{font-family:"IBM Plex Sans",sans-serif;font-size:calc(10.5px * var(--k));font-style:italic;fill:var(--muted);paint-order:stroke;stroke:var(--paper);stroke-width:3.5px;stroke-linejoin:round;pointer-events:none}
+.noeud{cursor:pointer;touch-action:none;transition:opacity .15s}
+.noeud:focus{outline:none}
+.noeud .halo{fill:none;stroke:transparent;stroke-width:3}
+.noeud.sel .halo,.noeud:focus-visible .halo{stroke:var(--sage)}
+.noeud.relie .halo{stroke:var(--gold);stroke-dasharray:4 3}
+.noeud .disque{fill:var(--surface);stroke:var(--muted);stroke-width:2.2}
+.noeud.pj .disque{fill:var(--forest);stroke:var(--forest)}
+.noeud .init{font-family:"IBM Plex Sans",sans-serif;font-size:calc(12px * min(var(--k), 1.4));font-weight:600;fill:var(--ink);pointer-events:none}
+.noeud.pj .init{fill:var(--surface);font-size:calc(13px * min(var(--k), 1.4))}
+.noeud .nlab{font-family:Spectral,Georgia,serif;font-size:calc(13px * var(--k));font-weight:600;fill:var(--ink);paint-order:stroke;stroke:var(--paper);stroke-width:calc(4px * var(--k));stroke-linejoin:round}
+.noeud.att-amical .disque{stroke:var(--sage)}
+.noeud.att-mefiant .disque{stroke:var(--gold)}
+.noeud.att-hostile .disque{stroke:var(--rust)}
+.noeud.att-inconnu .disque{stroke:var(--rule);stroke-dasharray:4 3}
+.noeud.st-mort{opacity:.55}
+.noeud.st-disparu .disque{stroke-dasharray:2 3}
+.noeud.st-disparu .nlab{font-style:italic}
+.pale{opacity:.18}
+.rpanneau{border:1px solid var(--rule);border-radius:2px;background:var(--surface);padding:12px;font-size:14px;min-height:120px}
+.rpanneau h3{margin-top:12px}
+.rpanneau .flien{background:var(--fill)}
+.rpanneau .jetform>div{flex:1 1 100%}
+.rlegende{display:flex;flex-direction:column;gap:6px;margin-top:10px;font-size:12.5px;color:var(--muted)}
+.rleg{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center}
+.rl{display:inline-flex;align-items:center;gap:6px}
+.rl svg{overflow:visible}
+.rpt{display:inline-block;width:12px;height:12px;border-radius:50%;border:2px solid var(--muted);background:var(--surface)}
+.rpt.pj{background:var(--forest);border-color:var(--forest)}
+.rpt.att-amical{border-color:var(--sage)} .rpt.att-mefiant{border-color:var(--gold)} .rpt.att-hostile{border-color:var(--rust)}
+.rpt.att-inconnu{border-style:dashed;border-color:var(--rule)}
+
+/* jets */
+.jetform{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end}
+.jetform>div{flex:1 1 180px;min-width:0}
+.jetform select,.jetform input{width:100%}
+.histo{margin-top:12px;max-height:360px;overflow-y:auto}
+.jour{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--sage);margin:10px 0 2px;font-weight:600}
+.jour:first-child{margin-top:0}
+.ligne{display:flex;gap:10px;align-items:baseline;padding:5px 0;border-bottom:1px solid var(--rule);font-size:13px}
+.ligne:last-child{border-bottom:0}
+.ligne .h{color:var(--muted);font-size:11.5px;flex:0 0 52px;font-variant-numeric:tabular-nums}
+.ligne .q{flex:1 1 auto;min-width:0}
+.ligne .r{font-weight:600;font-variant-numeric:tabular-nums;flex:0 0 auto}
+.ligne .r.ok{color:var(--sage)} .ligne .r.ko{color:var(--rust)}
+
+/* progression */
+.progrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:10px}
+.pt{border:1px solid var(--rule);border-radius:2px;padding:8px 10px;background:var(--fill);text-align:center}
+.pt .v{font-family:Spectral,serif;font-size:24px;font-weight:700;color:var(--forest)}
+.pt .t{font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+
+/* la tête de séance */
+.ligne4{display:grid;grid-template-columns:90px 160px 1fr;gap:8px}
+.ligne4 input{width:100%}
+@media (max-width:760px){
+  .rzone{grid-template-columns:1fr}
+}
+@media (max-width:560px){
+  .ligne4{grid-template-columns:1fr 1fr}
+  .ligne4>div:last-child{grid-column:1 / -1}
+  .pgrille{grid-template-columns:1fr}
+  .feuille{padding:14px 14px 6px;font-size:15.5px}
+  .qui input{width:100%}
+}
+@page{size:A4;margin:16mm}
+@media print{
+  .noprint{display:none!important}
+  body{background:#fff;color:#000}
+  .wrap{padding:0;max-width:none}
+  body.imprime-seance header,
+  body.imprime-seance section:not(#secSeance),
+  body.imprime-seance #secSeance>h2,
+  body.imprime-seance #secSeance>.hint,
+  body.imprime-seance #seTete,
+  body.imprime-seance #seEtat{display:none!important}
+  body.imprime-seance .card.seance{border:0;box-shadow:none;background:#fff;padding:0}
+  body.imprime-seance .feuille{max-height:none;overflow:visible;border:0;box-shadow:none;padding:0;margin:0;background:#fff;color:#000;font-size:12pt}
+  body.imprime-seance .bloc{break-inside:avoid}
+  body.imprime-seance .joints{color:#555}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<nav class="fae-site" aria-label="Les registres de Faelorenn">
+  <a class="fae-accueil" href="./">Faelorenn</a>
+  <a href="table.html" aria-current="page">Registre de la Table</a>
+  <a href="createur.html">Registre du Havre</a>
+  <a href="rencontres.html">Registre des Rencontres</a>
+</nav>
+<style>
+.fae-site{display:flex;flex-wrap:wrap;gap:4px 18px;align-items:baseline;max-width:980px;margin:0 auto;padding:12px 18px 0;font:13px/1.4 "IBM Plex Sans",system-ui,sans-serif}
+.fae-site a{color:var(--sage,#4A6B52);text-decoration:none;border-bottom:1px solid transparent;padding-bottom:1px}
+.fae-site a:hover,.fae-site a:focus-visible{border-bottom-color:currentColor}
+.fae-site a[aria-current]{color:var(--forest,#1F3D2B);font-weight:600}
+.fae-site .fae-accueil{font-family:Spectral,Georgia,serif;font-weight:700;font-size:15px;color:var(--forest,#1F3D2B);margin-right:4px}
+@media print{.fae-site{display:none!important}}
+</style>
+
+<div class="wrap">
+<header>
+  <h1>Registre de la Table</h1>
+  <p class="sub">Faelorenn · suivre une campagne à plusieurs</p>
+  <nav class="saut noprint" aria-label="Aller à">
+    <a href="#secTable">La table</a>
+    <a href="#secSeance">La séance</a>
+    <a href="#secPerso">Les personnages</a>
+    <a href="#secPnj">Les PNJ</a>
+    <a href="#secProg">La progression</a>
+    <a href="#secJets">Les jets</a>
+  </nav>
+</header>
+
+<section id="secTable">
+  <h2><span class="num">1</span> La table</h2>
+  <p class="hint">Dis qui tu es, puis choisis comment partager la table : un fichier dans un dossier partagé, GitHub, ou un .json qu’on s’envoie. Sans rien de tout ça, tout reste dans ce navigateur.</p>
+  <div class="card">
+    <div class="table">
+      <div>
+        <label class="lab" for="tbJoueur">Tu es</label>
+        <input type="text" id="tbJoueur" placeholder="Gaël" style="width:100%">
+      </div>
+      <div>
+        <label class="lab" for="tbNom">Nom de la campagne</label>
+        <input type="text" id="tbNom" placeholder="La Tournée d'Almeth" style="width:100%">
+      </div>
+    </div>
+    <div class="acts" style="margin-top:12px">
+      <button class="btn" id="tbOuvrir" type="button">Ouvrir le fichier de table</button>
+      <button class="btn ghost sm" id="tbCreer" type="button">Créer un fichier de table</button>
+      <button class="btn ghost sm" id="tbDetacher" type="button" hidden>Détacher le fichier</button>
+      <button class="btn ghost sm" id="tbJson" type="button">Enregistrer un .json</button>
+      <button class="btn ghost sm" id="tbImport" type="button">Importer un .json</button>
+      <input type="file" id="tbFichier" accept=".json,application/json" hidden>
+    </div>
+    <div class="etatsync"><span class="pastille" id="tbPastille"></span><span id="tbEtat"></span></div>
+    <p class="note" id="tbMsg" hidden role="status"></p>
+    <p class="note" id="tbAide"></p>
+    <details class="gh" id="ghBloc">
+      <summary>Synchroniser par GitHub, sans dossier partagé</summary>
+      <div class="ghcorps">
+        <p class="note" id="ghBloque" hidden>Depuis cette page-ci, GitHub est hors d’atteinte : utilise le site ou le fichier posé sur ton ordinateur.</p>
+        <ol class="etapes">
+          <li>Sur GitHub, crée un dépôt <b>privé</b>, <i>faelorenn-table</i> par exemple.</li>
+          <li>Crée un <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">jeton à accès fin</a> : seulement ce dépôt, <i>Contents</i> en lecture et écriture.</li>
+          <li>Colle le dépôt et le jeton ici. Les autres joueurs collent les mêmes sur leur ordinateur.</li>
+        </ol>
+        <div class="table">
+          <div>
+            <label class="lab" for="ghDepot">Dépôt</label>
+            <input type="text" id="ghDepot" placeholder="ton-nom/faelorenn-table" autocomplete="off" spellcheck="false" style="width:100%">
+          </div>
+          <div>
+            <label class="lab" for="ghJeton">Jeton d’accès</label>
+            <input type="password" id="ghJeton" placeholder="github_pat_…" autocomplete="off" spellcheck="false" style="width:100%">
+          </div>
+        </div>
+        <details class="plus">
+          <summary>Fichier et branche</summary>
+          <div class="table" style="margin-top:8px">
+            <div>
+              <label class="lab" for="ghChemin">Fichier</label>
+              <input type="text" id="ghChemin" placeholder="table-faelorenn.json" autocomplete="off" spellcheck="false" style="width:100%">
+            </div>
+            <div>
+              <label class="lab" for="ghBranche">Branche</label>
+              <input type="text" id="ghBranche" placeholder="main" autocomplete="off" spellcheck="false" style="width:100%">
+            </div>
+          </div>
+        </details>
+        <div class="acts" style="margin-top:10px">
+          <button class="btn sm" id="ghRelier" type="button">Relier à GitHub</button>
+          <button class="btn ghost sm" id="ghDetacher" type="button" hidden>Détacher</button>
+          <button class="btn ghost sm" id="ghOublier" type="button">Oublier le jeton</button>
+        </div>
+        <p class="note">Le jeton reste dans ce navigateur, jamais dans le dépôt. Chaque changement devient une version dans l’historique du dépôt : rien ne se perd.</p>
+      </div>
+    </details>
+  </div>
+</section>
+
+<section id="secSeance">
+  <h2><span class="num">2</span> La séance</h2>
+  <p class="hint">Le compte rendu s'écrit ici, comme dans le Doc. Le MJ raconte, chacun écrit ce que son personnage fait et dit, et les jets se joignent au paragraphe.</p>
+  <div class="card seance">
+    <div id="seTete"></div>
+    <div id="seEtat" class="etats" hidden></div>
+    <div id="seRecit" class="feuille" tabindex="-1"></div>
+    <div id="seCompo" class="compo noprint" hidden>
+      <div class="qui" id="coQui"></div>
+      <div class="seg genre" id="coGenre"></div>
+      <textarea id="coTexte" rows="3" aria-label="Le paragraphe"></textarea>
+      <div class="joint" id="coJoint" hidden></div>
+      <div class="acts outils">
+        <button class="btn ghost sm" id="coOutilJet" type="button" aria-pressed="false">Jet</button>
+        <button class="btn ghost sm" id="coOutilPv" type="button" aria-pressed="false">PV et PC</button>
+        <span class="espace"></span>
+        <button class="btn" id="coAjouter" type="button">Ajouter</button>
+      </div>
+      <div id="coPanneau"></div>
+    </div>
+  </div>
+</section>
+
+<section id="secPerso">
+  <h2><span class="num">3</span> Les personnages</h2>
+  <p class="hint">Chacun tient le sien. Les PV, les PC et la progression se suivent ici, et tout le monde voit la même chose.</p>
+  <div class="acts" style="margin-bottom:12px">
+    <button class="btn" id="pImporter" type="button">Importer une fiche du Registre du Havre</button>
+    <button class="btn ghost sm" id="pNouveau" type="button">Créer à la main</button>
+    <input type="file" id="pFichier" accept=".json,application/json" multiple hidden>
+  </div>
+  <div id="pEditeur" class="card" hidden style="margin-bottom:12px"></div>
+  <div id="pListe" class="pgrille"></div>
+</section>
+
+<section id="secPnj">
+  <h2><span class="num">4</span> Les PNJ</h2>
+  <p class="hint">Une fiche pour chaque personne croisée. Celles qui parlent ou agissent dans une séance ont la leur toute seule. Les liens tissent le réseau de la campagne.</p>
+  <div class="acts pnjbarre">
+    <div class="seg" role="group" aria-label="Voir">
+      <button type="button" id="pnjVueFiches" aria-pressed="true">Les fiches</button>
+      <button type="button" id="pnjVueReseau" aria-pressed="false">Le réseau</button>
+    </div>
+    <span class="espace"></span>
+    <button class="btn sm" id="pnjNouveau" type="button">Nouvelle fiche</button>
+  </div>
+  <div class="acts" id="pnjOutilsListe" style="margin:10px 0 12px">
+    <input type="search" id="pnjCherche" placeholder="Chercher un nom, un rôle, un lieu" aria-label="Chercher un PNJ" style="flex:1 1 220px">
+    <select id="pnjGroupe" aria-label="Filtrer par groupe"></select>
+    <span class="mini" id="pnjCompte"></span>
+  </div>
+  <div id="pnjEditeur" class="card" hidden style="margin-bottom:12px"></div>
+  <div id="pnjListe" class="pgrille"></div>
+  <div id="pnjReseau" class="card" hidden></div>
+</section>
+
+<section id="secProg">
+  <h2><span class="num">5</span> La progression</h2>
+  <p class="hint">Les points se gagnent en bouclant des missions, et se dépensent ici. Chaque achat est appliqué à la fiche, et s'écrit aussi dans la séance en cours.</p>
+  <div class="card" id="progBox"></div>
+</section>
+
+<section id="secJets">
+  <h2><span class="num">6</span> Les jets</h2>
+  <p class="hint">Tout ce qui a été lancé, par qui, et contre quelle cible. Les jets se font dans la séance.</p>
+  <div class="card">
+    <div class="acts" style="margin-bottom:6px">
+      <select id="jFiltre" aria-label="Filtrer par personnage"></select>
+      <button class="btn ghost sm" id="jVider" type="button">Vider l'historique</button>
+    </div>
+    <div class="histo" id="jHisto"></div>
+  </div>
+</section>
+</div>
+
+<script>
+/* ============ ce que dit le livre, et rien d'autre ============ */
+
+const CARS = ['Force','Dextérité','Constitution','Intelligence','Sagesse','Charisme','Contenance'];
+const ABBR = {Force:'FOR','Dextérité':'DEX',Constitution:'CON',Intelligence:'INT',Sagesse:'SAG',Charisme:'CHA',Contenance:'CNT'};
+const SKILLS = {
+  Force:['Athlétisme','Combat'],
+  'Dextérité':['Acrobatie','Discrétion','Artisanat','Tir'],
+  Constitution:[],
+  Intelligence:['Savoir','Investigation','Nature','Récits','Connaissance des Floraisons'],
+  Sagesse:['Perception','Empathie','Médecine','Survie',"Sentir l'Énergie"],
+  Charisme:['Persuasion','Tromperie','Intimidation','Représentation'],
+  Contenance:[]
+};
+const ALLSKILLS = [];
+CARS.forEach(c => SKILLS[c].forEach(s => ALLSKILLS.push({s:s, car:c})));
+const CAR_DE = {};
+ALLSKILLS.forEach(o => CAR_DE[o.s] = o.car);
+
+const GESTE = {'Force':'Combat', 'Dextérité':'Tir'};
+const ABR_JET = {'Force':'FOR', 'Dextérité':'DEX', 'Contenance':'CNT'};
+const JETS_SANS = ['aucun jet', 'la cible teste', 'les cibles testent'];
+
+/* les trois modificateurs du livre */
+const MODS = [
+  {k:'0',   l:'Rien de particulier', d20:0,  d100:0},
+  {k:'+',   l:'Les circonstances t’aident', d20:4, d100:20},
+  {k:'-',   l:'C’est difficile', d20:-4, d100:-20},
+  {k:'--',  l:'C’est quasiment impossible', d20:-8, d100:-40}
+];
+
+const d20v = t => Math.floor(t / 5);
+const near = n => Math.floor(n);
+
+/* un dé, et une formule du genre 2d6+2 */
+function de(faces){ return 1 + Math.floor(Math.random() * faces); }
+function lancerFormule(f){
+  const m = /^\s*(\d*)\s*d\s*(\d+)\s*(?:([+\-])\s*(\d+))?\s*$/i.exec(String(f || ''));
+  if(!m) return null;
+  const n = Math.min(20, Math.max(1, +(m[1] || 1))), faces = +m[2];
+  if(faces < 2 || faces > 100) return null;
+  const des = [];
+  for(let i = 0; i < n; i++) des.push(de(faces));
+  const bonus = m[3] ? (m[3] === '-' ? -1 : 1) * (+m[4]) : 0;
+  return {des:des, bonus:bonus, total:des.reduce((a, b) => a + b, 0) + bonus,
+    txt:n + 'd' + faces + (bonus ? (bonus > 0 ? '+' + bonus : bonus) : '')};
+}
+
+/* la résolution, telle que le Livre II l'écrit */
+function resoudre(jet, seuil, mode){
+  const cent = mode === 'd100';
+  const critique = cent ? jet <= 5 : jet === 1;
+  const echecCrit = cent ? jet >= 96 : jet === 20;
+  const reussite = !echecCrit && (critique || jet < seuil);
+  const marge = reussite ? 0 : Math.max(1, jet - seuil);
+  let bande = '';
+  if(!reussite){
+    if(echecCrit) bande = 'Échec critique.';
+    else if(cent) bande = marge <= 10 ? 'Ça ne marche pas, et rien de mauvais n’arrive.'
+      : marge <= 30 ? 'Ça ne marche pas, et ça coûte : du temps, du matériel, une position.'
+      : 'Ça ne marche pas, et la situation empire.';
+    else bande = marge <= 2 ? 'Ça ne marche pas, et rien de mauvais n’arrive.'
+      : marge <= 6 ? 'Ça ne marche pas, et ça coûte : du temps, du matériel, une position.'
+      : 'Ça ne marche pas, et la situation empire.';
+  } else if(critique) bande = cent ? 'Réussite critique.' : 'Réussite critique : dégâts doublés en combat.';
+  return {reussite:reussite, critique:critique, echecCrit:echecCrit, marge:marge, bande:bande};
+}
+
+/* le coût d'une progression, Livre II */
+function coutCompetence(de1, vers){
+  let n = 0;
+  for(let v = de1 + 1; v <= vers; v++) n += v <= 40 ? 1 : v <= 60 ? 2 : 3;
+  return n;
+}
+const ACHATS = [
+  {k:'comp', l:'Une compétence'},
+  {k:'prat', l:'Une Pratique de plus', cout:10},
+  {k:'car',  l:'Une caractéristique de +1', cout:20},
+  {k:'pv',   l:'+5 PV', cout:20}
+];
+
+/* ============ la table : un document partagé, fusionné pièce par pièce ============
+   Chaque personnage, chaque séance et chaque paragraphe du compte rendu porte sa date
+   de modification : la plus récente gagne. Les jets s'ajoutent sans jamais s'écraser. */
+
+const CLE_TABLE = 'faelorenn.table';
+const CLE_MOI = 'faelorenn.table.moi';
+const MAX_JETS = 400;
+
+let T = videTable();
+const MOI = {joueur:'', perso:'', seance:'', seanceFixee:false, mode:'d100', vuePnj:'fiches'};
+const SYNC = {poignee:null, nom:'', vu:0, dernier:0, etat:'local', erreur:'', ecrit:null, boucle:null};
+
+function videTable(){ return {format:'faelorenn-table', version:1, nom:'', maj:0, personnages:{}, journal:{}, blocs:{}, pnj:{}, liens:{}, positions:{}, jets:[], viderAvant:0}; }
+const CLES_FUSION = ['personnages','journal','blocs','pnj','liens','positions'];
+function nouvelId(p){ return (p || 'x') + '-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 6); }
+/* un nom donne son identifiant : deux joueurs qui créent « Nahya » chacun de leur côté créent la même fiche */
+function slug(s){ return String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'x'; }
+function idLibre(base, table){ return !table[base] || table[base].supprime ? base : base + '-' + Math.random().toString(36).slice(2, 6); }
+const maintenant = () => Date.now();
+
+/* ---------- forme d'un personnage ---------- */
+function videPerso(){
+  const car = {}, comp = {};
+  CARS.forEach(c => car[c] = 8);
+  ALLSKILLS.forEach(o => comp[o.s] = 16);
+  return {id:nouvelId('p'), maj:0, joueur:'', nom:'', peuple:'', voie:'', sub:{},
+    car:car, comp:comp, bonusPratique:40, domaine:'', pratiques:[],
+    pvMax:8, pv:8, pcMax:4, pcc:4, red:0, armes:[], sac:[], bourse:'', texte:'',
+    traits:'', contrainte:'', armure:'', peupleComp:'',
+    prog:{points:[], achats:[]}};
+}
+function normPerso(o){
+  const c = videPerso();
+  if(!o || typeof o !== 'object') return c;
+  const txt = v => (v == null ? '' : String(v));
+  const num = (v, d) => (v == null || isNaN(+v)) ? d : +v;
+  c.id = typeof o.id === 'string' && o.id ? o.id : nouvelId('p');
+  c.maj = num(o.maj, 0);
+  c.majPv = num(o.majPv, 0);
+  c.supprime = !!o.supprime;
+  ['joueur','nom','peuple','voie','domaine','bourse','texte','traits','contrainte','armure','peupleComp'].forEach(k => c[k] = txt(o[k]));
+  c.sub = o.sub && typeof o.sub === 'object' ? o.sub : {};
+  CARS.forEach(x => c.car[x] = num(o.car && o.car[x], 8));
+  ALLSKILLS.forEach(s => c.comp[s.s] = num(o.comp && o.comp[s.s], c.car[s.car] * 2));
+  c.bonusPratique = num(o.bonusPratique, 40);
+  c.pratiques = Array.isArray(o.pratiques) ? o.pratiques.slice(0, 40).map(p => ({
+    n:txt(p && p.n), j:txt(p && p.j) || 'aucun jet', pc:num(p && p.pc, 0), pct:txt(p && p.pct),
+    d:txt(p && p.d), base:!!(p && p.base), banniere:!!(p && p.banniere)
+  })).filter(p => p.n) : [];
+  c.pvMax = num(o.pvMax, num(o.pv, c.car.Constitution));
+  c.pv = num(o.pv, c.pvMax);
+  c.pcMax = num(o.pcMax, Math.floor(c.car.Contenance / 2));
+  c.pcc = num(o.pcc, c.pcMax);
+  c.red = num(o.red, 0);
+  c.armes = Array.isArray(o.armes) ? o.armes.slice(0, 20).map(a => ({nom:txt(a && a.nom), de:txt(a && a.de), notes:txt(a && a.notes)})).filter(a => a.nom) : [];
+  c.sac = Array.isArray(o.sac) ? o.sac.slice(0, 40).map(txt).filter(Boolean) : [];
+  const pg = o.prog && typeof o.prog === 'object' ? o.prog : {};
+  /* un achat garde tout ce qu'il faut pour être défait, même après un rechargement */
+  c.prog = {
+    points: Array.isArray(pg.points) ? pg.points.filter(x => x && typeof x === 'object').map(x => ({
+      id:txt(x.id) || nouvelId('g'), t:num(x.t, 0), quoi:txt(x.quoi), n:num(x.n, 0), bloc:txt(x.bloc)})) : [],
+    achats: Array.isArray(pg.achats) ? pg.achats.filter(x => x && typeof x === 'object').map(x => ({
+      id:txt(x.id) || nouvelId('a'), t:num(x.t, 0), type:txt(x.type), cible:txt(x.cible), n:num(x.n, 1),
+      jet:txt(x.jet), pc:num(x.pc, 0), texte:txt(x.texte), detail:txt(x.detail), cout:num(x.cout, 0), bloc:txt(x.bloc)})) : []
+  };
+  return c;
+}
+/* une fiche sortie du Registre du Havre */
+function depuisFiche(o){
+  const c = normPerso({
+    nom:o.nom, peuple:o.peuple, voie:o.voie, sub:o.sub, car:o.car, comp:o.comp,
+    bonusPratique:o.bonusPratique, domaine:o.domaine, pratiques:o.pratiques,
+    pvMax:o.pv, pv:o.pv, pcMax:o.pc, pcc:o.pc, red:o.red,
+    armes:o.armes, sac:o.sac, bourse:o.bourse,
+    traits:o.traits, contrainte:o.contrainte, armure:o.armure, peupleComp:o.peupleComp
+  });
+  c.joueur = MOI.joueur;
+  return c;
+}
+
+/* ---------- un paragraphe du compte rendu ---------- */
+const TYPES_BLOC = ['narration','scene','dit','fait','encadre','achat','note'];
+const txtOu = v => (v == null ? '' : String(v));
+function normJetBloc(j){
+  if(!j || typeof j !== 'object') return null;
+  return {id:txtOu(j.id), quoi:txtOu(j.quoi), mode:j.mode === 'd20' ? 'd20' : 'd100',
+    jet:+j.jet || 0, seuil:j.seuil == null ? null : +j.seuil,
+    reussite:!!j.reussite, critique:!!j.critique, echecCrit:!!j.echecCrit, marge:+j.marge || 0,
+    note:txtOu(j.note), main:!!j.main, val:j.val == null ? null : +j.val, mod:+j.mod || 0,
+    rea:j.rea === 'esquive' || j.rea === 'parade' ? j.rea : '', sans:!!j.sans};
+}
+function normVie(v){
+  if(!v || typeof v !== 'object') return null;
+  return {id:txtOu(v.id), nom:txtOu(v.nom), delta:+v.delta || 0, quoi:v.quoi === 'pc' ? 'pc' : 'pv',
+    reste:v.reste == null || v.reste === '' ? null : +v.reste, max:v.max == null || v.max === '' ? null : +v.max};
+}
+function normBloc(o){
+  o = o && typeof o === 'object' ? o : {};
+  const q = o.qui && typeof o.qui === 'object' ? o.qui : {};
+  const vies = Array.isArray(o.vies) ? o.vies : o.pv ? [o.pv] : [];
+  return {
+    id: txtOu(o.id) || nouvelId('b'), maj:+o.maj || 0, supprime:!!o.supprime,
+    seance: txtOu(o.seance), ordre: +o.ordre || 0,
+    type: TYPES_BLOC.indexOf(o.type) >= 0 ? o.type : 'narration',
+    qui: {k: ['perso','pnj','mj'].indexOf(q.k) >= 0 ? q.k : 'mj', id:txtOu(q.id), nom:txtOu(q.nom)},
+    texte: txtOu(o.texte), auteur: txtOu(o.auteur),
+    jet: normJetBloc(o.jet),
+    degats: o.degats && typeof o.degats === 'object'
+      ? {txt:txtOu(o.degats.txt), total:+o.degats.total || 0, des:txtOu(o.degats.des), double:!!o.degats.double} : null,
+    vies: vies.map(normVie).filter(v => v && v.delta)
+  };
+}
+
+/* ---------- les PNJ et leurs liens ---------- */
+const PEUPLES_LIVRE = ['Humains','Élytris','Nyréens',"Ori'Ican",'Cimérans','Ilvès','Vaellen','Écorciens'];
+const ATTITUDES = [{k:'amical', l:'Amical'}, {k:'neutre', l:'Neutre'}, {k:'mefiant', l:'Méfiant'}, {k:'hostile', l:'Hostile'}, {k:'inconnu', l:'On ne sait pas'}];
+const STATUTS = [{k:'vivant', l:'En vie'}, {k:'mort', l:'Mort'}, {k:'disparu', l:'Disparu'}];
+const TYPES_LIEN = [
+  {k:'famille', l:'Famille', mutuel:false, ex:'grand-mère de'},
+  {k:'amour', l:'Amour', mutuel:true, ex:'amoureux'},
+  {k:'ami', l:'Amitié', mutuel:true, ex:'amis d’enfance'},
+  {k:'allie', l:'Alliance', mutuel:true, ex:'font équipe'},
+  {k:'mentor', l:'Maître et élève', mutuel:false, ex:'instructeur de'},
+  {k:'travail', l:'Travail, service', mutuel:false, ex:'travaille pour'},
+  {k:'dette', l:'Dette, promesse', mutuel:false, ex:'doit un service à'},
+  {k:'rival', l:'Rivalité', mutuel:true, ex:'rivaux depuis l’enfance'},
+  {k:'ennemi', l:'Hostilité', mutuel:true, ex:'veut sa peau'},
+  {k:'autre', l:'Autre', mutuel:false, ex:'connaît'}
+];
+function normPnj(o){
+  o = o && typeof o === 'object' ? o : {};
+  const num = v => (v == null || v === '' || isNaN(+v)) ? null : Math.max(0, Math.round(+v));
+  return {id:txtOu(o.id) || nouvelId('n'), maj:+o.maj || 0, majPv:+o.majPv || 0, supprime:!!o.supprime,
+    nom:txtOu(o.nom), peuple:txtOu(o.peuple), role:txtOu(o.role), groupe:txtOu(o.groupe), lieu:txtOu(o.lieu),
+    attitude: ATTITUDES.some(a => a.k === o.attitude) ? o.attitude : 'inconnu',
+    statut: STATUTS.some(x => x.k === o.statut) ? o.statut : 'vivant',
+    seance:txtOu(o.seance), texte:txtOu(o.texte), auteur:txtOu(o.auteur),
+    valeurs: Array.isArray(o.valeurs) ? o.valeurs.filter(v => v && txtOu(v.n).trim()).slice(0, 20).map(v => ({n:txtOu(v.n).trim(), v:Math.max(0, Math.round(+v.v || 0))})) : [],
+    pvMax:num(o.pvMax), pv:num(o.pv)};
+}
+function normLien(o){
+  o = o && typeof o === 'object' ? o : {};
+  return {id:txtOu(o.id) || nouvelId('l'), maj:+o.maj || 0, supprime:!!o.supprime,
+    de:txtOu(o.de), vers:txtOu(o.vers), type: TYPES_LIEN.some(t => t.k === o.type) ? o.type : 'autre',
+    texte:txtOu(o.texte), mutuel:!!o.mutuel, notes:txtOu(o.notes)};
+}
+
+/* ---------- ce que la fiche donne ---------- */
+function carD20(c, car){ return d20v(c.car[car] * 2); }
+function compTotal(c, s){ return c.comp[s] != null ? c.comp[s] : c.car[CAR_DE[s]] * 2; }
+function pratValeur(c, p){
+  if(JETS_SANS.indexOf(p.j) >= 0) return {jet:p.j, val:null, par:''};
+  const propre = (c.car[p.j] || 8) * 2 + (c.bonusPratique || 40);
+  const geste = GESTE[p.j] ? compTotal(c, GESTE[p.j]) : 0;
+  return {jet:p.j, val:Math.max(propre, geste), par: geste > propre ? GESTE[p.j] : ''};
+}
+function pointsGagnes(c){ return (c.prog.points || []).reduce((a, x) => a + x.n, 0); }
+function pointsDepenses(c){ return (c.prog.achats || []).reduce((a, x) => a + x.cout, 0); }
+function pointsRestants(c){ return pointsGagnes(c) - pointsDepenses(c); }
+
+/* ---------- fusion ---------- */
+function fusionner(a, b){
+  const out = videTable();
+  out.maj = Math.max(a.maj || 0, b.maj || 0);
+  out.nom = (b.maj || 0) > (a.maj || 0) ? (b.nom || a.nom || '') : (a.nom || b.nom || '');
+  CLES_FUSION.forEach(k => {
+    const m = {};
+    Object.keys(a[k] || {}).forEach(id => m[id] = a[k][id]);
+    Object.keys(b[k] || {}).forEach(id => {
+      const x = b[k][id], y = m[id];
+      if(!y){ m[id] = x; return; }
+      let garde = (x.maj || 0) > (y.maj || 0) ? x : y;
+      const autre = garde === x ? y : x;
+      /* les PV et les PC vivent leur propre vie pendant un combat */
+      if(k === 'personnages' && (autre.majPv || 0) > (garde.majPv || 0))
+        garde = Object.assign({}, garde, {pv:autre.pv, pcc:autre.pcc, majPv:autre.majPv});
+      if(k === 'pnj' && (autre.majPv || 0) > (garde.majPv || 0))
+        garde = Object.assign({}, garde, {pv:autre.pv, majPv:autre.majPv});
+      m[id] = garde;
+    });
+    out[k] = m;
+  });
+  /* un historique vidé l'est chez tout le monde : ce qui est plus vieux que le coup de balai ne revient pas */
+  out.viderAvant = Math.max(a.viderAvant || 0, b.viderAvant || 0);
+  const vus = {}, jets = [];
+  (a.jets || []).concat(b.jets || []).forEach(j => { if(j && j.id && !vus[j.id] && (j.t || 0) > out.viderAvant){ vus[j.id] = 1; jets.push(j); } });
+  jets.sort((x, y) => (x.t || 0) - (y.t || 0));
+  out.jets = jets.slice(-MAX_JETS);
+  return out;
+}
+function normTable(o){
+  const t = videTable();
+  if(!o || typeof o !== 'object') return t;
+  t.nom = typeof o.nom === 'string' ? o.nom : '';
+  t.maj = +o.maj || 0;
+  t.viderAvant = +o.viderAvant || 0;
+  Object.keys(o.personnages || {}).forEach(id => {
+    const c = normPerso(o.personnages[id]);
+    c.id = id;
+    t.personnages[id] = c;
+  });
+  Object.keys(o.journal || {}).forEach(id => {
+    const e = o.journal[id] || {};
+    t.journal[id] = {id:id, maj:+e.maj || 0, supprime:!!e.supprime, seance:String(e.seance == null ? '' : e.seance),
+      date:String(e.date || ''), titre:String(e.titre || ''), texte:String(e.texte || ''), auteur:String(e.auteur || '')};
+  });
+  Object.keys(o.blocs || {}).forEach(id => { const b = normBloc(o.blocs[id]); b.id = id; t.blocs[id] = b; });
+  Object.keys(o.pnj || {}).forEach(id => { const p = normPnj(o.pnj[id]); p.id = id; t.pnj[id] = p; });
+  Object.keys(o.liens || {}).forEach(id => { const l = normLien(o.liens[id]); l.id = id; t.liens[id] = l; });
+  Object.keys(o.positions || {}).forEach(r => {
+    const p = o.positions[r];
+    if(p && isFinite(+p.x) && isFinite(+p.y)) t.positions[r] = {x:+p.x, y:+p.y, maj:+p.maj || 0, supprime:!!p.supprime};
+  });
+  /* une séance écrite avant les paragraphes : son texte devient le premier, sous un nom fixe
+     pour que deux joueurs qui l'ouvrent ne le recopient pas deux fois */
+  Object.keys(t.journal).forEach(id => {
+    const e = t.journal[id];
+    const cle = 'b-ancien-' + id;
+    if(e.texte && !t.blocs[cle]) t.blocs[cle] = normBloc({id:cle, maj:e.maj, seance:id, ordre:0, type:'narration', texte:e.texte, auteur:e.auteur});
+  });
+  t.jets = (Array.isArray(o.jets) ? o.jets : []).filter(j => j && j.id).map(j => ({
+    id:String(j.id), t:+j.t || 0, auteur:String(j.auteur || ''), perso:String(j.perso || ''),
+    quoi:String(j.quoi || ''), formule:String(j.formule || ''), jet:+j.jet || 0, seuil:j.seuil == null ? null : +j.seuil,
+    mode:String(j.mode || 'd20'), reussite:!!j.reussite, note:String(j.note || ''), main:!!j.main
+  })).slice(-MAX_JETS);
+  return t;
+}
+
+/* ---------- ce navigateur ---------- */
+function sauverLocal(){
+  try{ localStorage.setItem(CLE_TABLE, JSON.stringify(T)); }catch(e){}
+  try{ localStorage.setItem(CLE_MOI, JSON.stringify(MOI)); }catch(e){}
+}
+function chargerLocal(){
+  try{ const r = localStorage.getItem(CLE_TABLE); if(r) T = normTable(JSON.parse(r)); }catch(e){}
+  try{ const r = localStorage.getItem(CLE_MOI); if(r) Object.assign(MOI, JSON.parse(r)); }catch(e){}
+}
+
+/* toute modification passe par là : on date, on garde, on envoie au fichier */
+function changer(fn){
+  fn();
+  T.maj = maintenant();
+  sauverLocal();
+  planifierEcriture();
+  dessiner();
+}
+function majPerso(c, vie){
+  c.maj = maintenant();
+  if(vie) c.majPv = c.maj;
+  T.personnages[c.id] = c;
+}
+
+/* ---------- le fichier partagé ---------- */
+const FSA = () => typeof window !== 'undefined' && typeof window.showOpenFilePicker === 'function';
+
+function ouvrirBase(){
+  return new Promise((ok, ko) => {
+    const r = indexedDB.open('faelorenn-table', 1);
+    r.onupgradeneeded = () => { r.result.createObjectStore('cle'); };
+    r.onsuccess = () => ok(r.result);
+    r.onerror = () => ko(r.error);
+  });
+}
+function garderPoignee(h){
+  return ouvrirBase().then(db => new Promise((ok) => {
+    const tx = db.transaction('cle', 'readwrite');
+    tx.objectStore('cle').put(h, 'fichier');
+    tx.oncomplete = () => ok(true);
+    tx.onerror = () => ok(false);
+  })).catch(() => false);
+}
+function reprendrePoignee(){
+  return ouvrirBase().then(db => new Promise((ok) => {
+    const tx = db.transaction('cle', 'readonly');
+    const q = tx.objectStore('cle').get('fichier');
+    q.onsuccess = () => ok(q.result || null);
+    q.onerror = () => ok(null);
+  })).catch(() => null);
+}
+function oublierPoignee(){
+  return ouvrirBase().then(db => new Promise((ok) => {
+    const tx = db.transaction('cle', 'readwrite');
+    tx.objectStore('cle').delete('fichier');
+    tx.oncomplete = () => ok(true);
+    tx.onerror = () => ok(false);
+  })).catch(() => false);
+}
+
+function attacher(h, nom){
+  if(SYNC.etat === 'github') ghDetacher(true);
+  SYNC.poignee = h;
+  SYNC.nom = nom || (h && h.name) || 'table.json';
+  SYNC.etat = 'fichier';
+  SYNC.erreur = '';
+  garderPoignee(h);
+  demarrerBoucle();
+  return lireFichier(true).then(() => ecrireFichier());
+}
+function detacher(){
+  SYNC.poignee = null; SYNC.nom = ''; SYNC.etat = 'local'; SYNC.vu = 0;
+  if(SYNC.boucle){ clearInterval(SYNC.boucle); SYNC.boucle = null; }
+  oublierPoignee();
+  dessiner();
+}
+
+function lireFichier(force){
+  if(!SYNC.poignee) return Promise.resolve(false);
+  return SYNC.poignee.getFile().then(f => {
+    if(!force && f.lastModified === SYNC.vu) return false;
+    SYNC.vu = f.lastModified;
+    return f.text().then(txt => {
+      if(!txt.trim()) return false;
+      let o = null;
+      try{ o = JSON.parse(txt); }catch(e){ SYNC.erreur = 'Le fichier n’est pas lisible.'; dessiner(); return false; }
+      if(!o || o.format !== 'faelorenn-table'){ SYNC.erreur = 'Ce fichier n’est pas une table Faelorenn.'; dessiner(); return false; }
+      SYNC.erreur = '';
+      T = fusionner(T, normTable(o));
+      SYNC.dernier = maintenant();
+      sauverLocal();
+      dessiner();
+      return true;
+    });
+  }).catch(e => {
+    SYNC.erreur = (e && e.name === 'NotAllowedError') ? 'Le navigateur a repris la main sur le fichier : reconnecte-le.' : 'Le fichier n’a pas pu être lu.';
+    dessiner();
+    return false;
+  });
+}
+
+/* on relit, on fusionne, puis on écrit : deux joueurs ne s'effacent pas */
+function ecrireFichier(){
+  if(!SYNC.poignee) return Promise.resolve(false);
+  return SYNC.poignee.getFile()
+    .then(f => f.text().then(txt => {
+      if(txt.trim()){
+        try{
+          const o = JSON.parse(txt);
+          if(o && o.format === 'faelorenn-table') T = fusionner(T, normTable(o));
+        }catch(e){}
+      }
+      return SYNC.poignee.createWritable();
+    }))
+    .then(w => w.write(JSON.stringify(T, null, 1)).then(() => w.close()))
+    .then(() => SYNC.poignee.getFile())
+    .then(f => {
+      SYNC.vu = f.lastModified;
+      SYNC.dernier = maintenant();
+      SYNC.erreur = '';
+      sauverLocal();
+      dessiner();
+      return true;
+    })
+    .catch(e => {
+      SYNC.erreur = (e && e.name === 'NotAllowedError') ? 'Le navigateur a repris la main sur le fichier : reconnecte-le.' : 'L’écriture dans le fichier a échoué.';
+      dessiner();
+      return false;
+    });
+}
+function planifierEcriture(){
+  if(SYNC.etat === 'github'){ ghPlanifier(); return; }
+  if(!SYNC.poignee) return;
+  clearTimeout(SYNC.ecrit);
+  SYNC.ecrit = setTimeout(ecrireFichier, 900);
+}
+function demarrerBoucle(){
+  if(SYNC.boucle) clearInterval(SYNC.boucle);
+  SYNC.boucle = setInterval(() => { if(SYNC.poignee && !document.hidden) lireFichier(false); }, 4000);
+}
+
+/* au chargement : on retrouve le fichier de la dernière fois s'il nous laisse entrer */
+function reprendreFichier(){
+  if(!FSA()) return Promise.resolve(false);
+  return reprendrePoignee().then(h => {
+    if(!h) return false;
+    if(!h.queryPermission) return false;
+    return h.queryPermission({mode:'readwrite'}).then(p => {
+      if(p === 'granted'){ SYNC.poignee = h; SYNC.nom = h.name; SYNC.etat = 'fichier'; demarrerBoucle(); return lireFichier(true); }
+      SYNC.poignee = h; SYNC.nom = h.name; SYNC.etat = 'attente';
+      dessiner();
+      return false;
+    });
+  }).catch(() => false);
+}
+function redemander(){
+  if(!SYNC.poignee || !SYNC.poignee.requestPermission) return;
+  SYNC.poignee.requestPermission({mode:'readwrite'}).then(p => {
+    if(p === 'granted'){ SYNC.etat = 'fichier'; demarrerBoucle(); lireFichier(true).then(ecrireFichier); }
+    else { SYNC.erreur = 'Sans autorisation, le fichier reste fermé.'; dessiner(); }
+  });
+}
+
+/* ---------- le .json qu'on s'envoie ---------- */
+function tableJson(){ return JSON.stringify(T, null, 1); }
+function importerTable(txt){
+  let o = null;
+  try{ o = JSON.parse(txt); }catch(e){ return {ok:false, msg:'Ce fichier n’est pas lisible.'}; }
+  if(!o || typeof o !== 'object') return {ok:false, msg:'Ce fichier n’est pas lisible.'};
+  if(o.format === 'faelorenn-personnage'){
+    const c = depuisFiche(o);
+    const deja = persos().find(x => (x.nom || '').trim().toLowerCase() === (c.nom || '').trim().toLowerCase());
+    if(deja) return {ok:false, msg:'« ' + (c.nom || 'Sans nom') + ' » est déjà à la table. Pour le remplacer, retire d’abord l’ancien.'};
+    c.id = idLibre('p-' + slug(c.nom), T.personnages);
+    changer(() => majPerso(c));
+    return {ok:true, msg:'« ' + (c.nom || 'Sans nom') + ' » est entré dans la table.'};
+  }
+  if(o.format !== 'faelorenn-table') return {ok:false, msg:'Ce fichier n’est ni une table ni une fiche Faelorenn.'};
+  const vivants = m => Object.keys(m).filter(k => m[k] && !m[k].supprime).length;
+  const compte = () => ({p:vivants(T.personnages), b:vivants(T.blocs), n:vivants(T.pnj), l:vivants(T.liens)});
+  const avant = compte();
+  changer(() => { T = fusionner(T, normTable(o)); });
+  const apres = compte(), np = apres.p - avant.p, nb = apres.b - avant.b, nn = apres.n - avant.n, nl = apres.l - avant.l;
+  const bouts = [];
+  if(np > 0) bouts.push(np + ' personnage' + (np > 1 ? 's' : ''));
+  if(nb > 0) bouts.push(nb + ' paragraphe' + (nb > 1 ? 's' : '') + ' de séance');
+  if(nn > 0) bouts.push(nn + ' fiche' + (nn > 1 ? 's' : '') + ' de PNJ');
+  if(nl > 0) bouts.push(nl + ' lien' + (nl > 1 ? 's' : ''));
+  const liste = bouts.length > 1 ? bouts.slice(0, -1).join(', ') + ' et ' + bouts[bouts.length - 1] : bouts.join('');
+  return {ok:true, msg: bouts.length ? 'Table fusionnée : ' + liste + ' de plus.' : 'Table fusionnée, rien de neuf.'};
+}
+
+/* ---------- télécharger ---------- */
+let DLNS;
+function espaceTelechargement(){
+  if(DLNS !== undefined) return Promise.resolve(DLNS);
+  try{
+    if(typeof claude === 'undefined' || !claude || typeof claude.use !== 'function'){ DLNS = null; return Promise.resolve(null); }
+    return claude.use('downloads').then(ns => (DLNS = ns || null), () => (DLNS = null));
+  }catch(e){ DLNS = null; return Promise.resolve(null); }
+}
+function telecharger(nom, contenu, type, bouton){
+  const libelle = bouton ? bouton.textContent : '';
+  const dire = t => { if(!bouton) return; bouton.textContent = t; setTimeout(() => { bouton.textContent = libelle; }, 2200); };
+  const blob = contenu instanceof Blob ? contenu : new Blob([contenu], {type:type});
+  return espaceTelechargement().then(ns => {
+    if(ns) return ns.save({filename:nom, data:blob}).then(() => dire('Enregistré'), e => dire(e && e.code === 'declined' ? 'Annulé' : 'Refusé'));
+    const url = URL.createObjectURL(blob), a = document.createElement('a');
+    a.href = url; a.download = nom; a.style.display = 'none';
+    document.body.appendChild(a); a.click();
+    setTimeout(() => { a.remove(); URL.revokeObjectURL(url); }, 4000);
+    dire('Fichier envoyé');
+  });
+}
+
+/* ============ les personnages ============ */
+
+const OUVERTS = {};          /* les fiches dépliées, dans ce navigateur */
+let PED = null;              /* la fiche en cours d'édition */
+let A_SUPPRIMER = null;
+
+const $ = id => document.getElementById(id);
+const el = (tag, cls, txt) => { const e = document.createElement(tag); if(cls) e.className = cls; if(txt != null) e.textContent = txt; return e; };
+
+/* un champ en cours de frappe ne se redessine pas sous les doigts : on attend qu'on le quitte */
+function occupe(box){
+  const a = document.activeElement;
+  return !!(box && a && a !== document.body && box.contains(a) && /^(TEXTAREA|INPUT|SELECT)$/.test(a.tagName));
+}
+function apresSaisie(box, fn){
+  if(box._attend) return;
+  box._attend = true;
+  const f = () => setTimeout(() => {
+    if(occupe(box)) return;
+    box.removeEventListener('focusout', f);
+    box._attend = false;
+    fn();
+  }, 150);
+  box.addEventListener('focusout', f);
+}
+function persos(){
+  return Object.keys(T.personnages).map(id => T.personnages[id]).filter(c => !c.supprime)
+    .sort((a, b) => (a.nom || '').localeCompare(b.nom || '', 'fr'));
+}
+function perso(id){ const c = T.personnages[id]; return c && !c.supprime ? c : null; }
+
+function jauge(c, quelle){
+  const cour = quelle === 'pv' ? 'pv' : 'pcc', max = quelle === 'pv' ? 'pvMax' : 'pcMax';
+  const w = el('div','jauge');
+  w.append(el('div','t', quelle === 'pv' ? 'Points de vie' : 'Points de Contenance'));
+  const v = el('div','v', String(c[cour]));
+  v.append(el('small', null, ' / ' + c[max]));
+  w.append(v);
+  const b = el('div','barre');
+  const part = c[max] ? Math.max(0, Math.min(1, c[cour] / c[max])) : 0;
+  const i = el('i', part <= 0.34 ? 'bas' : null);
+  i.style.width = (part * 100) + '%';
+  b.append(i); w.append(b);
+  const cmd = el('div','cmd');
+  const bouton = (txt, n) => {
+    const x = el('button', null, txt); x.type = 'button';
+    x.setAttribute('aria-label', txt + ' ' + (quelle === 'pv' ? 'PV' : 'PC') + ' à ' + (c.nom || 'ce personnage'));
+    x.disabled = (n < 0 && c[cour] <= 0) || (n > 0 && c[cour] >= c[max]);
+    x.onclick = () => changer(() => { c[cour] = Math.max(0, Math.min(c[max], c[cour] + n)); majPerso(c, true); });
+    return x;
+  };
+  cmd.append(bouton('−5', -5), bouton('−1', -1), bouton('+1', 1));
+  const plein = el('button', null, '↺'); plein.type = 'button'; plein.title = 'remettre au plein';
+  plein.onclick = () => changer(() => { c[cour] = c[max]; majPerso(c, true); });
+  cmd.append(plein);
+  w.append(cmd);
+  return w;
+}
+
+function tableauCarac(c){
+  const t = el('table','tab');
+  const h = el('tr');
+  ['Caractéristique','Valeur','×2','d20'].forEach((x, i) => h.append(el('th', i ? 'n' : null, x)));
+  t.append(h);
+  CARS.forEach(x => {
+    const tr = el('tr');
+    tr.append(el('td', null, x + ' · ' + ABBR[x]));
+    tr.append(el('td','n', String(c.car[x])));
+    tr.append(el('td','n', String(c.car[x] * 2)));
+    tr.append(el('td','n', String(carD20(c, x))));
+    t.append(tr);
+  });
+  return t;
+}
+function tableauComp(c){
+  const t = el('table','tab');
+  const h = el('tr');
+  ['Compétence','Total','d20','Compétence','Total','d20'].forEach((x, i) => h.append(el('th', i % 3 ? 'n' : null, x)));
+  t.append(h);
+  const liste = ALLSKILLS.slice();
+  const moitie = Math.ceil(liste.length / 2);
+  for(let i = 0; i < moitie; i++){
+    const tr = el('tr');
+    [liste[i], liste[i + moitie]].forEach(o => {
+      if(!o){ tr.append(el('td'), el('td'), el('td')); return; }
+      const tot = compTotal(c, o.s);
+      tr.append(el('td', null, o.s), el('td','n', String(tot)), el('td','n', String(d20v(tot))));
+    });
+    t.append(tr);
+  }
+  return t;
+}
+function tableauPrat(c){
+  const t = el('table','tab');
+  const h = el('tr');
+  ['Pratique','Se lance','Valeur','d20','Coût'].forEach((x, i) => h.append(el('th', i > 1 ? 'n' : null, x)));
+  t.append(h);
+  c.pratiques.forEach(p => {
+    const v = pratValeur(c, p), tr = el('tr');
+    const td = el('td');
+    td.append(el('b', null, p.n));
+    if(p.d) td.append(el('div','mini', p.d));
+    tr.append(td);
+    tr.append(el('td', null, ABR_JET[p.j] || p.j));
+    tr.append(el('td','n', v.val == null ? '–' : String(v.val) + (v.par ? ' (' + v.par + ')' : '')));
+    tr.append(el('td','n', v.val == null ? '–' : String(d20v(v.val))));
+    tr.append(el('td','n', p.base ? 'de base' : p.banniere ? 'Bannière' : p.pct ? p.pct : p.pc ? p.pc + ' PC' : 'gratuit'));
+    t.append(tr);
+  });
+  return t;
+}
+
+function detailPerso(c){
+  const d = el('div','detail');
+  const sc = (n, noeud) => { d.append(el('h3', null, n)); const s = el('div','scroll'); s.append(noeud); d.append(s); };
+  sc('Caractéristiques', tableauCarac(c));
+  sc('Compétences', tableauComp(c));
+  if(c.pratiques.length) sc('Pratiques', tableauPrat(c));
+  if(c.armes.length){
+    const t = el('table','tab');
+    const h = el('tr'); ['Arme','Dé','Notes'].forEach((x, i) => h.append(el('th', i === 1 ? 'n' : null, x))); t.append(h);
+    c.armes.forEach(a => { const tr = el('tr'); tr.append(el('td', null, a.nom), el('td','n', a.de), el('td','mini', a.notes)); t.append(tr); });
+    sc('Armes', t);
+  }
+  const sac = [];
+  if(c.sac.length) sac.push(c.sac.join(' · '));
+  if(c.bourse) sac.push('Bourse : ' + c.bourse);
+  if(c.red) sac.push('Réduction ' + c.red);
+  if(sac.length){ d.append(el('h3', null, 'Ce qu’il porte')); d.append(el('p','mini', sac.join(' · '))); }
+  [['traits','Traits'],['contrainte','Contrainte'],['armure','Armure'],['peupleComp','Compétence de peuple']].forEach(([k, l]) => {
+    if(c[k]){ const p = el('p','mini'); p.append(el('b', null, l + ' : '), document.createTextNode(c[k])); d.append(p); }
+  });
+
+  d.append(el('h3', null, 'Ce qu’il est'));
+  const zone = el('textarea'); zone.rows = 5; zone.value = c.texte;
+  zone.placeholder = 'Son histoire, sa voix, ce qu’il cherche. Ce que tu écris ici part dans la table.';
+  zone.onchange = () => changer(() => { c.texte = zone.value; majPerso(c); });
+  d.append(zone);
+  return d;
+}
+
+function carte(c){
+  const w = el('div','pcarte' + (MOI.perso === c.id ? ' moi' : ''));
+  w.setAttribute('data-perso', c.id);
+  const t = el('div');
+  t.append(el('div','pnom', c.nom || 'Sans nom'));
+  const qui = [c.joueur ? 'joué par ' + c.joueur : '', c.peuple, c.voie].filter(Boolean).join(' · ');
+  t.append(el('div','pqui', qui || 'personne ne le tient'));
+  w.append(t);
+
+  const j = el('div','jauges');
+  j.append(jauge(c, 'pv'), jauge(c, 'pc'));
+  w.append(j);
+
+  const act = el('div','pact');
+  const ouvert = !!OUVERTS[c.id];
+  const b1 = el('button','btn ghost sm', ouvert ? 'Replier' : 'Voir la fiche'); b1.type = 'button';
+  b1.onclick = () => { OUVERTS[c.id] = !ouvert; dessinerPersos(); };
+  const b2 = el('button','btn ghost sm','Lancer pour lui'); b2.type = 'button';
+  b2.onclick = () => {
+    if(!seanceCourante()){ msgTable('Commence d’abord une séance : les jets s’y écrivent.', false); $('secSeance').scrollIntoView({block:'start', behavior:'smooth'}); return; }
+    composerPour(c);
+  };
+  const b3 = el('button','btn ghost sm','Modifier'); b3.type = 'button';
+  b3.onclick = () => ouvrirEditeurPerso(c, false);
+  const b4 = el('button','btn ghost sm' + (MOI.perso === c.id ? '' : ''), MOI.perso === c.id ? 'C’est le mien' : 'C’est le mien ?'); b4.type = 'button';
+  b4.setAttribute('aria-pressed', MOI.perso === c.id ? 'true' : 'false');
+  b4.onclick = () => { MOI.perso = MOI.perso === c.id ? '' : c.id; if(MOI.perso && MOI.joueur && !c.joueur) changer(() => { c.joueur = MOI.joueur; majPerso(c); }); else { sauverLocal(); dessiner(); } };
+  const arme = A_SUPPRIMER === c.id;
+  const b5 = el('button','btn ghost sm' + (arme ? ' danger' : ''), arme ? 'Confirmer' : 'Retirer'); b5.type = 'button';
+  b5.onclick = () => {
+    if(arme){ A_SUPPRIMER = null; changer(() => { c.supprime = true; majPerso(c); }); }
+    else { A_SUPPRIMER = c.id; dessinerPersos(); setTimeout(() => { if(A_SUPPRIMER === c.id){ A_SUPPRIMER = null; dessinerPersos(); } }, 5000); }
+  };
+  act.append(b1, b2, b3, b4, b5);
+  w.append(act);
+  if(ouvert) w.append(detailPerso(c));
+  return w;
+}
+
+function dessinerPersos(){
+  const box = $('pListe'); if(!box) return;
+  if(occupe(box)){ apresSaisie(box, dessinerPersos); return; }
+  box.innerHTML = '';
+  const liste = persos();
+  if(!liste.length){
+    box.append(el('p','vide','Personne à la table. Importe une fiche du Registre du Havre, ou crée-la à la main.'));
+    return;
+  }
+  liste.forEach(c => box.append(carte(c)));
+}
+
+/* ---------- l'éditeur ---------- */
+function champ(parent, lab, noeud, aide){
+  const w = el('div');
+  const l = el('label','lab', lab);
+  if(noeud.id) l.htmlFor = noeud.id;
+  w.append(l);
+  w.append(noeud);
+  if(aide) w.append(el('p','mini', aide));
+  parent.append(w);
+  return noeud;
+}
+function nombre(val, min, max){
+  const i = el('input'); i.type = 'number'; i.value = val; i.min = min; i.max = max; i.inputMode = 'numeric'; i.style.width = '90px';
+  return i;
+}
+
+function ouvrirEditeurPerso(c, nouveau){
+  PED = normPerso(JSON.parse(JSON.stringify(c)));
+  if(nouveau) PED.id = nouvelId('p');
+  const box = $('pEditeur'); box.innerHTML = ''; box.hidden = false;
+  box.append(el('h3', null, nouveau ? 'Un personnage de plus' : 'Modifier ' + (PED.nom || 'la fiche')));
+
+  const id = el('div','table');
+  champ(id, 'Nom', Object.assign(el('input'), {type:'text', value:PED.nom, oninput:e => PED.nom = e.target.value, style:'width:100%'}));
+  champ(id, 'Joué par', Object.assign(el('input'), {type:'text', value:PED.joueur || MOI.joueur, oninput:e => PED.joueur = e.target.value, style:'width:100%'}));
+  champ(id, 'Peuple', Object.assign(el('input'), {type:'text', value:PED.peuple, oninput:e => PED.peuple = e.target.value, style:'width:100%'}));
+  champ(id, 'Voie', Object.assign(el('input'), {type:'text', value:PED.voie, oninput:e => PED.voie = e.target.value, style:'width:100%'}));
+  box.append(id);
+
+  box.append(el('h3', null, 'Caractéristiques'));
+  const gc = el('div','table');
+  CARS.forEach(x => {
+    const i = nombre(PED.car[x], 1, 30);
+    i.oninput = () => {
+      const avant = PED.car[x];
+      PED.car[x] = Math.max(1, +i.value || 0);
+      ALLSKILLS.forEach(o => { if(o.car === x) PED.comp[o.s] += (PED.car[x] - avant) * 2; });
+      if(x === 'Constitution'){ const dv = PED.car[x] - avant; PED.pvMax += dv; PED.pv = Math.max(0, Math.min(PED.pvMax, PED.pv + dv)); }
+      if(x === 'Contenance'){ const av = PED.pcMax; PED.pcMax = Math.floor(PED.car[x] / 2); PED.pcc = Math.max(0, Math.min(PED.pcMax, PED.pcc + PED.pcMax - av)); }
+      majApercuEditeur();
+    };
+    champ(gc, x + ' · ' + ABBR[x], i);
+  });
+  box.append(gc);
+
+  box.append(el('h3', null, 'Compétences, total écrit sur la fiche'));
+  const gs = el('div','table');
+  ALLSKILLS.forEach(o => {
+    const i = nombre(compTotal(PED, o.s), 0, 200);
+    i.oninput = () => { PED.comp[o.s] = Math.max(0, +i.value || 0); majApercuEditeur(); };
+    champ(gs, o.s, i);
+  });
+  box.append(gs);
+
+  box.append(el('h3', null, 'Vie, Contenance et armure'));
+  const gv = el('div','table');
+  champ(gv, 'PV maximum', Object.assign(nombre(PED.pvMax, 1, 200), {oninput:e => { PED.pvMax = Math.max(1, +e.target.value || 1); PED.pv = Math.min(PED.pv, PED.pvMax); majApercuEditeur(); }}));
+  champ(gv, 'PC maximum', Object.assign(nombre(PED.pcMax, 0, 100), {oninput:e => { PED.pcMax = Math.max(0, +e.target.value || 0); PED.pcc = Math.min(PED.pcc, PED.pcMax); }}));
+  champ(gv, 'Réduction', Object.assign(nombre(PED.red, 0, 20), {oninput:e => PED.red = Math.max(0, +e.target.value || 0)}));
+  const sb = el('select');
+  [[40, 'Non humain : +20 de base, +20 de domaine'], [30, 'Humain : +20 de base, +10 d’école']].forEach(([v, l]) => sb.add(new Option(l, String(v))));
+  sb.value = String(PED.bonusPratique);
+  sb.onchange = () => { PED.bonusPratique = +sb.value; majApercuEditeur(); };
+  champ(gv, 'Bonus de Pratique', sb);
+  box.append(gv);
+
+  box.append(el('h3', null, 'Pratiques'));
+  const pbox = el('div'); pbox.id = 'ed-prats';
+  box.append(pbox);
+  const plus = el('button','btn ghost sm','Ajouter une Pratique'); plus.type = 'button';
+  plus.onclick = () => { PED.pratiques.push({n:'', j:'aucun jet', pc:0, pct:'', d:'', base:false, banniere:false}); dessinerPratsEditeur(); };
+  box.append(plus);
+
+  box.append(el('h3', null, 'Armes'));
+  const abox = el('div'); abox.id = 'ed-armes';
+  box.append(abox);
+  const plusA = el('button','btn ghost sm','Ajouter une arme'); plusA.type = 'button';
+  plusA.onclick = () => { PED.armes.push({nom:'', de:'d6', notes:''}); dessinerArmesEditeur(); };
+  box.append(plusA);
+
+  box.append(el('h3', null, 'Le sac et la bourse'));
+  const gsac = el('div','table');
+  const sac = el('textarea'); sac.rows = 3; sac.value = PED.sac.join('\n');
+  sac.placeholder = 'Une ligne par objet';
+  sac.oninput = () => PED.sac = sac.value.split('\n').map(x => x.trim()).filter(Boolean);
+  champ(gsac, 'Le sac', sac);
+  champ(gsac, 'Bourse', Object.assign(el('input'), {type:'text', value:PED.bourse, oninput:e => PED.bourse = e.target.value, style:'width:100%'}));
+  box.append(gsac);
+
+  const zone = el('textarea'); zone.rows = 4; zone.value = PED.texte;
+  zone.placeholder = 'Son histoire, sa voix, ce qu’il cherche.';
+  zone.oninput = () => PED.texte = zone.value;
+  box.append(el('h3', null, 'Ce qu’il est'));
+  box.append(zone);
+
+  const act = el('div','acts'); act.style.marginTop = '12px';
+  const ok = el('button','btn', nouveau ? 'Ajouter à la table' : 'Enregistrer'); ok.type = 'button'; ok.id = 'ped-ok';
+  ok.onclick = () => {
+    if(!PED.nom.trim()){ msgTable('Il lui faut un nom.', false); return; }
+    const autre = persos().find(x => x.id !== PED.id && (x.nom || '').trim().toLowerCase() === PED.nom.trim().toLowerCase());
+    if(autre){ msgTable('« ' + autre.nom + ' » est déjà à la table.', false); return; }
+    const c2 = normPerso(PED);
+    if(nouveau) c2.id = idLibre('p-' + slug(c2.nom), T.personnages);
+    if(nouveau){ c2.pv = c2.pvMax; c2.pcc = c2.pcMax; }
+    c2.pv = Math.min(c2.pv, c2.pvMax); c2.pcc = Math.min(c2.pcc, c2.pcMax);
+    changer(() => majPerso(c2));
+    if(!MOI.perso && c2.joueur === MOI.joueur){ MOI.perso = c2.id; sauverLocal(); }
+    fermerEditeurPerso();
+  };
+  const non = el('button','btn ghost sm','Annuler'); non.type = 'button';
+  non.onclick = fermerEditeurPerso;
+  act.append(ok, non);
+  box.append(act);
+  box.append(el('p','mini apercu2'));
+
+  dessinerPratsEditeur(); dessinerArmesEditeur(); majApercuEditeur();
+  box.scrollIntoView({block:'start', behavior:'smooth'});
+}
+function dessinerPratsEditeur(){
+  const box = $('ed-prats'); if(!box) return;
+  box.innerHTML = '';
+  PED.pratiques.forEach((p, i) => {
+    const l = el('div','table'); l.style.marginBottom = '6px';
+    champ(l, 'Nom', Object.assign(el('input'), {type:'text', value:p.n, oninput:e => { p.n = e.target.value; }, style:'width:100%'}));
+    const s = el('select');
+    ['Force','Dextérité','Contenance'].concat(JETS_SANS).forEach(j => s.add(new Option(j, j)));
+    s.value = p.j; s.onchange = () => { p.j = s.value; majApercuEditeur(); };
+    champ(l, 'Se lance sous', s);
+    champ(l, 'PC', Object.assign(nombre(p.pc, 0, 9), {oninput:e => p.pc = Math.max(0, +e.target.value || 0), style:'width:70px'}));
+    const d = el('input'); d.type = 'text'; d.value = p.d; d.style.width = '100%';
+    d.oninput = () => p.d = d.value;
+    champ(l, 'Ce qu’elle fait', d);
+    const x = el('button','btn ghost sm','Retirer'); x.type = 'button';
+    x.onclick = () => { PED.pratiques.splice(i, 1); dessinerPratsEditeur(); majApercuEditeur(); };
+    const w = el('div'); w.append(el('label','lab', ' ')); w.append(x);
+    l.append(w);
+    box.append(l);
+  });
+}
+function dessinerArmesEditeur(){
+  const box = $('ed-armes'); if(!box) return;
+  box.innerHTML = '';
+  PED.armes.forEach((a, i) => {
+    const l = el('div','table'); l.style.marginBottom = '6px';
+    champ(l, 'Arme', Object.assign(el('input'), {type:'text', value:a.nom, oninput:e => a.nom = e.target.value, style:'width:100%'}));
+    champ(l, 'Dé', Object.assign(el('input'), {type:'text', value:a.de, oninput:e => a.de = e.target.value, style:'width:80px'}));
+    champ(l, 'Notes', Object.assign(el('input'), {type:'text', value:a.notes, oninput:e => a.notes = e.target.value, style:'width:100%'}));
+    const x = el('button','btn ghost sm','Retirer'); x.type = 'button';
+    x.onclick = () => { PED.armes.splice(i, 1); dessinerArmesEditeur(); };
+    const w = el('div'); w.append(el('label','lab', ' ')); w.append(x);
+    l.append(w);
+    box.append(l);
+  });
+}
+function majApercuEditeur(){
+  const p = document.querySelector('#pEditeur .apercu2');
+  if(!p || !PED) return;
+  const bouts = CARS.map(c => ABBR[c] + ' ' + PED.car[c]);
+  p.textContent = bouts.join(' · ') + ' · PV ' + PED.pvMax + ' · PC ' + PED.pcMax +
+    (PED.pratiques.length ? ' · ' + PED.pratiques.length + ' Pratique' + (PED.pratiques.length > 1 ? 's' : '') : '');
+}
+function fermerEditeurPerso(){
+  PED = null;
+  const box = $('pEditeur'); box.hidden = true; box.innerHTML = '';
+}
+
+/* ============ les jets : ce qu'une fiche permet de tenter, et l'historique ============ */
+
+function optionsJet(c){
+  const out = [];
+  CARS.forEach(x => out.push({k:'car:' + x, l:x + ' (caractéristique)', val:c.car[x] * 2}));
+  ALLSKILLS.forEach(o => out.push({k:'comp:' + o.s, l:o.s, val:compTotal(c, o.s)}));
+  c.pratiques.forEach(p => {
+    const v = pratValeur(c, p);
+    out.push({k:'prat:' + p.n, l:p.n + ' (Pratique)', val:v.val, jet:p.j, par:v.par});
+  });
+  return out;
+}
+
+function heure(t){
+  const d = new Date(t || 0);
+  const n = x => (x < 10 ? '0' : '') + x;
+  return n(d.getHours()) + ':' + n(d.getMinutes());
+}
+function dessinerJets(){
+  const f = $('jFiltre'), avant = f.value;
+  f.innerHTML = '';
+  f.add(new Option('Tout le monde', ''));
+  const noms = {};
+  T.jets.forEach(j => { if(j.perso) noms[j.perso] = 1; });
+  persos().forEach(c => { if(c.nom) noms[c.nom] = 1; });
+  Object.keys(noms).sort((a, b) => a.localeCompare(b, 'fr')).forEach(n => f.add(new Option(n, n)));
+  f.value = avant && [].slice.call(f.options).some(o => o.value === avant) ? avant : '';
+
+  const box = $('jHisto'); box.innerHTML = '';
+  const liste = T.jets.filter(j => !f.value || j.perso === f.value).slice().reverse();
+  if(!liste.length){ box.append(el('p','vide','Rien de lancé pour l’instant. Les jets se font dans la séance, et atterrissent ici.')); return; }
+  let jour = '';
+  liste.slice(0, 150).forEach(j => {
+    const d = new Date(j.t || 0).toLocaleDateString('fr-BE', {weekday:'long', day:'numeric', month:'long'});
+    if(d !== jour){ jour = d; box.append(el('div','jour', d)); }
+    const l = el('div','ligne');
+    l.append(el('span','h', heure(j.t)));
+    const q = el('span','q');
+    q.append(el('b', null, j.perso || j.auteur || '·'));
+    q.append(document.createTextNode(' · ' + j.quoi));
+    if(j.mode !== 'des' && j.seuil != null) q.append(el('span','mini', ' (sous ' + j.seuil + ' au ' + j.mode + ')'));
+    if(j.main) q.append(el('span','mini', ' · dé de la table'));
+    if(j.auteur && j.auteur !== j.perso) q.append(el('span','mini', ' · ' + j.auteur));
+    l.append(q);
+    l.append(el('span','r' + (j.mode === 'des' ? '' : j.reussite ? ' ok' : ' ko'), String(j.jet)));
+    box.append(l);
+  });
+}
+
+/* ============ la progression ============ */
+
+let PROG_PERSO = '';
+const ACHAT = {type:'comp', cible:'Combat', n:1, nom:'', jet:'Force', pc:1, texte:''};
+const GAIN = {quoi:'', n:10};
+
+function bonusComp(c, s){ return compTotal(c, s) - c.car[CAR_DE[s]] * 2; }
+function coutAchat(c){
+  if(ACHAT.type === 'comp') return coutCompetence(bonusComp(c, ACHAT.cible), bonusComp(c, ACHAT.cible) + Math.max(1, ACHAT.n));
+  if(ACHAT.type === 'prat') return 10;
+  if(ACHAT.type === 'car') return 20;
+  if(ACHAT.type === 'pv') return 20;
+  return 0;
+}
+function detailAchat(c){
+  if(ACHAT.type === 'comp') return ACHAT.cible + ' +' + Math.max(1, ACHAT.n) + ' (de +' + bonusComp(c, ACHAT.cible) + ' à +' + (bonusComp(c, ACHAT.cible) + Math.max(1, ACHAT.n)) + ')';
+  if(ACHAT.type === 'prat') return (ACHAT.nom || 'Pratique sans nom') + ' (' + ACHAT.jet + ')';
+  if(ACHAT.type === 'car') return ACHAT.cible + ' +1';
+  return '+5 PV';
+}
+/* ce que la séance en cours garde d'un achat */
+function phraseAchat(c, a){
+  const nom = c.nom || 'Sans nom', p = a.cout + ' point' + (a.cout > 1 ? 's' : '');
+  if(a.type === 'prat') return nom + ' apprend une Pratique, ' + a.cible + (a.jet && JETS_SANS.indexOf(a.jet) < 0 ? ', sous ' + a.jet : '') + ' (' + p + ').';
+  return nom + ' dépense ' + p + ' : ' + a.detail + '.';
+}
+function appliquerAchat(c, a, sens){
+  const s = sens || 1;
+  if(a.type === 'comp') c.comp[a.cible] = (c.comp[a.cible] || 0) + s * a.n;
+  else if(a.type === 'car'){
+    c.car[a.cible] = (c.car[a.cible] || 8) + s;
+    ALLSKILLS.forEach(o => { if(o.car === a.cible) c.comp[o.s] += s * 2; });
+    if(a.cible === 'Constitution') c.pvMax += s;
+    if(a.cible === 'Contenance') c.pcMax = Math.floor(c.car.Contenance / 2);
+  }
+  else if(a.type === 'pv') c.pvMax += s * 5;
+  else if(a.type === 'prat'){
+    if(s > 0) c.pratiques.push({n:a.cible, j:a.jet || 'aucun jet', pc:a.pc || 0, pct:'', d:a.texte || '', base:false, banniere:false});
+    else {
+      const i = c.pratiques.map(p => p.n).lastIndexOf(a.cible);
+      if(i >= 0) c.pratiques.splice(i, 1);
+    }
+  }
+  c.pv = Math.min(c.pv, c.pvMax); c.pcc = Math.min(c.pcc, c.pcMax);
+}
+
+function dessinerProg(force){
+  const box = $('progBox'); if(!box) return;
+  if(!force && occupe(box)){ apresSaisie(box, () => dessinerProg(true)); return; }
+  const focus = document.activeElement && box.contains(document.activeElement) ? document.activeElement.id : '';
+  box.innerHTML = '';
+  dessinerProgDans(box);
+  if(focus && $(focus)) $(focus).focus();
+}
+function dessinerProgDans(box){
+  const liste = persos();
+  if(!liste.length){ box.append(el('p','vide','Aucun personnage à faire progresser.')); return; }
+  if(!liste.some(c => c.id === PROG_PERSO)) PROG_PERSO = MOI.perso && liste.some(c => c.id === MOI.perso) ? MOI.perso : liste[0].id;
+  const c = perso(PROG_PERSO);
+
+  const sel = el('select'); sel.id = 'prog-perso'; sel.setAttribute('aria-label', 'Quel personnage');
+  liste.forEach(x => sel.add(new Option(x.nom || 'Sans nom', x.id)));
+  sel.value = PROG_PERSO;
+  sel.onchange = () => { PROG_PERSO = sel.value; dessinerProg(true); };
+  const tete = el('div','acts'); tete.style.marginBottom = '12px';
+  tete.append(sel);
+  box.append(tete);
+
+  const g = el('div','progrid');
+  [['Gagnés', pointsGagnes(c)], ['Dépensés', pointsDepenses(c)], ['Il reste', pointsRestants(c)]].forEach(([l, v]) => {
+    const d = el('div','pt');
+    d.append(el('div','v', String(v)), el('div','t', l));
+    g.append(d);
+  });
+  box.append(g);
+
+  /* gagner des points */
+  box.append(el('h3', null, 'Ce que la mission a rapporté'));
+  const lg = el('div','acts');
+  const quoi = el('input'); quoi.type = 'text'; quoi.id = 'prog-quoi'; quoi.placeholder = 'Ce qu’on a bouclé'; quoi.style.width = '240px'; quoi.value = GAIN.quoi;
+  quoi.setAttribute('aria-label', 'Ce qu’on a bouclé');
+  quoi.oninput = () => { GAIN.quoi = quoi.value; };
+  const n = el('input'); n.type = 'number'; n.id = 'prog-n'; n.value = String(GAIN.n); n.min = '1'; n.style.width = '90px'; n.inputMode = 'numeric';
+  n.setAttribute('aria-label', 'Combien de points');
+  n.oninput = () => { GAIN.n = Math.max(1, parseInt(n.value, 10) || 1); };
+  const ajout = el('button','btn sm','Ajouter les points'); ajout.type = 'button'; ajout.id = 'prog-gagner';
+  ajout.onclick = () => {
+    const v = Math.max(1, parseInt(n.value, 10) || 0), q = quoi.value.trim() || 'une mission';
+    changer(() => {
+      const bloc = noterDansSeance((c.nom || 'Sans nom') + ' gagne ' + v + ' point' + (v > 1 ? 's' : '') + ' de progression : ' + q + '.', 'achat');
+      c.prog.points.push({id:nouvelId('g'), t:maintenant(), quoi:q, n:v, bloc:bloc});
+      majPerso(c);
+    });
+    GAIN.quoi = '';
+  };
+  lg.append(quoi, n, ajout);
+  box.append(lg);
+
+  /* dépenser */
+  box.append(el('h3', null, 'Ce qu’on achète'));
+  const la = el('div','table');
+  const st = el('select'); st.id = 'prog-type';
+  ACHATS.forEach(a => st.add(new Option(a.l, a.k)));
+  st.value = ACHAT.type;
+  st.onchange = () => { ACHAT.type = st.value; if(ACHAT.type === 'car') ACHAT.cible = 'Force'; if(ACHAT.type === 'comp') ACHAT.cible = 'Combat'; dessinerProg(true); };
+  champ(la, 'Quoi', st);
+
+  if(ACHAT.type === 'comp'){
+    const sc = el('select'); sc.id = 'prog-cible';
+    ALLSKILLS.forEach(o => sc.add(new Option(o.s + ' (+' + bonusComp(c, o.s) + ')', o.s)));
+    sc.value = ACHAT.cible;
+    sc.onchange = () => { ACHAT.cible = sc.value; dessinerProg(true); };
+    champ(la, 'Laquelle', sc);
+    const sn = nombre(ACHAT.n, 1, 40);
+    sn.oninput = () => { ACHAT.n = Math.max(1, +sn.value || 1); majCoutAchat(c); };
+    champ(la, 'De combien', sn);
+  } else if(ACHAT.type === 'car'){
+    const sc = el('select'); sc.id = 'prog-cible';
+    CARS.forEach(x => sc.add(new Option(x + ' (' + c.car[x] + ')', x)));
+    sc.value = CARS.indexOf(ACHAT.cible) >= 0 ? ACHAT.cible : 'Force';
+    sc.onchange = () => { ACHAT.cible = sc.value; dessinerProg(true); };
+    champ(la, 'Laquelle', sc);
+  } else if(ACHAT.type === 'prat'){
+    const nm = el('input'); nm.type = 'text'; nm.value = ACHAT.nom; nm.placeholder = 'Le nom de la Pratique'; nm.style.width = '100%';
+    nm.oninput = () => ACHAT.nom = nm.value;
+    champ(la, 'Nom', nm);
+    const sj = el('select');
+    ['Force','Dextérité','Contenance'].concat(JETS_SANS).forEach(j => sj.add(new Option(j, j)));
+    sj.value = ACHAT.jet; sj.onchange = () => ACHAT.jet = sj.value;
+    champ(la, 'Se lance sous', sj);
+    const sp = nombre(ACHAT.pc, 0, 9); sp.oninput = () => ACHAT.pc = Math.max(0, +sp.value || 0);
+    champ(la, 'PC', sp);
+    const tx = el('input'); tx.type = 'text'; tx.value = ACHAT.texte; tx.placeholder = 'Ce qu’elle fait'; tx.style.width = '100%';
+    tx.oninput = () => ACHAT.texte = tx.value;
+    champ(la, 'Ce qu’elle fait', tx);
+  }
+  box.append(la);
+
+  const acts = el('div','acts');
+  const cout = el('span','mini'); cout.id = 'prog-cout';
+  const ok = el('button','btn sm','Acheter'); ok.type = 'button'; ok.id = 'prog-acheter';
+  ok.onclick = () => {
+    const prix = coutAchat(c);
+    if(ACHAT.type === 'prat' && !ACHAT.nom.trim()){ msgTable('Donne un nom à la Pratique.', false); return; }
+    if(ACHAT.type === 'car' && c.car[ACHAT.cible] >= 18){ msgTable('Le livre plafonne une caractéristique à 18.', false); return; }
+    if(prix > pointsRestants(c)){ msgTable('Il manque ' + (prix - pointsRestants(c)) + ' point(s).', false); return; }
+    const a = {id:nouvelId('a'), t:maintenant(), type:ACHAT.type,
+      cible: ACHAT.type === 'prat' ? ACHAT.nom.trim() : ACHAT.cible,
+      n: ACHAT.type === 'comp' ? Math.max(1, ACHAT.n) : 1,
+      jet:ACHAT.jet, pc:ACHAT.pc, texte:ACHAT.texte,
+      detail:detailAchat(c), cout:prix};
+    changer(() => {
+      appliquerAchat(c, a, 1);
+      a.bloc = noterDansSeance(phraseAchat(c, a), 'achat');
+      c.prog.achats.push(a);
+      majPerso(c);
+    });
+    msgTable('Acheté : ' + a.detail + (a.bloc ? '. C’est noté dans la séance.' : '.'), true);
+  };
+  acts.append(ok, cout);
+  box.append(acts);
+  majCoutAchat(c);
+
+  /* l'historique */
+  box.append(el('h3', null, 'Ce qui a été fait'));
+  const h = el('div');
+  const tout = c.prog.points.map(x => ({t:x.t, txt:'+' + x.n + ' points · ' + x.quoi, gain:true, id:x.id}))
+    .concat(c.prog.achats.map(x => ({t:x.t, txt:'−' + x.cout + ' points · ' + (x.detail || x.type), gain:false, id:x.id, a:x})))
+    .sort((a, b) => b.t - a.t);
+  if(!tout.length) h.append(el('p','vide','Rien encore.'));
+  tout.forEach(x => {
+    const l = el('div','ligne');
+    l.append(el('span','h', new Date(x.t).toLocaleDateString('fr-BE')));
+    l.append(el('span','q', x.txt));
+    const b = el('button','btn ghost sm','Défaire'); b.type = 'button';
+    b.onclick = () => changer(() => {
+      if(x.gain){ const g = c.prog.points.find(p => p.id === x.id); if(g) oublierBloc(g.bloc); c.prog.points = c.prog.points.filter(p => p.id !== x.id); }
+      else { appliquerAchat(c, x.a, -1); oublierBloc(x.a.bloc); c.prog.achats = c.prog.achats.filter(p => p.id !== x.id); }
+      majPerso(c);
+    });
+    l.append(b);
+    h.append(l);
+  });
+  box.append(h);
+}
+function majCoutAchat(c){
+  const n = $('prog-cout');
+  if(n) n.textContent = coutAchat(c) + ' point' + (coutAchat(c) > 1 ? 's' : '') + ' · ' + detailAchat(c);
+}
+
+/* ============ la séance : le compte rendu, paragraphe par paragraphe ============
+   On écrit comme dans le Doc : le MJ raconte, les joueurs font et disent.
+   Un jet, des dégâts ou des PV se joignent au paragraphe et s'écrivent entre
+   parenthèses, comme « (jet de tir raté) » dans les comptes rendus d'avant. */
+
+const COMPO = {pret:false, qui:{k:'mj', id:'', nom:''}, genre:'narration', panneau:'',
+  jet:null, degats:null, vies:[], quoi:'', quoiPar:{}, mod:'0', libreQuoi:'', libreVal:'',
+  pvId:'', pvQuoi:'pv', pvN:1, formule:''};
+let BED = null;              /* {id, texte} : le paragraphe qu'on retouche */
+let BLOC_SUPPR = null;
+let SEANCE_SUPPR = false;
+
+const GENRES_MJ = [{k:'narration', l:'Narration'}, {k:'scene', l:'Lieu et moment'}, {k:'encadre', l:'Encadré'}];
+const GENRES_PERSO = [{k:'fait', l:'Fait'}, {k:'dit', l:'Dit'}];
+const SEPARATEUR = '--------------------';
+
+/* ---------- les séances ---------- */
+function seances(){
+  return Object.keys(T.journal).map(id => T.journal[id]).filter(e => e && !e.supprime)
+    .sort((a, b) => (parseFloat(b.seance) || 0) - (parseFloat(a.seance) || 0) || (a.id < b.id ? -1 : 1));
+}
+/* on suit la dernière séance, sauf si on en a choisi une plus ancienne */
+function seanceCourante(){
+  const l = seances();
+  if(MOI.seanceFixee){ const e = l.find(x => x.id === MOI.seance); if(e) return e; }
+  return l[0] || null;
+}
+function choisirSeance(id){
+  const l = seances();
+  MOI.seance = id;
+  MOI.seanceFixee = !!(l.length && l[0].id !== id);
+  sauverLocal();
+}
+function blocsDe(sid){
+  return Object.keys(T.blocs).map(id => T.blocs[id]).filter(b => b && !b.supprime && b.seance === sid)
+    .sort((a, b) => (a.ordre - b.ordre) || (a.id < b.id ? -1 : 1));
+}
+function aujourdhui(){
+  const d = new Date(), n = x => (x < 10 ? '0' : '') + x;
+  return d.getFullYear() + '-' + n(d.getMonth() + 1) + '-' + n(d.getDate());
+}
+/* la séance n porte le nom s-n : deux joueurs qui l'ouvrent en même temps ouvrent la même */
+function nouvelleSeance(){
+  const faire = () => {
+    const l = seances();
+    const n = l.length ? Math.floor(Math.max.apply(null, l.map(e => parseFloat(e.seance) || 0))) + 1 : 1;
+    let id = 's-' + n;
+    if(T.journal[id]) id += '-' + Math.random().toString(36).slice(2, 6);
+    const e = {id:id, maj:maintenant(), supprime:false, seance:String(n), date:aujourdhui(), titre:'', texte:'', auteur:MOI.joueur || ''};
+    MOI.seance = id; MOI.seanceFixee = false;
+    BED = null; SEANCE_SUPPR = false;
+    changer(() => { T.journal[id] = e; });
+    dessinerSeance(true);
+    const t = $('coTexte'); if(t) t.focus();
+  };
+  if(SYNC.poignee && SYNC.etat === 'fichier') lireFichier(true).then(faire, faire);
+  else faire();
+}
+/* s'appelle depuis un changer() : la progression laisse sa trace dans la séance en cours */
+function noterDansSeance(texte, type){
+  const e = seanceCourante();
+  if(!e) return '';
+  const b = normBloc({id:nouvelId('b'), maj:maintenant(), seance:e.id, ordre:maintenant(), type:type || 'note',
+    texte:texte, auteur:MOI.joueur || ''});
+  T.blocs[b.id] = b;
+  return b.id;
+}
+function oublierBloc(id){
+  const b = id && T.blocs[id];
+  if(b && !b.supprime) T.blocs[id] = Object.assign({}, b, {supprime:true, maj:maintenant()});
+}
+
+/* ---------- les mots ---------- */
+function nomDe(q){
+  if(!q) return '';
+  if(q.k === 'perso'){ const c = T.personnages[q.id]; return c && c.nom ? c.nom : (q.nom || 'Quelqu’un'); }
+  if(q.k === 'pnj'){ const p = q.id && T.pnj[q.id]; return p && !p.supprime && p.nom ? p.nom : (q.nom || 'Quelqu’un'); }
+  return '';
+}
+function pnjCompo(){ return COMPO.qui.k === 'pnj' ? (unPnj(COMPO.qui.id) || pnjParNom(COMPO.qui.nom)) : null; }
+function debutMinuscule(t){
+  const s = t.trim(), c = s.charAt(0);
+  if(/^(?:(?:il|elle|ils|elles|on|iel|je|nous|vous|tu)(?:\s|$)|j[’'])/i.test(s)) return false;
+  return !!c && c === c.toLowerCase() && c !== c.toUpperCase();
+}
+function sansNomDevant(t, nom){
+  if(!nom) return t;
+  const m = new RegExp('^\\s*' + nom.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\s*:\\s*', 'i').exec(t);
+  return m ? t.slice(m[0].length) : t;
+}
+function citer(t){
+  const s = t.trim();
+  if(/^[«“"‹]/.test(s)) return s;
+  return '« ' + s + ' »';
+}
+const majuscule = s => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
+const deOu = q => (/^[aeiouyàâäéèêëîïôöûü]/i.test(q) ? 'd’' : 'de ');
+
+/* un « fait » qui commence par un verbe reçoit le nom devant ; sinon il reste tel quel */
+function phrase(b){
+  const nom = nomDe(b.qui), t = b.type === 'dit' ? sansNomDevant(b.texte.trim(), nom) : b.texte.trim();
+  if(b.type === 'dit') return t ? (nom ? nom + ' : ' : '') + citer(t) : nom;
+  if(b.type === 'fait') return !t ? nom : (nom && debutMinuscule(t) ? nom + ' ' + t : majuscule(t));
+  return b.texte.replace(/\s+$/, '');
+}
+function texteJet(j){
+  if(!j) return '';
+  if(j.sans) return j.quoi + (j.note === 'la cible teste' || j.note === 'les cibles testent' ? ', ' + j.note : ', sans jet');
+  const chiffres = j.jet + (j.seuil != null ? ', cible ' + j.seuil + (j.mod ? ' (' + (j.mod > 0 ? '+' : '−') + Math.abs(j.mod) + ')' : '') : '');
+  if(j.rea){
+    const r = j.rea === 'esquive' ? 'esquive' : 'parade';
+    if(j.reussite) return r + ' réussie : ' + chiffres;
+    if(j.echecCrit) return r + ', échec critique : ' + chiffres + ', les dégâts passent et l’ennemi obtient quelque chose en plus';
+    if(j.marge < 4) return r + ' ratée de peu : ' + chiffres + ', pas de dégât mais pas d’attaque au prochain round';
+    return r + ' ratée : ' + chiffres + ', les dégâts passent';
+  }
+  const q = j.quoi ? 'jet ' + deOu(j.quoi) + j.quoi : 'jet';
+  if(j.critique && j.reussite) return q + ', réussite critique : ' + chiffres;
+  if(j.echecCrit) return q + ', échec critique : ' + chiffres;
+  return q + (j.reussite ? ' réussi : ' : ' raté : ') + chiffres;
+}
+function texteDegats(d){ return d ? d.total + ' dégâts au ' + d.txt + (d.double ? ', doublés par le 1' : '') : ''; }
+function texteVie(v){
+  if(!v) return '';
+  return (v.nom || 'Quelqu’un') + (v.delta < 0 ? ' perd ' : ' récupère ') + Math.abs(v.delta) + ' ' + (v.quoi === 'pc' ? 'PC' : 'PV') +
+    (v.reste != null ? ', reste ' + v.reste + (v.max != null ? '/' + v.max : '') : '');
+}
+function joints(b){ return [texteJet(b.jet), texteDegats(b.degats)].concat((b.vies || []).map(texteVie)).filter(Boolean); }
+function lignePlate(b){
+  const p = phrase(b), j = joints(b).join(' · ');
+  if(!p) return majuscule(j);
+  return j ? p + ' (' + j + ')' : p;
+}
+function couleurJet(b){ return b.jet && !b.jet.sans ? (b.jet.reussite ? ' ok' : ' ko') : ''; }
+
+/* ---------- le récit ---------- */
+function corpsEncadre(b){
+  const d = el('div','encadre');
+  d.append(el('p','sep', SEPARATEUR));
+  b.texte.split('\n').forEach((l, i) => {
+    const p = el('p');
+    const m = i ? /^([^:]{2,40}?) :\s*(.*)$/.exec(l) : null;
+    if(!i) p.append(el('b', null, l));
+    else if(m) p.append(el('b', null, m[1]), document.createTextNode(' : ' + m[2]));
+    else p.textContent = l;
+    d.append(p);
+  });
+  const j = joints(b);
+  if(j.length) d.append(el('p','joints' + couleurJet(b), '(' + j.join(' · ') + ')'));
+  d.append(el('p','sep', SEPARATEUR));
+  return d;
+}
+function rendreBloc(b){
+  const w = el('div','bloc b-' + b.type);
+  w.setAttribute('data-bloc', b.id);
+  const signe = [b.auteur ? 'écrit par ' + b.auteur : '', b.maj ? 'à ' + heure(b.maj) : ''].filter(Boolean).join(' ');
+  if(signe) w.title = signe;
+  if(BED && BED.id === b.id) return retoucheBloc(b, w);
+  if(b.type === 'encadre') w.append(corpsEncadre(b));
+  else {
+    const p = el('p');
+    const ph = phrase(b), j = joints(b);
+    if(ph) p.append(document.createTextNode(ph));
+    if(j.length){
+      if(ph) p.append(document.createTextNode(' '));
+      p.append(el('span','joints' + couleurJet(b), ph ? '(' + j.join(' · ') + ')' : majuscule(j.join(' · '))));
+    }
+    w.append(p);
+  }
+  w.append(actionsBloc(b));
+  return w;
+}
+function actionsBloc(b){
+  const act = el('div','bacts noprint');
+  const mk = (txt, lab, fn, cls) => {
+    const x = el('button', cls || null, txt); x.type = 'button';
+    x.title = lab; x.setAttribute('aria-label', lab);
+    x.onclick = fn;
+    return x;
+  };
+  act.append(mk('↑', 'remonter ce paragraphe', () => deplacerBloc(b, -1)));
+  act.append(mk('↓', 'descendre ce paragraphe', () => deplacerBloc(b, 1)));
+  act.append(mk('Modifier', 'modifier ce paragraphe', () => {
+    BED = {id:b.id, texte:b.texte};
+    dessinerRecit(true);
+    const z = $('bedTexte');
+    if(z){ z.focus(); z.setSelectionRange(z.value.length, z.value.length); }
+  }));
+  const arme = BLOC_SUPPR === b.id;
+  act.append(mk(arme ? 'Confirmer' : 'Supprimer', arme ? 'confirmer la suppression' : 'supprimer ce paragraphe', () => {
+    if(arme){ BLOC_SUPPR = null; changer(() => oublierBloc(b.id)); return; }
+    BLOC_SUPPR = b.id; dessinerRecit(true);
+    setTimeout(() => { if(BLOC_SUPPR === b.id){ BLOC_SUPPR = null; dessinerRecit(true); } }, 5000);
+  }, arme ? 'danger' : null));
+  return act;
+}
+function retoucheBloc(b, w){
+  w.classList.add('retouche');
+  const z = el('textarea'); z.id = 'bedTexte';
+  z.rows = Math.min(10, Math.max(2, BED.texte.split('\n').length + 1));
+  z.value = BED.texte;
+  z.setAttribute('aria-label', 'Le texte du paragraphe');
+  z.oninput = () => { if(BED) BED.texte = z.value; };
+  w.append(z);
+  const j = joints(b);
+  if(j.length) w.append(el('p','mini', 'Reste joint : ' + j.join(' · ')));
+  const a = el('div','acts'); a.style.marginTop = '6px';
+  const ok = el('button','btn sm','Enregistrer'); ok.type = 'button';
+  const non = el('button','btn ghost sm','Annuler'); non.type = 'button';
+  ok.onclick = () => {
+    const v = BED ? BED.texte : b.texte;
+    BED = null;
+    changer(() => { const x = T.blocs[b.id]; if(x) T.blocs[b.id] = Object.assign({}, x, {texte:v, maj:maintenant()}); });
+  };
+  non.onclick = () => { BED = null; dessinerRecit(true); };
+  z.onkeydown = ev => {
+    if(ev.key === 'Enter' && (ev.ctrlKey || ev.metaKey)){ ev.preventDefault(); ok.click(); }
+    if(ev.key === 'Escape'){ ev.preventDefault(); non.click(); }
+  };
+  a.append(ok, non, el('span','mini','Ctrl+Entrée enregistre, Échap annule'));
+  w.append(a);
+  return w;
+}
+function deplacerBloc(b, sens){
+  const l = blocsDe(b.seance), i = l.findIndex(x => x.id === b.id), j = i + sens;
+  if(i < 0 || j < 0 || j >= l.length) return;
+  const autre = l[j], t = maintenant();
+  let oa = l[i].ordre, ob = autre.ordre;
+  if(oa === ob) ob = oa + sens;
+  changer(() => {
+    T.blocs[b.id] = Object.assign({}, l[i], {ordre:ob, maj:t});
+    T.blocs[autre.id] = Object.assign({}, autre, {ordre:oa, maj:t});
+  });
+}
+
+function dateLongue(d){
+  if(!d) return '';
+  const x = new Date(d + 'T12:00:00');
+  return isNaN(x) ? d : x.toLocaleDateString('fr-BE', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
+}
+function dessinerRecit(force){
+  const box = $('seRecit'); if(!box) return;
+  if(!force && BED && occupe(box)){ apresSaisie(box, () => dessinerRecit(true)); return; }
+  const enBas = box.scrollHeight - box.scrollTop - box.clientHeight < 40;
+  const haut = box.scrollTop;
+  box.innerHTML = '';
+  const e = seanceCourante();
+  if(!e){ box.append(el('p','vide','Aucune séance pour l’instant. Commence la première : le compte rendu s’écrit ici, paragraphe par paragraphe.')); return; }
+  const t = el('div','stitre');
+  t.append(el('h3', null, 'Séance ' + (e.seance || '?') + (e.titre ? ' · ' + e.titre : '')));
+  if(e.date) t.append(el('p','sdate', dateLongue(e.date)));
+  box.append(t);
+  const l = blocsDe(e.id);
+  if(!l.length) box.append(el('p','vide','La page est blanche. Le MJ ouvre la scène juste en dessous : un lieu, un moment, ce qu’on voit.'));
+  l.forEach(b => box.append(rendreBloc(b)));
+  box.scrollTop = enBas ? box.scrollHeight : haut;
+}
+
+/* ---------- la tête de séance ---------- */
+function dessinerTeteSeance(force){
+  const box = $('seTete'); if(!box) return;
+  if(!force && occupe(box)){ apresSaisie(box, () => dessinerTeteSeance(true)); return; }
+  box.innerHTML = '';
+  const l = seances(), e = seanceCourante();
+  const ligne = el('div','acts');
+  if(l.length){
+    const s = el('select'); s.id = 'seChoix'; s.setAttribute('aria-label', 'Quelle séance');
+    l.forEach(x => s.add(new Option('Séance ' + (x.seance || '?') + (x.titre ? ' · ' + x.titre : ''), x.id)));
+    s.value = e ? e.id : '';
+    s.onchange = () => { choisirSeance(s.value); BED = null; SEANCE_SUPPR = false; s.blur(); dessinerSeance(true); };
+    ligne.append(s);
+  }
+  const nv = el('button', l.length ? 'btn ghost sm' : 'btn', l.length ? 'Nouvelle séance' : 'Commencer la séance 1');
+  nv.type = 'button'; nv.id = 'seNouvelle';
+  nv.onclick = nouvelleSeance;
+  ligne.append(nv);
+  if(e){
+    const cp = el('button','btn ghost sm','Copier pour Google Docs'); cp.type = 'button'; cp.id = 'seCopier';
+    cp.onclick = () => copierSeance(e, cp);
+    const pr = el('button','btn ghost sm','Imprimer'); pr.type = 'button'; pr.id = 'seImprimer';
+    pr.onclick = () => {
+      document.body.classList.add('imprime-seance');
+      window.print();
+      setTimeout(() => document.body.classList.remove('imprime-seance'), 1500);
+    };
+    const sp = el('button','btn ghost sm' + (SEANCE_SUPPR ? ' danger' : ''), SEANCE_SUPPR ? 'Confirmer : la séance disparaît' : 'Supprimer la séance');
+    sp.type = 'button'; sp.id = 'seSupprimer';
+    sp.onclick = () => {
+      if(SEANCE_SUPPR){
+        SEANCE_SUPPR = false; BED = null;
+        changer(() => { T.journal[e.id] = Object.assign({}, e, {supprime:true, maj:maintenant()}); });
+        MOI.seanceFixee = false; sauverLocal();
+        dessinerSeance(true);
+        return;
+      }
+      SEANCE_SUPPR = true; dessinerTeteSeance(true);
+      setTimeout(() => { if(SEANCE_SUPPR){ SEANCE_SUPPR = false; dessinerTeteSeance(true); } }, 5000);
+    };
+    ligne.append(cp, pr, el('span','espace'), sp);
+  }
+  box.append(ligne);
+  if(!e) return;
+  const id = el('div','ligne4'); id.style.marginTop = '10px';
+  const garde = (champ, v) => changer(() => { const x = T.journal[e.id]; if(x) T.journal[e.id] = Object.assign({}, x, {[champ]:v, maj:maintenant()}); });
+  const num = el('input'); num.type = 'text'; num.id = 'seNum'; num.value = e.seance; num.inputMode = 'decimal';
+  num.onchange = () => garde('seance', num.value.trim());
+  const dt = el('input'); dt.type = 'date'; dt.id = 'seDate'; dt.value = e.date;
+  dt.onchange = () => garde('date', dt.value);
+  const ti = el('input'); ti.type = 'text'; ti.id = 'seTitre'; ti.value = e.titre; ti.placeholder = 'Ronceval, par exemple';
+  ti.onchange = () => garde('titre', ti.value);
+  [['Séance', num], ['Date', dt], ['Titre', ti]].forEach(([lab, n]) => {
+    const w = el('div'); const lb = el('label','lab', lab); lb.htmlFor = n.id; w.append(lb, n); id.append(w);
+  });
+  box.append(id);
+}
+function dessinerEtatSeance(){
+  const box = $('seEtat'); if(!box) return;
+  box.innerHTML = '';
+  const l = persos();
+  box.hidden = !l.length || !seanceCourante();
+  l.forEach(c => {
+    const p = el('span','etat' + (c.pvMax && c.pv / c.pvMax <= 0.34 ? ' bas' : ''));
+    p.append(el('b', null, c.nom || 'Sans nom'), document.createTextNode(' ' + c.pv + '/' + c.pvMax + ' PV · ' + c.pcc + '/' + c.pcMax + ' PC'));
+    box.append(p);
+  });
+}
+
+/* ---------- la zone d'écriture ---------- */
+function persoCompo(){ return COMPO.qui.k === 'perso' ? perso(COMPO.qui.id) : null; }
+function genresDe(q){ return q.k === 'mj' ? GENRES_MJ : GENRES_PERSO; }
+function sansAuto(){ COMPO.vies = COMPO.vies.filter(v => !v.auto); }
+function choisirQui(q){
+  const avant = persoCompo();
+  if(avant) COMPO.quoiPar[avant.id] = COMPO.quoi;
+  COMPO.qui = q;
+  if(!genresDe(q).some(g => g.k === COMPO.genre)) COMPO.genre = genresDe(q)[0].k;
+  const c = persoCompo();
+  COMPO.quoi = c ? (COMPO.quoiPar[c.id] || '') : '';
+  if(c) COMPO.pvId = c.id;
+  COMPO.jet = null;
+  sansAuto();
+  dessinerCompositeur(true);
+}
+function composerPour(c){
+  choisirQui({k:'perso', id:c.id, nom:c.nom});
+  COMPO.genre = 'fait'; COMPO.panneau = 'jet';
+  dessinerCompositeur(true);
+  const box = $('seCompo');
+  if(box && !box.hidden) box.scrollIntoView({block:'center', behavior:'smooth'});
+}
+
+const nettoieOption = l => l.replace(/ \((caractéristique|Pratique)\)$/, '');
+function pratiqueDe(c, k){ return c && k.indexOf('prat:') === 0 ? c.pratiques.find(p => 'prat:' + p.n === k) || null : null; }
+function seuilCompo(){
+  const m = MODS.find(x => x.k === COMPO.mod) || MODS[0];
+  const c = persoCompo();
+  let val, quoi, rea = '', prat = null, mode = MOI.mode === 'd20' ? 'd20' : 'd100';
+  if(c){
+    if(COMPO.quoi.indexOf('rea:') === 0){
+      rea = COMPO.quoi.slice(4) === 'parade' ? 'parade' : 'esquive';
+      quoi = rea === 'parade' ? 'Combat' : 'Acrobatie';
+      val = compTotal(c, quoi);
+      mode = 'd20';
+    } else {
+      const o = optionsJet(c).find(x => x.k === COMPO.quoi);
+      if(!o) return null;
+      prat = pratiqueDe(c, COMPO.quoi);
+      if(o.val == null) return {sans:true, quoi:nettoieOption(o.l), prat:prat};
+      val = o.val; quoi = nettoieOption(o.l);
+    }
+  } else if(COMPO.quoi.indexOf('val:') === 0 && pnjCompo()){
+    const v = pnjCompo().valeurs.find(x => 'val:' + x.n === COMPO.quoi);
+    if(!v) return null;
+    val = v.v; quoi = v.n;
+  } else {
+    val = parseInt(COMPO.libreVal, 10);
+    if(isNaN(val) || val < 1) return null;
+    quoi = COMPO.libreQuoi.trim();
+  }
+  const cent = mode === 'd100', mod = cent ? m.d100 : m.d20;
+  return {val:val, seuil:Math.max(1, (cent ? val : d20v(val)) + mod), quoi:quoi, mode:mode, mod:mod, rea:rea, prat:prat};
+}
+function noteReaction(r){
+  if(r.reussite) return 'Aucun dégât. Tu agis normalement au prochain round.';
+  if(r.echecCrit) return 'Tu prends les dégâts, et l’ennemi obtient quelque chose en plus.';
+  if(r.marge < 4) return 'Aucun dégât, mais tu as tout donné : tu ne peux pas attaquer au prochain round.';
+  return 'Tu prends les dégâts.';
+}
+/* un échec consomme le PC : la Pratique se paie dès qu'elle part */
+function payerPratique(c, p){
+  sansAuto();
+  if(c && p && p.pc > 0) COMPO.vies.push({id:c.id, nom:c.nom || 'Sans nom', delta:-p.pc, quoi:'pc', auto:true});
+}
+function jeterCompo(main){
+  const s = seuilCompo();
+  const c = persoCompo();
+  if(!s){ msgTable(c ? 'Choisis ce qu’il tente.' : 'Écris la valeur à battre, sur 100.', false); return; }
+  if(s.sans){
+    COMPO.jet = normJetBloc({id:nouvelId('j'), quoi:s.quoi, sans:true, reussite:true, note:s.prat ? s.prat.j : ''});
+    payerPratique(c, s.prat);
+    dessinerCompositeur(true);
+    return;
+  }
+  const max = s.mode === 'd100' ? 100 : 20;
+  if(main != null && (isNaN(main) || main < 1 || main > max)){ msgTable('Un dé entre 1 et ' + max + '.', false); return; }
+  const jet = main != null ? main : de(max);
+  const r = resoudre(jet, s.seuil, s.mode);
+  COMPO.jet = normJetBloc({id:nouvelId('j'), quoi:s.quoi, mode:s.mode, jet:jet, seuil:s.seuil,
+    reussite:r.reussite, critique:r.critique, echecCrit:r.echecCrit, marge:r.marge,
+    note:s.rea ? noteReaction(r) : r.bande, main:main != null, val:s.val, mod:s.mod, rea:s.rea});
+  payerPratique(c, s.prat);
+  const j = COMPO.jet, qui = nomDe(COMPO.qui) || MOI.joueur || 'MJ';
+  changer(() => {
+    T.jets = T.jets.concat([{id:j.id, t:maintenant(), auteur:MOI.joueur || 'quelqu’un', perso:qui,
+      quoi:(j.rea ? (j.rea === 'esquive' ? 'esquive, ' : 'parade, ') : '') + (j.quoi || 'jet'), formule:'', jet:j.jet, seuil:j.seuil,
+      mode:j.mode, reussite:j.reussite, note:j.note, main:j.main}]).slice(-MAX_JETS);
+  });
+  dessinerCompositeur(true);
+}
+/* le dé de l'arme, plus le mod : Force, sauf l'arme légère et l'arbalète qui passent par la Dextérité */
+function formuleArme(c, a){
+  const m = /(\d*)\s*d\s*(\d+)\s*(?:([+\-])\s*(\d+))?/i.exec(a.de || '');
+  if(!m) return null;
+  const leger = +m[2] === 4 || /arbal/i.test(a.nom);
+  const car = leger ? 'Dextérité' : 'Force';
+  const bonus = (m[3] ? (m[3] === '-' ? -1 : 1) * (+m[4]) : 0) + Math.floor((c.car[car] || 0) / 5);
+  return (m[1] || '1') + 'd' + m[2] + (bonus ? (bonus > 0 ? '+' + bonus : String(bonus)) : '');
+}
+function degatsCompo(f){
+  const r = lancerFormule(f);
+  if(!r){ msgTable('Écris les dés comme dans le livre : d8, 2d6, d6+2.', false); return; }
+  const double = !!(COMPO.jet && COMPO.jet.critique && COMPO.jet.mode === 'd20' && !COMPO.jet.rea);
+  const des = r.des.join(' + ') + (r.bonus ? (r.bonus > 0 ? ' + ' + r.bonus : ' − ' + (-r.bonus)) : '');
+  COMPO.degats = {txt:r.txt, total:r.total * (double ? 2 : 1), des:des, double:double};
+  COMPO.formule = f; COMPO.pvN = COMPO.degats.total;
+  const qui = nomDe(COMPO.qui) || MOI.joueur || 'MJ';
+  changer(() => {
+    T.jets = T.jets.concat([{id:nouvelId('j'), t:maintenant(), auteur:MOI.joueur || 'quelqu’un', perso:qui,
+      quoi:'dégâts ' + r.txt + (double ? ', doublés' : ''), formule:r.txt, jet:COMPO.degats.total, seuil:null,
+      mode:'des', reussite:false, note:des, main:false}]).slice(-MAX_JETS);
+  });
+  dessinerCompositeur(true);
+}
+function ciblePv(id){
+  const c = perso(id); if(c) return c;
+  const p = unPnj(id); return p && p.pvMax != null ? p : null;
+}
+function poserVie(sens){
+  const c = ciblePv(COMPO.pvId); if(!c) return;
+  if(!perso(c.id) && COMPO.pvQuoi === 'pc'){ msgTable('Un PNJ n’a pas de PC suivis ici.', false); return; }
+  const n = Math.max(1, parseInt(COMPO.pvN, 10) || 1) * sens;
+  const x = COMPO.vies.find(v => v.id === c.id && v.quoi === COMPO.pvQuoi && !v.auto);
+  if(x){ x.delta += n; if(!x.delta) COMPO.vies = COMPO.vies.filter(v => v !== x); }
+  else COMPO.vies.push({id:c.id, nom:c.nom || 'Sans nom', delta:n, quoi:COMPO.pvQuoi});
+  majApercuCompo();
+}
+
+function ajouterDepuisCompo(){
+  const e = seanceCourante();
+  if(!e){ msgTable('Commence d’abord une séance.', false); return; }
+  const z = $('coTexte'), texte = z.value.replace(/\s+$/, '');
+  if(!texte.trim() && !COMPO.jet && !COMPO.degats && !COMPO.vies.length){ msgTable('Écris quelque chose, ou joins un jet.', false); return; }
+  const q = Object.assign({}, COMPO.qui, {nom:nomDe(COMPO.qui)});
+  const b = normBloc({id:nouvelId('b'), maj:maintenant(), seance:e.id, ordre:maintenant(), type:COMPO.genre,
+    qui:q, texte:texte, auteur:MOI.joueur || '', jet:COMPO.jet, degats:COMPO.degats,
+    vies:COMPO.vies.map(v => ({id:v.id, nom:v.nom, delta:v.delta, quoi:v.quoi}))});
+  let creee = null;
+  changer(() => {
+    /* un PNJ qui parle ou agit a sa fiche : on la crée s'il n'en a pas */
+    if(b.qui.k === 'pnj'){
+      let f = unPnj(b.qui.id) || pnjParNom(b.qui.nom);
+      if(!f && !nomAnonyme(b.qui.nom)){ f = creerPnj(b.qui.nom, e.id); creee = f; }
+      if(f){ b.qui.id = f.id; b.qui.nom = f.nom; }
+    }
+    b.vies.forEach(v => {
+      const c = perso(v.id);
+      if(c){
+        const cour = v.quoi === 'pc' ? 'pcc' : 'pv', max = v.quoi === 'pc' ? 'pcMax' : 'pvMax';
+        c[cour] = Math.max(0, Math.min(c[max], c[cour] + v.delta));
+        v.reste = c[cour]; v.max = c[max]; v.nom = c.nom || v.nom;
+        majPerso(c, true);
+        return;
+      }
+      const p = unPnj(v.id);
+      if(p && p.pvMax != null && v.quoi === 'pv'){
+        const pv = Math.max(0, Math.min(p.pvMax, (p.pv == null ? p.pvMax : p.pv) + v.delta));
+        /* seuls les PV bougent : une fiche retouchée ailleurs au même moment n'est pas écrasée */
+        T.pnj[p.id] = Object.assign({}, p, {pv:pv, majPv:maintenant()});
+        v.reste = pv; v.max = p.pvMax; v.nom = p.nom || v.nom;
+      }
+    });
+    T.blocs[b.id] = b;
+  });
+  if(creee){ COMPO.qui = {k:'pnj', id:creee.id, nom:creee.nom}; msgTable('Fiche de ' + creee.nom + ' créée, dans « Les PNJ ».', true); }
+  z.value = '';
+  COMPO.jet = null; COMPO.degats = null; COMPO.vies = [];
+  dessinerCompositeur(true);
+  z.focus();
+  const r = $('seRecit'); if(r) r.scrollTop = r.scrollHeight;
+}
+
+const PLACEHOLDERS = {
+  narration:'Ce que raconte le MJ. Entrée ajoute le paragraphe, Maj+Entrée va à la ligne.',
+  scene:'Havre de Vaurenne, début de matinée.',
+  encadre:'Première ligne : le titre. Puis une ligne par information, « Paie : 5 ors ». Ctrl+Entrée ajoute.',
+  fait:'Ce qu’il fait. Commence par un verbe, « attrape sa lance et la jette sur le chien », et son nom se met devant.',
+  dit:'Ce qu’il dit. Les guillemets se mettent tout seuls.'
+};
+function dessinerCompositeur(force){
+  const box = $('seCompo'); if(!box) return;
+  const e = seanceCourante();
+  box.hidden = !e;
+  if(!e) return;
+  if(!COMPO.pret){
+    COMPO.pret = true;
+    const c = MOI.perso ? perso(MOI.perso) : null;
+    if(c){ COMPO.qui = {k:'perso', id:c.id, nom:c.nom}; COMPO.genre = 'fait'; COMPO.pvId = c.id; }
+  }
+  if(COMPO.qui.k === 'perso' && !persoCompo()){
+    COMPO.qui = {k:'mj', id:'', nom:''}; COMPO.genre = 'narration'; COMPO.quoi = ''; COMPO.jet = null; sansAuto();
+  }
+  const focus = document.activeElement && box.contains(document.activeElement) ? document.activeElement.id : '';
+
+  /* qui */
+  const lq = $('coQui');
+  if(force || !occupe(lq)){
+    lq.innerHTML = '';
+    const chip = (lab, q, actif) => {
+      const b = el('button', null, lab); b.type = 'button';
+      b.setAttribute('aria-pressed', actif ? 'true' : 'false');
+      b.onclick = () => choisirQui(q);
+      return b;
+    };
+    lq.append(chip('MJ', {k:'mj', id:'', nom:''}, COMPO.qui.k === 'mj'));
+    persos().forEach(c => lq.append(chip(c.nom || 'Sans nom', {k:'perso', id:c.id, nom:c.nom}, COMPO.qui.k === 'perso' && COMPO.qui.id === c.id)));
+    const pnj = el('input'); pnj.type = 'text'; pnj.id = 'coPnj'; pnj.placeholder = 'un PNJ, Nahya';
+    pnj.setAttribute('list', 'coPnjs'); pnj.setAttribute('aria-label', 'Faire parler ou agir un PNJ');
+    pnj.value = COMPO.qui.k === 'pnj' ? nomDe(COMPO.qui) : '';
+    if(COMPO.qui.k === 'pnj') pnj.className = 'actif';
+    const dl = el('datalist'); dl.id = 'coPnjs';
+    const vus = {};
+    pnjs().forEach(p => { if(p.nom) vus[p.nom] = 1; });
+    Object.keys(T.blocs).map(k => T.blocs[k]).filter(b => b && !b.supprime && b.qui && b.qui.k === 'pnj' && b.qui.nom && !b.qui.id)
+      .sort((x, y) => y.ordre - x.ordre).forEach(b => { if(!vus[b.qui.nom] && !pnjParNom(b.qui.nom)) vus[b.qui.nom] = 1; });
+    Object.keys(vus).slice(0, 80).forEach(n => dl.append(new Option(n, n)));
+    const prendre = () => {
+      const v = pnj.value.trim(); if(!v) return;
+      const f = pnjParNom(v);
+      if(COMPO.qui.k === 'pnj' && cleNom(nomDe(COMPO.qui)) === cleNom(v)) return;
+      choisirQui({k:'pnj', id:f ? f.id : '', nom:f ? f.nom : v});
+    };
+    pnj.onchange = prendre;
+    pnj.onkeydown = ev => { if(ev.key === 'Enter'){ ev.preventDefault(); prendre(); $('coTexte').focus(); } };
+    lq.append(pnj, dl);
+  }
+
+  /* comment */
+  const lg = $('coGenre');
+  lg.innerHTML = '';
+  genresDe(COMPO.qui).forEach(g => {
+    const b = el('button', null, g.l); b.type = 'button';
+    b.setAttribute('aria-pressed', COMPO.genre === g.k ? 'true' : 'false');
+    b.onclick = () => { COMPO.genre = g.k; dessinerCompositeur(true); $('coTexte').focus(); };
+    lg.append(b);
+  });
+
+  $('coTexte').placeholder = PLACEHOLDERS[COMPO.genre] || '';
+  [['coOutilJet','jet'], ['coOutilPv','pv']].forEach(([id, k]) => {
+    const b = $(id);
+    b.setAttribute('aria-pressed', COMPO.panneau === k ? 'true' : 'false');
+    b.classList.toggle('on', COMPO.panneau === k);
+  });
+
+  /* le panneau ouvert */
+  const pn = $('coPanneau');
+  if(force || !occupe(pn)){
+    pn.innerHTML = '';
+    if(COMPO.panneau === 'jet') pn.append(panneauJet());
+    if(COMPO.panneau === 'pv') pn.append(panneauPv());
+    majSeuilCompo();
+  }
+  majApercuCompo();
+  if(force && focus && focus !== 'coPnj' && $(focus) && document.activeElement !== $(focus)) $(focus).focus();
+}
+
+function panneauJet(){
+  const p = el('div','panneau');
+  const g = el('div','jetform');
+  const c = persoCompo();
+  if(c){
+    const s = el('select'); s.id = 'coQuoi';
+    s.add(new Option('Ce qu’il tente…', ''));
+    const grp = (lab, liste) => {
+      if(!liste.length) return;
+      const og = el('optgroup'); og.label = lab;
+      liste.forEach(o => og.append(new Option(o.l, o.k)));
+      s.append(og);
+    };
+    const opts = optionsJet(c);
+    grp('Compétences', opts.filter(o => o.k.indexOf('comp:') === 0).map(o => ({k:o.k, l:o.l + ' · ' + o.val})));
+    grp('Pratiques', opts.filter(o => o.k.indexOf('prat:') === 0).map(o => {
+      const pr = pratiqueDe(c, o.k);
+      const cout = pr ? (pr.base ? ' · de base' : pr.pc ? ' · ' + pr.pc + ' PC' : pr.pct ? ' · ' + pr.pct : '') : '';
+      return {k:o.k, l:nettoieOption(o.l) + (o.val == null ? ' · ne se lance pas' : ' · ' + o.val) + cout};
+    }));
+    grp('Réactions, en combat', [
+      {k:'rea:esquive', l:'Esquiver, sous Acrobatie · ' + compTotal(c, 'Acrobatie')},
+      {k:'rea:parade', l:'Parer, sous Combat · ' + compTotal(c, 'Combat')}
+    ]);
+    grp('Caractéristiques, fois deux', opts.filter(o => o.k.indexOf('car:') === 0).map(o => ({k:o.k, l:nettoieOption(o.l) + ' · ' + o.val})));
+    s.value = COMPO.quoi;
+    if(s.value !== COMPO.quoi){ COMPO.quoi = ''; s.value = ''; }
+    s.onchange = () => {
+      COMPO.quoi = s.value; COMPO.jet = null; sansAuto();
+      const pr = pratiqueDe(c, s.value);
+      const m = pr && /(\d*d\d+(?:\s*[+\-]\s*\d+)?)/i.exec(pr.d);
+      if(m) COMPO.formule = m[1].replace(/\s+/g, '');
+      dessinerCompositeur(true);
+    };
+    champ(g, 'Ce qu’il tente', s);
+  } else {
+    const fp = pnjCompo();
+    if(fp && fp.valeurs.length){
+      const s = el('select'); s.id = 'coQuoi';
+      s.add(new Option('Une valeur à donner…', ''));
+      fp.valeurs.forEach(v => s.add(new Option(v.n + ' · ' + v.v, 'val:' + v.n)));
+      s.value = COMPO.quoi;
+      if(s.value !== COMPO.quoi){ COMPO.quoi = ''; s.value = ''; }
+      s.onchange = () => { COMPO.quoi = s.value; COMPO.jet = null; dessinerCompositeur(true); };
+      champ(g, 'Ce qu’il tente, d’après sa fiche', s);
+    }
+    if(!(fp && COMPO.quoi.indexOf('val:') === 0)){
+      const q = el('input'); q.type = 'text'; q.id = 'coLibreQuoi'; q.value = COMPO.libreQuoi; q.placeholder = 'Perception du chien';
+      q.oninput = () => { COMPO.libreQuoi = q.value; };
+      champ(g, 'Ce qu’on tente', q);
+      const v = el('input'); v.type = 'number'; v.id = 'coLibreVal'; v.value = COMPO.libreVal; v.placeholder = '30'; v.min = '1'; v.inputMode = 'numeric';
+      v.oninput = () => { COMPO.libreVal = v.value; majSeuilCompo(); };
+      champ(g, 'Valeur, sur 100', v);
+    }
+  }
+  const s0 = seuilCompo();
+  const m = el('select'); m.id = 'coMode';
+  [['d100','Hors combat, d100'], ['d20','En combat, d20']].forEach(([k, l]) => m.add(new Option(l, k)));
+  m.value = s0 && s0.rea ? 'd20' : (MOI.mode === 'd20' ? 'd20' : 'd100');
+  m.disabled = !!(s0 && s0.rea);
+  m.onchange = () => { MOI.mode = m.value; sauverLocal(); COMPO.jet = null; sansAuto(); dessinerCompositeur(true); };
+  champ(g, 'Où', m);
+  const md = el('select'); md.id = 'coMod';
+  MODS.forEach(x => md.add(new Option(x.l, x.k)));
+  md.value = COMPO.mod;
+  md.onchange = () => { COMPO.mod = md.value; COMPO.jet = null; sansAuto(); dessinerCompositeur(true); };
+  champ(g, 'Modificateur', md);
+  p.append(g);
+
+  const a = el('div','acts'); a.style.marginTop = '10px';
+  const sans = !!(s0 && s0.sans);
+  const lancer = el('button','btn sm', sans ? 'Utiliser' : 'Lancer'); lancer.type = 'button'; lancer.id = 'coLancer';
+  lancer.onclick = () => jeterCompo(null);
+  a.append(lancer);
+  if(!sans){
+    const main = el('input'); main.type = 'number'; main.id = 'coMain'; main.placeholder = 'dé de la table'; main.style.width = '150px'; main.inputMode = 'numeric';
+    main.setAttribute('aria-label', 'Le dé lancé sur la table');
+    const entrer = el('button','btn ghost sm','Entrer ce dé'); entrer.type = 'button'; entrer.id = 'coEntrer';
+    const go = () => { const v = parseInt(main.value, 10); jeterCompo(v); };
+    entrer.onclick = go;
+    main.onkeydown = ev => { if(ev.key === 'Enter'){ ev.preventDefault(); go(); } };
+    a.append(main, entrer);
+  }
+  const indice = el('span','mini'); indice.id = 'coSeuil';
+  a.append(indice);
+  p.append(a);
+  if(COMPO.jet && !COMPO.jet.sans){
+    const j = COMPO.jet;
+    const r = el('div','verdict' + (j.reussite ? ' ok' : ' ko'));
+    r.append(el('b', null, j.jet + ' sur ' + (j.mode === 'd100' ? '100' : '20')),
+      document.createTextNode(' · ' + (j.reussite ? (j.critique ? 'réussite critique' : 'réussi') : (j.echecCrit ? 'échec critique' : 'raté')) + (j.note ? ' · ' + j.note : '')));
+    p.append(r);
+  }
+
+  const d = el('div','acts'); d.style.marginTop = '10px';
+  const f = el('input'); f.type = 'text'; f.id = 'coDegats'; f.placeholder = 'd8+3, 2d6'; f.style.width = '130px'; f.value = COMPO.formule;
+  f.setAttribute('aria-label', 'Les dés de dégâts');
+  f.oninput = () => { COMPO.formule = f.value; };
+  d.append(f);
+  if(c && c.armes.length){
+    const arme = el('select'); arme.id = 'coArme'; arme.setAttribute('aria-label', 'Prendre les dés d’une arme');
+    arme.add(new Option('ou une arme…', ''));
+    c.armes.forEach((x, i) => { const fx = formuleArme(c, x); if(fx) arme.add(new Option(x.nom + ' · ' + fx, String(i))); });
+    arme.onchange = () => { const x = c.armes[+arme.value]; const fx = x && formuleArme(c, x); if(fx){ f.value = fx; COMPO.formule = fx; } };
+    d.append(arme);
+  }
+  const bd = el('button','btn ghost sm','Lancer les dégâts'); bd.type = 'button'; bd.id = 'coLancerDegats';
+  bd.onclick = () => degatsCompo(f.value);
+  f.onkeydown = ev => { if(ev.key === 'Enter'){ ev.preventDefault(); degatsCompo(f.value); } };
+  d.append(bd);
+  p.append(d);
+  return p;
+}
+function majSeuilCompo(){
+  const n = $('coSeuil'); if(!n) return;
+  const s = seuilCompo();
+  if(!s){ n.textContent = persoCompo() ? '' : 'le MJ donne la valeur'; return; }
+  if(s.sans){ n.textContent = 'Ne se lance pas : tu paies, et elle arrive.'; return; }
+  n.textContent = 'réussite sous ' + s.seuil + ' au ' + s.mode + (s.rea ? ', en réaction' : '') + (s.prat && s.prat.pc ? ' · coûte ' + s.prat.pc + ' PC, même raté' : '');
+}
+
+function panneauPv(){
+  const p = el('div','panneau');
+  const liste = persos(), combattants = pnjs().filter(x => x.pvMax != null && x.statut !== 'mort');
+  if(!liste.length && !combattants.length){ p.append(el('p','mini','Personne à la table.')); return p; }
+  if(!ciblePv(COMPO.pvId)) COMPO.pvId = (liste[0] || combattants[0]).id;
+  const g = el('div','jetform');
+  const s = el('select'); s.id = 'coPvQui';
+  if(liste.length){ const og = el('optgroup'); og.label = 'Les personnages'; liste.forEach(c => og.append(new Option(c.nom || 'Sans nom', c.id))); s.append(og); }
+  if(combattants.length){ const og = el('optgroup'); og.label = 'Les PNJ qui se battent'; combattants.forEach(x => og.append(new Option(x.nom, x.id))); s.append(og); }
+  s.value = COMPO.pvId;
+  s.onchange = () => { COMPO.pvId = s.value; dessinerCompositeur(true); };
+  champ(g, 'Qui', s);
+  const q = el('select'); q.id = 'coPvQuoi';
+  [['pv','PV'], ['pc','PC']].forEach(([k, l]) => q.add(new Option(l, k)));
+  q.value = COMPO.pvQuoi;
+  q.onchange = () => { COMPO.pvQuoi = q.value; };
+  champ(g, 'Quoi', q);
+  const n = el('input'); n.type = 'number'; n.id = 'coPvN'; n.min = '1'; n.value = COMPO.pvN; n.inputMode = 'numeric';
+  n.oninput = () => { COMPO.pvN = Math.max(1, parseInt(n.value, 10) || 1); };
+  champ(g, 'Combien', n);
+  p.append(g);
+  const a = el('div','acts'); a.style.marginTop = '10px';
+  const moins = el('button','btn ghost sm','En retirer'); moins.type = 'button'; moins.id = 'coPvMoins';
+  moins.onclick = () => poserVie(-1);
+  const plus = el('button','btn ghost sm','En rendre'); plus.type = 'button'; plus.id = 'coPvPlus';
+  plus.onclick = () => poserVie(1);
+  const c = perso(COMPO.pvId), f = !c ? unPnj(COMPO.pvId) : null;
+  a.append(moins, plus, el('span','mini', c ? (c.nom || 'Sans nom') + ' a ' + c.pv + '/' + c.pvMax + ' PV et ' + c.pcc + '/' + c.pcMax + ' PC. Ça s’applique quand on ajoute le paragraphe.'
+    : f ? f.nom + ' a ' + (f.pv == null ? f.pvMax : f.pv) + '/' + f.pvMax + ' PV. Ça s’applique quand on ajoute le paragraphe.' : ''));
+  p.append(a);
+  return p;
+}
+
+function majApercuCompo(){
+  const j = $('coJoint'); if(!j) return;
+  j.innerHTML = '';
+  const attache = (txt, cls, enlever) => {
+    const s = el('span','puce' + (cls ? ' ' + cls : ''), txt);
+    const x = el('button', null, '×'); x.type = 'button'; x.setAttribute('aria-label', 'retirer ' + txt);
+    x.onclick = enlever;
+    s.append(x);
+    j.append(s);
+  };
+  if(COMPO.jet) attache(texteJet(COMPO.jet), COMPO.jet.sans ? '' : COMPO.jet.reussite ? 'ok' : 'ko',
+    () => { COMPO.jet = null; sansAuto(); dessinerCompositeur(true); });
+  if(COMPO.degats) attache(texteDegats(COMPO.degats), '', () => { COMPO.degats = null; majApercuCompo(); });
+  COMPO.vies.forEach(v => attache(texteVie(v), 'vie', () => { COMPO.vies = COMPO.vies.filter(x => x !== v); majApercuCompo(); }));
+  const t = $('coTexte').value.trim();
+  if((COMPO.genre === 'fait' || COMPO.genre === 'dit') && (t || COMPO.jet || COMPO.degats || COMPO.vies.length)){
+    const l = lignePlate({type:COMPO.genre, qui:COMPO.qui, texte:t, jet:COMPO.jet, degats:COMPO.degats, vies:COMPO.vies});
+    j.append(el('span','onlira', 'On lira : ' + (l.length > 150 ? l.slice(0, 150) + '…' : l)));
+  }
+  j.hidden = !j.childNodes.length;
+}
+
+function dessinerSeance(force){
+  dessinerTeteSeance(force);
+  dessinerEtatSeance();
+  dessinerRecit(force);
+  dessinerCompositeur(force);
+}
+
+/* ---------- vers Google Docs ---------- */
+const ech = s => String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+function blocHtml(b){
+  const gris = t => '<span style="color:#6B7469">' + ech(t) + '</span>';
+  const br = t => ech(t).replace(/\n/g, '<br>');
+  const j = joints(b), ph = phrase(b);
+  const suite = !j.length ? '' : ph ? ' ' + gris('(' + j.join(' · ') + ')') : gris(majuscule(j.join(' · ')));
+  if(b.type === 'encadre'){
+    const sep = '<p style="text-align:center">' + SEPARATEUR + '</p>';
+    const corps = b.texte.split('\n').map((x, i) => {
+      if(!i) return '<b>' + ech(x) + '</b>';
+      const m = /^([^:]{2,40}?) :\s*(.*)$/.exec(x);
+      return m ? '<b>' + ech(m[1]) + '</b> : ' + ech(m[2]) : ech(x);
+    }).join('<br>');
+    return sep + '<p>' + corps + (j.length ? '<br>' + gris('(' + j.join(' · ') + ')') : '') + '</p>' + sep;
+  }
+  if(b.type === 'scene') return '<p><b>' + br(ph) + '</b>' + suite + '</p>';
+  if(b.type === 'achat' || b.type === 'note') return '<p><i>' + gris(ph) + '</i></p>';
+  return '<p>' + br(ph) + suite + '</p>';
+}
+function seanceHtml(e){
+  const tete = '<h2>Séance ' + ech(e.seance) + (e.titre ? ' · ' + ech(e.titre) : '') + '</h2>' +
+    (e.date ? '<p><i>' + ech(dateLongue(e.date)) + '</i></p>' : '');
+  return '<div style="font-family:Arial,sans-serif;font-size:11pt;line-height:1.5;color:#000">' + tete + blocsDe(e.id).map(blocHtml).join('') + '</div>';
+}
+function seanceTexte(e){
+  const L = ['Séance ' + e.seance + (e.titre ? ' · ' + e.titre : ''), e.date ? dateLongue(e.date) : '', ''];
+  blocsDe(e.id).forEach(b => {
+    if(b.type === 'encadre'){
+      const j = joints(b);
+      L.push(SEPARATEUR, b.texte + (j.length ? '\n(' + j.join(' · ') + ')' : ''), SEPARATEUR);
+    } else L.push(lignePlate(b));
+    L.push('');
+  });
+  return L.join('\n');
+}
+function copierSeance(e, bouton){
+  const t = bouton.textContent;
+  const dire = x => { bouton.textContent = x; setTimeout(() => { bouton.textContent = t; }, 2600); };
+  const html = seanceHtml(e), texte = seanceTexte(e);
+  const parSelection = () => {
+    const d = document.createElement('div');
+    d.innerHTML = html;
+    d.style.cssText = 'position:fixed;left:-9999px;top:0;background:#fff;color:#000';
+    document.body.appendChild(d);
+    const s = window.getSelection(), r = document.createRange();
+    r.selectNodeContents(d); s.removeAllRanges(); s.addRange(r);
+    let ok = false;
+    try{ ok = document.execCommand('copy'); }catch(x){}
+    s.removeAllRanges(); d.remove();
+    return ok;
+  };
+  const repli = () => dire(parSelection() ? 'Copié, colle dans ton Doc' : 'Copie bloquée ici : sélectionne le compte rendu à la souris');
+  try{
+    if(navigator.clipboard && typeof ClipboardItem === 'function'){
+      navigator.clipboard.write([new ClipboardItem({
+        'text/html': new Blob([html], {type:'text/html'}),
+        'text/plain': new Blob([texte], {type:'text/plain'})
+      })]).then(() => dire('Copié, colle dans ton Doc'), repli);
+      return;
+    }
+  }catch(x){}
+  repli();
+}
+
+/* ============ les PNJ, et le réseau de ceux qu'on croise ============ */
+
+let PNJ_ED = null;              /* la fiche en cours d'édition */
+const PNJ_OUVERTS = {};
+let PNJ_SUPPR = null;
+let LIEN_SUPPR = null;
+const PNJ_FILTRE = {q:'', groupe:''};
+const RES = {sel:'', relier:'', cible:'', focus:'', prof:1, etiquettes:true, reorg:false,
+  vue:{s:1, tx:0, ty:0}, noeuds:[], aretes:[], cadre:null};
+
+/* ---------- qui est qui ---------- */
+function pnjs(){
+  return Object.keys(T.pnj).map(id => T.pnj[id]).filter(p => p && !p.supprime)
+    .sort((a, b) => (a.nom || '').localeCompare(b.nom || '', 'fr'));
+}
+function unPnj(id){ const p = id && T.pnj[id]; return p && !p.supprime ? p : null; }
+function cleNom(n){ return String(n || '').trim().toLowerCase(); }
+function pnjParNom(nom){ const n = cleNom(nom); return n ? pnjs().find(p => cleNom(p.nom) === n) || null : null; }
+function quiRef(r){
+  if(!r) return null;
+  if(r.indexOf('pj:') === 0){ const c = perso(r.slice(3)); return c ? {ref:r, pj:true, nom:c.nom || 'Sans nom', o:c} : null; }
+  if(r.indexOf('pnj:') === 0){ const p = unPnj(r.slice(4)); return p ? {ref:r, pj:false, nom:p.nom || 'Sans nom', o:p} : null; }
+  return null;
+}
+function tousLesGens(){ return persos().map(c => quiRef('pj:' + c.id)).concat(pnjs().map(p => quiRef('pnj:' + p.id))); }
+function liensActifs(){
+  return Object.keys(T.liens).map(id => T.liens[id]).filter(l => l && !l.supprime && quiRef(l.de) && quiRef(l.vers) && l.de !== l.vers);
+}
+function liensDe(ref){ return liensActifs().filter(l => l.de === ref || l.vers === ref); }
+function groupes(){
+  const g = {};
+  pnjs().forEach(p => { const x = p.groupe.trim(); if(x) g[x] = 1; });
+  return Object.keys(g).sort((a, b) => a.localeCompare(b, 'fr'));
+}
+const libelle = (liste, k) => { const x = liste.find(y => y.k === k); return x ? x.l : ''; };
+const typeLien = k => TYPES_LIEN.find(t => t.k === k) || TYPES_LIEN[TYPES_LIEN.length - 1];
+
+/* une phrase pour un lien : « Nahya · grand-mère de · Ohan », ou « Yvellis et Vaurys · Rivalité » */
+function phraseLien(l){
+  const a = quiRef(l.de), b = quiRef(l.vers);
+  if(!a || !b) return '';
+  const t = typeLien(l.type);
+  if(l.mutuel) return a.nom + ' et ' + b.nom + ' · ' + t.l + (l.texte ? ', ' + l.texte : '');
+  return a.nom + ' · ' + (l.texte || t.l.toLowerCase()) + ' · ' + b.nom;
+}
+
+/* créée depuis le compte rendu : une fiche minimale, qu'on complète quand on veut */
+function creerPnj(nom, seanceId){
+  const p = normPnj({id:idLibre('n-' + slug(nom), T.pnj), maj:maintenant(), nom:String(nom).trim(), seance:seanceId || '', auteur:MOI.joueur || ''});
+  T.pnj[p.id] = p;
+  return p;
+}
+const nomAnonyme = n => /^[?\s.]*$/.test(String(n || ''));
+
+/* ---------- où on l'a vu ---------- */
+function apparitions(p){
+  const nom = cleNom(p.nom);
+  const esc = nom.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  let re = null;
+  try{ re = nom.length >= 3 ? new RegExp('(^|[^\\p{L}])' + esc + '($|[^\\p{L}])', 'iu') : null; }catch(e){ re = null; }
+  const par = {};
+  Object.keys(T.blocs).forEach(id => {
+    const b = T.blocs[id];
+    if(!b || b.supprime) return;
+    const e = T.journal[b.seance];
+    if(!e || e.supprime) return;
+    const agit = b.qui.k === 'pnj' && (b.qui.id === p.id || (!b.qui.id && cleNom(b.qui.nom) === nom));
+    const cite = !!(re && re.test(b.texte));
+    if(!agit && !cite) return;
+    const x = par[b.seance] || (par[b.seance] = {e:e, n:0, premier:b});
+    x.n++;
+    if(b.ordre < x.premier.ordre) x.premier = b;
+  });
+  return Object.keys(par).map(k => par[k]).sort((a, b) => (parseFloat(a.e.seance) || 0) - (parseFloat(b.e.seance) || 0));
+}
+function allerAuBloc(sid, bid){
+  choisirSeance(sid); BED = null;
+  dessinerSeance(true);
+  $('secSeance').scrollIntoView({block:'start', behavior:'smooth'});
+  const w = document.querySelector('#seRecit [data-bloc="' + bid + '"]');
+  if(!w) return;
+  $('seRecit').scrollTop = Math.max(0, w.offsetTop - 16);
+  w.classList.add('eclaire');
+  setTimeout(() => w.classList.remove('eclaire'), 2400);
+}
+function composerPourPnj(p){
+  if(!seanceCourante()){ msgTable('Commence d’abord une séance : le PNJ y parlera.', false); $('secSeance').scrollIntoView({block:'start', behavior:'smooth'}); return; }
+  choisirQui({k:'pnj', id:p.id, nom:p.nom});
+  COMPO.genre = 'dit';
+  dessinerCompositeur(true);
+  $('seCompo').scrollIntoView({block:'center', behavior:'smooth'});
+  setTimeout(() => $('coTexte').focus({preventScroll:true}), 350);
+}
+
+/* ---------- la section ---------- */
+function dessinerPnj(force){
+  majOutilsPnj();
+  const fiches = MOI.vuePnj !== 'reseau';
+  $('pnjListe').hidden = !fiches;
+  $('pnjReseau').hidden = fiches;
+  if(fiches) dessinerListePnj(force); else dessinerReseau(force);
+}
+function majOutilsPnj(){
+  [['pnjVueFiches','fiches'], ['pnjVueReseau','reseau']].forEach(([id, v]) => {
+    $(id).setAttribute('aria-pressed', (MOI.vuePnj === 'reseau' ? 'reseau' : 'fiches') === v ? 'true' : 'false');
+  });
+  const s = $('pnjGroupe');
+  if(document.activeElement !== s){
+    const gs = groupes();
+    s.innerHTML = '';
+    s.add(new Option('Tous les groupes', ''));
+    gs.forEach(g => s.add(new Option(g, g)));
+    if(PNJ_FILTRE.groupe && gs.indexOf(PNJ_FILTRE.groupe) < 0) PNJ_FILTRE.groupe = '';
+    s.value = PNJ_FILTRE.groupe;
+  }
+  const n = pnjs().length;
+  $('pnjCompte').textContent = n ? n + ' fiche' + (n > 1 ? 's' : '') : '';
+  $('pnjOutilsListe').hidden = MOI.vuePnj === 'reseau';
+}
+function pnjFiltres(){
+  const q = cleNom(PNJ_FILTRE.q);
+  return pnjs().filter(p => {
+    if(PNJ_FILTRE.groupe && p.groupe.trim() !== PNJ_FILTRE.groupe) return false;
+    if(!q) return true;
+    return [p.nom, p.role, p.groupe, p.lieu, p.peuple, p.texte].some(x => cleNom(x).indexOf(q) >= 0);
+  });
+}
+function dessinerListePnj(force){
+  const box = $('pnjListe');
+  if(!force && occupe(box)){ apresSaisie(box, () => dessinerListePnj(true)); return; }
+  box.innerHTML = '';
+  const tous = pnjs(), l = pnjFiltres();
+  if(!tous.length){
+    box.append(el('p','vide','Aucune fiche pour l’instant. Chaque PNJ qui parle ou agit dans une séance reçoit la sienne, ou crée-la ici.'));
+    return;
+  }
+  if(!l.length){ box.append(el('p','vide','Personne ne répond à cette recherche.')); return; }
+  l.forEach(p => box.append(cartePnj(p)));
+}
+function cartePnj(p){
+  const w = el('div','pcarte ncarte' + (p.statut !== 'vivant' ? ' ' + p.statut : ''));
+  w.setAttribute('data-pnj', p.id);
+  const t = el('div','ntete');
+  const nm = el('div','pnom', (p.nom || 'Sans nom') + (p.statut === 'mort' ? ' †' : ''));
+  t.append(nm, el('span','att att-' + p.attitude, libelle(ATTITUDES, p.attitude)));
+  w.append(t);
+  const qui = [p.role, p.peuple, p.groupe].filter(Boolean).join(' · ');
+  w.append(el('div','pqui', qui || 'rien de noté pour l’instant'));
+  const ap = apparitions(p), nl = liensDe('pnj:' + p.id).length;
+  const premiere = p.seance && T.journal[p.seance] && !T.journal[p.seance].supprime ? T.journal[p.seance].seance : '';
+  const meta = [p.lieu,
+    ap.length ? 'vu en séance ' + ap.map(a => a.e.seance).join(', ') : premiere ? 'rencontré en séance ' + premiere : '',
+    nl ? nl + ' lien' + (nl > 1 ? 's' : '') : '',
+    p.statut === 'disparu' ? 'disparu' : '',
+    p.pvMax ? p.pv + '/' + p.pvMax + ' PV' : ''].filter(Boolean);
+  if(meta.length) w.append(el('div','mini nmeta', meta.join(' · ')));
+
+  const act = el('div','pact');
+  const ouvert = !!PNJ_OUVERTS[p.id];
+  const b = (txt, fn, cls) => { const x = el('button','btn ghost sm' + (cls ? ' ' + cls : ''), txt); x.type = 'button'; x.onclick = fn; act.append(x); return x; };
+  b(ouvert ? 'Replier' : 'Voir la fiche', () => { PNJ_OUVERTS[p.id] = !ouvert; dessinerListePnj(true); });
+  b('Modifier', () => ouvrirEditeurPnj(p, false));
+  b('Faire parler', () => composerPourPnj(p));
+  b('Dans le réseau', () => { MOI.vuePnj = 'reseau'; RES.sel = 'pnj:' + p.id; RES.focus = ''; sauverLocal(); dessinerPnj(true); $('secPnj').scrollIntoView({block:'start', behavior:'smooth'}); });
+  const arme = PNJ_SUPPR === p.id;
+  b(arme ? 'Confirmer' : 'Retirer', () => {
+    if(arme){ PNJ_SUPPR = null; changer(() => { T.pnj[p.id] = Object.assign({}, p, {supprime:true, maj:maintenant()}); }); return; }
+    PNJ_SUPPR = p.id; dessinerListePnj(true);
+    setTimeout(() => { if(PNJ_SUPPR === p.id){ PNJ_SUPPR = null; dessinerListePnj(true); } }, 5000);
+  }, arme ? 'danger' : '');
+  w.append(act);
+  if(ouvert) w.append(detailPnj(p));
+  return w;
+}
+
+function detailPnj(p){
+  const d = el('div','detail');
+  if(p.texte){ d.append(el('h3', null, 'Ce qu’on sait')); d.append(el('div','texte', p.texte)); }
+  if(p.valeurs.length){
+    d.append(el('h3', null, 'Ses valeurs'));
+    d.append(el('p','mini', p.valeurs.map(v => v.n + ' ' + v.v + ' (d20 ' + d20v(v.v) + ')').join(' · ')));
+  }
+  const ref = 'pnj:' + p.id;
+  d.append(el('h3', null, 'Ses liens'));
+  const ls = liensDe(ref);
+  if(!ls.length) d.append(el('p','mini','Aucun lien pour l’instant.'));
+  ls.forEach(l => d.append(ligneLien(l, () => dessinerListePnj(true))));
+  const tisser = el('button','btn ghost sm tisser','Tisser un lien'); tisser.type = 'button';
+  const zone = el('div'); zone.hidden = true;
+  tisser.onclick = () => {
+    zone.hidden = !zone.hidden;
+    tisser.setAttribute('aria-expanded', zone.hidden ? 'false' : 'true');
+    if(!zone.hidden && !zone.firstChild) zone.append(formLien(ref, '', () => dessinerListePnj(true)));
+    if(!zone.hidden){ const s = zone.querySelector('.fl-avec'); if(s) s.focus(); }
+  };
+  tisser.setAttribute('aria-expanded', 'false');
+  tisser.style.marginTop = '8px';
+  d.append(tisser, zone);
+
+  const ap = apparitions(p);
+  d.append(el('h3', null, 'Dans les comptes rendus'));
+  if(!ap.length) d.append(el('p','mini','Absent des comptes rendus pour l’instant.'));
+  else {
+    const r = el('div','acts apparitions');
+    ap.forEach(a => {
+      const x = el('button','btn ghost sm', 'Séance ' + (a.e.seance || '?') + ' · ' + a.n + ' fois');
+      x.type = 'button';
+      x.onclick = () => allerAuBloc(a.e.id, a.premier.id);
+      r.append(x);
+    });
+    d.append(r);
+  }
+  return d;
+}
+
+/* une ligne de lien, avec sa suppression en deux temps */
+function ligneLien(l, redessiner){
+  const w = el('div','lien');
+  w.append(el('span','ltrait l-' + l.type));
+  w.append(el('span','q', phraseLien(l)));
+  if(l.notes) w.append(el('span','mini', ' · ' + l.notes));
+  const arme = LIEN_SUPPR === l.id;
+  const x = el('button','btn ghost sm' + (arme ? ' danger' : ''), arme ? 'Confirmer' : 'Défaire'); x.type = 'button';
+  x.setAttribute('aria-label', (arme ? 'confirmer : défaire le lien ' : 'défaire le lien ') + phraseLien(l));
+  x.onclick = () => {
+    if(arme){ LIEN_SUPPR = null; changer(() => { T.liens[l.id] = Object.assign({}, l, {supprime:true, maj:maintenant()}); }); return; }
+    LIEN_SUPPR = l.id; redessiner();
+    setTimeout(() => { if(LIEN_SUPPR === l.id){ LIEN_SUPPR = null; redessiner(); } }, 5000);
+  };
+  w.append(x);
+  return w;
+}
+
+/* tisser un lien : avec qui, quel genre, dans quel sens */
+let N_FORM = 0;
+function formLien(ref, cible, apres){
+  const f = el('div','flien');
+  const n = ++N_FORM;
+  const moi = quiRef(ref);
+  const g = el('div','jetform');
+  const avec = el('select'); avec.className = 'fl-avec'; avec.id = 'fl-avec-' + n;
+  avec.add(new Option('Avec qui…', ''));
+  const og1 = el('optgroup'); og1.label = 'Les personnages';
+  const og2 = el('optgroup'); og2.label = 'Les PNJ';
+  tousLesGens().filter(x => x.ref !== ref).forEach(x => (x.pj ? og1 : og2).append(new Option(x.nom, x.ref)));
+  if(og1.children.length) avec.append(og1);
+  if(og2.children.length) avec.append(og2);
+  avec.value = cible || '';
+  champ(g, 'Avec qui', avec);
+  const ty = el('select'); ty.className = 'fl-type'; ty.id = 'fl-type-' + n;
+  TYPES_LIEN.forEach(t => ty.add(new Option(t.l, t.k)));
+  champ(g, 'Quel lien', ty);
+  const tx = el('input'); tx.type = 'text'; tx.className = 'fl-texte'; tx.id = 'fl-texte-' + n; tx.placeholder = typeLien(ty.value).ex;
+  champ(g, 'En quelques mots', tx);
+  const sens = el('select'); sens.className = 'fl-sens'; sens.id = 'fl-sens-' + n;
+  const majSens = () => {
+    const b = quiRef(avec.value), a = moi ? moi.nom : '?', bn = b ? b.nom : 'l’autre';
+    const v = sens.value;
+    sens.innerHTML = '';
+    sens.add(new Option('Réciproque', 'mutuel'));
+    sens.add(new Option(a + ' → ' + bn, 'aller'));
+    sens.add(new Option(bn + ' → ' + a, 'retour'));
+    sens.value = v || (typeLien(ty.value).mutuel ? 'mutuel' : 'aller');
+  };
+  majSens();
+  avec.onchange = majSens;
+  ty.onchange = () => { tx.placeholder = typeLien(ty.value).ex; sens.value = typeLien(ty.value).mutuel ? 'mutuel' : (sens.value === 'mutuel' ? 'aller' : sens.value); };
+  champ(g, 'Dans quel sens', sens);
+  f.append(g);
+  const a = el('div','acts'); a.style.marginTop = '8px';
+  const ok = el('button','btn sm','Tisser le lien'); ok.type = 'button'; ok.className = 'btn sm fl-ok';
+  ok.onclick = () => {
+    if(!avec.value){ msgTable('Choisis avec qui.', false); return; }
+    const aller = sens.value !== 'retour';
+    const l = normLien({id:nouvelId('l'), maj:maintenant(), type:ty.value, texte:tx.value.trim(),
+      mutuel:sens.value === 'mutuel', de:aller ? ref : avec.value, vers:aller ? avec.value : ref});
+    changer(() => { T.liens[l.id] = l; });
+    if(apres) apres(l);
+  };
+  a.append(ok);
+  f.append(a);
+  return f;
+}
+
+/* ---------- l'éditeur ---------- */
+function listeDonnees(id, valeurs){
+  let d = $(id);
+  if(!d){ d = el('datalist'); d.id = id; document.body.append(d); }
+  d.innerHTML = '';
+  valeurs.forEach(v => d.append(new Option(v, v)));
+  return id;
+}
+function ouvrirEditeurPnj(p, nouveau){
+  PNJ_ED = normPnj(JSON.parse(JSON.stringify(p || {})));
+  if(nouveau){ PNJ_ED.id = nouvelId('n'); if(!PNJ_ED.seance) PNJ_ED.seance = (seanceCourante() || {}).id || ''; }
+  const avantNom = nouveau ? '' : (p.nom || '');
+  const box = $('pnjEditeur'); box.innerHTML = ''; box.hidden = false;
+  box.append(el('h3', null, nouveau ? 'Une fiche de plus' : 'Modifier ' + (PNJ_ED.nom || 'la fiche')));
+  const txt = (lab, k, ph, liste) => {
+    const i = el('input'); i.type = 'text'; i.value = PNJ_ED[k]; i.placeholder = ph || ''; i.style.width = '100%';
+    i.id = 'ped-' + k;
+    if(liste) i.setAttribute('list', liste);
+    i.oninput = () => { PNJ_ED[k] = i.value; };
+    return i;
+  };
+  const id = el('div','table');
+  champ(id, 'Nom', txt('Nom', 'nom', 'Nahya'));
+  champ(id, 'Rôle ou métier', txt('Rôle', 'role', 'vieille Ilvès, grand-mère d’Ohan'));
+  champ(id, 'Peuple', txt('Peuple', 'peuple', 'Ilvès', listeDonnees('dl-peuples', PEUPLES_LIVRE)));
+  champ(id, 'Groupe ou faction', txt('Groupe', 'groupe', 'La bande de Vaurys', listeDonnees('dl-groupes', groupes())));
+  champ(id, 'Où on le trouve', txt('Lieu', 'lieu', 'Ronceval'));
+  const ss = el('select'); ss.id = 'ped-seance';
+  ss.add(new Option('pas encore rencontré', ''));
+  seances().slice().reverse().forEach(e => ss.add(new Option('Séance ' + (e.seance || '?') + (e.titre ? ' · ' + e.titre : ''), e.id)));
+  ss.value = PNJ_ED.seance && T.journal[PNJ_ED.seance] ? PNJ_ED.seance : '';
+  ss.onchange = () => { PNJ_ED.seance = ss.value; };
+  champ(id, 'Première rencontre', ss);
+  box.append(id);
+
+  const seg = (lab, liste, k) => {
+    const w = el('div'); w.style.marginTop = '10px';
+    w.append(el('span','lab', lab));
+    const s = el('div','seg');
+    liste.forEach(x => {
+      const b = el('button', null, x.l); b.type = 'button';
+      b.setAttribute('aria-pressed', PNJ_ED[k] === x.k ? 'true' : 'false');
+      b.onclick = () => { PNJ_ED[k] = x.k; [].forEach.call(s.children, y => y.setAttribute('aria-pressed', y === b ? 'true' : 'false')); };
+      s.append(b);
+    });
+    w.append(s);
+    box.append(w);
+  };
+  seg('Envers le groupe', ATTITUDES, 'attitude');
+  seg('Aujourd’hui', STATUTS, 'statut');
+
+  box.append(el('h3', null, 'Ce qu’on sait'));
+  const z = el('textarea'); z.rows = 4; z.id = 'ped-texte'; z.value = PNJ_ED.texte;
+  z.placeholder = 'Ce qu’il a dit, ce qu’il cache, ce qu’il veut. Tout le monde le lit.';
+  z.oninput = () => { PNJ_ED.texte = z.value; };
+  box.append(z);
+
+  box.append(el('h3', null, 'Ses valeurs'));
+  box.append(el('p','mini','Une valeur sur 100, comme sur une fiche. Elles apparaissent dans les jets quand ce PNJ agit dans la séance.'));
+  const vb = el('div'); vb.id = 'ped-valeurs';
+  box.append(vb);
+  const noms = listeDonnees('dl-valeurs', ALLSKILLS.map(o => o.s).concat(CARS));
+  const dessinerValeurs = () => {
+    vb.innerHTML = '';
+    PNJ_ED.valeurs.forEach((v, i) => {
+      const l = el('div','acts'); l.style.marginBottom = '6px';
+      const n = el('input'); n.type = 'text'; n.value = v.n; n.placeholder = 'Perception'; n.setAttribute('list', noms); n.style.width = '200px';
+      n.setAttribute('aria-label', 'Nom de la valeur');
+      n.oninput = () => { v.n = n.value; };
+      const x = nombre(v.v, 0, 200); x.setAttribute('aria-label', 'Sa valeur');
+      x.oninput = () => { v.v = Math.max(0, parseInt(x.value, 10) || 0); };
+      const r = el('button','btn ghost sm','Retirer'); r.type = 'button';
+      r.onclick = () => { PNJ_ED.valeurs.splice(i, 1); dessinerValeurs(); };
+      l.append(n, x, r);
+      vb.append(l);
+    });
+  };
+  dessinerValeurs();
+  const plus = el('button','btn ghost sm','Ajouter une valeur'); plus.type = 'button';
+  plus.onclick = () => { PNJ_ED.valeurs.push({n:'', v:40}); dessinerValeurs(); const i = vb.querySelector('.acts:last-child input'); if(i) i.focus(); };
+  box.append(plus);
+
+  const gv = el('div','table'); gv.style.marginTop = '12px';
+  const pv = nombre(PNJ_ED.pvMax == null ? '' : PNJ_ED.pvMax, 0, 500); pv.id = 'ped-pv'; pv.placeholder = 'aucun';
+  pv.oninput = () => { PNJ_ED.pvMax = pv.value === '' ? null : Math.max(0, parseInt(pv.value, 10) || 0); };
+  champ(gv, 'PV en combat', pv, 'Laisse vide pour un PNJ qui ne se bat pas.');
+  box.append(gv);
+
+  const act = el('div','acts'); act.style.marginTop = '12px';
+  const ok = el('button','btn', nouveau ? 'Ajouter la fiche' : 'Enregistrer'); ok.type = 'button'; ok.id = 'ped-ok';
+  ok.onclick = () => {
+    const nom = PNJ_ED.nom.trim();
+    if(!nom){ msgTable('Il lui faut un nom.', false); return; }
+    const autre = pnjParNom(nom);
+    if(autre && autre.id !== PNJ_ED.id){ msgTable('Il y a déjà une fiche « ' + autre.nom + ' ». Ajoute un détail au nom : « Garde du pont ».', false); return; }
+    const x = normPnj(Object.assign({}, PNJ_ED, {nom:nom, valeurs:PNJ_ED.valeurs.filter(v => v.n.trim())}));
+    if(nouveau) x.id = idLibre('n-' + slug(nom), T.pnj);
+    const ancien = T.pnj[x.id];
+    if(x.pvMax == null) x.pv = null;
+    else if(!ancien || ancien.pvMax == null || x.pv == null) x.pv = x.pvMax;
+    else x.pv = Math.min(x.pv, x.pvMax);
+    x.maj = maintenant();
+    if(!x.auteur) x.auteur = MOI.joueur || '';
+    changer(() => {
+      T.pnj[x.id] = x;
+      /* un nom changé : les paragraphes qui le citaient par son ancien nom suivent la fiche */
+      if(avantNom && cleNom(avantNom) !== cleNom(nom)){
+        Object.keys(T.blocs).forEach(k => {
+          const b = T.blocs[k];
+          if(b && b.qui && b.qui.k === 'pnj' && !b.qui.id && cleNom(b.qui.nom) === cleNom(avantNom))
+            T.blocs[k] = Object.assign({}, b, {qui:{k:'pnj', id:x.id, nom:nom}, maj:maintenant()});
+        });
+      }
+    });
+    fermerEditeurPnj();
+    PNJ_OUVERTS[x.id] = true;
+    dessinerPnj(true);
+  };
+  const non = el('button','btn ghost sm','Annuler'); non.type = 'button';
+  non.onclick = fermerEditeurPnj;
+  act.append(ok, non);
+  box.append(act);
+  box.scrollIntoView({block:'start', behavior:'smooth'});
+  setTimeout(() => { const n = $('ped-nom'); if(n) n.focus({preventScroll:true}); }, 300);
+}
+function fermerEditeurPnj(){
+  PNJ_ED = null;
+  const box = $('pnjEditeur'); box.hidden = true; box.innerHTML = '';
+}
+
+/* ============ le réseau ============ */
+const SVGNS = 'http://www.w3.org/2000/svg';
+const sv = (tag, attrs, txt) => {
+  const e = document.createElementNS(SVGNS, tag);
+  Object.keys(attrs || {}).forEach(k => e.setAttribute(k, attrs[k]));
+  if(txt != null) e.textContent = txt;
+  return e;
+};
+function hash(s){ let h = 2166136261; for(let i = 0; i < s.length; i++){ h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
+function initiales(n){
+  const m = String(n || '?').replace(/[’'\-]/g, ' ').split(/\s+/).filter(Boolean);
+  const mots = m.length > 1 && m[0].length === 1 ? m.slice(1) : m;
+  if(!mots.length) return '?';
+  const s = mots.length === 1 ? mots[0].slice(0, 2) : mots[0][0] + mots[1][0];
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+/* qui on montre : tout le monde, ou le voisinage d'une personne */
+function gensDuReseau(){
+  const gens = tousLesGens();
+  const ls = liensActifs();
+  if(!RES.focus || !quiRef(RES.focus)) return {gens:gens, liens:ls};
+  const garde = {}; garde[RES.focus] = 1;
+  let front = [RES.focus];
+  for(let d = 0; d < RES.prof; d++){
+    const suivant = [];
+    ls.forEach(l => {
+      front.forEach(r => {
+        if(l.de === r && !garde[l.vers]){ garde[l.vers] = 1; suivant.push(l.vers); }
+        if(l.vers === r && !garde[l.de]){ garde[l.de] = 1; suivant.push(l.de); }
+      });
+    });
+    front = suivant;
+  }
+  return {gens:gens.filter(g => garde[g.ref]), liens:ls.filter(l => garde[l.de] && garde[l.vers])};
+}
+
+/* Fruchterman et Reingold, avec les places épinglées qui ne bougent pas */
+function disposer(noeuds, aretes, haut){
+  const W = haut ? 620 : 1000, H = haut ? 900 : 680, n = noeuds.length;
+  if(!n) return;
+  const k = Math.min(170, Math.sqrt(W * H / Math.max(1, n)) * 0.62);
+  noeuds.forEach(v => {
+    const p = T.positions[v.ref];
+    if(p && !p.supprime && isFinite(p.x) && isFinite(p.y)){ v.x = p.x; v.y = p.y; v.fixe = true; return; }
+    const h = hash(v.ref), a = (h % 3600) / 3600 * Math.PI * 2, r = (0.2 + ((h >>> 12) % 1000) / 1000 * 0.6);
+    v.x = W / 2 + r * W / 3 * Math.cos(a); v.y = H / 2 + r * H / 3 * Math.sin(a); v.fixe = false;
+  });
+  if(noeuds.every(v => v.fixe)) return;
+  const idx = {}; noeuds.forEach((v, i) => idx[v.ref] = i);
+  const ressorts = aretes.map(e => ({a:noeuds[idx[e.de]], b:noeuds[idx[e.vers]], w:1})).filter(e => e.a && e.b);
+  /* ceux d'un même groupe se tiennent un peu */
+  const parGroupe = {};
+  noeuds.forEach(v => { if(v.groupe) (parGroupe[v.groupe] = parGroupe[v.groupe] || []).push(v); });
+  Object.keys(parGroupe).forEach(g => { const l = parGroupe[g]; for(let i = 0; i < l.length; i++) for(let j = i + 1; j < l.length; j++) ressorts.push({a:l[i], b:l[j], w:0.18}); });
+  let t = 90;
+  for(let it = 0; it < 320; it++){
+    noeuds.forEach(v => { v.dx = 0; v.dy = 0; });
+    for(let i = 0; i < n; i++) for(let j = i + 1; j < n; j++){
+      const a = noeuds[i], b = noeuds[j];
+      let dx = a.x - b.x, dy = a.y - b.y, d = Math.hypot(dx, dy);
+      if(d < 0.01){ dx = (hash(a.ref + b.ref) % 7) - 3 || 1; dy = 1; d = Math.hypot(dx, dy); }
+      const f = k * k / d;
+      a.dx += dx / d * f; a.dy += dy / d * f; b.dx -= dx / d * f; b.dy -= dy / d * f;
+    }
+    ressorts.forEach(e => {
+      const dx = e.a.x - e.b.x, dy = e.a.y - e.b.y, d = Math.hypot(dx, dy) || 0.01;
+      const f = d * d / k * e.w;
+      e.a.dx -= dx / d * f; e.a.dy -= dy / d * f; e.b.dx += dx / d * f; e.b.dy += dy / d * f;
+    });
+    /* on ramène vers le centre, plus fort pour ceux qui s'éloignent : pas d'île perdue au bout du cadre */
+    noeuds.forEach(v => {
+      const gx = W / 2 - v.x, gy = H / 2 - v.y, d = Math.hypot(gx, gy);
+      const f = 0.9 + 0.004 * d;
+      v.dx += gx * f * (haut ? 1.35 : 0.85); v.dy += gy * f * (haut ? 0.75 : 1.15);
+    });
+    noeuds.forEach(v => {
+      if(v.fixe) return;
+      const d = Math.hypot(v.dx, v.dy) || 0.01, m = Math.min(d, t);
+      v.x += v.dx / d * m; v.y += v.dy / d * m;
+    });
+    t = Math.max(1, t * 0.975);
+  }
+}
+
+function dessinerReseau(force){
+  const box = $('pnjReseau');
+  if(!force && occupe(box)){ apresSaisie(box, () => dessinerReseau(true)); return; }
+  box.innerHTML = '';
+  const tous = tousLesGens();
+  if(!tous.length){ box.append(el('p','vide','Personne à relier : les personnages et les PNJ apparaîtront ici.')); return; }
+  if(RES.sel && !quiRef(RES.sel)) RES.sel = '';
+  if(RES.focus && !quiRef(RES.focus)) RES.focus = '';
+
+  /* la barre */
+  const barre = el('div','acts rbarre');
+  const fs = el('select'); fs.id = 'resFocus'; fs.setAttribute('aria-label', 'Qui montrer');
+  fs.add(new Option('Tout le monde', ''));
+  tous.forEach(g => fs.add(new Option('Autour de ' + g.nom, g.ref)));
+  fs.value = RES.focus;
+  fs.onchange = () => { RES.focus = fs.value; if(fs.value) RES.sel = fs.value; fs.blur(); dessinerReseau(true); };
+  barre.append(fs);
+  if(RES.focus){
+    const p = el('div','seg');
+    [1, 2].forEach(n => {
+      const b = el('button', null, n === 1 ? 'Ses proches' : 'Et leurs proches'); b.type = 'button';
+      b.setAttribute('aria-pressed', RES.prof === n ? 'true' : 'false');
+      b.onclick = () => { RES.prof = n; dessinerReseau(true); };
+      p.append(b);
+    });
+    barre.append(p);
+  }
+  const et = el('label','coche');
+  const cb = el('input'); cb.type = 'checkbox'; cb.checked = RES.etiquettes; cb.id = 'resEtiq';
+  cb.onchange = () => { RES.etiquettes = cb.checked; dessinerReseau(true); };
+  et.append(cb, document.createTextNode(' Les mots des liens'));
+  barre.append(et, el('span','espace'));
+  const zb = (txt, lab, fn) => { const b = el('button','btn ghost sm zoom', txt); b.type = 'button'; b.title = lab; b.setAttribute('aria-label', lab); b.onclick = fn; barre.append(b); return b; };
+  zb('−', 'dézoomer', () => zoomer(1 / 1.25));
+  zb('+', 'zoomer', () => zoomer(1.25));
+  zb('Recadrer', 'recadrer le réseau', () => { RES.vue = {s:1, tx:0, ty:0}; appliquerVue(); });
+  const epingles = Object.keys(T.positions).some(r => T.positions[r] && !T.positions[r].supprime);
+  if(epingles){
+    const b = zb(RES.reorg ? 'Confirmer' : 'Réorganiser', 'laisser le réseau se replacer tout seul', () => {
+      if(!RES.reorg){ RES.reorg = true; dessinerReseau(true); setTimeout(() => { if(RES.reorg){ RES.reorg = false; dessinerReseau(true); } }, 5000); return; }
+      RES.reorg = false;
+      changer(() => { const t = maintenant(); Object.keys(T.positions).forEach(r => { T.positions[r] = Object.assign({}, T.positions[r], {supprime:true, maj:t}); }); });
+    });
+    if(RES.reorg) b.classList.add('danger');
+  }
+  box.append(barre);
+
+  const zone = el('div','rzone');
+  const cadre = el('div','rcadre');
+  const {gens, liens:ls} = gensDuReseau();
+  const noeuds = gens.map(g => ({ref:g.ref, pj:g.pj, nom:g.nom, o:g.o, groupe:g.pj ? '' : g.o.groupe.trim()}));
+  const large = box.clientWidth || (box.parentNode && box.parentNode.clientWidth) || 900;
+  disposer(noeuds, ls, large < 620);
+  RES.noeuds = noeuds;
+
+  /* le cadre suit le réseau */
+  let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+  noeuds.forEach(v => { x0 = Math.min(x0, v.x); y0 = Math.min(y0, v.y); x1 = Math.max(x1, v.x); y1 = Math.max(y1, v.y); });
+  const m = 70;
+  if(!isFinite(x0)){ x0 = 0; y0 = 0; x1 = 400; y1 = 300; }
+  const vb = [x0 - m, y0 - m, Math.max(300, x1 - x0 + 2 * m), Math.max(220, y1 - y0 + 2 * m)];
+  RES.cadre = vb;
+  const svg = sv('svg', {viewBox:vb.join(' '), class:'reseau', role:'group', 'aria-label':'Le réseau : ' + noeuds.length + ' personnes, ' + ls.length + ' liens', preserveAspectRatio:'xMidYMid meet'});
+  svg.style.aspectRatio = vb[2] + ' / ' + vb[3];
+  const defs = sv('defs');
+  TYPES_LIEN.forEach(t => {
+    const mk = sv('marker', {id:'fl-' + t.k, viewBox:'0 0 10 10', refX:'9', refY:'5', markerWidth:'7', markerHeight:'7', orient:'auto-start-reverse'});
+    mk.append(sv('path', {d:'M0,0 L10,5 L0,10 z', class:'fl l-' + t.k}));
+    defs.append(mk);
+  });
+  svg.append(defs);
+  const fond = sv('rect', {x:vb[0] - 5000, y:vb[1] - 5000, width:vb[2] + 10000, height:vb[3] + 10000, class:'rfond'});
+  svg.append(fond);
+  const vue = sv('g', {class:'vue'});
+  svg.append(vue);
+  const gA = sv('g', {class:'aretes'}), gE = sv('g', {class:'etiq'}), gN = sv('g', {class:'noeuds'});
+  vue.append(gA, gE, gN);
+
+  const parRef = {}; noeuds.forEach(v => parRef[v.ref] = v);
+  const rayon = v => v.pj ? 21 : 16;
+  /* plusieurs liens entre deux mêmes personnes : on les écarte en arcs */
+  const paires = {};
+  ls.forEach(l => { const k = [l.de, l.vers].sort().join('|'); (paires[k] = paires[k] || []).push(l); });
+  const aretes = [];
+  Object.keys(paires).forEach(k => {
+    const g = paires[k];
+    g.forEach((l, i) => {
+      const a = parRef[l.de], b = parRef[l.vers];
+      if(!a || !b) return;
+      const sens = l.de < l.vers ? 1 : -1;
+      aretes.push({l:l, a:a, b:b, courbe:(i - (g.length - 1) / 2) * 34 * sens});
+    });
+  });
+  RES.aretes = aretes;
+  aretes.forEach(e => {
+    e.path = sv('path', {class:'arete l-' + e.l.type + (e.l.mutuel ? '' : ' oriente'), fill:'none'});
+    if(!e.l.mutuel) e.path.setAttribute('marker-end', 'url(#fl-' + e.l.type + ')');
+    e.titre = sv('title', {}, phraseLien(e.l));
+    e.path.append(e.titre);
+    gA.append(e.path);
+    if(RES.etiquettes){
+      e.lab = sv('text', {class:'elab', 'text-anchor':'middle'}, e.l.texte || typeLien(e.l.type).l);
+      gE.append(e.lab);
+    }
+  });
+  const placerArete = e => {
+    const a = e.a, b = e.b, ra = rayon(a) + 2, rb = rayon(b) + (e.l.mutuel ? 2 : 5);
+    const mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2, dx = b.x - a.x, dy = b.y - a.y, d = Math.hypot(dx, dy) || 1;
+    const nx = -dy / d, ny = dx / d;
+    const cx = mx + nx * e.courbe * 2, cy = my + ny * e.courbe * 2;
+    const ax = cx - a.x, ay = cy - a.y, da = Math.hypot(ax, ay) || 1;
+    const bx = cx - b.x, by = cy - b.y, db = Math.hypot(bx, by) || 1;
+    const sx = a.x + ax / da * ra, sy = a.y + ay / da * ra, ex = b.x + bx / db * rb, ey = b.y + by / db * rb;
+    e.path.setAttribute('d', 'M' + sx.toFixed(1) + ',' + sy.toFixed(1) + ' Q' + cx.toFixed(1) + ',' + cy.toFixed(1) + ' ' + ex.toFixed(1) + ',' + ey.toFixed(1));
+    if(e.lab){
+      e.lab.setAttribute('x', (0.25 * sx + 0.5 * cx + 0.25 * ex).toFixed(1));
+      e.lab.setAttribute('y', (0.25 * sy + 0.5 * cy + 0.25 * ey - 4).toFixed(1));
+    }
+  };
+  aretes.forEach(placerArete);
+
+  const voisins = ref => { const s = {}; s[ref] = 1; aretes.forEach(e => { if(e.a.ref === ref) s[e.b.ref] = 1; if(e.b.ref === ref) s[e.a.ref] = 1; }); return s; };
+  const eclairer = ref => {
+    const s = ref ? voisins(ref) : null;
+    noeuds.forEach(v => v.g.classList.toggle('pale', !!s && !s[v.ref]));
+    aretes.forEach(e => {
+      const on = !s || (e.a.ref === ref || e.b.ref === ref);
+      e.path.classList.toggle('pale', !on);
+      if(e.lab) e.lab.classList.toggle('pale', !on);
+    });
+  };
+
+  noeuds.forEach(v => {
+    const g = sv('g', {class:'noeud' + (v.pj ? ' pj' : ' pnj att-' + v.o.attitude + ' st-' + v.o.statut) + (RES.sel === v.ref ? ' sel' : '') + (RES.relier === v.ref ? ' relie' : ''),
+      tabindex:'0', role:'button', 'aria-label':v.nom + (v.pj ? ', personnage' : ', PNJ ' + libelle(ATTITUDES, v.o.attitude).toLowerCase())});
+    g.append(sv('circle', {r:rayon(v) + 5, class:'halo'}));
+    g.append(sv('circle', {r:rayon(v), class:'disque'}));
+    g.append(sv('text', {class:'init', 'text-anchor':'middle', dy:'0.35em'}, initiales(v.nom)));
+    g.append(sv('text', {class:'nlab', 'text-anchor':'middle', y:String(rayon(v) + 15)}, v.nom + (!v.pj && v.o.statut === 'mort' ? ' †' : '')));
+    g.append(sv('title', {}, v.nom + (v.pj ? '' : (v.o.role ? ', ' + v.o.role : ''))));
+    g.setAttribute('transform', 'translate(' + v.x.toFixed(1) + ',' + v.y.toFixed(1) + ')');
+    v.g = g;
+    gN.append(g);
+    g.addEventListener('pointerenter', () => { if(!RES.glisse) eclairer(v.ref); });
+    g.addEventListener('pointerleave', () => { if(!RES.glisse) eclairer(RES.sel); });
+    g.addEventListener('keydown', ev => { if(ev.key === 'Enter' || ev.key === ' '){ ev.preventDefault(); choisirNoeud(v.ref); } });
+    g.addEventListener('pointerdown', ev => {
+      ev.stopPropagation();
+      const p0 = versMonde(svg, ev);
+      RES.glisse = {v:v, x:p0.x, y:p0.y, vx:v.x, vy:v.y, bouge:false, id:ev.pointerId};
+      try{ g.setPointerCapture(ev.pointerId); }catch(e){}
+    });
+    g.addEventListener('pointermove', ev => {
+      const s = RES.glisse;
+      if(!s || s.v !== v) return;
+      const p = versMonde(svg, ev);
+      if(!s.bouge && Math.hypot(p.x - s.x, p.y - s.y) < 4 / RES.vue.s) return;
+      s.bouge = true;
+      v.x = s.vx + p.x - s.x; v.y = s.vy + p.y - s.y;
+      g.setAttribute('transform', 'translate(' + v.x.toFixed(1) + ',' + v.y.toFixed(1) + ')');
+      aretes.forEach(e => { if(e.a === v || e.b === v) placerArete(e); });
+    });
+    const lacher = ev => {
+      const s = RES.glisse;
+      if(!s || s.v !== v) return;
+      RES.glisse = null;
+      try{ g.releasePointerCapture(ev.pointerId); }catch(e){}
+      if(!s.bouge){ choisirNoeud(v.ref); return; }
+      /* la première fois qu'on déplace quelqu'un, tout le monde est épinglé : rien d'autre ne bouge */
+      const t = maintenant();
+      changer(() => {
+        noeuds.forEach(w => {
+          const p = T.positions[w.ref];
+          if(w === v || !p || p.supprime) T.positions[w.ref] = {x:Math.round(w.x), y:Math.round(w.y), maj:t, supprime:false};
+        });
+      });
+    };
+    g.addEventListener('pointerup', lacher);
+    g.addEventListener('pointercancel', lacher);
+  });
+
+  /* glisser le fond déplace la vue, la molette zoome */
+  let pan = null;
+  svg.addEventListener('pointerdown', ev => {
+    if(ev.button !== 0) return;
+    pan = {x:ev.clientX, y:ev.clientY, tx:RES.vue.tx, ty:RES.vue.ty, bouge:false};
+    try{ svg.setPointerCapture(ev.pointerId); }catch(e){}
+  });
+  svg.addEventListener('pointermove', ev => {
+    if(!pan) return;
+    const ctm = svg.getScreenCTM(); if(!ctm) return;
+    const dx = (ev.clientX - pan.x) / ctm.a, dy = (ev.clientY - pan.y) / ctm.d;
+    if(Math.hypot(dx, dy) > 2) pan.bouge = true;
+    RES.vue.tx = pan.tx + dx; RES.vue.ty = pan.ty + dy;
+    appliquerVue();
+  });
+  const finPan = () => {
+    if(pan && !pan.bouge && !RES.relier){ RES.sel = ''; eclairer(''); dessinerPanneau(); noeuds.forEach(v => v.g.classList.remove('sel')); }
+    pan = null;
+  };
+  svg.addEventListener('pointerup', finPan);
+  svg.addEventListener('pointercancel', () => { pan = null; });
+  /* Ctrl et la molette zooment ; la molette seule fait défiler la page */
+  svg.addEventListener('wheel', ev => {
+    if(!ev.ctrlKey && !ev.metaKey) return;
+    ev.preventDefault();
+    zoomer(ev.deltaY < 0 ? 1.12 : 1 / 1.12, versEcran(svg, ev));
+  }, {passive:false});
+
+  cadre.append(svg);
+  zone.append(cadre);
+  const panneau = el('div','rpanneau'); panneau.id = 'resPanneau';
+  zone.append(panneau);
+  box.append(zone);
+  box.append(legende(noeuds, aretes));
+  RES.svg = svg; RES.vueG = vue; RES.eclairer = eclairer;
+  /* sur un petit écran, les noms gardent une taille lisible */
+  const r = svg.getBoundingClientRect();
+  if(r.width > 0 && r.height > 0){
+    const k = Math.max(vb[2] / r.width, vb[3] / r.height);
+    svg.style.setProperty('--k', Math.max(1, Math.min(2.6, k)).toFixed(2));
+  }
+  appliquerVue();
+  eclairer(RES.sel);
+  dessinerPanneau();
+}
+
+/* coordonnées : l'écran, le cadre du SVG, le monde sous le zoom */
+function versEcran(svg, ev){
+  const ctm = svg.getScreenCTM();
+  if(!ctm) return {x:0, y:0};
+  const p = svg.createSVGPoint(); p.x = ev.clientX; p.y = ev.clientY;
+  const q = p.matrixTransform(ctm.inverse());
+  return {x:q.x, y:q.y};
+}
+function versMonde(svg, ev){
+  const q = versEcran(svg, ev);
+  return {x:(q.x - RES.vue.tx) / RES.vue.s, y:(q.y - RES.vue.ty) / RES.vue.s};
+}
+function appliquerVue(){
+  if(!RES.vueG) return;
+  const v = RES.vue;
+  RES.vueG.setAttribute('transform', 'translate(' + v.tx.toFixed(2) + ',' + v.ty.toFixed(2) + ') scale(' + v.s.toFixed(4) + ')');
+}
+function zoomer(f, autour){
+  const v = RES.vue, c = RES.cadre;
+  const p = autour || (c ? {x:c[0] + c[2] / 2, y:c[1] + c[3] / 2} : {x:0, y:0});
+  const s = Math.max(0.3, Math.min(4, v.s * f));
+  const r = s / v.s;
+  v.tx = p.x - (p.x - v.tx) * r; v.ty = p.y - (p.y - v.ty) * r; v.s = s;
+  appliquerVue();
+}
+
+function choisirNoeud(ref){
+  if(RES.relier && RES.relier !== ref){ RES.cible = ref; RES.sel = RES.relier; }
+  else { RES.sel = RES.sel === ref && !RES.relier ? '' : ref; RES.cible = ''; }
+  (RES.noeuds || []).forEach(v => { if(v.g){ v.g.classList.toggle('sel', v.ref === RES.sel); v.g.classList.toggle('relie', v.ref === RES.relier); } });
+  if(RES.eclairer) RES.eclairer(RES.sel);
+  dessinerPanneau();
+}
+
+function dessinerPanneau(){
+  const box = $('resPanneau'); if(!box) return;
+  box.innerHTML = '';
+  const q = quiRef(RES.sel);
+  if(!q){
+    box.append(el('p','mini','Clique sur quelqu’un pour voir ses liens et en tisser. Fais-le glisser pour le déplacer : sa place est gardée pour toute la table. Ctrl et la molette zooment, glisser le fond déplace la vue.'));
+    return;
+  }
+  const o = q.o;
+  box.append(el('div','pnom', q.nom + (!q.pj && o.statut === 'mort' ? ' †' : '')));
+  const sous = q.pj ? ['personnage', o.joueur ? 'joué par ' + o.joueur : '', o.peuple, o.voie] : [o.role, o.peuple, o.groupe];
+  box.append(el('div','pqui', sous.filter(Boolean).join(' · ') || 'rien de noté'));
+  if(!q.pj) box.append(el('div','mini', libelle(ATTITUDES, o.attitude) + ' envers le groupe' + (o.statut !== 'vivant' ? ' · ' + libelle(STATUTS, o.statut).toLowerCase() : '')));
+
+  if(RES.relier === q.ref){
+    box.append(el('h3', null, 'Relier ' + q.nom));
+    box.append(el('p','mini', RES.cible ? 'Le lien avec ' + (quiRef(RES.cible) || {}).nom + ' :' : 'Clique sur la personne à relier, ou choisis-la ici.'));
+    box.append(formLien(q.ref, RES.cible, () => { RES.relier = ''; RES.cible = ''; dessinerReseau(true); }));
+    const an = el('button','btn ghost sm','Annuler'); an.type = 'button';
+    an.onclick = () => { RES.relier = ''; RES.cible = ''; dessinerReseau(true); };
+    box.append(an);
+    return;
+  }
+  const ls = liensDe(q.ref);
+  box.append(el('h3', null, ls.length ? 'Ses liens' : 'Aucun lien pour l’instant'));
+  ls.forEach(l => box.append(ligneLien(l, dessinerPanneau)));
+  const act = el('div','acts'); act.style.marginTop = '10px';
+  const b = (txt, fn) => { const x = el('button','btn ghost sm', txt); x.type = 'button'; x.onclick = fn; act.append(x); return x; };
+  b('Relier à…', () => { RES.relier = q.ref; RES.cible = ''; choisirNoeud(q.ref); });
+  if(RES.focus !== q.ref) b('Ses proches seulement', () => { RES.focus = q.ref; dessinerReseau(true); });
+  else b('Tout le monde', () => { RES.focus = ''; dessinerReseau(true); });
+  if(q.pj) b('Voir sa fiche', () => { OUVERTS[o.id] = true; dessinerPersos(); const c = document.querySelector('[data-perso="' + o.id + '"]'); if(c) c.scrollIntoView({block:'start', behavior:'smooth'}); });
+  else {
+    b('Voir la fiche', () => { MOI.vuePnj = 'fiches'; PNJ_OUVERTS[o.id] = true; PNJ_FILTRE.q = ''; $('pnjCherche').value = ''; sauverLocal(); dessinerPnj(true); const c = document.querySelector('[data-pnj="' + o.id + '"]'); if(c) c.scrollIntoView({block:'start', behavior:'smooth'}); });
+    b('Faire parler', () => composerPourPnj(o));
+  }
+  const p = T.positions[q.ref];
+  if(p && !p.supprime) b('Libérer sa place', () => changer(() => { T.positions[q.ref] = Object.assign({}, p, {supprime:true, maj:maintenant()}); }));
+  box.append(act);
+}
+
+function legende(noeuds, aretes){
+  const w = el('div','rlegende');
+  const types = {};
+  aretes.forEach(e => types[e.l.type] = 1);
+  const ts = TYPES_LIEN.filter(t => types[t.k]);
+  if(ts.length){
+    const l = el('div','rleg');
+    ts.forEach(t => {
+      const s = el('span','rl');
+      const svgT = sv('svg', {width:'26', height:'10', 'aria-hidden':'true'});
+      svgT.append(sv('line', {x1:'1', y1:'5', x2:'25', y2:'5', class:'arete l-' + t.k}));
+      s.append(svgT, document.createTextNode(t.l));
+      l.append(s);
+    });
+    w.append(l);
+  }
+  const atts = {};
+  noeuds.forEach(v => { if(!v.pj) atts[v.o.attitude] = 1; });
+  const l2 = el('div','rleg');
+  const pj = el('span','rl'); pj.append(el('i','rpt pj'), document.createTextNode('Personnage'));
+  l2.append(pj);
+  ATTITUDES.filter(a => atts[a.k]).forEach(a => {
+    const s = el('span','rl'); s.append(el('i','rpt att-' + a.k), document.createTextNode(a.l)); l2.append(s);
+  });
+  w.append(l2);
+  return w;
+}
+
+/* ============ la table sur GitHub : un fichier dans un dépôt privé ============
+   On relit toutes les dix secondes : tant que rien n'a bougé, GitHub répond 304 et
+   ça ne coûte rien. On écrit en regroupant les changements, jamais deux fois en moins
+   de quinze secondes : GitHub accepte 500 écritures par heure et par jeton. */
+
+const CLE_GH = 'faelorenn.table.github';
+const GH = {depot:'', chemin:'table-faelorenn.json', branche:'main', jeton:'', api:'https://api.github.com',
+  actif:false, sha:'', etag:'', boucle:null, ecrit:null, occupe:false, encore:false, derniereEcriture:0, pause:0,
+  tLecture:10000, tRegroupe:4000, tEcart:15000, errDe:''};
+
+function ghCharger(){
+  try{
+    const r = localStorage.getItem(CLE_GH);
+    if(!r) return;
+    const o = JSON.parse(r);
+    ['depot','chemin','branche','jeton','api'].forEach(k => { if(typeof o[k] === 'string' && o[k].trim()) GH[k] = o[k].trim(); });
+    GH.actif = !!o.actif;
+  }catch(e){}
+}
+function ghGarder(){
+  try{ localStorage.setItem(CLE_GH, JSON.stringify({depot:GH.depot, chemin:GH.chemin, branche:GH.branche, jeton:GH.jeton, api:GH.api, actif:GH.actif})); }catch(e){}
+}
+const ghPossible = () => typeof fetch === 'function' && typeof TextEncoder === 'function';
+/* dans la page hébergée par Claude, les appels vers GitHub sont bloqués */
+const ghBloque = () => { try{ return typeof claude !== 'undefined' && !!claude && typeof claude.use === 'function'; }catch(e){ return false; } };
+
+function ghUrl(brut){
+  const seg = s => s.split('/').filter(Boolean).map(encodeURIComponent).join('/');
+  return GH.api.replace(/\/+$/, '') + '/repos/' + seg(GH.depot) + '/contents/' + seg(GH.chemin) + '?ref=' + encodeURIComponent(GH.branche);
+}
+function ghEntetes(plus){
+  return Object.assign({'Accept':'application/vnd.github+json', 'Authorization':'Bearer ' + GH.jeton, 'X-GitHub-Api-Version':'2022-11-28'}, plus || {});
+}
+function versB64(txt){
+  const o = new TextEncoder().encode(txt);
+  let s = '';
+  for(let i = 0; i < o.length; i += 0x8000) s += String.fromCharCode.apply(null, o.subarray(i, i + 0x8000));
+  return btoa(s);
+}
+function depuisB64(b){
+  const s = atob(String(b).replace(/\s+/g, ''));
+  const o = new Uint8Array(s.length);
+  for(let i = 0; i < s.length; i++) o[i] = s.charCodeAt(i);
+  return new TextDecoder().decode(o);
+}
+function ghErreur(r){
+  if(r.status === 401) return 'GitHub refuse le jeton : il est faux, ou il a expiré.';
+  if(r.status === 403 || r.status === 429) return 'GitHub refuse pour l’instant : droits du jeton trop courts, ou trop d’écritures d’un coup.';
+  if(r.status === 404) return 'Dépôt introuvable : vérifie son nom, et que le jeton y a accès.';
+  return 'GitHub répond ' + r.status + '.';
+}
+/* GitHub demande de patienter : on garde tout ici, et on réessaie après */
+function ghPatienter(r){
+  const s = parseInt(r.headers.get('retry-after') || '', 10);
+  GH.pause = maintenant() + (isFinite(s) && s > 0 ? s * 1000 : 60000);
+}
+
+function ghLire(force){
+  if(SYNC.etat !== 'github' || maintenant() < GH.pause) return Promise.resolve(false);
+  const plus = !force && GH.etag ? {'If-None-Match': GH.etag} : null;
+  return fetch(ghUrl(), {headers:ghEntetes(plus), cache:'no-store'}).then(r => {
+    if(r.status === 304){ SYNC.dernier = maintenant(); return false; }
+    if(r.status === 404){ GH.sha = ''; GH.etag = ''; return false; }
+    if(r.status === 403 || r.status === 429) ghPatienter(r);
+    if(!r.ok) throw {gh:ghErreur(r)};
+    const etag = r.headers.get('ETag') || '';
+    return r.json().then(j => {
+      GH.sha = j.sha || '';
+      if(j.content) return depuisB64(j.content);
+      /* plus d'un Mo : le contenu arrive à part, en brut */
+      if(j.size) return fetch(ghUrl(), {headers:ghEntetes({'Accept':'application/vnd.github.raw+json'}), cache:'no-store'})
+        .then(b => { if(!b.ok) throw {gh:ghErreur(b)}; return b.text(); });
+      return '';
+    }).then(txt => {
+      GH.etag = etag;
+      SYNC.dernier = maintenant();
+      if(!txt || !txt.trim()) return false;
+      let o = null;
+      try{ o = JSON.parse(txt); }catch(e){ throw {gh:'Le fichier du dépôt n’est pas lisible.'}; }
+      if(!o || o.format !== 'faelorenn-table') throw {gh:'Le fichier du dépôt n’est pas une table Faelorenn.'};
+      const avant = JSON.stringify(T);
+      T = fusionner(T, normTable(o));
+      sauverLocal();
+      if(JSON.stringify(T) !== avant) dessiner(); else dessinerTable();
+      return true;
+    });
+  }).then(v => { if(GH.errDe === 'lecture' && SYNC.etat === 'github'){ SYNC.erreur = ''; GH.errDe = ''; dessinerTable(); } return v; },
+    e => { SYNC.erreur = e && e.gh ? e.gh : 'GitHub ne répond pas. Tout reste gardé ici, on réessaie.'; GH.errDe = 'lecture'; dessinerTable(); return false; });
+}
+
+/* on relit, on fusionne, puis on écrit ; si quelqu'un a écrit entre-temps, on recommence */
+function ghEcrire(){
+  if(SYNC.etat !== 'github') return Promise.resolve(false);
+  if(GH.occupe){ GH.encore = true; return Promise.resolve(false); }
+  const attente = Math.max(GH.pause - maintenant(), GH.derniereEcriture + GH.tEcart - maintenant());
+  if(attente > 0){ clearTimeout(GH.ecrit); GH.ecrit = setTimeout(ghEcrire, attente + 50); return Promise.resolve(false); }
+  GH.occupe = true;
+  const essai = n => ghLire(true).then(() => {
+    const corps = {message:'Table · ' + (MOI.joueur || 'quelqu’un') + ' · ' + new Date().toLocaleString('fr-BE'),
+      content:versB64(JSON.stringify(T, null, 1)), branch:GH.branche};
+    if(GH.sha) corps.sha = GH.sha;
+    GH.derniereEcriture = maintenant();
+    return fetch(ghUrl().replace(/\?ref=.*$/, ''), {method:'PUT', headers:ghEntetes({'Content-Type':'application/json'}), body:JSON.stringify(corps), cache:'no-store'});
+  }).then(r => {
+    if((r.status === 409 || r.status === 422) && n < 3) return new Promise(ok => setTimeout(ok, 1200)).then(() => essai(n + 1));
+    if(r.status === 403 || r.status === 429) ghPatienter(r);
+    if(!r.ok) throw {gh:ghErreur(r)};
+    return r.json().then(j => {
+      GH.sha = (j.content && j.content.sha) || GH.sha;
+      GH.etag = '';
+      SYNC.dernier = maintenant(); SYNC.erreur = ''; GH.errDe = '';
+      dessinerTable();
+      return true;
+    });
+  });
+  return essai(0).catch(e => {
+    SYNC.erreur = e && e.gh ? e.gh : 'L’écriture sur GitHub a échoué. Tout reste gardé ici, on réessaie.';
+    GH.errDe = 'ecriture';
+    GH.encore = true;
+    dessinerTable();
+    return false;
+  }).then(v => {
+    GH.occupe = false;
+    if(GH.encore){ GH.encore = false; ghPlanifier(); }
+    return v;
+  });
+}
+function ghPlanifier(){
+  if(SYNC.etat !== 'github') return;
+  clearTimeout(GH.ecrit);
+  GH.ecrit = setTimeout(ghEcrire, GH.tRegroupe);
+}
+function ghBoucle(){
+  if(GH.boucle) clearInterval(GH.boucle);
+  GH.boucle = setInterval(() => { if(SYNC.etat === 'github' && !document.hidden && !GH.occupe) ghLire(false); }, GH.tLecture);
+}
+
+function ghRelier(depot, jeton, chemin, branche){
+  depot = (depot || '').trim().replace(/^https?:\/\/github\.com\//i, '').replace(/\.git$/i, '').replace(/\/+$/, '');
+  if(!/^[\w.-]+\/[\w.-]+$/.test(depot)) return Promise.resolve({ok:false, msg:'Écris le dépôt comme ceci : ton-nom/faelorenn-table.'});
+  if(!(jeton || '').trim()) return Promise.resolve({ok:false, msg:'Colle le jeton d’accès.'});
+  if(SYNC.poignee) detacher();
+  GH.depot = depot; GH.jeton = jeton.trim();
+  GH.chemin = (chemin || '').trim() || 'table-faelorenn.json';
+  GH.branche = (branche || '').trim() || 'main';
+  GH.sha = ''; GH.etag = ''; GH.pause = 0; GH.derniereEcriture = 0;
+  GH.actif = true; ghGarder();
+  SYNC.etat = 'github'; SYNC.nom = depot; SYNC.erreur = ''; GH.errDe = '';
+  ghBoucle();
+  /* si la porte ne s'ouvre pas, on ne reste pas accroché : on corrige et on réessaie */
+  const echec = msg => { ghDetacher(true); GH.errDe = ''; dessinerTable(); return {ok:false, msg:msg}; };
+  return ghLire(true).then(() => {
+    if(SYNC.erreur) return echec(SYNC.erreur);
+    return ghEcrire().then(ok => ok ? {ok:true, msg:'Table reliée à GitHub. Chaque changement y part tout seul.'}
+      : echec(SYNC.erreur || 'La première écriture n’a pas marché.'));
+  });
+}
+function ghDetacher(silence){
+  GH.actif = false; ghGarder();
+  if(GH.boucle){ clearInterval(GH.boucle); GH.boucle = null; }
+  clearTimeout(GH.ecrit);
+  if(SYNC.etat === 'github'){ SYNC.etat = 'local'; SYNC.nom = ''; SYNC.erreur = ''; }
+  if(!silence) dessiner();
+}
+function ghOublier(){
+  ghDetacher(true);
+  GH.jeton = ''; ghGarder();
+  dessiner();
+}
+/* au démarrage : on reprend le dépôt de la dernière fois */
+function ghReprendre(){
+  ghCharger();
+  if(!GH.actif || !GH.jeton || !GH.depot || !ghPossible() || ghBloque()) return false;
+  SYNC.etat = 'github'; SYNC.nom = GH.depot;
+  ghBoucle();
+  ghLire(true);
+  return true;
+}
+
+/* ============ la barre de table, et le démarrage ============ */
+
+function msgTable(txt, ok){
+  const m = $('tbMsg');
+  m.textContent = txt;
+  m.className = 'note ' + (ok ? 'ok' : 'err');
+  m.hidden = false;
+  clearTimeout(msgTable.t);
+  msgTable.t = setTimeout(() => { m.hidden = true; }, 6000);
+}
+function ilYA(t){
+  if(!t) return 'jamais';
+  const s = Math.round((maintenant() - t) / 1000);
+  if(s < 5) return 'à l’instant';
+  if(s < 60) return 'il y a ' + s + ' secondes';
+  const m = Math.round(s / 60);
+  return m < 60 ? 'il y a ' + m + ' minute' + (m > 1 ? 's' : '') : 'il y a plus d’une heure';
+}
+function dessinerTable(){
+  const j = $('tbJoueur'); if(document.activeElement !== j) j.value = MOI.joueur;
+  const n = $('tbNom'); if(document.activeElement !== n) n.value = T.nom;
+
+  const p = $('tbPastille'), e = $('tbEtat');
+  const attache = !!SYNC.poignee && SYNC.etat === 'fichier';
+  const gh = SYNC.etat === 'github';
+  p.className = 'pastille' + ((attache || gh) && !SYNC.erreur ? ' on' : SYNC.etat === 'attente' || SYNC.erreur ? ' off' : '');
+  if(gh) e.textContent = 'GitHub · ' + SYNC.nom + ' · dernier échange ' + ilYA(SYNC.dernier);
+  else if(attache) e.textContent = 'Fichier « ' + SYNC.nom + ' » · dernier échange ' + ilYA(SYNC.dernier);
+  else if(SYNC.etat === 'attente') e.textContent = 'Le fichier « ' + SYNC.nom + ' » attend ton feu vert.';
+  else e.textContent = 'Enregistré dans ce navigateur seulement.';
+  if(SYNC.erreur) e.textContent += ' ' + SYNC.erreur;
+
+  $('tbDetacher').hidden = !SYNC.poignee;
+  const bloque = ghBloque();
+  $('ghBloque').hidden = !bloque;
+  $('ghRelier').disabled = bloque;
+  $('ghDetacher').hidden = !gh;
+  $('ghRelier').textContent = gh ? 'Relier de nouveau' : 'Relier à GitHub';
+  $('ghOublier').hidden = !GH.jeton;
+  [['ghDepot','depot'], ['ghChemin','chemin'], ['ghBranche','branche']].forEach(([id, k]) => {
+    const i = $(id); if(document.activeElement !== i && !i.value) i.value = GH[k] || '';
+  });
+  const jt = $('ghJeton'); if(document.activeElement !== jt && !jt.value && GH.jeton) jt.value = GH.jeton;
+  $('tbOuvrir').textContent = SYNC.etat === 'attente' ? 'Reconnecter le fichier' : 'Ouvrir le fichier de table';
+
+  const aide = $('tbAide');
+  if(!FSA()) aide.textContent = 'Ce navigateur ne sait pas ouvrir un fichier partagé : reste au .json, ou ouvre cette page dans Chrome ou Edge. Depuis la page en ligne, le fichier partagé est bloqué de toute façon : c’est le fichier posé sur ton ordinateur qui le fait.';
+  else aide.textContent = 'Pose le fichier de table dans un dossier synchronisé, Drive, OneDrive ou Dropbox, et que chacun l’ouvre ici. Les changements passent d’un joueur à l’autre en quelques secondes. Sinon, échangez le .json à la main.';
+}
+
+function dessiner(){
+  dessinerTable();
+  dessinerSeance(false);
+  dessinerPersos();
+  dessinerPnj(false);
+  dessinerProg();
+  dessinerJets();
+}
+
+/* ---------- les boutons ---------- */
+$('tbJoueur').oninput = e => { MOI.joueur = e.target.value; sauverLocal(); };
+$('tbNom').oninput = e => { const v = e.target.value; changer(() => { T.nom = v; }); };
+$('tbOuvrir').onclick = () => {
+  if(SYNC.etat === 'attente'){ redemander(); return; }
+  if(!FSA()){ msgTable('Ce navigateur ne propose pas le fichier partagé.', false); return; }
+  window.showOpenFilePicker({types:[{description:'Table Faelorenn', accept:{'application/json':['.json']}}]})
+    .then(h => attacher(h[0]).then(() => msgTable('Table reliée au fichier.', true)))
+    .catch(err => { if(err && err.name !== 'AbortError') msgTable('Le fichier n’a pas pu être ouvert.', false); });
+};
+$('tbCreer').onclick = () => {
+  if(!FSA()){ msgTable('Ce navigateur ne propose pas le fichier partagé.', false); return; }
+  window.showSaveFilePicker({suggestedName:'table-faelorenn.json', types:[{description:'Table Faelorenn', accept:{'application/json':['.json']}}]})
+    .then(h => attacher(h).then(() => msgTable('Fichier de table créé. Donne-le à ta table, ou pose-le dans le dossier partagé.', true)))
+    .catch(err => { if(err && err.name !== 'AbortError') msgTable('Le fichier n’a pas pu être créé.', false); });
+};
+$('tbDetacher').onclick = detacher;
+$('tbJson').onclick = e => telecharger((T.nom ? T.nom.replace(/[\\/:*?"<>|]/g, ' ') : 'table-faelorenn') + '.json', tableJson(), 'application/json', e.currentTarget);
+$('tbImport').onclick = () => $('tbFichier').click();
+$('tbFichier').onchange = e => {
+  const f = e.target.files && e.target.files[0];
+  if(!f) return;
+  const l = new FileReader();
+  l.onload = () => { const r = importerTable(String(l.result)); msgTable(r.msg, r.ok); e.target.value = ''; };
+  l.readAsText(f);
+};
+
+$('pImporter').onclick = () => $('pFichier').click();
+$('pFichier').onchange = e => {
+  const fs = e.target.files ? [].slice.call(e.target.files) : [];
+  let fait = 0;
+  fs.forEach(f => {
+    const l = new FileReader();
+    l.onload = () => {
+      const r = importerTable(String(l.result));
+      fait++;
+      msgTable(r.msg, r.ok);
+    };
+    l.readAsText(f);
+  });
+  e.target.value = '';
+};
+$('pNouveau').onclick = () => ouvrirEditeurPerso(videPerso(), true);
+
+/* la séance */
+$('coTexte').oninput = majApercuCompo;
+$('coTexte').onkeydown = ev => {
+  if(ev.key !== 'Enter' || ev.isComposing) return;
+  if(ev.ctrlKey || ev.metaKey){ ev.preventDefault(); ajouterDepuisCompo(); return; }
+  if(!ev.shiftKey && COMPO.genre !== 'encadre'){ ev.preventDefault(); ajouterDepuisCompo(); }
+};
+$('coOutilJet').onclick = () => { COMPO.panneau = COMPO.panneau === 'jet' ? '' : 'jet'; dessinerCompositeur(true); };
+$('coOutilPv').onclick = () => { COMPO.panneau = COMPO.panneau === 'pv' ? '' : 'pv'; dessinerCompositeur(true); };
+$('coAjouter').onclick = ajouterDepuisCompo;
+
+/* les PNJ */
+$('pnjVueFiches').onclick = () => { MOI.vuePnj = 'fiches'; sauverLocal(); dessinerPnj(true); };
+$('pnjVueReseau').onclick = () => { MOI.vuePnj = 'reseau'; sauverLocal(); dessinerPnj(true); };
+$('pnjNouveau').onclick = () => ouvrirEditeurPnj(null, true);
+$('pnjCherche').oninput = e => { PNJ_FILTRE.q = e.target.value; if(MOI.vuePnj === 'reseau'){ MOI.vuePnj = 'fiches'; sauverLocal(); dessinerPnj(true); } else dessinerListePnj(true); };
+$('pnjGroupe').onchange = e => { PNJ_FILTRE.groupe = e.target.value; dessinerListePnj(true); };
+
+/* GitHub */
+$('ghRelier').onclick = () => {
+  const b = $('ghRelier');
+  b.disabled = true; b.textContent = 'On frappe à la porte…';
+  ghRelier($('ghDepot').value, $('ghJeton').value, $('ghChemin').value, $('ghBranche').value).then(r => {
+    b.disabled = false;
+    msgTable(r.msg, r.ok);
+    dessinerTable();
+  });
+};
+$('ghDetacher').onclick = () => { ghDetacher(); msgTable('Table détachée de GitHub. Tout reste gardé dans ce navigateur.', true); };
+$('ghOublier').onclick = () => { ghOublier(); $('ghJeton').value = ''; msgTable('Jeton oublié par ce navigateur.', true); };
+
+/* l'historique des jets */
+let VIDER_ARME = false;
+$('jFiltre').onchange = dessinerJets;
+$('jVider').onclick = e => {
+  const b = e.currentTarget;
+  if(!VIDER_ARME){
+    VIDER_ARME = true; b.textContent = 'Confirmer : tout l’historique part'; b.classList.add('danger');
+    setTimeout(() => { VIDER_ARME = false; b.textContent = 'Vider l’historique'; b.classList.remove('danger'); }, 5000);
+    return;
+  }
+  VIDER_ARME = false; b.textContent = 'Vider l’historique'; b.classList.remove('danger');
+  changer(() => { T.viderAvant = maintenant(); T.jets = []; });
+};
+
+/* ---------- démarrage ---------- */
+chargerLocal();
+const parGithub = ghReprendre();
+dessiner();
+if(!parGithub) reprendreFichier();
+setInterval(() => { if(SYNC.poignee || SYNC.etat === 'github') dessinerTable(); }, 10000);
+document.addEventListener('visibilitychange', () => {
+  if(document.hidden) return;
+  if(SYNC.etat === 'github') ghLire(false);
+  else if(SYNC.poignee && SYNC.etat === 'fichier') lireFichier(false);
+});
+</script>
+</body>
+</html>

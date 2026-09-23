@@ -91,6 +91,12 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-vis
 .tab tr:last-child td{border-bottom:0}
 .scroll{overflow-x:auto}
 .mini{font-size:12px;color:var(--muted)}
+.htete{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:baseline;justify-content:space-between}
+.hliste{margin-top:8px;border-top:1px solid var(--rule)}
+.hrow{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;justify-content:space-between;padding:9px 2px;border-bottom:1px solid var(--rule)}
+.htxt{display:flex;flex-direction:column;min-width:0;flex:1 1 220px}
+.hnom{font-family:Spectral,Georgia,serif;font-size:17px;font-weight:600;color:var(--forest);overflow-wrap:anywhere}
+.hmeta{font-size:12.5px;color:var(--muted)}
 .texte{white-space:pre-wrap;font-size:13.5px;line-height:1.45}
 
 /* la séance : un bureau, une page, et de quoi écrire */
@@ -372,9 +378,15 @@ svg.reseau:active{cursor:grabbing}
   <h2><span class="num">3</span> Les personnages</h2>
   <p class="hint">Chacun tient le sien. Les PV, les PC et la progression se suivent ici, et tout le monde voit la même chose.</p>
   <div class="acts" style="margin-bottom:12px">
-    <button class="btn" id="pImporter" type="button">Importer une fiche du Registre du Havre</button>
+    <button class="btn" id="pHavreOuvrir" type="button" aria-expanded="false" aria-controls="pHavre">Choisir dans tes personnages</button>
+    <button class="btn ghost sm" id="pImporter" type="button">Importer un .json du Registre du Havre</button>
     <button class="btn ghost sm" id="pNouveau" type="button">Créer à la main</button>
     <input type="file" id="pFichier" accept=".json,application/json" multiple hidden>
+  </div>
+  <div id="pHavre" class="card havre" hidden style="margin-bottom:12px">
+    <div class="htete"><p class="lab" style="margin:0">Tes personnages du Registre du Havre</p><span class="mini" id="pHavreSource"></span></div>
+    <div id="pHavreListe" class="hliste"></div>
+    <p class="note" id="pHavreMsg" role="status" hidden></p>
   </div>
   <div id="pEditeur" class="card" hidden style="margin-bottom:12px"></div>
   <div id="pListe" class="pgrille"></div>
@@ -3407,6 +3419,21 @@ function ghcOuvrirPanneau(){
 function ghcSurveiller(fn){
   window.addEventListener('storage', e => { if(e.key === GHC_CLE || e.key === null){ ghcCharger(); try{ fn(); }catch(x){} } });
 }
+/* lire un fichier du dépôt une fois, sans le suivre : l'objet, ou null s'il n'existe pas encore */
+function ghcLireUnFichier(chemin){
+  if(!ghcPret()) return Promise.resolve(null);
+  return fetch(ghcUrl(chemin, true), {headers:ghcEntetes(), cache:'no-store'}).then(r => {
+    if(r.status === 404) return '';
+    if(!r.ok) throw {gh:ghcErreur(r)};
+    return r.json().then(j => j.content ? ghcDeB64(j.content)
+      : j.size ? fetch(ghcUrl(chemin, true), {headers:ghcEntetes({'Accept':'application/vnd.github.raw+json'}), cache:'no-store'})
+          .then(b => { if(!b.ok) throw {gh:ghcErreur(b)}; return b.text(); })
+      : '');
+  }, () => { throw {gh:'GitHub ne répond pas.'}; }).then(t => {
+    if(!t || !String(t).trim()) return null;
+    try{ return JSON.parse(t); }catch(e){ throw {gh:'Le fichier ' + chemin + ' du dépôt n’est pas lisible.'}; }
+  });
+}
 /* ce que le dépôt contient, pour l'accueil */
 function ghcInventaire(){
   if(!ghcPret()) return Promise.resolve(null);
@@ -3834,6 +3861,103 @@ function ghReprendre(){
   return true;
 }
 
+/* ============ les personnages du Registre du Havre, à faire entrer dans la table ============
+   Le Havre les garde dans ce navigateur, et dans personnages.json du dépôt quand la sauvegarde
+   en ligne est reliée. Ici, on les lit sans les changer : une fois entré, le personnage vit sa vie
+   à la table (PV, PC, progression), et le Havre garde sa fiche de création. */
+
+const CLE_HAVRE = 'faelorenn.personnages';
+const HAVRE = {ouvert:false, liste:[], lecture:false, depot:false, erreur:'', msgT:null};
+
+function normHavre(o){
+  const m = {};
+  const src = o && o.personnages && typeof o.personnages === 'object' ? o.personnages : {};
+  Object.keys(src).forEach(id => {
+    const x = src[id];
+    if(!x || typeof x !== 'object') return;
+    m[id] = {id:id, maj:+x.maj || 0, supprime:!!x.supprime, nom:txtOu(x.nom), peuple:txtOu(x.peuple), voie:txtOu(x.voie),
+      auteur:txtOu(x.auteur), fiche:x.fiche && typeof x.fiche === 'object' ? x.fiche : null};
+  });
+  return m;
+}
+/* le plus récent l'emporte ; un personnage supprimé dans le Havre n'est pas proposé */
+function fondreHavre(a, b){
+  const m = Object.assign({}, a);
+  Object.keys(b).forEach(id => { if(!m[id] || (b[id].maj || 0) > (m[id].maj || 0)) m[id] = b[id]; });
+  return m;
+}
+const vivantsHavre = m => Object.keys(m).map(k => m[k]).filter(r => !r.supprime).sort((x, y) => (y.maj || 0) - (x.maj || 0));
+function havreIci(){ try{ return normHavre(JSON.parse(localStorage.getItem(CLE_HAVRE) || 'null')); }catch(e){ return {}; } }
+
+function chargerHavre(){
+  let m = havreIci();
+  HAVRE.liste = vivantsHavre(m); HAVRE.depot = false; HAVRE.erreur = '';
+  HAVRE.lecture = ghcPret();
+  dessinerHavre();
+  if(!HAVRE.lecture) return;
+  ghcLireUnFichier(GHC_FICHIERS.personnages).then(o => {
+    if(o && o.format === 'faelorenn-personnages') m = fondreHavre(m, normHavre(o));
+    HAVRE.liste = vivantsHavre(m); HAVRE.depot = true; HAVRE.lecture = false;
+    dessinerHavre();
+  }, e => {
+    HAVRE.lecture = false; HAVRE.erreur = e && e.gh ? e.gh : 'Le dépôt ne répond pas.';
+    dessinerHavre();
+  });
+}
+function direHavre(t, ok){
+  const m = $('pHavreMsg');
+  m.textContent = t; m.className = 'note ' + (ok ? 'ok' : 'err'); m.hidden = false;
+  clearTimeout(HAVRE.msgT); HAVRE.msgT = setTimeout(() => { m.hidden = true; }, 8000);
+}
+const memeNom = (a, b) => String(a || '').trim().toLowerCase() === String(b || '').trim().toLowerCase();
+function entrerHavre(r){
+  if(!r.fiche){ direHavre('La fiche de « ' + (r.nom || 'Sans nom') + ' » est incomplète : ouvre-le une fois dans le Registre du Havre, puis réessaie.', false); return; }
+  const c = depuisFiche(r.fiche);
+  if(persos().some(x => memeNom(x.nom, c.nom))){ direHavre('« ' + (c.nom || 'Sans nom') + ' » est déjà à la table.', false); return; }
+  /* le personnage est à celui qui l'a créé, pas forcément à celui qui le fait entrer */
+  c.joueur = r.auteur || MOI.joueur;
+  c.id = idLibre('p-' + slug(c.nom), T.personnages);
+  changer(() => majPerso(c));
+  direHavre('« ' + (c.nom || 'Sans nom') + ' » est entré dans la table.', true);
+}
+function dessinerHavre(){
+  const b = $('pHavreOuvrir');
+  b.setAttribute('aria-expanded', HAVRE.ouvert ? 'true' : 'false');
+  $('pHavre').hidden = !HAVRE.ouvert;
+  if(!HAVRE.ouvert) return;
+  $('pHavreSource').textContent = HAVRE.lecture ? 'lecture du dépôt…'
+    : HAVRE.depot ? 'dans ce navigateur et dans le dépôt ' + GHC.depot
+    : 'dans ce navigateur' + (HAVRE.erreur ? ' (' + HAVRE.erreur.replace(/\.$/, '') + ')' : '');
+  const liste = $('pHavreListe');
+  liste.innerHTML = '';
+  if(!HAVRE.liste.length){
+    liste.append(el('p', 'note', HAVRE.lecture ? 'Un instant…'
+      : 'Aucun personnage enregistré dans le Registre du Havre' + (HAVRE.depot ? '.' : ' sur ce navigateur. Relie la sauvegarde en ligne pour voir aussi ceux des autres appareils.')));
+    return;
+  }
+  HAVRE.liste.forEach(r => {
+    const row = el('div', 'hrow');
+    const t = el('div', 'htxt');
+    t.append(el('span', 'hnom', r.nom || 'Sans nom'));
+    let quand = '';
+    try{ quand = r.maj ? 'le ' + new Date(r.maj).toLocaleDateString('fr-BE', {day:'numeric', month:'long'}) : ''; }catch(e){}
+    t.append(el('span', 'hmeta', [[r.peuple, r.voie].filter(Boolean).join(', '), r.auteur ? 'par ' + r.auteur : '', quand].filter(Boolean).join(' · ')));
+    const la = persos().some(x => memeNom(x.nom, r.nom));
+    const bt = el('button', la ? 'btn ghost sm' : 'btn sm', la ? 'Déjà à la table' : 'Faire entrer à la table');
+    bt.type = 'button'; bt.disabled = la;
+    bt.setAttribute('aria-label', la ? (r.nom || 'Sans nom') + ' est déjà à la table' : 'Faire entrer ' + (r.nom || 'ce personnage') + ' à la table');
+    bt.onclick = () => entrerHavre(r);
+    row.append(t, bt);
+    liste.append(row);
+  });
+}
+function brancherHavre(){
+  $('pHavreOuvrir').onclick = () => {
+    HAVRE.ouvert = !HAVRE.ouvert;
+    if(HAVRE.ouvert) chargerHavre(); else dessinerHavre();
+  };
+}
+
 /* ============ la barre de table, et le démarrage ============ */
 
 let PANNEAU = null;   /* le panneau de la sauvegarde en ligne */
@@ -3885,6 +4009,7 @@ function dessiner(){
   dessinerTable();
   dessinerSeance(false);
   dessinerPersos();
+  if(HAVRE.ouvert) dessinerHavre();
   dessinerPnj(false);
   dessinerProg();
   dessinerJets();
@@ -3933,6 +4058,7 @@ $('pFichier').onchange = e => {
   e.target.value = '';
 };
 $('pNouveau').onclick = () => ouvrirEditeurPerso(videPerso(), true);
+brancherHavre();
 
 /* la séance */
 $('coTexte').oninput = majApercuCompo;

@@ -276,9 +276,11 @@ select:focus-visible,input:focus-visible,button:focus-visible{outline:2px solid 
 </style>
 </head>
 <body>
+<script>try{ if(/^faelorenn-(table|visages)$/.test(window.name)) window.name = ''; }catch(e){}</script>
 <nav class="fae-site" aria-label="Les registres de Faelorenn">
   <a class="fae-accueil" href="./">Faelorenn</a>
   <a href="table.html">Registre de la Table</a>
+  <a href="pnj.html">Registre des Visages</a>
   <a href="createur.html">Registre du Havre</a>
   <a href="rencontres.html" aria-current="page">Registre des Rencontres</a>
 </nav>
@@ -342,12 +344,14 @@ select:focus-visible,input:focus-visible,button:focus-visible{outline:2px solid 
 
 <section class="sec-rencontre">
   <h2 class="noprint"><span class="num">3</span> La rencontre</h2>
-  <p class="hint noprint">Les PV se suivent ici pendant le combat. Chaque adversaire a deux attaques et n'en utilise qu'une par round.</p>
+  <p class="hint noprint">Chaque adversaire a deux attaques et n'en utilise qu'une par round. Une fois la rencontre validée, « Mettre dans la séance » la pose dans le Registre de la Table : le combat s'y suit à côté du récit.</p>
   <div class="acts noprint" style="margin-bottom:12px">
+    <button class="btn sm" id="envoyer" type="button">Mettre dans la séance</button>
     <button class="btn ghost sm" id="print">Imprimer</button>
     <button class="btn ghost sm" id="copy">Copier en texte</button>
     <button class="btn ghost sm" id="heal">Remettre les PV au plein</button>
   </div>
+  <p class="note noprint" id="envoiMsg" role="status" hidden style="margin:-4px 0 12px"></p>
   <div class="enc" id="enc"></div>
 </section>
 
@@ -930,6 +934,52 @@ $('copy').onclick = () => {
     () => { $('copy').textContent = 'Copie refusée'; setTimeout(() => { $('copy').textContent = 'Copier en texte'; }, 1400); }
   );
 };
+
+
+/* ---------- la rencontre validée part dans la séance du Registre de la Table ----------
+   Elle passe par ce navigateur : la table ouverte la prend tout de suite, sinon elle l'attend. */
+const CLE_ENVOI = 'faelorenn.envoi.rencontre';
+let ENVOI_ATTENTE = '';
+function hacher(s){ let h = 2166136261; for(let i = 0; i < s.length; i++){ h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return (h >>> 0).toString(36); }
+/* la même rencontre envoyée deux fois porte le même nom : la table ne la pose qu'une fois */
+function paquetRencontre(){
+  const sig = S.liste.map(a => a.id + ':' + a.cid).join(',') + '|' + S.pourquoi;
+  return {id:'e' + hacher(sig), t:Date.now(), titre:'', pourquoi:S.pourquoi || '',
+    adversaires:S.liste.map(a => {
+      const c = trouveId(a.cid) || {r:a.r, n:a.n, p:a.p};
+      const st = statsDe(c);
+      return {n:c.n || a.n, r:a.r, pvMax:st.pv, pv:Math.max(0, Math.min(a.pv, st.pv)), red:st.red, deg:st.deg, cartes:st.cartes,
+        a2: c.a2 && c.a2.n ? {n:c.a2.n, t:c.a2.el ? 'mag' : (c.a2.t || 'phy'), p:porteeDe(c.a2), e:effetDe(c, st), el:c.a2.el || ''} : null,
+        tr:(c.tr || []).slice(), traits:nomsTraits(c), p:c.p || '', renf:c.renf || ''};
+    })};
+}
+function direEnvoi(t, ok, lien){
+  const m = $('envoiMsg');
+  m.innerHTML = '';
+  m.append(document.createTextNode(t));
+  if(lien){ m.append(document.createTextNode(' ')); const a = el('a', null, 'Ouvrir le Registre de la Table'); a.href = 'table.html'; m.append(a); }
+  m.className = 'note noprint' + (ok ? ' ok' : '');
+  m.hidden = false;
+}
+$('envoyer').onclick = () => {
+  if(!S.liste.length){ direEnvoi('Rien en face pour l’instant : tire une rencontre, ou compose-la, d’abord.', false); return; }
+  const o = paquetRencontre();
+  try{ localStorage.setItem(CLE_ENVOI, JSON.stringify(o)); }
+  catch(e){ direEnvoi('Ce navigateur refuse de la garder : recopie-la dans la table à la main, ou « Copier en texte ».', false); return; }
+  ENVOI_ATTENTE = o.id;
+  direEnvoi('Elle part dans la séance…', true);
+  setTimeout(() => {
+    let la = null;
+    try{ la = localStorage.getItem(CLE_ENVOI); }catch(e){}
+    if(ENVOI_ATTENTE === o.id && la) direEnvoi('Elle attend dans ce navigateur : ouvre le Registre de la Table, elle se posera dans la séance en cours.', true, true);
+  }, 1500);
+};
+window.addEventListener('storage', e => {
+  if(e.key === CLE_ENVOI && !e.newValue && ENVOI_ATTENTE){
+    ENVOI_ATTENTE = '';
+    direEnvoi('Elle est dans la séance : le combat se suit dans le Registre de la Table.', true, true);
+  }
+});
 
 /* ============ les traits : ils remplissent la creature a ta place ============
    Chaque trait vient d'une entree du livre, citee dans « modele ». Ce qui va plus loin
@@ -2528,6 +2578,21 @@ function ghcOuvrirPanneau(){
 }
 function ghcSurveiller(fn){
   window.addEventListener('storage', e => { if(e.key === GHC_CLE || e.key === null){ ghcCharger(); try{ fn(); }catch(x){} } });
+}
+/* lire un fichier du dépôt une fois, sans le suivre : l'objet, ou null s'il n'existe pas encore */
+function ghcLireUnFichier(chemin){
+  if(!ghcPret()) return Promise.resolve(null);
+  return fetch(ghcUrl(chemin, true), {headers:ghcEntetes(), cache:'no-store'}).then(r => {
+    if(r.status === 404) return '';
+    if(!r.ok) throw {gh:ghcErreur(r)};
+    return r.json().then(j => j.content ? ghcDeB64(j.content)
+      : j.size ? fetch(ghcUrl(chemin, true), {headers:ghcEntetes({'Accept':'application/vnd.github.raw+json'}), cache:'no-store'})
+          .then(b => { if(!b.ok) throw {gh:ghcErreur(b)}; return b.text(); })
+      : '');
+  }, () => { throw {gh:'GitHub ne répond pas.'}; }).then(t => {
+    if(!t || !String(t).trim()) return null;
+    try{ return JSON.parse(t); }catch(e){ throw {gh:'Le fichier ' + chemin + ' du dépôt n’est pas lisible.'}; }
+  });
 }
 /* ce que le dépôt contient, pour l'accueil */
 function ghcInventaire(){

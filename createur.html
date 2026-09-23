@@ -181,9 +181,11 @@ tr.grp td{background:var(--fill);font-family:Spectral,Georgia,serif;font-style:i
 </style>
 </head>
 <body>
+<script>try{ if(/^faelorenn-(table|visages)$/.test(window.name)) window.name = ''; }catch(e){}</script>
 <nav class="fae-site" aria-label="Les registres de Faelorenn">
   <a class="fae-accueil" href="./">Faelorenn</a>
   <a href="table.html">Registre de la Table</a>
+  <a href="pnj.html">Registre des Visages</a>
   <a href="createur.html" aria-current="page">Registre du Havre</a>
   <a href="rencontres.html">Registre des Rencontres</a>
 </nav>
@@ -341,7 +343,7 @@ const ECOLES = {
 };
 
 const PEUPLES = {
-  'Humains':{car:{pick:2,val:1},traits:'Ambition (1 relance par séance)',contrainte:'Les dégâts d’une Pratique comptent une fois et demie',
+  'Humains':{car:{pick:2,val:1},traits:'Ambition (1 relance par séance)',contrainte:'Les dégâts magiques comptent une fois et demie',
     armure:'Toutes, jusqu’aux plates',red:0,pv:0,comp:'',
     paq:'L’insigne de sa Bannière, la baguette de son école s’il en a une, et 20 argents de plus',
     dom:null,sub:[{k:'ban',l:'Bannière',o:["L'Or",'Le Sang']},{k:'ecole',l:'École ou Église',o:Object.keys(ECOLES)}],
@@ -1867,6 +1869,21 @@ function ghcOuvrirPanneau(){
 }
 function ghcSurveiller(fn){
   window.addEventListener('storage', e => { if(e.key === GHC_CLE || e.key === null){ ghcCharger(); try{ fn(); }catch(x){} } });
+}
+/* lire un fichier du dépôt une fois, sans le suivre : l'objet, ou null s'il n'existe pas encore */
+function ghcLireUnFichier(chemin){
+  if(!ghcPret()) return Promise.resolve(null);
+  return fetch(ghcUrl(chemin, true), {headers:ghcEntetes(), cache:'no-store'}).then(r => {
+    if(r.status === 404) return '';
+    if(!r.ok) throw {gh:ghcErreur(r)};
+    return r.json().then(j => j.content ? ghcDeB64(j.content)
+      : j.size ? fetch(ghcUrl(chemin, true), {headers:ghcEntetes({'Accept':'application/vnd.github.raw+json'}), cache:'no-store'})
+          .then(b => { if(!b.ok) throw {gh:ghcErreur(b)}; return b.text(); })
+      : '');
+  }, () => { throw {gh:'GitHub ne répond pas.'}; }).then(t => {
+    if(!t || !String(t).trim()) return null;
+    try{ return JSON.parse(t); }catch(e){ throw {gh:'Le fichier ' + chemin + ' du dépôt n’est pas lisible.'}; }
+  });
 }
 /* ce que le dépôt contient, pour l'accueil */
 function ghcInventaire(){

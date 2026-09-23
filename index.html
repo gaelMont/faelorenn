@@ -70,14 +70,19 @@ footer{margin-top:44px;padding-top:12px;border-top:1px solid var(--rule);font-si
 <header>
   <p class="sur">Faelorenn</p>
   <h1>Les registres de la table</h1>
-  <p class="intro">Trois outils pour jouer, solo avec l’Oracle ou à plusieurs : créer ses Marchefleurs, tenir la campagne séance après séance, tirer ce qui se dresse sur la route.</p>
+  <p class="intro">Quatre outils pour jouer, solo avec l’Oracle ou à plusieurs : créer ses Marchefleurs, tenir la partie séance après séance, garder trace de ceux qu’on croise, tirer ce qui se dresse sur la route.</p>
 </header>
 
 <nav class="registres" aria-label="Les registres">
   <a class="registre" href="table.html">
     <span class="rnom">Registre de la Table</span>
-    <span class="rquoi">la campagne</span>
-    <span class="rdesc">Le compte rendu des séances avec les jets, les dégâts et les PV dedans, les personnages, les fiches de PNJ et le réseau de leurs liens, la progression. À plusieurs, chacun sur son ordinateur.</span>
+    <span class="rquoi">la partie</span>
+    <span class="rdesc">Pendant la séance, tout au même endroit : le compte rendu avec les jets, les dégâts et les PV dedans, les dés lancés ici ou sur la table, le combat à côté du récit, la compagnie, la progression au prix du livre. À plusieurs, chacun sur son ordinateur.</span>
+  </a>
+  <a class="registre" href="pnj.html">
+    <span class="rnom">Registre des Visages</span>
+    <span class="rquoi">les PNJ</span>
+    <span class="rdesc">Une fiche pour chaque personne croisée, ses liens avec les autres et avec les personnages, et le réseau qu’ils dessinent. Une fiche se crée avec son arbre : un nom inconnu reçoit la sienne en même temps.</span>
   </a>
   <a class="registre" href="createur.html">
     <span class="rnom">Registre du Havre</span>
@@ -87,7 +92,7 @@ footer{margin-top:44px;padding-top:12px;border-top:1px solid var(--rule);font-si
   <a class="registre" href="rencontres.html">
     <span class="rnom">Registre des Rencontres</span>
     <span class="rquoi">les adversaires</span>
-    <span class="rdesc">Tirer une rencontre à la mesure du groupe, tenir le bestiaire maison et ses familles, donner des traits à une créature.</span>
+    <span class="rdesc">Tirer une rencontre à la mesure du groupe et la mettre dans la séance en un clic, tenir le bestiaire maison et ses familles, donner des traits à une créature.</span>
   </a>
 </nav>
 
@@ -104,7 +109,7 @@ footer{margin-top:44px;padding-top:12px;border-top:1px solid var(--rule);font-si
 <ol>
   <li>Sur GitHub, crée un dépôt <b>privé</b>, <code>faelorenn-table</code> par exemple, et coche « Add a README file » pour qu’il ne soit pas vide.</li>
   <li>Crée un jeton : Settings, Developer settings, Personal access tokens, <a href="https://github.com/settings/personal-access-tokens/new" rel="noopener">Fine-grained tokens</a>, Generate new token. Dans <i>Repository access</i>, choisis seulement ce dépôt. Dans les permissions du dépôt, mets <i>Contents</i> en <i>Read and write</i>. Donne-lui une date d’expiration.</li>
-  <li>Colle le dépôt et le jeton ci-dessus, puis « Relier ». Les trois registres de ce navigateur s’en servent aussitôt.</li>
+  <li>Colle le dépôt et le jeton ci-dessus, puis « Relier ». Les registres de ce navigateur s’en servent aussitôt.</li>
   <li>Donne le même dépôt et le même jeton à ceux qui jouent avec toi, par un message privé. Un jeton à accès fin ne sert que pour les dépôts de son propriétaire : les autres ne peuvent pas s’en faire un pour le tien.</li>
 </ol>
 <div class="encart">
@@ -126,6 +131,7 @@ footer{margin-top:44px;padding-top:12px;border-top:1px solid var(--rule);font-si
 
 <footer>Faelorenn · mis à jour le 23 septembre 2026</footer>
 </div>
+<script>try{ if(/^faelorenn-(table|visages)$/.test(window.name)) window.name = ''; }catch(e){}</script>
 <script>
 /* ============ la sauvegarde en ligne : un dépôt GitHub privé pour les trois registres ============
    Le dépôt et le jeton se donnent une fois, dans n'importe quelle page du site : ils restent dans
@@ -308,8 +314,39 @@ function ghcRelier(depot, jeton, branche, table){
 function ghcDetacher(){ GHC.actif = false; ghcGarder(); }
 function ghcOublier(){ GHC.actif = false; GHC.jeton = ''; GHC_VU = ''; ghcGarder(); }
 /* un autre onglet a relié, détaché ou oublié : on suit */
+/* ce qu'on dit après « Sauvegarder en ligne » */
+function ghcPhraseSauvegarde(r, sujet){
+  if(!r.ok) return r.msg || 'La sauvegarde en ligne n’a pas pu se faire.';
+  if(r.rien) return sujet + ' est à jour dans le dépôt ' + GHC.depot + '.';
+  const h = new Date();
+  return sujet + ' est dans le dépôt ' + GHC.depot + ', à ' + String(h.getHours()).padStart(2, '0') + ':' + String(h.getMinutes()).padStart(2, '0') + '.';
+}
+/* pas encore relié : on montre le panneau, prêt à remplir */
+function ghcOuvrirPanneau(){
+  const d = document.getElementById('ghcBloc');
+  if(!d) return;
+  d.open = true;
+  d.scrollIntoView({block:'center', behavior:'smooth'});
+  const champ = ['ghcDepot','ghcJeton'].map(id => document.getElementById(id)).find(i => i && !i.value) || document.getElementById('ghcRelier');
+  if(champ) setTimeout(() => { try{ champ.focus({preventScroll:true}); }catch(e){} }, 450);
+}
 function ghcSurveiller(fn){
   window.addEventListener('storage', e => { if(e.key === GHC_CLE || e.key === null){ ghcCharger(); try{ fn(); }catch(x){} } });
+}
+/* lire un fichier du dépôt une fois, sans le suivre : l'objet, ou null s'il n'existe pas encore */
+function ghcLireUnFichier(chemin){
+  if(!ghcPret()) return Promise.resolve(null);
+  return fetch(ghcUrl(chemin, true), {headers:ghcEntetes(), cache:'no-store'}).then(r => {
+    if(r.status === 404) return '';
+    if(!r.ok) throw {gh:ghcErreur(r)};
+    return r.json().then(j => j.content ? ghcDeB64(j.content)
+      : j.size ? fetch(ghcUrl(chemin, true), {headers:ghcEntetes({'Accept':'application/vnd.github.raw+json'}), cache:'no-store'})
+          .then(b => { if(!b.ok) throw {gh:ghcErreur(b)}; return b.text(); })
+      : '');
+  }, () => { throw {gh:'GitHub ne répond pas.'}; }).then(t => {
+    if(!t || !String(t).trim()) return null;
+    try{ return JSON.parse(t); }catch(e){ throw {gh:'Le fichier ' + chemin + ' du dépôt n’est pas lisible.'}; }
+  });
 }
 /* ce que le dépôt contient, pour l'accueil */
 function ghcInventaire(){
@@ -427,6 +464,7 @@ function ghcDoc(o){
     });
     return essai(0).then(v => {
       if(d.errDe === 'ecriture' || d.errDe === 'lecture'){ d.erreur = ''; d.errDe = ''; }
+      d.resultat = v;
       if(o.ecrit) o.ecrit(true, v === 'rien');
       return true;
     }, e => {
@@ -446,6 +484,18 @@ function ghcDoc(o){
       }
       signaler();
       return v;
+    });
+  };
+  /* « Sauvegarder en ligne » : on écrit tout de suite, ou dès que GitHub le permet */
+  d.maintenant = function(essais){
+    essais = essais || 0;
+    if(!d.actif) return Promise.resolve({ok:false, msg:d.erreur || 'La sauvegarde en ligne n’est pas en route.'});
+    const attente = d.occupe ? 700 : Math.max(d.pause - Date.now(), d.derniereEcriture + d.tEcart - Date.now());
+    if(attente > 0 && essais < 100) return new Promise(ok => setTimeout(ok, Math.min(attente + 100, 65000))).then(() => d.maintenant(essais + 1));
+    return d.ecrire().then(ok => {
+      if(ok) return {ok:true, rien:d.resultat === 'rien'};
+      if(d.erreur || !d.actif || essais >= 100) return {ok:false, msg:d.erreur || 'L’écriture n’a pas pu partir.'};
+      return new Promise(r => setTimeout(r, 700)).then(() => d.maintenant(essais + 1));
     });
   };
   d.planifier = function(delai){

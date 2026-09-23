@@ -154,13 +154,6 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-vis
 .verdict.ok b{color:var(--sage)} .verdict.ko b{color:var(--rust)}
 
 /* la synchro par GitHub */
-.gh{margin-top:12px;border-top:1px solid var(--rule);padding-top:10px}
-.gh summary{cursor:pointer;color:var(--forest);font-weight:500;font-size:14px}
-.gh .plus summary{font-weight:400;font-size:13px;color:var(--sage)}
-.ghcorps{margin-top:8px}
-.etapes{margin:6px 0 10px;padding-left:20px;font-size:13.5px;color:var(--ink)}
-.etapes li{margin:2px 0}
-.etapes a{color:var(--forest)}
 
 /* le paragraphe qu'on vient chercher depuis une fiche */
 .bloc.eclaire{background:var(--fill);box-shadow:0 0 0 6px var(--fill),0 0 0 7px var(--sage)}
@@ -324,7 +317,7 @@ svg.reseau:active{cursor:grabbing}
 
 <section id="secTable">
   <h2><span class="num">1</span> La table</h2>
-  <p class="hint">Dis qui tu es, puis choisis comment partager la table : un fichier dans un dossier partagé, GitHub, ou un .json qu’on s’envoie. Sans rien de tout ça, tout reste dans ce navigateur.</p>
+  <p class="hint">Dis qui tu es, puis choisis comment partager la table : la sauvegarde en ligne sur GitHub, un fichier dans un dossier partagé, ou un .json qu’on s’envoie. Sans rien de tout ça, tout reste dans ce navigateur.</p>
   <div class="card">
     <div class="table">
       <div>
@@ -347,46 +340,7 @@ svg.reseau:active{cursor:grabbing}
     <div class="etatsync"><span class="pastille" id="tbPastille"></span><span id="tbEtat"></span></div>
     <p class="note" id="tbMsg" hidden role="status"></p>
     <p class="note" id="tbAide"></p>
-    <details class="gh" id="ghBloc">
-      <summary>Synchroniser par GitHub, sans dossier partagé</summary>
-      <div class="ghcorps">
-        <p class="note" id="ghBloque" hidden>Depuis cette page-ci, GitHub est hors d’atteinte : utilise le site ou le fichier posé sur ton ordinateur.</p>
-        <ol class="etapes">
-          <li>Sur GitHub, crée un dépôt <b>privé</b>, <i>faelorenn-table</i> par exemple.</li>
-          <li>Crée un <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">jeton à accès fin</a> : seulement ce dépôt, <i>Contents</i> en lecture et écriture.</li>
-          <li>Colle le dépôt et le jeton ici. Les autres joueurs collent les mêmes sur leur ordinateur.</li>
-        </ol>
-        <div class="table">
-          <div>
-            <label class="lab" for="ghDepot">Dépôt</label>
-            <input type="text" id="ghDepot" placeholder="ton-nom/faelorenn-table" autocomplete="off" spellcheck="false" style="width:100%">
-          </div>
-          <div>
-            <label class="lab" for="ghJeton">Jeton d’accès</label>
-            <input type="password" id="ghJeton" placeholder="github_pat_…" autocomplete="off" spellcheck="false" style="width:100%">
-          </div>
-        </div>
-        <details class="plus">
-          <summary>Fichier et branche</summary>
-          <div class="table" style="margin-top:8px">
-            <div>
-              <label class="lab" for="ghChemin">Fichier</label>
-              <input type="text" id="ghChemin" placeholder="table-faelorenn.json" autocomplete="off" spellcheck="false" style="width:100%">
-            </div>
-            <div>
-              <label class="lab" for="ghBranche">Branche</label>
-              <input type="text" id="ghBranche" placeholder="main" autocomplete="off" spellcheck="false" style="width:100%">
-            </div>
-          </div>
-        </details>
-        <div class="acts" style="margin-top:10px">
-          <button class="btn sm" id="ghRelier" type="button">Relier à GitHub</button>
-          <button class="btn ghost sm" id="ghDetacher" type="button" hidden>Détacher</button>
-          <button class="btn ghost sm" id="ghOublier" type="button">Oublier le jeton</button>
-        </div>
-        <p class="note">Le jeton reste dans ce navigateur, jamais dans le dépôt. Chaque changement devient une version dans l’historique du dépôt : rien ne se perd.</p>
-      </div>
-    </details>
+    <div id="ghPlace"></div>
   </div>
 </section>
 
@@ -776,6 +730,8 @@ function normTable(o){
 
 /* ---------- ce navigateur ---------- */
 function sauverLocal(){
+  /* un autre onglet a pu garder la table entre-temps : on fond sa copie avant d'écrire la nôtre */
+  try{ const r = localStorage.getItem(CLE_TABLE); if(r) T = fusionner(T, normTable(JSON.parse(r))); }catch(e){}
   try{ localStorage.setItem(CLE_TABLE, JSON.stringify(T)); }catch(e){}
   try{ localStorage.setItem(CLE_MOI, JSON.stringify(MOI)); }catch(e){}
 }
@@ -792,9 +748,11 @@ function changer(fn){
   planifierEcriture();
   dessiner();
 }
+/* vie : seuls les PV et les PC ont bougé. On ne date qu'eux, pour qu'une fiche retouchée
+   ailleurs au même moment ne soit pas écrasée par un coup reçu ici */
 function majPerso(c, vie){
-  c.maj = maintenant();
-  if(vie) c.majPv = c.maj;
+  if(vie) c.majPv = maintenant();
+  else c.maj = maintenant();
   T.personnages[c.id] = c;
 }
 
@@ -835,7 +793,7 @@ function oublierPoignee(){
 }
 
 function attacher(h, nom){
-  if(SYNC.etat === 'github') ghDetacher(true);
+  if(SYNC.etat === 'github') ghTableArreter();
   SYNC.poignee = h;
   SYNC.nom = nom || (h && h.name) || 'table.json';
   SYNC.etat = 'fichier';
@@ -3248,186 +3206,607 @@ function legende(noeuds, aretes){
   return w;
 }
 
-/* ============ la table sur GitHub : un fichier dans un dépôt privé ============
-   On relit toutes les dix secondes : tant que rien n'a bougé, GitHub répond 304 et
-   ça ne coûte rien. On écrit en regroupant les changements, jamais deux fois en moins
-   de quinze secondes : GitHub accepte 500 écritures par heure et par jeton. */
+/* ============ la sauvegarde en ligne : un dépôt GitHub privé pour les trois registres ============
+   Le dépôt et le jeton se donnent une fois, dans n'importe quelle page du site : ils restent dans
+   ce navigateur, et chaque registre y garde son fichier. On relit toutes les dix secondes : tant que
+   rien n'a bougé, GitHub répond 304 et ça ne coûte rien. On écrit en regroupant les changements,
+   jamais deux fois en moins de quinze secondes : GitHub accepte 500 écritures par heure et par jeton. */
 
-const CLE_GH = 'faelorenn.table.github';
-const GH = {depot:'', chemin:'table-faelorenn.json', branche:'main', jeton:'', api:'https://api.github.com',
-  actif:false, sha:'', etag:'', boucle:null, ecrit:null, occupe:false, encore:false, derniereEcriture:0, pause:0,
-  tLecture:10000, tRegroupe:4000, tEcart:15000, errDe:''};
+const GHC_CLE = 'faelorenn.github';
+const GHC_FICHIERS = {table:'table-faelorenn.json', personnages:'personnages.json', bestiaire:'bestiaire.json'};
+const GHC_API = 'https://api.github.com';
+const GHC = {depot:'', jeton:'', branche:'', api:GHC_API, actif:false, table:''};
+const GHC_DOCS = [];
+let GHC_VU = '';   /* le dépôt dont on sait qu'il existe et que le jeton l'ouvre */
 
-function ghCharger(){
-  try{
-    const r = localStorage.getItem(CLE_GH);
-    if(!r) return;
-    const o = JSON.parse(r);
-    ['depot','chemin','branche','jeton','api'].forEach(k => { if(typeof o[k] === 'string' && o[k].trim()) GH[k] = o[k].trim(); });
-    GH.actif = !!o.actif;
-  }catch(e){}
+function ghcCharger(){
+  let o = null;
+  try{ o = JSON.parse(localStorage.getItem(GHC_CLE) || 'null'); }catch(e){}
+  if(!o){
+    /* la table gardait son dépôt pour elle seule : il sert maintenant aux trois registres */
+    try{
+      const v = JSON.parse(localStorage.getItem('faelorenn.table.github') || 'null');
+      if(v && typeof v === 'object'){
+        o = {depot:v.depot, jeton:v.jeton, branche:v.branche, api:v.api, actif:!!v.actif,
+          table: v.chemin && v.chemin !== GHC_FICHIERS.table ? v.chemin : ''};
+        localStorage.setItem(GHC_CLE, JSON.stringify(o));
+        localStorage.removeItem('faelorenn.table.github');
+      }
+    }catch(e){}
+  }
+  GHC.depot = ''; GHC.jeton = ''; GHC.branche = ''; GHC.api = GHC_API; GHC.actif = false; GHC.table = '';
+  if(o && typeof o === 'object'){
+    ['depot','jeton','branche','api','table'].forEach(k => { if(typeof o[k] === 'string' && o[k].trim()) GHC[k] = o[k].trim(); });
+    GHC.actif = !!o.actif;
+  }
+  return GHC;
 }
-function ghGarder(){
-  try{ localStorage.setItem(CLE_GH, JSON.stringify({depot:GH.depot, chemin:GH.chemin, branche:GH.branche, jeton:GH.jeton, api:GH.api, actif:GH.actif})); }catch(e){}
+function ghcGarder(){
+  try{ localStorage.setItem(GHC_CLE, JSON.stringify({depot:GHC.depot, jeton:GHC.jeton, branche:GHC.branche, api:GHC.api, actif:GHC.actif, table:GHC.table})); }catch(e){}
 }
-const ghPossible = () => typeof fetch === 'function' && typeof TextEncoder === 'function';
-/* dans la page hébergée par Claude, les appels vers GitHub sont bloqués */
-const ghBloque = () => { try{ return typeof claude !== 'undefined' && !!claude && typeof claude.use === 'function'; }catch(e){ return false; } };
+/* un navigateur qui refuse le stockage (fenêtre privée stricte, page sans origine) : pas de sauvegarde en ligne */
+function ghcPossible(){ try{ return typeof fetch === 'function' && typeof TextEncoder === 'function' && !!window.localStorage; }catch(e){ return false; } }
+/* dans une page hébergée par Claude, les appels vers GitHub sont bloqués */
+function ghcBloque(){ try{ return typeof claude !== 'undefined' && !!claude && typeof claude.use === 'function'; }catch(e){ return false; } }
+const ghcPret = () => GHC.actif && !!GHC.jeton && !!GHC.depot && ghcPossible() && !ghcBloque();
+const ghcCleDepot = () => GHC.api + '|' + GHC.depot + '|' + GHC.jeton;
 
-function ghUrl(brut){
-  const seg = s => s.split('/').filter(Boolean).map(encodeURIComponent).join('/');
-  return GH.api.replace(/\/+$/, '') + '/repos/' + seg(GH.depot) + '/contents/' + seg(GH.chemin) + '?ref=' + encodeURIComponent(GH.branche);
+/* ---------- les petites choses ---------- */
+const ghcSeg = s => String(s).split('/').filter(Boolean).map(encodeURIComponent).join('/');
+const ghcBase = () => GHC.api.replace(/\/+$/, '') + '/repos/' + ghcSeg(GHC.depot);
+function ghcUrl(chemin, avecRef){
+  const u = ghcBase() + '/contents/' + ghcSeg(chemin);
+  return avecRef && GHC.branche ? u + '?ref=' + encodeURIComponent(GHC.branche) : u;
 }
-function ghEntetes(plus){
-  return Object.assign({'Accept':'application/vnd.github+json', 'Authorization':'Bearer ' + GH.jeton, 'X-GitHub-Api-Version':'2022-11-28'}, plus || {});
+function ghcEntetes(plus){
+  return Object.assign({'Accept':'application/vnd.github+json', 'Authorization':'Bearer ' + GHC.jeton, 'X-GitHub-Api-Version':'2022-11-28'}, plus || {});
 }
-function versB64(txt){
-  const o = new TextEncoder().encode(txt);
-  let s = '';
-  for(let i = 0; i < o.length; i += 0x8000) s += String.fromCharCode.apply(null, o.subarray(i, i + 0x8000));
-  return btoa(s);
-}
-function depuisB64(b){
-  const s = atob(String(b).replace(/\s+/g, ''));
-  const o = new Uint8Array(s.length);
-  for(let i = 0; i < s.length; i++) o[i] = s.charCodeAt(i);
-  return new TextDecoder().decode(o);
-}
-function ghErreur(r){
+function ghcErreur(r){
   if(r.status === 401) return 'GitHub refuse le jeton : il est faux, ou il a expiré.';
   if(r.status === 403 || r.status === 429) return 'GitHub refuse pour l’instant : droits du jeton trop courts, ou trop d’écritures d’un coup.';
   if(r.status === 404) return 'Dépôt introuvable : vérifie son nom, et que le jeton y a accès.';
   return 'GitHub répond ' + r.status + '.';
 }
-/* GitHub demande de patienter : on garde tout ici, et on réessaie après */
-function ghPatienter(r){
-  const s = parseInt(r.headers.get('retry-after') || '', 10);
-  GH.pause = maintenant() + (isFinite(s) && s > 0 ? s * 1000 : 60000);
+function ghcB64(txt){
+  const o = new TextEncoder().encode(txt);
+  let s = '';
+  for(let i = 0; i < o.length; i += 0x8000) s += String.fromCharCode.apply(null, o.subarray(i, i + 0x8000));
+  return btoa(s);
 }
-
-function ghLire(force){
-  if(SYNC.etat !== 'github' || maintenant() < GH.pause) return Promise.resolve(false);
-  const plus = !force && GH.etag ? {'If-None-Match': GH.etag} : null;
-  return fetch(ghUrl(), {headers:ghEntetes(plus), cache:'no-store'}).then(r => {
-    if(r.status === 304){ SYNC.dernier = maintenant(); return false; }
-    if(r.status === 404){ GH.sha = ''; GH.etag = ''; return false; }
-    if(r.status === 403 || r.status === 429) ghPatienter(r);
-    if(!r.ok) throw {gh:ghErreur(r)};
-    const etag = r.headers.get('ETag') || '';
-    return r.json().then(j => {
-      GH.sha = j.sha || '';
-      if(j.content) return depuisB64(j.content);
-      /* plus d'un Mo : le contenu arrive à part, en brut */
-      if(j.size) return fetch(ghUrl(), {headers:ghEntetes({'Accept':'application/vnd.github.raw+json'}), cache:'no-store'})
-        .then(b => { if(!b.ok) throw {gh:ghErreur(b)}; return b.text(); });
-      return '';
-    }).then(txt => {
-      GH.etag = etag;
-      SYNC.dernier = maintenant();
-      if(!txt || !txt.trim()) return false;
-      let o = null;
-      try{ o = JSON.parse(txt); }catch(e){ throw {gh:'Le fichier du dépôt n’est pas lisible.'}; }
-      if(!o || o.format !== 'faelorenn-table') throw {gh:'Le fichier du dépôt n’est pas une table Faelorenn.'};
-      const avant = JSON.stringify(T);
-      T = fusionner(T, normTable(o));
-      sauverLocal();
-      if(JSON.stringify(T) !== avant) dessiner(); else dessinerTable();
-      return true;
-    });
-  }).then(v => { if(GH.errDe === 'lecture' && SYNC.etat === 'github'){ SYNC.erreur = ''; GH.errDe = ''; dessinerTable(); } return v; },
-    e => { SYNC.erreur = e && e.gh ? e.gh : 'GitHub ne répond pas. Tout reste gardé ici, on réessaie.'; GH.errDe = 'lecture'; dessinerTable(); return false; });
+function ghcDeB64(b){
+  const s = atob(String(b).replace(/\s+/g, ''));
+  const o = new Uint8Array(s.length);
+  for(let i = 0; i < s.length; i++) o[i] = s.charCodeAt(i);
+  return new TextDecoder().decode(o);
 }
+/* le même contenu donne le même texte, quel que soit l'ordre des clés */
+function ghcCanon(x){
+  if(x === null || x === undefined || typeof x !== 'object') return JSON.stringify(x === undefined ? null : x);
+  if(Array.isArray(x)) return '[' + x.map(ghcCanon).join(',') + ']';
+  return '{' + Object.keys(x).filter(k => x[k] !== undefined).sort().map(k => JSON.stringify(k) + ':' + ghcCanon(x[k])).join(',') + '}';
+}
+/* ce qu'on a ici et que le fichier n'a pas : une pièce absente là-bas, ou plus récente ici */
+function ghcEnAvance(ici, labas){
+  labas = labas || {};
+  return Object.keys(ici || {}).some(id => {
+    const a = ici[id], b = labas[id];
+    if(!a) return false;
+    if(!b) return true;
+    return (+a.maj || 0) > (+b.maj || 0) || (+a.majPv || 0) > (+b.majPv || 0);
+  });
+}
+function ghcJoueur(){
+  try{ const m = JSON.parse(localStorage.getItem('faelorenn.table.moi') || 'null'); return m && m.joueur ? String(m.joueur).trim() : ''; }catch(e){ return ''; }
+}
+function ghcIlYA(t){
+  if(!t) return 'jamais';
+  const s = Math.round((Date.now() - t) / 1000);
+  if(s < 5) return 'à l’instant';
+  if(s < 60) return 'il y a ' + s + ' secondes';
+  const m = Math.round(s / 60);
+  return m < 60 ? 'il y a ' + m + ' minute' + (m > 1 ? 's' : '') : 'il y a plus d’une heure';
+}
+const ghcNettoyerDepot = d => String(d || '').trim().replace(/^https?:\/\/github\.com\//i, '').replace(/\.git$/i, '').replace(/\/+$/, '');
 
-/* on relit, on fusionne, puis on écrit ; si quelqu'un a écrit entre-temps, on recommence */
-function ghEcrire(){
-  if(SYNC.etat !== 'github') return Promise.resolve(false);
-  if(GH.occupe){ GH.encore = true; return Promise.resolve(false); }
-  const attente = Math.max(GH.pause - maintenant(), GH.derniereEcriture + GH.tEcart - maintenant());
-  if(attente > 0){ clearTimeout(GH.ecrit); GH.ecrit = setTimeout(ghEcrire, attente + 50); return Promise.resolve(false); }
-  GH.occupe = true;
-  const essai = n => ghLire(true).then(() => {
-    const corps = {message:'Table · ' + (MOI.joueur || 'quelqu’un') + ' · ' + new Date().toLocaleString('fr-BE'),
-      content:versB64(JSON.stringify(T, null, 1)), branch:GH.branche};
-    if(GH.sha) corps.sha = GH.sha;
-    GH.derniereEcriture = maintenant();
-    return fetch(ghUrl().replace(/\?ref=.*$/, ''), {method:'PUT', headers:ghEntetes({'Content-Type':'application/json'}), body:JSON.stringify(corps), cache:'no-store'});
+/* ---------- relier le dépôt ---------- */
+/* le dépôt existe, le jeton l'ouvre ; on regarde au passage s'il est privé */
+function ghcVerifier(){
+  return fetch(ghcBase(), {headers:ghcEntetes(), cache:'no-store'}).then(r => {
+    if(r.status === 401) return {ok:false, msg:ghcErreur(r)};
+    if(r.status === 404) return {ok:false, msg:'Dépôt introuvable : vérifie son nom, et que le jeton y a accès.'};
+    if(!r.ok) return {ok:false, msg:ghcErreur(r)};
+    return r.json().then(j => ({ok:true, prive:j.private !== false}));
+  }, () => ({ok:false, msg:'GitHub ne répond pas. Vérifie la connexion, puis réessaie.'}));
+}
+function ghcDepotVu(){
+  const cle = ghcCleDepot();
+  if(GHC_VU === cle) return Promise.resolve(true);
+  return fetch(ghcBase(), {headers:ghcEntetes(), cache:'no-store'}).then(r => {
+    if(r.ok){ GHC_VU = cle; return true; }
+    if(r.status === 404) return false;
+    if(r.status === 401) throw {gh:ghcErreur(r), fatal:true};
+    /* GitHub a un souci passager : ce n'est pas le dépôt qui manque */
+    throw {gh:ghcErreur(r)};
+  }, () => { throw {gh:'GitHub ne répond pas. Tout reste gardé ici, on réessaie.'}; });
+}
+function ghcLisezmoi(){
+  const qui = ghcJoueur();
+  let quand = '';
+  try{ quand = new Date().toLocaleString('fr-BE', {dateStyle:'long', timeStyle:'short'}); }catch(e){ quand = new Date().toLocaleString('fr-BE'); }
+  return '# Sauvegarde Faelorenn\n\n'
+    + 'Ce dépôt garde ce que les registres de Faelorenn enregistrent. Les pages du site y écrivent toutes seules, chacune dans son fichier :\n\n'
+    + '- `' + (GHC.table || GHC_FICHIERS.table) + '` : la table, avec les séances, les personnages joués, les PNJ et leurs liens, les jets.\n'
+    + '- `' + GHC_FICHIERS.personnages + '` : les personnages enregistrés dans le Registre du Havre.\n'
+    + '- `' + GHC_FICHIERS.bestiaire + '` : les créatures et les familles du Registre des Rencontres.\n\n'
+    + 'Chaque enregistrement devient une version dans l’historique du dépôt.\n\n'
+    + 'Garde ce dépôt privé : vos séances et vos personnages y sont.\n\n'
+    + 'Dernière liaison : ' + (qui ? qui + ', ' : '') + 'le ' + quand + '.\n';
+}
+/* le jeton peut-il écrire ? On le sait en écrivant : un petit mot pour qui ouvre le dépôt */
+function ghcEssaiEcriture(){
+  return fetch(ghcUrl('LISEZMOI.md', true), {headers:ghcEntetes(), cache:'no-store'}).then(r => {
+    if(r.status === 404) return '';
+    if(!r.ok) throw {r:r};
+    return r.json().then(j => j.sha || '');
+  }).then(sha => {
+    const corps = {message:'Sauvegarde reliée · ' + (ghcJoueur() || 'quelqu’un') + ' · ' + new Date().toLocaleString('fr-BE'), content:ghcB64(ghcLisezmoi())};
+    if(GHC.branche) corps.branch = GHC.branche;
+    if(sha) corps.sha = sha;
+    return fetch(ghcUrl('LISEZMOI.md', false), {method:'PUT', headers:ghcEntetes({'Content-Type':'application/json'}), body:JSON.stringify(corps), cache:'no-store'});
   }).then(r => {
-    if((r.status === 409 || r.status === 422) && n < 3) return new Promise(ok => setTimeout(ok, 1200)).then(() => essai(n + 1));
-    if(r.status === 403 || r.status === 429) ghPatienter(r);
-    if(!r.ok) throw {gh:ghErreur(r)};
-    return r.json().then(j => {
-      GH.sha = (j.content && j.content.sha) || GH.sha;
-      GH.etag = '';
-      SYNC.dernier = maintenant(); SYNC.erreur = ''; GH.errDe = '';
-      dessinerTable();
-      return true;
+    if(r.ok) return {ok:true};
+    if(r.status === 403) return {ok:false, msg:'Le jeton ouvre le dépôt mais ne peut pas y écrire : sur GitHub, donne-lui « Contents » en « Read and write ».'};
+    if(r.status === 404 || r.status === 409 || r.status === 422)
+      return {ok:false, msg:'L’écriture n’a pas pris' + (GHC.branche ? ' sur la branche « ' + GHC.branche + ' »' : '') + '. Si le dépôt est tout vide, ajoute-lui un README sur GitHub, puis réessaie.'};
+    return {ok:false, msg:ghcErreur(r)};
+  }, e => ({ok:false, msg:e && e.r ? ghcErreur(e.r) : 'GitHub ne répond pas. Vérifie la connexion, puis réessaie.'}));
+}
+function ghcRelier(depot, jeton, branche, table){
+  depot = ghcNettoyerDepot(depot);
+  jeton = String(jeton || '').trim();
+  if(!/^[\w.-]+\/[\w.-]+$/.test(depot)) return Promise.resolve({ok:false, msg:'Écris le dépôt comme ceci : ton-nom/faelorenn-table.'});
+  if(!jeton) return Promise.resolve({ok:false, msg:'Colle le jeton d’accès.'});
+  if(ghcBloque()) return Promise.resolve({ok:false, msg:'Depuis cette page-ci, GitHub est hors d’atteinte : ouvre le registre sur le site.'});
+  if(!ghcPossible()) return Promise.resolve({ok:false, msg:'Ce navigateur ne sait pas parler à GitHub.'});
+  const avant = Object.assign({}, GHC);
+  GHC.depot = depot; GHC.jeton = jeton; GHC.branche = String(branche || '').trim();
+  if(table !== undefined){ const t = String(table || '').trim(); GHC.table = t && t !== GHC_FICHIERS.table ? t : ''; }
+  const remettre = r => { Object.assign(GHC, avant); return r; };
+  return ghcVerifier().then(v => {
+    if(!v.ok) return remettre(v);
+    return ghcEssaiEcriture().then(w => {
+      if(!w.ok) return remettre(w);
+      GHC.actif = true; ghcGarder();
+      GHC_VU = ghcCleDepot();
+      return {ok:true, prive:v.prive, msg: v.prive
+        ? 'Relié à ' + depot + '. Ce que les registres enregistrent y part tout seul.'
+        : 'Relié à ' + depot + ', mais ce dépôt est public : tout le monde peut y lire vos séances et vos personnages. Passe-le en privé dans ses réglages sur GitHub.'};
     });
   });
-  return essai(0).catch(e => {
-    SYNC.erreur = e && e.gh ? e.gh : 'L’écriture sur GitHub a échoué. Tout reste gardé ici, on réessaie.';
-    GH.errDe = 'ecriture';
-    GH.encore = true;
-    dessinerTable();
-    return false;
-  }).then(v => {
-    GH.occupe = false;
-    if(GH.encore){ GH.encore = false; ghPlanifier(); }
-    return v;
+}
+function ghcDetacher(){ GHC.actif = false; ghcGarder(); }
+function ghcOublier(){ GHC.actif = false; GHC.jeton = ''; GHC_VU = ''; ghcGarder(); }
+/* un autre onglet a relié, détaché ou oublié : on suit */
+function ghcSurveiller(fn){
+  window.addEventListener('storage', e => { if(e.key === GHC_CLE || e.key === null){ ghcCharger(); try{ fn(); }catch(x){} } });
+}
+/* ce que le dépôt contient, pour l'accueil */
+function ghcInventaire(){
+  if(!ghcPret()) return Promise.resolve(null);
+  return fetch(ghcBase() + '/contents/' + (GHC.branche ? '?ref=' + encodeURIComponent(GHC.branche) : ''), {headers:ghcEntetes(), cache:'no-store'}).then(r => {
+    if(r.status === 404) return [];
+    if(!r.ok) throw {gh:ghcErreur(r)};
+    return r.json().then(j => Array.isArray(j) ? j.filter(x => x && x.type === 'file').map(x => ({nom:x.name, taille:+x.size || 0})) : []);
   });
 }
-function ghPlanifier(){
-  if(SYNC.etat !== 'github') return;
-  clearTimeout(GH.ecrit);
-  GH.ecrit = setTimeout(ghEcrire, GH.tRegroupe);
-}
-function ghBoucle(){
-  if(GH.boucle) clearInterval(GH.boucle);
-  GH.boucle = setInterval(() => { if(SYNC.etat === 'github' && !document.hidden && !GH.occupe) ghLire(false); }, GH.tLecture);
+
+/* ---------- un fichier du dépôt, tenu à jour dans les deux sens ----------
+   o.recevoir(obj)  fond le fichier du dépôt dans ce qu'on a ici
+   o.enAvance(obj)  dit si on a ici du neuf que le fichier n'a pas
+   o.contenu()      ce qu'on écrit
+   o.absent()       le fichier n'existe pas encore
+   o.ecrit(ok, rien) une écriture a abouti (ou n'était pas utile), ou a raté
+   o.rate(d, e)     une lecture a raté
+   o.etat(d)        quelque chose a changé : on redessine */
+function ghcDoc(o){
+  const t = (typeof window !== 'undefined' && window.GHC_TEMPS) || {};   /* les essais vont plus vite */
+  const d = {nom:o.nom || '', sha:'', etag:'', boucle:null, ecrit:null, prevu:false, occupe:false, encore:false, reessai:false,
+    derniereEcriture:0, pause:0, tLecture:t.lecture || 10000, tRegroupe:t.regroupe || 4000, tEcart:t.ecart || 15000,
+    actif:false, erreur:'', errDe:'', dernier:0, cle:'', lu:false};
+  const chemin = () => (typeof o.chemin === 'function' ? o.chemin() : o.chemin) || 'faelorenn.json';
+  const signaler = () => { ghcGarde(); try{ if(o.etat) o.etat(d); }catch(e){} };
+  const patienter = r => { const s = parseInt(r.headers.get('retry-after') || '', 10); d.pause = Date.now() + (isFinite(s) && s > 0 ? s * 1000 : 60000); };
+  d.chemin = chemin;
+  d.enAttente = () => d.actif && (d.prevu || d.occupe || d.encore || d.reessai);
+
+  /* null : rien de neuf ; {absent} : pas encore de fichier ; {obj} : le fichier ; false : ça a raté */
+  d.lire = function(force, pourEcrire){
+    if(!d.actif || Date.now() < d.pause) return Promise.resolve(false);
+    const cle = d.cle;
+    const plus = !force && d.etag ? {'If-None-Match': d.etag} : null;
+    return fetch(ghcUrl(chemin(), true), {headers:ghcEntetes(plus), cache:'no-store'}).then(r => {
+      if(r.status === 304){ d.dernier = Date.now(); return null; }
+      if(r.status === 404) return ghcDepotVu().then(vu => {
+        if(!vu) throw {gh:'Dépôt introuvable : vérifie son nom, et que le jeton y a accès.', fatal:true};
+        d.sha = ''; d.etag = ''; d.dernier = Date.now();
+        return {absent:true};
+      });
+      if(r.status === 401) throw {gh:ghcErreur(r), fatal:true};
+      if(r.status === 403 || r.status === 429) patienter(r);
+      if(!r.ok) throw {gh:ghcErreur(r)};
+      const etag = r.headers.get('ETag') || '';
+      return r.json().then(j => {
+        /* plus d'un Mo : le contenu arrive à part, en brut */
+        const brut = j.content ? Promise.resolve(ghcDeB64(j.content))
+          : j.size ? fetch(ghcUrl(chemin(), true), {headers:ghcEntetes({'Accept':'application/vnd.github.raw+json'}), cache:'no-store'})
+              .then(b => { if(!b.ok) throw {gh:ghcErreur(b)}; return b.text(); })
+          : Promise.resolve('');
+        return brut.then(txt => {
+          d.sha = j.sha || ''; d.etag = etag; d.dernier = Date.now();
+          if(!txt || !txt.trim()) return {absent:true};
+          let obj = null;
+          try{ obj = JSON.parse(txt); }catch(e){ throw {gh:'Le fichier ' + chemin() + ' du dépôt n’est pas lisible.', fatal:true}; }
+          if(!obj || obj.format !== o.format) throw {gh:'Le fichier ' + chemin() + ' du dépôt n’est pas ' + (o.quoi || 'à nous') + '.', fatal:true};
+          return {obj:obj};
+        });
+      });
+    }).then(res => {
+      if(cle !== d.cle || !d.actif) return false;
+      if(d.errDe === 'lecture'){ d.erreur = ''; d.errDe = ''; }
+      d.lu = true;
+      if(res && res.obj) o.recevoir(res.obj);
+      if(res && res.absent && o.absent) o.absent();
+      if(res && !pourEcrire && (res.absent || (o.enAvance && o.enAvance(res.obj)))) d.planifier();
+      signaler();
+      return res;
+    }, e => {
+      if(cle !== d.cle || !d.actif) return false;
+      d.erreur = e && e.gh ? e.gh : 'GitHub ne répond pas. Tout reste gardé ici, on réessaie.';
+      d.errDe = 'lecture';
+      if(e && e.fatal) d.arreter(true);
+      if(o.rate) o.rate(d, e);
+      signaler();
+      return false;
+    });
+  };
+
+  /* on relit, on fond, puis on écrit ; si quelqu'un a écrit entre-temps, on recommence */
+  d.ecrire = function(){
+    if(!d.actif) return Promise.resolve(false);
+    if(d.occupe){ d.encore = true; return Promise.resolve(false); }
+    clearTimeout(d.ecrit);
+    const attente = Math.max(d.pause - Date.now(), d.derniereEcriture + d.tEcart - Date.now());
+    if(attente > 0){ d.prevu = true; d.ecrit = setTimeout(d.ecrire, attente + 50); ghcGarde(); return Promise.resolve(false); }
+    d.prevu = false; d.occupe = true;
+    const cle = d.cle;
+    ghcGarde();
+    const essai = n => d.lire(true, true).then(res => {
+      if(!d.actif || cle !== d.cle) throw {arret:true};
+      if(res === false) throw {gh:d.erreur};
+      if(res && res.obj && o.enAvance && !o.enAvance(res.obj)) return 'rien';
+      const corps = {message:(o.message ? o.message() : d.nom + ' · ' + (ghcJoueur() || 'quelqu’un') + ' · ' + new Date().toLocaleString('fr-BE')),
+        content:ghcB64(JSON.stringify(o.contenu(), null, 1))};
+      if(GHC.branche) corps.branch = GHC.branche;
+      if(d.sha) corps.sha = d.sha;
+      d.derniereEcriture = Date.now();
+      return fetch(ghcUrl(chemin(), false), {method:'PUT', headers:ghcEntetes({'Content-Type':'application/json'}), body:JSON.stringify(corps), cache:'no-store'}).then(r => {
+        if((r.status === 409 || r.status === 422) && n < 3) return new Promise(ok => setTimeout(ok, 1200)).then(() => essai(n + 1));
+        if(r.status === 401) throw {gh:ghcErreur(r), fatal:true};
+        if(r.status === 403 || r.status === 429) patienter(r);
+        if(!r.ok) throw {gh:ghcErreur(r)};
+        /* détaché ou relié ailleurs pendant l'écriture : elle ne compte pas pour la suite */
+        if(!d.actif || cle !== d.cle) throw {arret:true};
+        return r.json().then(j => {
+          d.sha = (j.content && j.content.sha) || d.sha;
+          d.etag = '';
+          d.dernier = Date.now();
+          return 'ecrit';
+        });
+      });
+    });
+    return essai(0).then(v => {
+      if(d.errDe === 'ecriture' || d.errDe === 'lecture'){ d.erreur = ''; d.errDe = ''; }
+      if(o.ecrit) o.ecrit(true, v === 'rien');
+      return true;
+    }, e => {
+      if(o.ecrit) o.ecrit(false, false);
+      if(e && e.arret) return false;
+      d.erreur = e && e.gh ? e.gh : 'L’écriture sur GitHub a échoué. Tout reste gardé ici, on réessaie.';
+      d.errDe = 'ecriture';
+      if(e && e.fatal) d.arreter(true);
+      else d.reessai = true;
+      return false;
+    }).then(v => {
+      d.occupe = false;
+      if(d.actif && (d.encore || d.reessai)){
+        const tard = d.reessai;
+        d.encore = false; d.reessai = false;
+        d.planifier(tard ? Math.max(d.tEcart, 15000) : 0);
+      }
+      signaler();
+      return v;
+    });
+  };
+  d.planifier = function(delai){
+    if(!d.actif) return;
+    clearTimeout(d.ecrit);
+    d.prevu = true;
+    d.ecrit = setTimeout(d.ecrire, delai || d.tRegroupe);
+    ghcGarde();
+  };
+  d.demarrer = function(){
+    const cle = [GHC.api, GHC.depot, GHC.branche, GHC.jeton, chemin()].join('|');
+    if(d.actif && d.cle === cle) return Promise.resolve(null);
+    d.arreter();
+    d.cle = cle; d.actif = true; d.lu = false;
+    d.sha = ''; d.etag = ''; d.pause = 0; d.derniereEcriture = 0; d.erreur = ''; d.errDe = '';
+    d.boucle = setInterval(() => { if(d.actif && !document.hidden && !d.occupe) d.lire(false); }, d.tLecture);
+    signaler();
+    return d.lire(true);
+  };
+  d.arreter = function(garderErreur){
+    d.actif = false; d.prevu = false; d.encore = false; d.reessai = false;
+    if(d.boucle){ clearInterval(d.boucle); d.boucle = null; }
+    clearTimeout(d.ecrit);
+    if(!garderErreur){ d.erreur = ''; d.errDe = ''; }
+    signaler();
+  };
+  GHC_DOCS.push(d);
+  return d;
 }
 
-function ghRelier(depot, jeton, chemin, branche){
-  depot = (depot || '').trim().replace(/^https?:\/\/github\.com\//i, '').replace(/\.git$/i, '').replace(/\/+$/, '');
-  if(!/^[\w.-]+\/[\w.-]+$/.test(depot)) return Promise.resolve({ok:false, msg:'Écris le dépôt comme ceci : ton-nom/faelorenn-table.'});
-  if(!(jeton || '').trim()) return Promise.resolve({ok:false, msg:'Colle le jeton d’accès.'});
-  if(SYNC.poignee) detacher();
-  GH.depot = depot; GH.jeton = jeton.trim();
-  GH.chemin = (chemin || '').trim() || 'table-faelorenn.json';
-  GH.branche = (branche || '').trim() || 'main';
-  GH.sha = ''; GH.etag = ''; GH.pause = 0; GH.derniereEcriture = 0;
-  GH.actif = true; ghGarder();
-  SYNC.etat = 'github'; SYNC.nom = depot; SYNC.erreur = ''; GH.errDe = '';
-  ghBoucle();
-  /* si la porte ne s'ouvre pas, on ne reste pas accroché : on corrige et on réessaie */
-  const echec = msg => { ghDetacher(true); GH.errDe = ''; dessinerTable(); return {ok:false, msg:msg}; };
-  return ghLire(true).then(() => {
-    if(SYNC.erreur) return echec(SYNC.erreur);
-    return ghEcrire().then(ok => ok ? {ok:true, msg:'Table reliée à GitHub. Chaque changement y part tout seul.'}
-      : echec(SYNC.erreur || 'La première écriture n’a pas marché.'));
+/* on ne quitte pas la page avec un changement qui n'est pas encore parti */
+function ghcAvantDepart(e){ e.preventDefault(); e.returnValue = ''; return ''; }
+function ghcGarde(){
+  if(typeof window === 'undefined') return;
+  const besoin = GHC_DOCS.some(d => d.enAttente());
+  if(besoin === !!ghcGarde.on) return;
+  ghcGarde.on = besoin;
+  if(besoin) window.addEventListener('beforeunload', ghcAvantDepart);
+  else window.removeEventListener('beforeunload', ghcAvantDepart);
+}
+if(typeof document !== 'undefined'){
+  /* l'onglet passe derrière : ce qui attend part tout de suite ; il revient : on relit */
+  document.addEventListener('visibilitychange', () => {
+    GHC_DOCS.forEach(d => {
+      if(!d.actif || d.occupe) return;
+      if(document.hidden){ if(d.prevu) d.ecrire(); }
+      else d.lire(false);
+    });
+  });
+}
+
+/* ---------- le panneau : relier le dépôt, une fois pour les trois registres ---------- */
+function ghcStyle(){
+  if(document.getElementById('ghcStyle')) return;
+  const s = document.createElement('style');
+  s.id = 'ghcStyle';
+  s.textContent = [
+    '.ghc{margin-top:14px;border-top:1px solid var(--rule,#CBD6C9);padding-top:10px}',
+    '.ghc.ghc-encart{margin-top:10px;border:1px solid var(--rule,#CBD6C9);border-radius:3px;background:var(--surface,#fff);padding:12px 16px;box-shadow:var(--shadow,none)}',
+    '.ghc [hidden]{display:none!important}',
+    '.ghc>summary{cursor:pointer;color:var(--forest,#1F3D2B);font-weight:500;font-size:14px;line-height:1.5}',
+    '.ghc-pastille{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--muted,#6B7469);margin:0 6px 1px 4px;vertical-align:middle}',
+    '.ghc-pastille.on{background:var(--sage,#4A6B52)}',
+    '.ghc-pastille.off{background:var(--rust,#9A4A28)}',
+    '.ghc-resume{font-weight:400;color:var(--muted,#6B7469);font-size:13px;margin-left:6px;overflow-wrap:anywhere}',
+    '.ghc-corps{margin-top:10px}',
+    '.ghc-texte{font-size:14px;margin:0 0 8px;max-width:68ch;color:var(--ink,#1B1C18)}',
+    '.ghc-outil{font-size:13px;margin:0 0 8px;color:var(--muted,#6B7469)}',
+    '.ghc-outil.err,.ghc-msg.err{color:var(--rust,#9A4A28)}',
+    '.ghc-etapes{margin:0 0 12px;padding-left:20px;font-size:13.5px;max-width:68ch;color:var(--ink,#1B1C18)}',
+    '.ghc-etapes li{margin:3px 0}',
+    '.ghc a{color:var(--forest,#1F3D2B)}',
+    '.ghc-champs{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:10px}',
+    '.ghc label{display:block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted,#6B7469);margin:0 0 4px}',
+    '.ghc input{width:100%;box-sizing:border-box;font:inherit;font-size:14px;padding:7px 9px;border:1px solid var(--rule,#CBD6C9);border-radius:2px;background:var(--surface,#fff);color:var(--ink,#1B1C18)}',
+    '.ghc input:disabled{opacity:.6}',
+    '.ghc input:focus-visible,.ghc-btn:focus-visible,.ghc summary:focus-visible{outline:2px solid var(--sage,#4A6B52);outline-offset:1px}',
+    '.ghc-plus{margin-top:8px}',
+    '.ghc-plus>summary{cursor:pointer;font-size:13px;color:var(--sage,#4A6B52)}',
+    '.ghc-plus .ghc-champs{margin-top:8px}',
+    '.ghc-acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}',
+    '.ghc-btn{font:inherit;font-size:13.5px;line-height:1.3;padding:6px 12px;border:1px solid var(--forest,#1F3D2B);background:var(--forest,#1F3D2B);color:var(--paper,#F4F2EA);border-radius:2px;cursor:pointer}',
+    '.ghc-btn.ghc-ghost{background:transparent;color:var(--forest,#1F3D2B)}',
+    '.ghc-btn:disabled{opacity:.5;cursor:default}',
+    '.ghc-msg{font-size:13px;margin:10px 0 0;color:var(--forest,#1F3D2B);max-width:68ch}',
+    '.ghc-petit{font-size:12.5px;color:var(--muted,#6B7469);margin:10px 0 0;max-width:68ch}'
+  ].join('\n');
+  document.head.appendChild(s);
+}
+/* opt.table : le champ du fichier de la table ; opt.etat() : {nom, texte, erreur} du registre ;
+   opt.apresRelier(r) et opt.apresDetacher() : ce que le registre fait ensuite */
+function ghcPanneau(boite, opt){
+  opt = opt || {};
+  if(!boite) return {dessiner:function(){}, dire:function(){}};
+  ghcStyle();
+  boite.innerHTML =
+    '<details class="ghc' + (opt.encart ? ' ghc-encart' : '') + '" id="ghcBloc"' + (opt.ouvert ? ' open' : '') + '>' +
+      '<summary><span class="ghc-pastille" id="ghcPastille"></span>Sauvegarde en ligne<span class="ghc-resume" id="ghcResume"></span></summary>' +
+      '<div class="ghc-corps">' +
+        '<p class="ghc-texte" id="ghcTexte"></p>' +
+        '<p class="ghc-outil" id="ghcOutil" hidden></p>' +
+        '<ol class="ghc-etapes" id="ghcEtapes">' +
+          '<li>Sur GitHub, crée un dépôt <b>privé</b>, <i>faelorenn-table</i> par exemple, en cochant « Add a README file ».</li>' +
+          '<li>Crée un <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">jeton à accès fin</a> : seulement ce dépôt, <i>Contents</i> en <i>Read and write</i>, avec une date d’expiration.</li>' +
+          '<li>Colle le dépôt et le jeton ici, puis « Relier ». Ceux qui jouent avec toi collent les mêmes chez eux.</li>' +
+        '</ol>' +
+        '<div class="ghc-champs" id="ghcChamps">' +
+          '<div><label for="ghcDepot">Dépôt</label><input type="text" id="ghcDepot" placeholder="ton-nom/faelorenn-table" autocomplete="off" spellcheck="false"></div>' +
+          '<div><label for="ghcJeton">Jeton d’accès</label><input type="password" id="ghcJeton" placeholder="github_pat_…" autocomplete="off" spellcheck="false"></div>' +
+        '</div>' +
+        '<details class="ghc-plus" id="ghcPlus"><summary>' + (opt.table ? 'Fichier de la table et branche' : 'Branche') + '</summary><div class="ghc-champs">' +
+          (opt.table ? '<div><label for="ghcFichier">Fichier de la table</label><input type="text" id="ghcFichier" placeholder="' + GHC_FICHIERS.table + '" autocomplete="off" spellcheck="false"></div>' : '') +
+          '<div><label for="ghcBranche">Branche</label><input type="text" id="ghcBranche" placeholder="celle du dépôt" autocomplete="off" spellcheck="false"></div>' +
+        '</div></details>' +
+        '<div class="ghc-acts">' +
+          '<button type="button" class="ghc-btn" id="ghcRelier">Relier</button>' +
+          '<button type="button" class="ghc-btn ghc-ghost" id="ghcDetacher" hidden>Détacher</button>' +
+          '<button type="button" class="ghc-btn ghc-ghost" id="ghcOublier" hidden>Oublier le jeton</button>' +
+        '</div>' +
+        '<p class="ghc-msg" id="ghcMsg" role="status" hidden></p>' +
+        '<p class="ghc-petit">Le jeton reste dans ce navigateur, jamais dans le dépôt. Chaque enregistrement devient une version dans l’historique du dépôt.</p>' +
+      '</div>' +
+    '</details>';
+  const $g = id => document.getElementById(id);
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;'})[c]);
+  let enCours = false;
+  function dire(t, ok){
+    const m = $g('ghcMsg');
+    m.textContent = t || ''; m.className = 'ghc-msg' + (ok ? '' : ' err'); m.hidden = !t;
+    clearTimeout(dire.t);
+    if(t) dire.t = setTimeout(() => { m.hidden = true; }, 12000);
+  }
+  function dessiner(){
+    const bloque = ghcBloque(), relie = ghcPret();
+    let e = null;
+    try{ e = relie && opt.etat ? opt.etat() : null; }catch(x){}
+    const err = !!(e && e.erreur);
+    $g('ghcPastille').className = 'ghc-pastille' + (relie ? (err ? ' off' : ' on') : '');
+    $g('ghcResume').textContent = bloque ? 'hors d’atteinte ici' : !relie ? 'pas reliée'
+      : GHC.depot + (err ? ' · à vérifier' : e && e.texte ? ' · ' + e.texte : '');
+    $g('ghcTexte').innerHTML = bloque
+      ? 'Depuis cette page-ci, GitHub est hors d’atteinte : ouvre le registre sur le site pour garder tes données en ligne.'
+      : relie
+        ? 'Relié à <b>' + esc(GHC.depot) + '</b>' + (GHC.branche ? ', branche <i>' + esc(GHC.branche) + '</i>' : '') + '. Les trois registres de ce navigateur y gardent chacun leur fichier : la table et ses PNJ, les personnages, le bestiaire.'
+        : 'Tout peut se garder dans un dépôt GitHub privé : la table et ses PNJ, les personnages, le bestiaire. On le relie une fois dans ce navigateur, et les trois registres s’en servent. À plusieurs, chacun relie le même dépôt.';
+    /* le registre ne parle ici que s'il a un souci : sinon, le résumé suffit */
+    const o = $g('ghcOutil');
+    o.hidden = !err;
+    if(err){ o.textContent = e.nom + ' : ' + e.erreur; o.className = 'ghc-outil err'; }
+    $g('ghcEtapes').hidden = relie || bloque;
+    ['ghcDepot','ghcJeton','ghcBranche','ghcFichier'].forEach(id => { const i = $g(id); if(i) i.disabled = bloque; });
+    const b = $g('ghcRelier');
+    b.disabled = bloque || enCours;
+    if(!enCours) b.textContent = relie ? 'Relier de nouveau' : 'Relier';
+    $g('ghcDetacher').hidden = !relie;
+    $g('ghcOublier').hidden = !GHC.jeton;
+    [['ghcDepot', GHC.depot], ['ghcBranche', GHC.branche], ['ghcFichier', GHC.table], ['ghcJeton', GHC.jeton]].forEach(([id, v]) => {
+      const i = $g(id); if(i && document.activeElement !== i && !i.value && v) i.value = v;
+    });
+  }
+  $g('ghcRelier').onclick = () => {
+    const b = $g('ghcRelier');
+    enCours = true; b.disabled = true; b.textContent = 'On frappe à la porte…';
+    dire('', true);
+    let relie = false;
+    ghcRelier($g('ghcDepot').value, $g('ghcJeton').value, $g('ghcBranche').value, opt.table ? $g('ghcFichier').value : undefined)
+      .then(r => {
+        if(!r.ok || !opt.apresRelier) return r;
+        relie = true;
+        return Promise.resolve(opt.apresRelier(r)).then(x => x || r);
+      })
+      .then(r => {
+        /* le dépôt s'ouvre, mais le registre n'y arrive pas : on ne reste pas accroché */
+        if(!r.ok && relie){ ghcDetacher(); if(opt.apresDetacher) opt.apresDetacher(); }
+        enCours = false;
+        dire(r.msg, r.ok && r.prive !== false);
+        dessiner();
+      }, () => { enCours = false; dire('Quelque chose a coincé. Réessaie.', false); dessiner(); });
+  };
+  $g('ghcDetacher').onclick = () => {
+    ghcDetacher();
+    if(opt.apresDetacher) opt.apresDetacher();
+    dire('Détaché. Tout reste gardé dans ce navigateur, et le dépôt garde ce qui y est déjà.', true);
+    dessiner();
+  };
+  $g('ghcOublier').onclick = () => {
+    ghcOublier();
+    $g('ghcJeton').value = '';
+    if(opt.apresDetacher) opt.apresDetacher();
+    dire('Jeton oublié par ce navigateur.', true);
+    dessiner();
+  };
+  setInterval(() => { if(ghcPret()) dessiner(); }, 10000);
+  dessiner();
+  return {dessiner:dessiner, dire:dire};
+}
+
+/* ============ la table sur GitHub : son fichier dans le dépôt de la sauvegarde en ligne ============
+   Le dépôt se relie une fois pour les trois registres (voir ghcommun.js). Ici, la table y lit et
+   y écrit son fichier : chaque personnage, paragraphe, PNJ ou lien porte sa date, le plus récent
+   gagne, et les jets s'ajoutent sans jamais s'écraser. */
+
+const GH = ghcDoc({
+  nom:'Table', quoi:'une table Faelorenn', format:'faelorenn-table',
+  chemin: () => GHC.table || GHC_FICHIERS.table,
+  recevoir: o => {
+    const avant = JSON.stringify(T);
+    T = fusionner(T, normTable(o));
+    sauverLocal();
+    if(JSON.stringify(T) !== avant) dessiner(); else dessinerTable();
+  },
+  enAvance: o => tableEnAvance(normTable(o)),
+  contenu: () => T,
+  message: () => 'Table · ' + (MOI.joueur || 'quelqu’un') + ' · ' + new Date().toLocaleString('fr-BE'),
+  etat: d => {
+    if(SYNC.etat === 'github'){ SYNC.erreur = d.erreur; SYNC.dernier = d.dernier; }
+    dessinerTable();
+  }
+});
+/* ce que la table d'ici a de plus que celle du dépôt */
+function tableEnAvance(r){
+  if((T.maj || 0) > (r.maj || 0) || (T.viderAvant || 0) > (r.viderAvant || 0)) return true;
+  if(CLES_FUSION.some(k => ghcEnAvance(T[k], r[k]))) return true;
+  const vus = {};
+  (r.jets || []).forEach(j => { vus[j.id] = 1; });
+  return (T.jets || []).some(j => !vus[j.id]);
+}
+
+const ghBloque = ghcBloque;
+function ghLire(force){ return GH.lire(force); }
+function ghEcrire(){ return GH.ecrire(); }
+function ghPlanifier(){ if(SYNC.etat === 'github') GH.planifier(); }
+
+/* la table passe par GitHub : le fichier partagé, s'il y en avait un, est lâché */
+function ghTableDemarrer(){
+  if(SYNC.poignee){
+    SYNC.poignee = null; SYNC.vu = 0;
+    if(SYNC.boucle){ clearInterval(SYNC.boucle); SYNC.boucle = null; }
+    oublierPoignee();
+  }
+  SYNC.etat = 'github'; SYNC.nom = GHC.depot; SYNC.erreur = '';
+  return GH.demarrer();
+}
+function ghTableArreter(){
+  GH.arreter();
+  if(SYNC.etat === 'github'){ SYNC.etat = 'local'; SYNC.nom = ''; SYNC.erreur = ''; }
+}
+/* après « Relier » : on lit la table du dépôt, et on y écrit tout de suite si elle y manque ou si on a du neuf */
+function ghTableRelier(r){
+  return ghTableDemarrer().then(() => {
+    if(!GH.actif || GH.erreur) return {ok:false, msg:GH.erreur || 'La table du dépôt n’a pas pu être lue.'};
+    const suite = GH.prevu ? GH.ecrire() : Promise.resolve(true);
+    return suite.then(ok => {
+      if(!ok && GH.erreur) return {ok:false, msg:GH.erreur};
+      dessiner();
+      return {ok:true, prive:r.prive, msg:r.prive === false ? r.msg : 'Relié à ' + GHC.depot + '. La table y part toute seule, les personnages et le bestiaire aussi.'};
+    });
   });
 }
 function ghDetacher(silence){
-  GH.actif = false; ghGarder();
-  if(GH.boucle){ clearInterval(GH.boucle); GH.boucle = null; }
-  clearTimeout(GH.ecrit);
-  if(SYNC.etat === 'github'){ SYNC.etat = 'local'; SYNC.nom = ''; SYNC.erreur = ''; }
+  ghcDetacher();
+  ghTableArreter();
+  if(PANNEAU) PANNEAU.dessiner();
   if(!silence) dessiner();
 }
 function ghOublier(){
-  ghDetacher(true);
-  GH.jeton = ''; ghGarder();
+  ghcOublier();
+  ghTableArreter();
+  if(PANNEAU) PANNEAU.dessiner();
   dessiner();
 }
-/* au démarrage : on reprend le dépôt de la dernière fois */
+/* au démarrage : la sauvegarde en ligne reliée dans ce navigateur, sur n'importe quelle page du site */
 function ghReprendre(){
-  ghCharger();
-  if(!GH.actif || !GH.jeton || !GH.depot || !ghPossible() || ghBloque()) return false;
-  SYNC.etat = 'github'; SYNC.nom = GH.depot;
-  ghBoucle();
-  ghLire(true);
+  ghcCharger();
+  if(!ghcPret()) return false;
+  ghTableDemarrer();
   return true;
 }
 
 /* ============ la barre de table, et le démarrage ============ */
+
+let PANNEAU = null;   /* le panneau de la sauvegarde en ligne */
 
 function msgTable(txt, ok){
   const m = $('tbMsg');
@@ -3459,22 +3838,17 @@ function dessinerTable(){
   else e.textContent = 'Enregistré dans ce navigateur seulement.';
   if(SYNC.erreur) e.textContent += ' ' + SYNC.erreur;
 
-  $('tbDetacher').hidden = !SYNC.poignee;
-  const bloque = ghBloque();
-  $('ghBloque').hidden = !bloque;
-  $('ghRelier').disabled = bloque;
-  $('ghDetacher').hidden = !gh;
-  $('ghRelier').textContent = gh ? 'Relier de nouveau' : 'Relier à GitHub';
-  $('ghOublier').hidden = !GH.jeton;
-  [['ghDepot','depot'], ['ghChemin','chemin'], ['ghBranche','branche']].forEach(([id, k]) => {
-    const i = $(id); if(document.activeElement !== i && !i.value) i.value = GH[k] || '';
-  });
-  const jt = $('ghJeton'); if(document.activeElement !== jt && !jt.value && GH.jeton) jt.value = GH.jeton;
+  /* avec GitHub, le fichier partagé n'a plus de raison d'être */
+  $('tbOuvrir').hidden = gh;
+  $('tbCreer').hidden = gh;
+  $('tbDetacher').hidden = !SYNC.poignee || gh;
   $('tbOuvrir').textContent = SYNC.etat === 'attente' ? 'Reconnecter le fichier' : 'Ouvrir le fichier de table';
 
   const aide = $('tbAide');
-  if(!FSA()) aide.textContent = 'Ce navigateur ne sait pas ouvrir un fichier partagé : reste au .json, ou ouvre cette page dans Chrome ou Edge. Depuis la page en ligne, le fichier partagé est bloqué de toute façon : c’est le fichier posé sur ton ordinateur qui le fait.';
+  if(gh) aide.textContent = 'La table passe par la sauvegarde en ligne : chaque changement part dans le dépôt, et ceux qui y sont reliés le reçoivent en quelques secondes.';
+  else if(!FSA()) aide.textContent = 'Ce navigateur ne sait pas ouvrir un fichier partagé : passe par la sauvegarde en ligne, ou échangez le .json. Depuis la page en ligne, le fichier partagé est bloqué de toute façon.';
   else aide.textContent = 'Pose le fichier de table dans un dossier synchronisé, Drive, OneDrive ou Dropbox, et que chacun l’ouvre ici. Les changements passent d’un joueur à l’autre en quelques secondes. Sinon, échangez le .json à la main.';
+  if(PANNEAU) PANNEAU.dessiner();
 }
 
 function dessiner(){
@@ -3548,18 +3922,22 @@ $('pnjNouveau').onclick = () => ouvrirEditeurPnj(null, true);
 $('pnjCherche').oninput = e => { PNJ_FILTRE.q = e.target.value; if(MOI.vuePnj === 'reseau'){ MOI.vuePnj = 'fiches'; sauverLocal(); dessinerPnj(true); } else dessinerListePnj(true); };
 $('pnjGroupe').onchange = e => { PNJ_FILTRE.groupe = e.target.value; dessinerListePnj(true); };
 
-/* GitHub */
-$('ghRelier').onclick = () => {
-  const b = $('ghRelier');
-  b.disabled = true; b.textContent = 'On frappe à la porte…';
-  ghRelier($('ghDepot').value, $('ghJeton').value, $('ghChemin').value, $('ghBranche').value).then(r => {
-    b.disabled = false;
-    msgTable(r.msg, r.ok);
-    dessinerTable();
-  });
-};
-$('ghDetacher').onclick = () => { ghDetacher(); msgTable('Table détachée de GitHub. Tout reste gardé dans ce navigateur.', true); };
-$('ghOublier').onclick = () => { ghOublier(); $('ghJeton').value = ''; msgTable('Jeton oublié par ce navigateur.', true); };
+/* la sauvegarde en ligne */
+function etatGithub(){
+  if(!GH.actif && !GH.erreur) return null;
+  return {nom:'La table', texte: GH.actif ? 'dernier échange ' + ilYA(GH.dernier) : 'à l’arrêt', erreur:GH.erreur};
+}
+PANNEAU = ghcPanneau($('ghPlace'), {
+  table:true,
+  etat: etatGithub,
+  apresRelier: r => ghTableRelier(r),
+  apresDetacher: () => { ghTableArreter(); dessiner(); }
+});
+ghcSurveiller(() => {
+  if(ghcPret()) ghTableDemarrer();
+  else if(SYNC.etat === 'github') ghTableArreter();
+  dessiner();
+});
 
 /* l'historique des jets */
 let VIDER_ARME = false;
@@ -3582,9 +3960,7 @@ dessiner();
 if(!parGithub) reprendreFichier();
 setInterval(() => { if(SYNC.poignee || SYNC.etat === 'github') dessinerTable(); }, 10000);
 document.addEventListener('visibilitychange', () => {
-  if(document.hidden) return;
-  if(SYNC.etat === 'github') ghLire(false);
-  else if(SYNC.poignee && SYNC.etat === 'fichier') lireFichier(false);
+  if(!document.hidden && SYNC.poignee && SYNC.etat === 'fichier') lireFichier(false);
 });
 </script>
 </body>

@@ -77,6 +77,25 @@ tr.grp td{background:var(--fill);font-family:Spectral,Georgia,serif;font-style:i
 .tick .recu{color:var(--forest);font-weight:700;margin-top:1px;flex:0 0 auto}
 .btn{font:inherit;font-size:14px;padding:8px 14px;border:1px solid var(--forest);background:var(--forest);color:var(--paper);border-radius:2px;cursor:pointer}
 .btn.ghost{background:transparent;color:var(--forest)}
+.btn.sm{font-size:13px;padding:6px 11px}
+.btn.danger{border-color:var(--rust);color:var(--rust)}
+.btn:disabled{opacity:.45;cursor:default}
+[hidden]{display:none!important}
+/* ============ tes personnages ============ */
+.mtete{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;justify-content:space-between}
+.mien-etat{margin:0;font-size:14px;color:var(--muted);flex:1 1 280px;max-width:62ch}
+.mien-etat.ok{color:var(--forest)}
+.mboutons{display:flex;flex-wrap:wrap;gap:8px}
+.mmsg.ok{color:var(--forest)} .mmsg.err{color:var(--rust)}
+.miens{margin-top:12px;border-top:1px solid var(--rule)}
+.mien{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;justify-content:space-between;padding:9px 2px;border-bottom:1px solid var(--rule)}
+.mien.ouvert{background:var(--fill);padding-inline:8px;margin-inline:-6px;border-radius:2px}
+.mtxt{display:flex;flex-direction:column;min-width:0;flex:1 1 240px}
+.mnom{font-family:Spectral,Georgia,serif;font-weight:600;font-size:17px;color:var(--forest);overflow-wrap:anywhere}
+.mmeta{font-size:12.5px;color:var(--muted)}
+.macts{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.mouvert{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--sage);padding:0 4px}
+.mvide{margin:10px 0 2px}
 /* ============ la fiche, calquee sur le Word ============ */
 .fiche{
   --fp:#FFFFFF; --fi:#1A1A1A; --fl:#6B7469; --fh:#1F3D2B; --fh2:#2E5A3E;
@@ -182,6 +201,23 @@ tr.grp td{background:var(--fill);font-family:Spectral,Georgia,serif;font-style:i
   <h1>Registre du Havre</h1>
   <p class="sub">Faelorenn · inscription d'un nouveau Marchefleur</p>
 </header>
+
+<section class="noprint" id="secMiens">
+  <h2>Tes personnages</h2>
+  <p class="hint">Enregistre un personnage pour ne pas le perdre : il suit ensuite chacun de tes changements. Avec la sauvegarde en ligne, il part aussi dans ton dépôt GitHub, et tu le retrouves sur tous tes appareils.</p>
+  <div class="card">
+    <div class="mtete">
+      <p class="mien-etat" id="mienEtat"></p>
+      <div class="mboutons">
+        <button class="btn sm" id="mienGarder" type="button">Enregistrer dans mes personnages</button>
+        <button class="btn ghost sm" id="mienNouveau" type="button">Nouveau personnage</button>
+      </div>
+    </div>
+    <p class="note mmsg" id="mienMsg" role="status" hidden></p>
+    <div class="miens" id="miensListe"></div>
+    <div id="ghcPlace"></div>
+  </div>
+</section>
 
 <section class="noprint">
   <h2><span class="num">1</span> Qui tu es</h2>
@@ -353,7 +389,7 @@ const PEUPLES = {
 const TYPES = {Cornu:{Force:2},Ritualiste:{Contenance:1,Sagesse:1},'Figé':{'Dextérité':2}};
 const BRANCHES = {'Les Larges, la mer':{Force:2},'Les Vifs, la rivière':{'Dextérité':2},'Les Dormants, le lac':{Contenance:1,Sagesse:1}};
 
-const S = {nom:'',peuple:'Humains',voie:'Éclaireur',car:{},sk:{},prat:[],sub:{},humCar:[],skChoice:'',banComp:''};
+const S = {nom:'',peuple:'Humains',voie:'Éclaireur',car:{},sk:{},prat:[],sub:{},humCar:[],skChoice:'',banComp:'',id:''};
 CARS.forEach(c => S.car[c] = 0);
 ALLSKILLS.forEach(o => S.sk[o.s] = 0);
 
@@ -363,7 +399,8 @@ const $ = id => document.getElementById(id);
 const near = n => Math.floor(n);   /* tout arrondi se fait vers le bas */
 const d20 = t => Math.floor(t / 5);
 
-function save(){ try{ localStorage.setItem('faelorenn.perso', JSON.stringify(S)); }catch(e){} }
+/* le personnage ouvert se garde ici ; s'il est enregistré dans tes personnages, son double suit (miens.js) */
+function save(){ if(typeof suivreMien === 'function') suivreMien(); try{ localStorage.setItem('faelorenn.perso', JSON.stringify(S)); }catch(e){} }
 function load(){ try{ const r = localStorage.getItem('faelorenn.perso'); if(r) Object.assign(S, JSON.parse(r)); }catch(e){} }
 
 function peupleBonus(){
@@ -668,12 +705,8 @@ $('print').onclick = () => window.print();
 $('word').onclick = exporterWord;
 $('wcopy').onclick = copierPourWord;
 $('json').onclick = exporterJson;
-$('reset').onclick = () => {
-  if(!confirm('Effacer ce personnage et repartir de zéro ?')) return;
-  S.nom = ''; S.prat = []; S.sub = {}; S.humCar = []; S.skChoice = ''; S.banComp = '';
-  CARS.forEach(c => S.car[c] = 0); ALLSKILLS.forEach(o => S.sk[o.s] = 0);
-  draw();
-};
+/* repartir de zéro : un personnage enregistré reste dans tes personnages (miens.js) */
+$('reset').onclick = nouveauMien;
 $('copy').onclick = () => {
   const lines = [];
   lines.push((S.nom || 'Sans nom') + ' · ' + S.peuple + ', ' + S.voie);
@@ -693,25 +726,18 @@ $('copy').onclick = () => {
   );
 };
 
-load();
-if(!S.peuple || !PEUPLES[S.peuple]) S.peuple = 'Humains';
-/* une Pratique qui n'existe plus, ou qui n'est plus de ta branche, ne reste pas cochée */
-(function(){
-  if(!Array.isArray(S.prat) || !S.prat.length) return;
-  const ok = {};
-  pratList().forEach(g => g.items.forEach(it => ok[it.n] = true));
-  if(Object.keys(ok).length) S.prat = S.prat.filter(n => ok[n]);
-})();
-if(!S.voie || !VOIES[S.voie]) S.voie = 'Éclaireur';
-if(!S.nom){
-  S.nom = 'Toum’Balin'; S.peuple = "Ori'Ican"; S.voie = 'Chasseur'; S.sub = {type:'Cornu'};
-  S.car = {Force:7,'Dextérité':7,Constitution:7,Intelligence:0,Sagesse:0,Charisme:0,Contenance:0};
-  ALLSKILLS.forEach(o => S.sk[o.s] = 0);
-  S.sk['Combat'] = 40; S.sk['Tir'] = 40; S.sk['Intimidation'] = 20;
-  S.prat = ['Muer','Fendre','Peau qui repousse'];
+/* ce qui vient d'ailleurs (ce navigateur, une fiche enregistrée) se remet d'aplomb */
+function remettreEnOrdre(){
+  if(typeof S.id !== 'string') S.id = '';
+  if(!S.peuple || !PEUPLES[S.peuple]) S.peuple = 'Humains';
+  /* une Pratique qui n'existe plus, ou qui n'est plus de ta branche, ne reste pas cochée */
+  if(Array.isArray(S.prat) && S.prat.length){
+    const ok = {};
+    pratList().forEach(g => g.items.forEach(it => ok[it.n] = true));
+    if(Object.keys(ok).length) S.prat = S.prat.filter(n => ok[n]);
+  }
+  if(!S.voie || !VOIES[S.voie]) S.voie = 'Éclaireur';
 }
-draw();
-dispoTelechargement();
 
 /* ============ la fiche imprimable, calquee sur le Word ============ */
 
@@ -1639,6 +1665,782 @@ function exporterJson(){
     }catch(e){ dire('Export impossible', 3000); }
   });
 }
+
+/* ============ la sauvegarde en ligne : un dépôt GitHub privé pour les trois registres ============
+   Le dépôt et le jeton se donnent une fois, dans n'importe quelle page du site : ils restent dans
+   ce navigateur, et chaque registre y garde son fichier. On relit toutes les dix secondes : tant que
+   rien n'a bougé, GitHub répond 304 et ça ne coûte rien. On écrit en regroupant les changements,
+   jamais deux fois en moins de quinze secondes : GitHub accepte 500 écritures par heure et par jeton. */
+
+const GHC_CLE = 'faelorenn.github';
+const GHC_FICHIERS = {table:'table-faelorenn.json', personnages:'personnages.json', bestiaire:'bestiaire.json'};
+const GHC_API = 'https://api.github.com';
+const GHC = {depot:'', jeton:'', branche:'', api:GHC_API, actif:false, table:''};
+const GHC_DOCS = [];
+let GHC_VU = '';   /* le dépôt dont on sait qu'il existe et que le jeton l'ouvre */
+
+function ghcCharger(){
+  let o = null;
+  try{ o = JSON.parse(localStorage.getItem(GHC_CLE) || 'null'); }catch(e){}
+  if(!o){
+    /* la table gardait son dépôt pour elle seule : il sert maintenant aux trois registres */
+    try{
+      const v = JSON.parse(localStorage.getItem('faelorenn.table.github') || 'null');
+      if(v && typeof v === 'object'){
+        o = {depot:v.depot, jeton:v.jeton, branche:v.branche, api:v.api, actif:!!v.actif,
+          table: v.chemin && v.chemin !== GHC_FICHIERS.table ? v.chemin : ''};
+        localStorage.setItem(GHC_CLE, JSON.stringify(o));
+        localStorage.removeItem('faelorenn.table.github');
+      }
+    }catch(e){}
+  }
+  GHC.depot = ''; GHC.jeton = ''; GHC.branche = ''; GHC.api = GHC_API; GHC.actif = false; GHC.table = '';
+  if(o && typeof o === 'object'){
+    ['depot','jeton','branche','api','table'].forEach(k => { if(typeof o[k] === 'string' && o[k].trim()) GHC[k] = o[k].trim(); });
+    GHC.actif = !!o.actif;
+  }
+  return GHC;
+}
+function ghcGarder(){
+  try{ localStorage.setItem(GHC_CLE, JSON.stringify({depot:GHC.depot, jeton:GHC.jeton, branche:GHC.branche, api:GHC.api, actif:GHC.actif, table:GHC.table})); }catch(e){}
+}
+/* un navigateur qui refuse le stockage (fenêtre privée stricte, page sans origine) : pas de sauvegarde en ligne */
+function ghcPossible(){ try{ return typeof fetch === 'function' && typeof TextEncoder === 'function' && !!window.localStorage; }catch(e){ return false; } }
+/* dans une page hébergée par Claude, les appels vers GitHub sont bloqués */
+function ghcBloque(){ try{ return typeof claude !== 'undefined' && !!claude && typeof claude.use === 'function'; }catch(e){ return false; } }
+const ghcPret = () => GHC.actif && !!GHC.jeton && !!GHC.depot && ghcPossible() && !ghcBloque();
+const ghcCleDepot = () => GHC.api + '|' + GHC.depot + '|' + GHC.jeton;
+
+/* ---------- les petites choses ---------- */
+const ghcSeg = s => String(s).split('/').filter(Boolean).map(encodeURIComponent).join('/');
+const ghcBase = () => GHC.api.replace(/\/+$/, '') + '/repos/' + ghcSeg(GHC.depot);
+function ghcUrl(chemin, avecRef){
+  const u = ghcBase() + '/contents/' + ghcSeg(chemin);
+  return avecRef && GHC.branche ? u + '?ref=' + encodeURIComponent(GHC.branche) : u;
+}
+function ghcEntetes(plus){
+  return Object.assign({'Accept':'application/vnd.github+json', 'Authorization':'Bearer ' + GHC.jeton, 'X-GitHub-Api-Version':'2022-11-28'}, plus || {});
+}
+function ghcErreur(r){
+  if(r.status === 401) return 'GitHub refuse le jeton : il est faux, ou il a expiré.';
+  if(r.status === 403 || r.status === 429) return 'GitHub refuse pour l’instant : droits du jeton trop courts, ou trop d’écritures d’un coup.';
+  if(r.status === 404) return 'Dépôt introuvable : vérifie son nom, et que le jeton y a accès.';
+  return 'GitHub répond ' + r.status + '.';
+}
+function ghcB64(txt){
+  const o = new TextEncoder().encode(txt);
+  let s = '';
+  for(let i = 0; i < o.length; i += 0x8000) s += String.fromCharCode.apply(null, o.subarray(i, i + 0x8000));
+  return btoa(s);
+}
+function ghcDeB64(b){
+  const s = atob(String(b).replace(/\s+/g, ''));
+  const o = new Uint8Array(s.length);
+  for(let i = 0; i < s.length; i++) o[i] = s.charCodeAt(i);
+  return new TextDecoder().decode(o);
+}
+/* le même contenu donne le même texte, quel que soit l'ordre des clés */
+function ghcCanon(x){
+  if(x === null || x === undefined || typeof x !== 'object') return JSON.stringify(x === undefined ? null : x);
+  if(Array.isArray(x)) return '[' + x.map(ghcCanon).join(',') + ']';
+  return '{' + Object.keys(x).filter(k => x[k] !== undefined).sort().map(k => JSON.stringify(k) + ':' + ghcCanon(x[k])).join(',') + '}';
+}
+/* ce qu'on a ici et que le fichier n'a pas : une pièce absente là-bas, ou plus récente ici */
+function ghcEnAvance(ici, labas){
+  labas = labas || {};
+  return Object.keys(ici || {}).some(id => {
+    const a = ici[id], b = labas[id];
+    if(!a) return false;
+    if(!b) return true;
+    return (+a.maj || 0) > (+b.maj || 0) || (+a.majPv || 0) > (+b.majPv || 0);
+  });
+}
+function ghcJoueur(){
+  try{ const m = JSON.parse(localStorage.getItem('faelorenn.table.moi') || 'null'); return m && m.joueur ? String(m.joueur).trim() : ''; }catch(e){ return ''; }
+}
+function ghcIlYA(t){
+  if(!t) return 'jamais';
+  const s = Math.round((Date.now() - t) / 1000);
+  if(s < 5) return 'à l’instant';
+  if(s < 60) return 'il y a ' + s + ' secondes';
+  const m = Math.round(s / 60);
+  return m < 60 ? 'il y a ' + m + ' minute' + (m > 1 ? 's' : '') : 'il y a plus d’une heure';
+}
+const ghcNettoyerDepot = d => String(d || '').trim().replace(/^https?:\/\/github\.com\//i, '').replace(/\.git$/i, '').replace(/\/+$/, '');
+
+/* ---------- relier le dépôt ---------- */
+/* le dépôt existe, le jeton l'ouvre ; on regarde au passage s'il est privé */
+function ghcVerifier(){
+  return fetch(ghcBase(), {headers:ghcEntetes(), cache:'no-store'}).then(r => {
+    if(r.status === 401) return {ok:false, msg:ghcErreur(r)};
+    if(r.status === 404) return {ok:false, msg:'Dépôt introuvable : vérifie son nom, et que le jeton y a accès.'};
+    if(!r.ok) return {ok:false, msg:ghcErreur(r)};
+    return r.json().then(j => ({ok:true, prive:j.private !== false}));
+  }, () => ({ok:false, msg:'GitHub ne répond pas. Vérifie la connexion, puis réessaie.'}));
+}
+function ghcDepotVu(){
+  const cle = ghcCleDepot();
+  if(GHC_VU === cle) return Promise.resolve(true);
+  return fetch(ghcBase(), {headers:ghcEntetes(), cache:'no-store'}).then(r => {
+    if(r.ok){ GHC_VU = cle; return true; }
+    if(r.status === 404) return false;
+    if(r.status === 401) throw {gh:ghcErreur(r), fatal:true};
+    /* GitHub a un souci passager : ce n'est pas le dépôt qui manque */
+    throw {gh:ghcErreur(r)};
+  }, () => { throw {gh:'GitHub ne répond pas. Tout reste gardé ici, on réessaie.'}; });
+}
+function ghcLisezmoi(){
+  const qui = ghcJoueur();
+  let quand = '';
+  try{ quand = new Date().toLocaleString('fr-BE', {dateStyle:'long', timeStyle:'short'}); }catch(e){ quand = new Date().toLocaleString('fr-BE'); }
+  return '# Sauvegarde Faelorenn\n\n'
+    + 'Ce dépôt garde ce que les registres de Faelorenn enregistrent. Les pages du site y écrivent toutes seules, chacune dans son fichier :\n\n'
+    + '- `' + (GHC.table || GHC_FICHIERS.table) + '` : la table, avec les séances, les personnages joués, les PNJ et leurs liens, les jets.\n'
+    + '- `' + GHC_FICHIERS.personnages + '` : les personnages enregistrés dans le Registre du Havre.\n'
+    + '- `' + GHC_FICHIERS.bestiaire + '` : les créatures et les familles du Registre des Rencontres.\n\n'
+    + 'Chaque enregistrement devient une version dans l’historique du dépôt.\n\n'
+    + 'Garde ce dépôt privé : vos séances et vos personnages y sont.\n\n'
+    + 'Dernière liaison : ' + (qui ? qui + ', ' : '') + 'le ' + quand + '.\n';
+}
+/* le jeton peut-il écrire ? On le sait en écrivant : un petit mot pour qui ouvre le dépôt */
+function ghcEssaiEcriture(){
+  return fetch(ghcUrl('LISEZMOI.md', true), {headers:ghcEntetes(), cache:'no-store'}).then(r => {
+    if(r.status === 404) return '';
+    if(!r.ok) throw {r:r};
+    return r.json().then(j => j.sha || '');
+  }).then(sha => {
+    const corps = {message:'Sauvegarde reliée · ' + (ghcJoueur() || 'quelqu’un') + ' · ' + new Date().toLocaleString('fr-BE'), content:ghcB64(ghcLisezmoi())};
+    if(GHC.branche) corps.branch = GHC.branche;
+    if(sha) corps.sha = sha;
+    return fetch(ghcUrl('LISEZMOI.md', false), {method:'PUT', headers:ghcEntetes({'Content-Type':'application/json'}), body:JSON.stringify(corps), cache:'no-store'});
+  }).then(r => {
+    if(r.ok) return {ok:true};
+    if(r.status === 403) return {ok:false, msg:'Le jeton ouvre le dépôt mais ne peut pas y écrire : sur GitHub, donne-lui « Contents » en « Read and write ».'};
+    if(r.status === 404 || r.status === 409 || r.status === 422)
+      return {ok:false, msg:'L’écriture n’a pas pris' + (GHC.branche ? ' sur la branche « ' + GHC.branche + ' »' : '') + '. Si le dépôt est tout vide, ajoute-lui un README sur GitHub, puis réessaie.'};
+    return {ok:false, msg:ghcErreur(r)};
+  }, e => ({ok:false, msg:e && e.r ? ghcErreur(e.r) : 'GitHub ne répond pas. Vérifie la connexion, puis réessaie.'}));
+}
+function ghcRelier(depot, jeton, branche, table){
+  depot = ghcNettoyerDepot(depot);
+  jeton = String(jeton || '').trim();
+  if(!/^[\w.-]+\/[\w.-]+$/.test(depot)) return Promise.resolve({ok:false, msg:'Écris le dépôt comme ceci : ton-nom/faelorenn-table.'});
+  if(!jeton) return Promise.resolve({ok:false, msg:'Colle le jeton d’accès.'});
+  if(ghcBloque()) return Promise.resolve({ok:false, msg:'Depuis cette page-ci, GitHub est hors d’atteinte : ouvre le registre sur le site.'});
+  if(!ghcPossible()) return Promise.resolve({ok:false, msg:'Ce navigateur ne sait pas parler à GitHub.'});
+  const avant = Object.assign({}, GHC);
+  GHC.depot = depot; GHC.jeton = jeton; GHC.branche = String(branche || '').trim();
+  if(table !== undefined){ const t = String(table || '').trim(); GHC.table = t && t !== GHC_FICHIERS.table ? t : ''; }
+  const remettre = r => { Object.assign(GHC, avant); return r; };
+  return ghcVerifier().then(v => {
+    if(!v.ok) return remettre(v);
+    return ghcEssaiEcriture().then(w => {
+      if(!w.ok) return remettre(w);
+      GHC.actif = true; ghcGarder();
+      GHC_VU = ghcCleDepot();
+      return {ok:true, prive:v.prive, msg: v.prive
+        ? 'Relié à ' + depot + '. Ce que les registres enregistrent y part tout seul.'
+        : 'Relié à ' + depot + ', mais ce dépôt est public : tout le monde peut y lire vos séances et vos personnages. Passe-le en privé dans ses réglages sur GitHub.'};
+    });
+  });
+}
+function ghcDetacher(){ GHC.actif = false; ghcGarder(); }
+function ghcOublier(){ GHC.actif = false; GHC.jeton = ''; GHC_VU = ''; ghcGarder(); }
+/* un autre onglet a relié, détaché ou oublié : on suit */
+function ghcSurveiller(fn){
+  window.addEventListener('storage', e => { if(e.key === GHC_CLE || e.key === null){ ghcCharger(); try{ fn(); }catch(x){} } });
+}
+/* ce que le dépôt contient, pour l'accueil */
+function ghcInventaire(){
+  if(!ghcPret()) return Promise.resolve(null);
+  return fetch(ghcBase() + '/contents/' + (GHC.branche ? '?ref=' + encodeURIComponent(GHC.branche) : ''), {headers:ghcEntetes(), cache:'no-store'}).then(r => {
+    if(r.status === 404) return [];
+    if(!r.ok) throw {gh:ghcErreur(r)};
+    return r.json().then(j => Array.isArray(j) ? j.filter(x => x && x.type === 'file').map(x => ({nom:x.name, taille:+x.size || 0})) : []);
+  });
+}
+
+/* ---------- un fichier du dépôt, tenu à jour dans les deux sens ----------
+   o.recevoir(obj)  fond le fichier du dépôt dans ce qu'on a ici
+   o.enAvance(obj)  dit si on a ici du neuf que le fichier n'a pas
+   o.contenu()      ce qu'on écrit
+   o.absent()       le fichier n'existe pas encore
+   o.ecrit(ok, rien) une écriture a abouti (ou n'était pas utile), ou a raté
+   o.rate(d, e)     une lecture a raté
+   o.etat(d)        quelque chose a changé : on redessine */
+function ghcDoc(o){
+  const t = (typeof window !== 'undefined' && window.GHC_TEMPS) || {};   /* les essais vont plus vite */
+  const d = {nom:o.nom || '', sha:'', etag:'', boucle:null, ecrit:null, prevu:false, occupe:false, encore:false, reessai:false,
+    derniereEcriture:0, pause:0, tLecture:t.lecture || 10000, tRegroupe:t.regroupe || 4000, tEcart:t.ecart || 15000,
+    actif:false, erreur:'', errDe:'', dernier:0, cle:'', lu:false};
+  const chemin = () => (typeof o.chemin === 'function' ? o.chemin() : o.chemin) || 'faelorenn.json';
+  const signaler = () => { ghcGarde(); try{ if(o.etat) o.etat(d); }catch(e){} };
+  const patienter = r => { const s = parseInt(r.headers.get('retry-after') || '', 10); d.pause = Date.now() + (isFinite(s) && s > 0 ? s * 1000 : 60000); };
+  d.chemin = chemin;
+  d.enAttente = () => d.actif && (d.prevu || d.occupe || d.encore || d.reessai);
+
+  /* null : rien de neuf ; {absent} : pas encore de fichier ; {obj} : le fichier ; false : ça a raté */
+  d.lire = function(force, pourEcrire){
+    if(!d.actif || Date.now() < d.pause) return Promise.resolve(false);
+    const cle = d.cle;
+    const plus = !force && d.etag ? {'If-None-Match': d.etag} : null;
+    return fetch(ghcUrl(chemin(), true), {headers:ghcEntetes(plus), cache:'no-store'}).then(r => {
+      if(r.status === 304){ d.dernier = Date.now(); return null; }
+      if(r.status === 404) return ghcDepotVu().then(vu => {
+        if(!vu) throw {gh:'Dépôt introuvable : vérifie son nom, et que le jeton y a accès.', fatal:true};
+        d.sha = ''; d.etag = ''; d.dernier = Date.now();
+        return {absent:true};
+      });
+      if(r.status === 401) throw {gh:ghcErreur(r), fatal:true};
+      if(r.status === 403 || r.status === 429) patienter(r);
+      if(!r.ok) throw {gh:ghcErreur(r)};
+      const etag = r.headers.get('ETag') || '';
+      return r.json().then(j => {
+        /* plus d'un Mo : le contenu arrive à part, en brut */
+        const brut = j.content ? Promise.resolve(ghcDeB64(j.content))
+          : j.size ? fetch(ghcUrl(chemin(), true), {headers:ghcEntetes({'Accept':'application/vnd.github.raw+json'}), cache:'no-store'})
+              .then(b => { if(!b.ok) throw {gh:ghcErreur(b)}; return b.text(); })
+          : Promise.resolve('');
+        return brut.then(txt => {
+          d.sha = j.sha || ''; d.etag = etag; d.dernier = Date.now();
+          if(!txt || !txt.trim()) return {absent:true};
+          let obj = null;
+          try{ obj = JSON.parse(txt); }catch(e){ throw {gh:'Le fichier ' + chemin() + ' du dépôt n’est pas lisible.', fatal:true}; }
+          if(!obj || obj.format !== o.format) throw {gh:'Le fichier ' + chemin() + ' du dépôt n’est pas ' + (o.quoi || 'à nous') + '.', fatal:true};
+          return {obj:obj};
+        });
+      });
+    }).then(res => {
+      if(cle !== d.cle || !d.actif) return false;
+      if(d.errDe === 'lecture'){ d.erreur = ''; d.errDe = ''; }
+      d.lu = true;
+      if(res && res.obj) o.recevoir(res.obj);
+      if(res && res.absent && o.absent) o.absent();
+      if(res && !pourEcrire && (res.absent || (o.enAvance && o.enAvance(res.obj)))) d.planifier();
+      signaler();
+      return res;
+    }, e => {
+      if(cle !== d.cle || !d.actif) return false;
+      d.erreur = e && e.gh ? e.gh : 'GitHub ne répond pas. Tout reste gardé ici, on réessaie.';
+      d.errDe = 'lecture';
+      if(e && e.fatal) d.arreter(true);
+      if(o.rate) o.rate(d, e);
+      signaler();
+      return false;
+    });
+  };
+
+  /* on relit, on fond, puis on écrit ; si quelqu'un a écrit entre-temps, on recommence */
+  d.ecrire = function(){
+    if(!d.actif) return Promise.resolve(false);
+    if(d.occupe){ d.encore = true; return Promise.resolve(false); }
+    clearTimeout(d.ecrit);
+    const attente = Math.max(d.pause - Date.now(), d.derniereEcriture + d.tEcart - Date.now());
+    if(attente > 0){ d.prevu = true; d.ecrit = setTimeout(d.ecrire, attente + 50); ghcGarde(); return Promise.resolve(false); }
+    d.prevu = false; d.occupe = true;
+    const cle = d.cle;
+    ghcGarde();
+    const essai = n => d.lire(true, true).then(res => {
+      if(!d.actif || cle !== d.cle) throw {arret:true};
+      if(res === false) throw {gh:d.erreur};
+      if(res && res.obj && o.enAvance && !o.enAvance(res.obj)) return 'rien';
+      const corps = {message:(o.message ? o.message() : d.nom + ' · ' + (ghcJoueur() || 'quelqu’un') + ' · ' + new Date().toLocaleString('fr-BE')),
+        content:ghcB64(JSON.stringify(o.contenu(), null, 1))};
+      if(GHC.branche) corps.branch = GHC.branche;
+      if(d.sha) corps.sha = d.sha;
+      d.derniereEcriture = Date.now();
+      return fetch(ghcUrl(chemin(), false), {method:'PUT', headers:ghcEntetes({'Content-Type':'application/json'}), body:JSON.stringify(corps), cache:'no-store'}).then(r => {
+        if((r.status === 409 || r.status === 422) && n < 3) return new Promise(ok => setTimeout(ok, 1200)).then(() => essai(n + 1));
+        if(r.status === 401) throw {gh:ghcErreur(r), fatal:true};
+        if(r.status === 403 || r.status === 429) patienter(r);
+        if(!r.ok) throw {gh:ghcErreur(r)};
+        /* détaché ou relié ailleurs pendant l'écriture : elle ne compte pas pour la suite */
+        if(!d.actif || cle !== d.cle) throw {arret:true};
+        return r.json().then(j => {
+          d.sha = (j.content && j.content.sha) || d.sha;
+          d.etag = '';
+          d.dernier = Date.now();
+          return 'ecrit';
+        });
+      });
+    });
+    return essai(0).then(v => {
+      if(d.errDe === 'ecriture' || d.errDe === 'lecture'){ d.erreur = ''; d.errDe = ''; }
+      if(o.ecrit) o.ecrit(true, v === 'rien');
+      return true;
+    }, e => {
+      if(o.ecrit) o.ecrit(false, false);
+      if(e && e.arret) return false;
+      d.erreur = e && e.gh ? e.gh : 'L’écriture sur GitHub a échoué. Tout reste gardé ici, on réessaie.';
+      d.errDe = 'ecriture';
+      if(e && e.fatal) d.arreter(true);
+      else d.reessai = true;
+      return false;
+    }).then(v => {
+      d.occupe = false;
+      if(d.actif && (d.encore || d.reessai)){
+        const tard = d.reessai;
+        d.encore = false; d.reessai = false;
+        d.planifier(tard ? Math.max(d.tEcart, 15000) : 0);
+      }
+      signaler();
+      return v;
+    });
+  };
+  d.planifier = function(delai){
+    if(!d.actif) return;
+    clearTimeout(d.ecrit);
+    d.prevu = true;
+    d.ecrit = setTimeout(d.ecrire, delai || d.tRegroupe);
+    ghcGarde();
+  };
+  d.demarrer = function(){
+    const cle = [GHC.api, GHC.depot, GHC.branche, GHC.jeton, chemin()].join('|');
+    if(d.actif && d.cle === cle) return Promise.resolve(null);
+    d.arreter();
+    d.cle = cle; d.actif = true; d.lu = false;
+    d.sha = ''; d.etag = ''; d.pause = 0; d.derniereEcriture = 0; d.erreur = ''; d.errDe = '';
+    d.boucle = setInterval(() => { if(d.actif && !document.hidden && !d.occupe) d.lire(false); }, d.tLecture);
+    signaler();
+    return d.lire(true);
+  };
+  d.arreter = function(garderErreur){
+    d.actif = false; d.prevu = false; d.encore = false; d.reessai = false;
+    if(d.boucle){ clearInterval(d.boucle); d.boucle = null; }
+    clearTimeout(d.ecrit);
+    if(!garderErreur){ d.erreur = ''; d.errDe = ''; }
+    signaler();
+  };
+  GHC_DOCS.push(d);
+  return d;
+}
+
+/* on ne quitte pas la page avec un changement qui n'est pas encore parti */
+function ghcAvantDepart(e){ e.preventDefault(); e.returnValue = ''; return ''; }
+function ghcGarde(){
+  if(typeof window === 'undefined') return;
+  const besoin = GHC_DOCS.some(d => d.enAttente());
+  if(besoin === !!ghcGarde.on) return;
+  ghcGarde.on = besoin;
+  if(besoin) window.addEventListener('beforeunload', ghcAvantDepart);
+  else window.removeEventListener('beforeunload', ghcAvantDepart);
+}
+if(typeof document !== 'undefined'){
+  /* l'onglet passe derrière : ce qui attend part tout de suite ; il revient : on relit */
+  document.addEventListener('visibilitychange', () => {
+    GHC_DOCS.forEach(d => {
+      if(!d.actif || d.occupe) return;
+      if(document.hidden){ if(d.prevu) d.ecrire(); }
+      else d.lire(false);
+    });
+  });
+}
+
+/* ---------- le panneau : relier le dépôt, une fois pour les trois registres ---------- */
+function ghcStyle(){
+  if(document.getElementById('ghcStyle')) return;
+  const s = document.createElement('style');
+  s.id = 'ghcStyle';
+  s.textContent = [
+    '.ghc{margin-top:14px;border-top:1px solid var(--rule,#CBD6C9);padding-top:10px}',
+    '.ghc.ghc-encart{margin-top:10px;border:1px solid var(--rule,#CBD6C9);border-radius:3px;background:var(--surface,#fff);padding:12px 16px;box-shadow:var(--shadow,none)}',
+    '.ghc [hidden]{display:none!important}',
+    '.ghc>summary{cursor:pointer;color:var(--forest,#1F3D2B);font-weight:500;font-size:14px;line-height:1.5}',
+    '.ghc-pastille{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--muted,#6B7469);margin:0 6px 1px 4px;vertical-align:middle}',
+    '.ghc-pastille.on{background:var(--sage,#4A6B52)}',
+    '.ghc-pastille.off{background:var(--rust,#9A4A28)}',
+    '.ghc-resume{font-weight:400;color:var(--muted,#6B7469);font-size:13px;margin-left:6px;overflow-wrap:anywhere}',
+    '.ghc-corps{margin-top:10px}',
+    '.ghc-texte{font-size:14px;margin:0 0 8px;max-width:68ch;color:var(--ink,#1B1C18)}',
+    '.ghc-outil{font-size:13px;margin:0 0 8px;color:var(--muted,#6B7469)}',
+    '.ghc-outil.err,.ghc-msg.err{color:var(--rust,#9A4A28)}',
+    '.ghc-etapes{margin:0 0 12px;padding-left:20px;font-size:13.5px;max-width:68ch;color:var(--ink,#1B1C18)}',
+    '.ghc-etapes li{margin:3px 0}',
+    '.ghc a{color:var(--forest,#1F3D2B)}',
+    '.ghc-champs{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:10px}',
+    '.ghc label{display:block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted,#6B7469);margin:0 0 4px}',
+    '.ghc input{width:100%;box-sizing:border-box;font:inherit;font-size:14px;padding:7px 9px;border:1px solid var(--rule,#CBD6C9);border-radius:2px;background:var(--surface,#fff);color:var(--ink,#1B1C18)}',
+    '.ghc input:disabled{opacity:.6}',
+    '.ghc input:focus-visible,.ghc-btn:focus-visible,.ghc summary:focus-visible{outline:2px solid var(--sage,#4A6B52);outline-offset:1px}',
+    '.ghc-plus{margin-top:8px}',
+    '.ghc-plus>summary{cursor:pointer;font-size:13px;color:var(--sage,#4A6B52)}',
+    '.ghc-plus .ghc-champs{margin-top:8px}',
+    '.ghc-acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}',
+    '.ghc-btn{font:inherit;font-size:13.5px;line-height:1.3;padding:6px 12px;border:1px solid var(--forest,#1F3D2B);background:var(--forest,#1F3D2B);color:var(--paper,#F4F2EA);border-radius:2px;cursor:pointer}',
+    '.ghc-btn.ghc-ghost{background:transparent;color:var(--forest,#1F3D2B)}',
+    '.ghc-btn:disabled{opacity:.5;cursor:default}',
+    '.ghc-msg{font-size:13px;margin:10px 0 0;color:var(--forest,#1F3D2B);max-width:68ch}',
+    '.ghc-petit{font-size:12.5px;color:var(--muted,#6B7469);margin:10px 0 0;max-width:68ch}'
+  ].join('\n');
+  document.head.appendChild(s);
+}
+/* opt.table : le champ du fichier de la table ; opt.etat() : {nom, texte, erreur} du registre ;
+   opt.apresRelier(r) et opt.apresDetacher() : ce que le registre fait ensuite */
+function ghcPanneau(boite, opt){
+  opt = opt || {};
+  if(!boite) return {dessiner:function(){}, dire:function(){}};
+  ghcStyle();
+  boite.innerHTML =
+    '<details class="ghc' + (opt.encart ? ' ghc-encart' : '') + '" id="ghcBloc"' + (opt.ouvert ? ' open' : '') + '>' +
+      '<summary><span class="ghc-pastille" id="ghcPastille"></span>Sauvegarde en ligne<span class="ghc-resume" id="ghcResume"></span></summary>' +
+      '<div class="ghc-corps">' +
+        '<p class="ghc-texte" id="ghcTexte"></p>' +
+        '<p class="ghc-outil" id="ghcOutil" hidden></p>' +
+        '<ol class="ghc-etapes" id="ghcEtapes">' +
+          '<li>Sur GitHub, crée un dépôt <b>privé</b>, <i>faelorenn-table</i> par exemple, en cochant « Add a README file ».</li>' +
+          '<li>Crée un <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">jeton à accès fin</a> : seulement ce dépôt, <i>Contents</i> en <i>Read and write</i>, avec une date d’expiration.</li>' +
+          '<li>Colle le dépôt et le jeton ici, puis « Relier ». Ceux qui jouent avec toi collent les mêmes chez eux.</li>' +
+        '</ol>' +
+        '<div class="ghc-champs" id="ghcChamps">' +
+          '<div><label for="ghcDepot">Dépôt</label><input type="text" id="ghcDepot" placeholder="ton-nom/faelorenn-table" autocomplete="off" spellcheck="false"></div>' +
+          '<div><label for="ghcJeton">Jeton d’accès</label><input type="password" id="ghcJeton" placeholder="github_pat_…" autocomplete="off" spellcheck="false"></div>' +
+        '</div>' +
+        '<details class="ghc-plus" id="ghcPlus"><summary>' + (opt.table ? 'Fichier de la table et branche' : 'Branche') + '</summary><div class="ghc-champs">' +
+          (opt.table ? '<div><label for="ghcFichier">Fichier de la table</label><input type="text" id="ghcFichier" placeholder="' + GHC_FICHIERS.table + '" autocomplete="off" spellcheck="false"></div>' : '') +
+          '<div><label for="ghcBranche">Branche</label><input type="text" id="ghcBranche" placeholder="celle du dépôt" autocomplete="off" spellcheck="false"></div>' +
+        '</div></details>' +
+        '<div class="ghc-acts">' +
+          '<button type="button" class="ghc-btn" id="ghcRelier">Relier</button>' +
+          '<button type="button" class="ghc-btn ghc-ghost" id="ghcDetacher" hidden>Détacher</button>' +
+          '<button type="button" class="ghc-btn ghc-ghost" id="ghcOublier" hidden>Oublier le jeton</button>' +
+        '</div>' +
+        '<p class="ghc-msg" id="ghcMsg" role="status" hidden></p>' +
+        '<p class="ghc-petit">Le jeton reste dans ce navigateur, jamais dans le dépôt. Chaque enregistrement devient une version dans l’historique du dépôt.</p>' +
+      '</div>' +
+    '</details>';
+  const $g = id => document.getElementById(id);
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;'})[c]);
+  let enCours = false;
+  function dire(t, ok){
+    const m = $g('ghcMsg');
+    m.textContent = t || ''; m.className = 'ghc-msg' + (ok ? '' : ' err'); m.hidden = !t;
+    clearTimeout(dire.t);
+    if(t) dire.t = setTimeout(() => { m.hidden = true; }, 12000);
+  }
+  function dessiner(){
+    const bloque = ghcBloque(), relie = ghcPret();
+    let e = null;
+    try{ e = relie && opt.etat ? opt.etat() : null; }catch(x){}
+    const err = !!(e && e.erreur);
+    $g('ghcPastille').className = 'ghc-pastille' + (relie ? (err ? ' off' : ' on') : '');
+    $g('ghcResume').textContent = bloque ? 'hors d’atteinte ici' : !relie ? 'pas reliée'
+      : GHC.depot + (err ? ' · à vérifier' : e && e.texte ? ' · ' + e.texte : '');
+    $g('ghcTexte').innerHTML = bloque
+      ? 'Depuis cette page-ci, GitHub est hors d’atteinte : ouvre le registre sur le site pour garder tes données en ligne.'
+      : relie
+        ? 'Relié à <b>' + esc(GHC.depot) + '</b>' + (GHC.branche ? ', branche <i>' + esc(GHC.branche) + '</i>' : '') + '. Les trois registres de ce navigateur y gardent chacun leur fichier : la table et ses PNJ, les personnages, le bestiaire.'
+        : 'Tout peut se garder dans un dépôt GitHub privé : la table et ses PNJ, les personnages, le bestiaire. On le relie une fois dans ce navigateur, et les trois registres s’en servent. À plusieurs, chacun relie le même dépôt.';
+    /* le registre ne parle ici que s'il a un souci : sinon, le résumé suffit */
+    const o = $g('ghcOutil');
+    o.hidden = !err;
+    if(err){ o.textContent = e.nom + ' : ' + e.erreur; o.className = 'ghc-outil err'; }
+    $g('ghcEtapes').hidden = relie || bloque;
+    ['ghcDepot','ghcJeton','ghcBranche','ghcFichier'].forEach(id => { const i = $g(id); if(i) i.disabled = bloque; });
+    const b = $g('ghcRelier');
+    b.disabled = bloque || enCours;
+    if(!enCours) b.textContent = relie ? 'Relier de nouveau' : 'Relier';
+    $g('ghcDetacher').hidden = !relie;
+    $g('ghcOublier').hidden = !GHC.jeton;
+    [['ghcDepot', GHC.depot], ['ghcBranche', GHC.branche], ['ghcFichier', GHC.table], ['ghcJeton', GHC.jeton]].forEach(([id, v]) => {
+      const i = $g(id); if(i && document.activeElement !== i && !i.value && v) i.value = v;
+    });
+  }
+  $g('ghcRelier').onclick = () => {
+    const b = $g('ghcRelier');
+    enCours = true; b.disabled = true; b.textContent = 'On frappe à la porte…';
+    dire('', true);
+    let relie = false;
+    ghcRelier($g('ghcDepot').value, $g('ghcJeton').value, $g('ghcBranche').value, opt.table ? $g('ghcFichier').value : undefined)
+      .then(r => {
+        if(!r.ok || !opt.apresRelier) return r;
+        relie = true;
+        return Promise.resolve(opt.apresRelier(r)).then(x => x || r);
+      })
+      .then(r => {
+        /* le dépôt s'ouvre, mais le registre n'y arrive pas : on ne reste pas accroché */
+        if(!r.ok && relie){ ghcDetacher(); if(opt.apresDetacher) opt.apresDetacher(); }
+        enCours = false;
+        dire(r.msg, r.ok && r.prive !== false);
+        dessiner();
+      }, () => { enCours = false; dire('Quelque chose a coincé. Réessaie.', false); dessiner(); });
+  };
+  $g('ghcDetacher').onclick = () => {
+    ghcDetacher();
+    if(opt.apresDetacher) opt.apresDetacher();
+    dire('Détaché. Tout reste gardé dans ce navigateur, et le dépôt garde ce qui y est déjà.', true);
+    dessiner();
+  };
+  $g('ghcOublier').onclick = () => {
+    ghcOublier();
+    $g('ghcJeton').value = '';
+    if(opt.apresDetacher) opt.apresDetacher();
+    dire('Jeton oublié par ce navigateur.', true);
+    dessiner();
+  };
+  setInterval(() => { if(ghcPret()) dessiner(); }, 10000);
+  dessiner();
+  return {dessiner:dessiner, dire:dire};
+}
+
+/* ============ tes personnages : une liste gardée ici, et dans le dépôt quand la sauvegarde en ligne est reliée ============
+   Un personnage enregistré suit tes changements tout seul. Chacun porte sa date : le plus récent gagne,
+   et celui qu'on supprime laisse une trace dans le fichier, pour ne pas revenir d'un autre appareil. */
+
+const CLE_MIENS = 'faelorenn.personnages';
+let MIENS = {};
+const MIENS_UI = {aSupprimer:null, t:null, msg:null};
+let PANNEAU_MIENS = null;
+
+function normMien(x, id){
+  if(!x || typeof x !== 'object') return null;
+  const r = {id:id, maj:+x.maj || 0};
+  if(x.supprime){ r.supprime = true; return r; }
+  r.nom = String(x.nom == null ? '' : x.nom);
+  r.peuple = String(x.peuple == null ? '' : x.peuple);
+  r.voie = String(x.voie == null ? '' : x.voie);
+  r.auteur = String(x.auteur == null ? '' : x.auteur);
+  r.s = x.s && typeof x.s === 'object' && !Array.isArray(x.s) ? x.s : {};
+  if(x.fiche && typeof x.fiche === 'object') r.fiche = x.fiche;
+  return r;
+}
+function normMiens(o){
+  const m = {};
+  const src = o && o.personnages && typeof o.personnages === 'object' ? o.personnages : {};
+  Object.keys(src).forEach(id => {
+    if(!/^[\w.-]{1,80}$/.test(id)) return;
+    const r = normMien(src[id], id);
+    if(r) m[id] = r;
+  });
+  return m;
+}
+const miensFichier = () => ({format:'faelorenn-personnages', version:1, personnages:MIENS});
+function chargerMiens(){
+  try{ MIENS = normMiens(JSON.parse(localStorage.getItem(CLE_MIENS) || 'null')); }catch(e){ MIENS = {}; }
+}
+/* un autre onglet a pu garder sa liste entre-temps : on la fond avant d'écrire la nôtre */
+function garderMiens(){
+  try{
+    const r = localStorage.getItem(CLE_MIENS);
+    if(r) fondreMiens(normMiens(JSON.parse(r)));
+    localStorage.setItem(CLE_MIENS, JSON.stringify(miensFichier()));
+  }catch(e){}
+}
+/* le plus récent l'emporte, pièce par pièce ; renvoie vrai si quelque chose a bougé ici */
+function fondreMiens(autres){
+  let change = false;
+  Object.keys(autres).forEach(id => {
+    const x = autres[id], y = MIENS[id];
+    if(!y || (x.maj || 0) > (y.maj || 0)){ MIENS[id] = x; change = true; }
+  });
+  return change;
+}
+const miensVivants = () => Object.keys(MIENS).map(k => MIENS[k]).filter(r => !r.supprime).sort((a, b) => (b.maj || 0) - (a.maj || 0));
+
+function slugMien(s){ return String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 30) || 'perso'; }
+function copieS(){ const c = JSON.parse(JSON.stringify(S)); delete c.id; return c; }
+function ficheMien(){ try{ const f = personneJson(); delete f.exporte; return f; }catch(e){ return null; } }
+function aDuContenu(){ return !!(S.nom || '').trim() || carSpent() > 0 || skSpent() > 0 || (S.prat || []).length > 0; }
+
+/* le personnage ouvert passe dans sa fiche enregistrée */
+function ecrireMien(id){
+  const avant = MIENS[id];
+  const r = {id:id, maj:Date.now(), nom:S.nom || '', peuple:S.peuple, voie:S.voie,
+    auteur:(avant && !avant.supprime && avant.auteur) || ghcJoueur(), s:copieS()};
+  const f = ficheMien(); if(f) r.fiche = f;
+  MIENS[id] = r;
+  garderMiens();
+  DOC_MIENS.planifier();
+}
+/* appelé à chaque enregistrement de la fiche : si elle est suivie, son double suit */
+function suivreMien(){
+  if(!S.id) return;
+  /* tant que le dépôt n'a pas été lu, on ne date rien : une version plus récente y attend peut-être */
+  if(DOC_MIENS.actif && !DOC_MIENS.lu){ MIENS_UI.differe = true; return; }
+  const r = MIENS[S.id];
+  if(!r || r.supprime){ S.id = ''; dessinerMiensBientot(); return; }
+  if(ghcCanon(copieS()) === ghcCanon(r.s)) return;
+  ecrireMien(S.id);
+  dessinerMiensBientot();
+}
+function dessinerMiensBientot(){ clearTimeout(dessinerMiensBientot.t); dessinerMiensBientot.t = setTimeout(dessinerMiens, 60); }
+
+function viderS(){
+  S.nom = ''; S.prat = []; S.sub = {}; S.humCar = []; S.skChoice = ''; S.banComp = '';
+  CARS.forEach(c => S.car[c] = 0); ALLSKILLS.forEach(o => S.sk[o.s] = 0);
+}
+function chargerDansS(r){
+  const s = JSON.parse(JSON.stringify(r.s || {}));
+  viderS();
+  S.peuple = 'Humains'; S.voie = 'Éclaireur';
+  ['nom','peuple','voie','skChoice','banComp'].forEach(k => { if(typeof s[k] === 'string') S[k] = s[k]; });
+  if(s.car && typeof s.car === 'object') CARS.forEach(c => { if(isFinite(+s.car[c])) S.car[c] = +s.car[c]; });
+  if(s.sk && typeof s.sk === 'object') ALLSKILLS.forEach(o => { if(isFinite(+s.sk[o.s])) S.sk[o.s] = +s.sk[o.s]; });
+  if(Array.isArray(s.prat)) S.prat = s.prat.filter(x => typeof x === 'string');
+  if(Array.isArray(s.humCar)) S.humCar = s.humCar.filter(x => typeof x === 'string');
+  if(s.sub && typeof s.sub === 'object' && !Array.isArray(s.sub)) S.sub = s.sub;
+  S.id = r.id;
+  remettreEnOrdre();
+}
+
+function direMien(t, ok){
+  const m = $('mienMsg');
+  m.textContent = t; m.className = 'note mmsg' + (ok ? ' ok' : ' err'); m.hidden = false;
+  clearTimeout(MIENS_UI.msg); MIENS_UI.msg = setTimeout(() => { m.hidden = true; }, 6000);
+}
+function garderCeMien(){
+  if(!(S.nom || '').trim()){ direMien('Donne-lui un nom d’abord, en haut de « Qui tu es ».', false); $('nom').focus(); return; }
+  const id = 'c-' + slugMien(S.nom) + '-' + Date.now().toString(36).slice(-5) + Math.random().toString(36).slice(2, 5);
+  S.id = id;
+  ecrireMien(id);
+  save();
+  dessinerMiens();
+  direMien('« ' + S.nom + ' » est dans tes personnages. Chaque changement s’y reporte tout seul.', true);
+}
+function nouveauMien(){
+  if(!S.id && aDuContenu() && !confirm('Ce personnage n’est pas enregistré : il sera perdu. Repartir de zéro ?')) return;
+  S.id = '';
+  viderS();
+  draw();
+  dessinerMiens();
+  window.scrollTo({top:$('secMiens').offsetTop, behavior:'smooth'});
+}
+function ouvrirMien(id){
+  const r = MIENS[id];
+  if(!r || r.supprime) return;
+  if(!S.id && aDuContenu() && !confirm('Le personnage ouvert n’est pas enregistré : il sera perdu. Ouvrir « ' + (r.nom || 'Sans nom') + ' » quand même ?')) return;
+  chargerDansS(r);
+  draw();
+  dessinerMiens();
+}
+function supprimerMien(id){
+  const r = MIENS[id];
+  if(!r || r.supprime) return;
+  MIENS[id] = {id:id, maj:Date.now(), supprime:true};
+  garderMiens();
+  DOC_MIENS.planifier();
+  if(S.id === id){ S.id = ''; viderS(); draw(); }
+  dessinerMiens();
+  direMien('« ' + (r.nom || 'Sans nom') + ' » ne fait plus partie de tes personnages.', true);
+}
+
+function quandMien(t){
+  if(!t) return '';
+  const d = new Date(t), auj = new Date();
+  const hh = String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+  if(d.toDateString() === auj.toDateString()) return 'aujourd’hui à ' + hh;
+  try{ return 'le ' + d.toLocaleDateString('fr-BE', {day:'numeric', month:'long'}) + (d.getFullYear() !== auj.getFullYear() ? ' ' + d.getFullYear() : ''); }
+  catch(e){ return 'le ' + d.toLocaleDateString(); }
+}
+function dessinerMiens(){
+  const liste = $('miensListe'); if(!liste) return;
+  const v = miensVivants();
+  liste.innerHTML = '';
+  if(!v.length) liste.append(el('p', 'note mvide', 'Aucun personnage enregistré pour l’instant.'));
+  v.forEach(r => {
+    const ouvert = r.id === S.id;
+    const row = el('div', 'mien' + (ouvert ? ' ouvert' : ''));
+    const txt = el('div', 'mtxt');
+    txt.append(el('span', 'mnom', r.nom || 'Sans nom'));
+    const meta = [[r.peuple, r.voie].filter(Boolean).join(', '), quandMien(r.maj), r.auteur ? 'par ' + r.auteur : ''].filter(Boolean).join(' · ');
+    txt.append(el('span', 'mmeta', meta));
+    const acts = el('div', 'macts');
+    if(ouvert) acts.append(el('span', 'mouvert', 'Ouvert ci-dessous'));
+    else {
+      const b = el('button', 'btn ghost sm', 'Ouvrir'); b.type = 'button';
+      b.setAttribute('aria-label', 'Ouvrir ' + (r.nom || 'ce personnage'));
+      b.onclick = () => ouvrirMien(r.id);
+      acts.append(b);
+    }
+    const arme = MIENS_UI.aSupprimer === r.id;
+    const d = el('button', 'btn ghost sm' + (arme ? ' danger' : ''), arme ? 'Confirmer : il disparaît' : 'Supprimer'); d.type = 'button';
+    d.setAttribute('aria-label', arme ? 'Confirmer la suppression de ' + (r.nom || 'ce personnage') : 'Supprimer ' + (r.nom || 'ce personnage'));
+    d.onclick = () => {
+      if(MIENS_UI.aSupprimer === r.id){ MIENS_UI.aSupprimer = null; supprimerMien(r.id); return; }
+      MIENS_UI.aSupprimer = r.id; dessinerMiens();
+      clearTimeout(MIENS_UI.t); MIENS_UI.t = setTimeout(() => { MIENS_UI.aSupprimer = null; dessinerMiens(); }, 5000);
+    };
+    acts.append(d);
+    row.append(txt, acts);
+    liste.append(row);
+  });
+  const suivi = !!(S.id && MIENS[S.id] && !MIENS[S.id].supprime);
+  const e = $('mienEtat');
+  e.textContent = suivi
+    ? '« ' + (S.nom || 'Sans nom') + ' » est enregistré : chaque changement s’y reporte' + (DOC_MIENS.actif ? ', et part dans le dépôt.' : ', dans ce navigateur.')
+    : 'Le personnage ouvert n’est gardé que dans ce navigateur, et un seul à la fois.';
+  e.className = 'mien-etat' + (suivi ? ' ok' : '');
+  $('mienGarder').hidden = suivi;
+  if(PANNEAU_MIENS) PANNEAU_MIENS.dessiner();
+}
+
+/* ---------- le fichier personnages.json du dépôt ---------- */
+function recevoirMiens(o){
+  if(!fondreMiens(normMiens(o))) return;
+  garderMiens();
+  if(S.id){
+    const ici = MIENS[S.id];
+    /* supprimé ailleurs : la fiche reste ouverte ici, mais elle n'a plus de double */
+    if(!ici || ici.supprime){ S.id = ''; save(); }
+    /* changé ailleurs : on prend la version la plus récente */
+    else if(ghcCanon(ici.s) !== ghcCanon(copieS())){ chargerDansS(ici); draw(); }
+  }
+  dessinerMiens();
+}
+const DOC_MIENS = ghcDoc({
+  nom:'Personnages', quoi:'une liste de personnages Faelorenn', format:'faelorenn-personnages',
+  chemin: GHC_FICHIERS.personnages,
+  recevoir: recevoirMiens,
+  enAvance: o => ghcEnAvance(MIENS, normMiens(o)),
+  contenu: miensFichier,
+  message: () => 'Personnages · ' + (ghcJoueur() || 'quelqu’un') + ' · ' + new Date().toLocaleString('fr-BE'),
+  etat: () => {
+    if(MIENS_UI.differe && (DOC_MIENS.lu || !DOC_MIENS.actif)){ MIENS_UI.differe = false; save(); }
+    if(PANNEAU_MIENS) PANNEAU_MIENS.dessiner();
+  }
+});
+function brancherMiens(){
+  chargerMiens();
+  $('mienGarder').onclick = garderCeMien;
+  $('mienNouveau').onclick = nouveauMien;
+  PANNEAU_MIENS = ghcPanneau($('ghcPlace'), {
+    etat: () => DOC_MIENS.actif || DOC_MIENS.erreur
+      ? {nom:'Tes personnages', texte: DOC_MIENS.actif ? 'dernier échange ' + ghcIlYA(DOC_MIENS.dernier) : 'à l’arrêt', erreur:DOC_MIENS.erreur}
+      : null,
+    apresRelier: r => DOC_MIENS.demarrer().then(() => {
+      if(!DOC_MIENS.actif || DOC_MIENS.erreur) return {ok:false, msg:DOC_MIENS.erreur || 'Le fichier des personnages n’a pas pu être lu.'};
+      dessinerMiens();
+      return r;
+    }),
+    apresDetacher: () => { DOC_MIENS.arreter(); dessinerMiens(); }
+  });
+  ghcSurveiller(() => {
+    if(ghcPret()) DOC_MIENS.demarrer(); else DOC_MIENS.arreter();
+    dessinerMiens();
+  });
+  /* un autre onglet du Registre a enregistré : on reprend sa liste */
+  window.addEventListener('storage', e => {
+    if(e.key !== CLE_MIENS || !e.newValue) return;
+    try{ recevoirMiens(JSON.parse(e.newValue)); }catch(x){}
+  });
+  ghcCharger();
+  if(ghcPret()) DOC_MIENS.demarrer();
+}
+
+/* ============ démarrage, en dernier : tout ce qui précède est défini ============ */
+load();
+remettreEnOrdre();
+/* la première fois, un exemple à regarder ; jamais par-dessus un personnage enregistré */
+if(!S.nom && !S.id){
+  S.nom = 'Toum’Balin'; S.peuple = "Ori'Ican"; S.voie = 'Chasseur'; S.sub = {type:'Cornu'};
+  S.car = {Force:7,'Dextérité':7,Constitution:7,Intelligence:0,Sagesse:0,Charisme:0,Contenance:0};
+  ALLSKILLS.forEach(o => S.sk[o.s] = 0);
+  S.sk['Combat'] = 40; S.sk['Tir'] = 40; S.sk['Intimidation'] = 20;
+  S.prat = ['Muer','Fendre','Peau qui repousse'];
+}
+brancherMiens();
+draw();
+dessinerMiens();
+dispoTelechargement();
 </script>
 </body>
 </html>

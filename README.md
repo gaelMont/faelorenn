@@ -3,10 +3,10 @@
 Trois outils pour jouer à Faelorenn, dans un navigateur :
 
 - `table.html` : le Registre de la Table. Compte rendu des séances avec les jets, personnages, fiches de PNJ et réseau de leurs liens, progression. À plusieurs.
-- `createur.html` : le Registre du Havre. Création de personnage, impression, export Word, export .json pour la Table.
+- `createur.html` : le Registre du Havre. Création de personnage, liste de tes personnages, impression, export Word, export .json pour la Table.
 - `rencontres.html` : le Registre des Rencontres. Tirage de rencontres, bestiaire maison, familles, traits.
 
-`index.html` est la page d'accueil qui mène aux trois.
+`index.html` est la page d'accueil qui mène aux trois, et où l'on relie la sauvegarde en ligne.
 
 ## Mettre le site en ligne
 
@@ -17,17 +17,17 @@ Trois outils pour jouer à Faelorenn, dans un navigateur :
 
 Pour mettre un registre à jour, refais l'étape 2 avec le nouveau fichier : il remplace l'ancien.
 
-## Jouer à plusieurs avec GitHub
+## Tout garder en ligne
 
-La table se garde dans un **autre** dépôt, **privé**, pour que vos séances ne soient pas publiques.
+La table et ses PNJ, les personnages et le bestiaire se gardent dans un **autre** dépôt, **privé**, pour que vos séances ne soient pas publiques.
 
 1. Crée un dépôt privé, `faelorenn-table` par exemple, en cochant « Add a README file ».
-2. Crée un jeton : « Settings », « Developer settings », « Personal access tokens », « Fine-grained tokens », « Generate new token ». Accès : seulement `faelorenn-table`. Permission : « Contents » en « Read and write ». Mets une date d'expiration.
-3. Dans le Registre de la Table, section « La table », ouvre « Synchroniser par GitHub », colle `ton-nom/faelorenn-table` et le jeton, puis « Relier à GitHub ».
+2. Crée un jeton : « Settings », « Developer settings », « Personal access tokens », « Fine-grained tokens », « Generate new token ». Accès : seulement ce dépôt. Permission : « Contents » en « Read and write ». Mets une date d'expiration.
+3. Sur la page d'accueil du site, section « Tout garder en ligne », colle `ton-nom/faelorenn-table` et le jeton, puis « Relier ». Les trois registres de ce navigateur s'en servent aussitôt.
 4. Donne le même dépôt et le même jeton aux autres joueurs, par un message privé. Un jeton à accès fin ne marche que pour les dépôts de son propriétaire.
 
-Le jeton reste dans le navigateur où il est collé ; il n'est jamais écrit dans un dépôt. Chaque changement de la table devient une version dans l'historique de `faelorenn-table`, qu'on peut toujours retrouver.
+Dans le dépôt privé, chaque registre a son fichier : `table-faelorenn.json`, `personnages.json`, `bestiaire.json`, plus un `LISEZMOI.md` qui les présente. Le jeton reste dans le navigateur où il est collé ; il n'est jamais écrit dans un dépôt. Chaque enregistrement devient une version dans l'historique du dépôt, qu'on peut toujours retrouver.
 
 ## Ce qui est public
 
-Le code des registres, et donc ce qu'ils contiennent du livre : peuples, Pratiques, bestiaire. Les personnages et les séances ne sont que dans vos navigateurs et dans le dépôt privé.
+Le code des registres, et donc ce qu'ils contiennent du livre : peuples, Pratiques, bestiaire. Les personnages, les séances et le bestiaire maison ne sont que dans vos navigateurs et dans le dépôt privé.

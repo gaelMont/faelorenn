@@ -2288,7 +2288,8 @@ function suivreMien(){
   /* tant que le dépôt n'a pas été lu, on ne date rien : une version plus récente y attend peut-être */
   if(DOC_MIENS.actif && !DOC_MIENS.lu){ MIENS_UI.differe = true; return; }
   const r = MIENS[S.id];
-  if(!r || r.supprime){ S.id = ''; dessinerMiensBientot(); return; }
+  if(r && r.supprime){ viderPourNeuf(); setTimeout(() => { draw(); dessinerMiens(); }, 0); return; }
+  if(!r){ S.id = ''; dessinerMiensBientot(); return; }
   if(ghcCanon(copieS()) === ghcCanon(r.s)) return;
   ecrireMien(S.id);
   dessinerMiensBientot();
@@ -2298,6 +2299,31 @@ function dessinerMiensBientot(){ clearTimeout(dessinerMiensBientot.t); dessinerM
 function viderS(){
   S.nom = ''; S.prat = []; S.sub = {}; S.humCar = []; S.skChoice = ''; S.banComp = '';
   CARS.forEach(c => S.car[c] = 0); ALLSKILLS.forEach(o => S.sk[o.s] = 0);
+}
+/* une fiche vierge, peuple et Voie compris */
+function viderPourNeuf(){ S.id = ''; viderS(); S.peuple = 'Humains'; S.voie = 'Éclaireur'; }
+const nouvelIdMien = nom => 'c-' + slugMien(nom) + '-' + Date.now().toString(36).slice(-5) + Math.random().toString(36).slice(2, 5);
+/* l'ancien personnage d'exemple (Toum'Balin), jamais retouché : rien à garder */
+function exempleIntact(){
+  if(String(S.nom || '').replace(/[’‘]/g, "'") !== "Toum'Balin" || S.peuple !== "Ori'Ican" || S.voie !== 'Chasseur') return false;
+  const car = {Force:7, 'Dextérité':7, Constitution:7}, sk = {Combat:40, Tir:40, Intimidation:20};
+  return CARS.every(c => (+S.car[c] || 0) === (car[c] || 0)) && ALLSKILLS.every(o => (+S.sk[o.s] || 0) === (sk[o.s] || 0));
+}
+/* à l'ouverture, toujours une fiche vierge. Ce qui était ouvert la dernière fois est dans tes personnages :
+   s'il n'y était pas encore, il y entre ; l'ancien exemple jamais retouché, et un personnage supprimé, s'en vont */
+function ouvrirVierge(){
+  let range = '';
+  const r = S.id ? MIENS[S.id] : null;
+  if(r && r.supprime){ /* supprimé : il ne revient pas */ }
+  else if(r){ if(ghcCanon(copieS()) !== ghcCanon(r.s)) ecrireMien(S.id); }
+  else if(aDuContenu() && !exempleIntact()){
+    if(!S.id) S.id = nouvelIdMien(S.nom);
+    ecrireMien(S.id);
+    range = S.nom || 'Sans nom';
+  }
+  viderPourNeuf();
+  save();
+  return range;
 }
 function chargerDansS(r){
   const s = JSON.parse(JSON.stringify(r.s || {}));
@@ -2320,7 +2346,7 @@ function direMien(t, ok){
 }
 function garderCeMien(){
   if(!(S.nom || '').trim()){ direMien('Donne-lui un nom d’abord, en haut de « Qui tu es ».', false); $('nom').focus(); return; }
-  const id = 'c-' + slugMien(S.nom) + '-' + Date.now().toString(36).slice(-5) + Math.random().toString(36).slice(2, 5);
+  const id = nouvelIdMien(S.nom);
   S.id = id;
   ecrireMien(id);
   save();
@@ -2410,8 +2436,12 @@ function recevoirMiens(o){
   garderMiens();
   if(S.id){
     const ici = MIENS[S.id];
-    /* supprimé ailleurs : la fiche reste ouverte ici, mais elle n'a plus de double */
-    if(!ici || ici.supprime){ S.id = ''; save(); }
+    /* supprimé ailleurs, après tes derniers changements : il disparaît d'ici aussi */
+    if(!ici || ici.supprime){
+      const nom = S.nom;
+      viderPourNeuf(); draw();
+      direMien('« ' + (nom || 'Sans nom') + ' » a été supprimé depuis un autre appareil.', true);
+    }
     /* changé ailleurs : on prend la version la plus récente */
     else if(ghcCanon(ici.s) !== ghcCanon(copieS())){ chargerDansS(ici); draw(); }
   }
@@ -2488,10 +2518,12 @@ function brancherMiens(){
 /* ============ démarrage, en dernier : tout ce qui précède est défini ============ */
 load();
 remettreEnOrdre();
-/* la première fois, une fiche vierge : aucun personnage d'exemple */
 brancherMiens();
+/* toujours une fiche vierge à l'ouverture : tes personnages sont dans la liste, en haut */
+const RANGE = ouvrirVierge();
 draw();
 dessinerMiens();
+if(RANGE) direMien('« ' + RANGE + ' », resté ouvert la dernière fois, est rangé dans tes personnages.', true);
 dispoTelechargement();
 </script>
 </body>

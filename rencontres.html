@@ -385,6 +385,7 @@ select:focus-visible,input:focus-visible,button:focus-visible{outline:2px solid 
       </div>
       <p class="lab" style="margin-top:14px">Sauvegarder ou partager</p>
       <div class="acts">
+        <button class="btn sm" id="bestEnLigne" type="button">Sauvegarder en ligne</button>
         <button class="btn ghost sm" id="bestJson" type="button">Sauvegarde .json</button>
         <button class="btn ghost sm" id="bestImport" type="button">Importer un .json</button>
         <input type="file" id="bestFichier" accept=".json,application/json" hidden>
@@ -2509,6 +2510,22 @@ function ghcRelier(depot, jeton, branche, table){
 function ghcDetacher(){ GHC.actif = false; ghcGarder(); }
 function ghcOublier(){ GHC.actif = false; GHC.jeton = ''; GHC_VU = ''; ghcGarder(); }
 /* un autre onglet a relié, détaché ou oublié : on suit */
+/* ce qu'on dit après « Sauvegarder en ligne » */
+function ghcPhraseSauvegarde(r, sujet){
+  if(!r.ok) return r.msg || 'La sauvegarde en ligne n’a pas pu se faire.';
+  if(r.rien) return sujet + ' est à jour dans le dépôt ' + GHC.depot + '.';
+  const h = new Date();
+  return sujet + ' est dans le dépôt ' + GHC.depot + ', à ' + String(h.getHours()).padStart(2, '0') + ':' + String(h.getMinutes()).padStart(2, '0') + '.';
+}
+/* pas encore relié : on montre le panneau, prêt à remplir */
+function ghcOuvrirPanneau(){
+  const d = document.getElementById('ghcBloc');
+  if(!d) return;
+  d.open = true;
+  d.scrollIntoView({block:'center', behavior:'smooth'});
+  const champ = ['ghcDepot','ghcJeton'].map(id => document.getElementById(id)).find(i => i && !i.value) || document.getElementById('ghcRelier');
+  if(champ) setTimeout(() => { try{ champ.focus({preventScroll:true}); }catch(e){} }, 450);
+}
 function ghcSurveiller(fn){
   window.addEventListener('storage', e => { if(e.key === GHC_CLE || e.key === null){ ghcCharger(); try{ fn(); }catch(x){} } });
 }
@@ -2628,6 +2645,7 @@ function ghcDoc(o){
     });
     return essai(0).then(v => {
       if(d.errDe === 'ecriture' || d.errDe === 'lecture'){ d.erreur = ''; d.errDe = ''; }
+      d.resultat = v;
       if(o.ecrit) o.ecrit(true, v === 'rien');
       return true;
     }, e => {
@@ -2647,6 +2665,18 @@ function ghcDoc(o){
       }
       signaler();
       return v;
+    });
+  };
+  /* « Sauvegarder en ligne » : on écrit tout de suite, ou dès que GitHub le permet */
+  d.maintenant = function(essais){
+    essais = essais || 0;
+    if(!d.actif) return Promise.resolve({ok:false, msg:d.erreur || 'La sauvegarde en ligne n’est pas en route.'});
+    const attente = d.occupe ? 700 : Math.max(d.pause - Date.now(), d.derniereEcriture + d.tEcart - Date.now());
+    if(attente > 0 && essais < 100) return new Promise(ok => setTimeout(ok, Math.min(attente + 100, 65000))).then(() => d.maintenant(essais + 1));
+    return d.ecrire().then(ok => {
+      if(ok) return {ok:true, rien:d.resultat === 'rien'};
+      if(d.erreur || !d.actif || essais >= 100) return {ok:false, msg:d.erreur || 'L’écriture n’a pas pu partir.'};
+      return new Promise(r => setTimeout(r, 700)).then(() => d.maintenant(essais + 1));
     });
   };
   d.planifier = function(delai){
@@ -2971,7 +3001,34 @@ function relancerStockage(){
   demarrerStockage();
   draw();
 }
+/* « Sauvegarder en ligne » : le bestiaire part tout de suite dans le dépôt */
+function sauverBestiaireEnLigne(){
+  const b = $('bestEnLigne'), m = $('bestMsg');
+  const dire = (t, ok) => {
+    m.textContent = t; m.hidden = false; m.className = ok ? 'note ok' : 'note err';
+    clearTimeout(sauverBestiaireEnLigne.t); sauverBestiaireEnLigne.t = setTimeout(() => { m.hidden = true; }, 12000);
+  };
+  if(!ghcPret()){
+    dire('Relie d’abord ton dépôt GitHub, une seule fois : c’est le panneau « Sauvegarde en ligne », juste en dessous. Ensuite, chaque changement part tout seul.', false);
+    ghcOuvrirPanneau();
+    return;
+  }
+  const d = BST.source === 'github' && BST.gh ? BST.gh.doc : null;
+  /* le dépôt n'avait pas répondu à l'ouverture : on refrappe à la porte, ce qui attend ici part avec */
+  if(!d || !d.actif){
+    relancerStockage();
+    dire('Nouvel essai avec le dépôt : ce qui attend ici y part dès qu’il répond. L’état s’affiche en haut du bestiaire.', true);
+    return;
+  }
+  b.disabled = true; b.textContent = 'Sauvegarde…';
+  d.maintenant().then(r => {
+    b.disabled = false; b.textContent = 'Sauvegarder en ligne';
+    dire(ghcPhraseSauvegarde(r, 'Le bestiaire'), r.ok);
+    drawEtat();
+  });
+}
 function brancherEnLigne(){
+  $('bestEnLigne').onclick = sauverBestiaireEnLigne;
   PANNEAU_BST = ghcPanneau($('ghcPlace'), {
     etat: () => {
       const d = BST.source === 'github' && BST.gh ? BST.gh.doc : null;

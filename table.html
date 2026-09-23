@@ -330,7 +330,8 @@ svg.reseau:active{cursor:grabbing}
       </div>
     </div>
     <div class="acts" style="margin-top:12px">
-      <button class="btn" id="tbOuvrir" type="button">Ouvrir le fichier de table</button>
+      <button class="btn" id="tbEnLigne" type="button">Sauvegarder en ligne</button>
+      <button class="btn ghost sm" id="tbOuvrir" type="button">Ouvrir le fichier de table</button>
       <button class="btn ghost sm" id="tbCreer" type="button">Créer un fichier de table</button>
       <button class="btn ghost sm" id="tbDetacher" type="button" hidden>Détacher le fichier</button>
       <button class="btn ghost sm" id="tbJson" type="button">Enregistrer un .json</button>
@@ -3387,6 +3388,22 @@ function ghcRelier(depot, jeton, branche, table){
 function ghcDetacher(){ GHC.actif = false; ghcGarder(); }
 function ghcOublier(){ GHC.actif = false; GHC.jeton = ''; GHC_VU = ''; ghcGarder(); }
 /* un autre onglet a relié, détaché ou oublié : on suit */
+/* ce qu'on dit après « Sauvegarder en ligne » */
+function ghcPhraseSauvegarde(r, sujet){
+  if(!r.ok) return r.msg || 'La sauvegarde en ligne n’a pas pu se faire.';
+  if(r.rien) return sujet + ' est à jour dans le dépôt ' + GHC.depot + '.';
+  const h = new Date();
+  return sujet + ' est dans le dépôt ' + GHC.depot + ', à ' + String(h.getHours()).padStart(2, '0') + ':' + String(h.getMinutes()).padStart(2, '0') + '.';
+}
+/* pas encore relié : on montre le panneau, prêt à remplir */
+function ghcOuvrirPanneau(){
+  const d = document.getElementById('ghcBloc');
+  if(!d) return;
+  d.open = true;
+  d.scrollIntoView({block:'center', behavior:'smooth'});
+  const champ = ['ghcDepot','ghcJeton'].map(id => document.getElementById(id)).find(i => i && !i.value) || document.getElementById('ghcRelier');
+  if(champ) setTimeout(() => { try{ champ.focus({preventScroll:true}); }catch(e){} }, 450);
+}
 function ghcSurveiller(fn){
   window.addEventListener('storage', e => { if(e.key === GHC_CLE || e.key === null){ ghcCharger(); try{ fn(); }catch(x){} } });
 }
@@ -3506,6 +3523,7 @@ function ghcDoc(o){
     });
     return essai(0).then(v => {
       if(d.errDe === 'ecriture' || d.errDe === 'lecture'){ d.erreur = ''; d.errDe = ''; }
+      d.resultat = v;
       if(o.ecrit) o.ecrit(true, v === 'rien');
       return true;
     }, e => {
@@ -3525,6 +3543,18 @@ function ghcDoc(o){
       }
       signaler();
       return v;
+    });
+  };
+  /* « Sauvegarder en ligne » : on écrit tout de suite, ou dès que GitHub le permet */
+  d.maintenant = function(essais){
+    essais = essais || 0;
+    if(!d.actif) return Promise.resolve({ok:false, msg:d.erreur || 'La sauvegarde en ligne n’est pas en route.'});
+    const attente = d.occupe ? 700 : Math.max(d.pause - Date.now(), d.derniereEcriture + d.tEcart - Date.now());
+    if(attente > 0 && essais < 100) return new Promise(ok => setTimeout(ok, Math.min(attente + 100, 65000))).then(() => d.maintenant(essais + 1));
+    return d.ecrire().then(ok => {
+      if(ok) return {ok:true, rien:d.resultat === 'rien'};
+      if(d.erreur || !d.actif || essais >= 100) return {ok:false, msg:d.erreur || 'L’écriture n’a pas pu partir.'};
+      return new Promise(r => setTimeout(r, 700)).then(() => d.maintenant(essais + 1));
     });
   };
   d.planifier = function(delai){
@@ -3923,6 +3953,25 @@ $('pnjCherche').oninput = e => { PNJ_FILTRE.q = e.target.value; if(MOI.vuePnj ==
 $('pnjGroupe').onchange = e => { PNJ_FILTRE.groupe = e.target.value; dessinerListePnj(true); };
 
 /* la sauvegarde en ligne */
+$('tbEnLigne').onclick = () => {
+  const b = $('tbEnLigne');
+  if(!ghcPret() || SYNC.etat !== 'github'){
+    msgTable('Relie d’abord ton dépôt GitHub, une seule fois : c’est le panneau « Sauvegarde en ligne », juste en dessous. Ensuite, chaque changement part tout seul.', false);
+    ghcOuvrirPanneau();
+    return;
+  }
+  if(!GH.actif){
+    msgTable((GH.erreur || 'La sauvegarde en ligne est à l’arrêt.') + ' Relie de nouveau ton dépôt, juste en dessous.', false);
+    ghcOuvrirPanneau();
+    return;
+  }
+  b.disabled = true; b.textContent = 'Sauvegarde…';
+  GH.maintenant().then(r => {
+    b.disabled = false; b.textContent = 'Sauvegarder en ligne';
+    msgTable(ghcPhraseSauvegarde(r, 'La table'), r.ok);
+    dessinerTable();
+  });
+};
 function etatGithub(){
   if(!GH.actif && !GH.erreur) return null;
   return {nom:'La table', texte: GH.actif ? 'dernier échange ' + ilYA(GH.dernier) : 'à l’arrêt', erreur:GH.erreur};

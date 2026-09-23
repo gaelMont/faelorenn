@@ -224,7 +224,7 @@ tr.grp td{background:var(--fill);font-family:Spectral,Georgia,serif;font-style:i
   <p class="hint">Le peuple donne les chiffres et les contraintes, la Voie donne le métier et le paquetage.</p>
   <div class="card">
     <div class="row">
-      <div><label class="f" for="nom">Nom</label><input type="text" id="nom" placeholder="Toum'Balin"></div>
+      <div><label class="f" for="nom">Nom</label><input type="text" id="nom" placeholder="Le nom de ton personnage"></div>
       <div><label class="f" for="peuple">Peuple</label><select id="peuple"></select></div>
       <div><label class="f" for="voie">Voie</label><select id="voie"></select></div>
     </div>
@@ -274,6 +274,7 @@ tr.grp td{background:var(--fill);font-family:Spectral,Georgia,serif;font-style:i
   <h2><span class="num">6</span> La fiche</h2>
   <p class="hint">Voilà ce qui sort de l'imprimante, et rien d'autre. Dans la fenêtre d'impression, décoche « En-têtes et pieds de page » et choisis le format A4.</p>
   <div style="display:flex;gap:10px;flex-wrap:wrap">
+    <button class="btn" id="enLigne" type="button">Sauvegarder en ligne</button>
     <button class="btn" id="print">Imprimer la fiche</button>
     <button class="btn ghost" id="word">Exporter en Word</button>
     <button class="btn ghost" id="wcopy">Copier pour Word</button>
@@ -281,6 +282,7 @@ tr.grp td{background:var(--fill);font-family:Spectral,Georgia,serif;font-style:i
     <button class="btn ghost" id="copy">Copier en texte</button>
     <button class="btn ghost" id="reset">Repartir de zéro</button>
   </div>
+  <p class="note mmsg" id="enLigneMsg" role="status" hidden></p>
   <p class="note" id="wordNote"></p>
 </section>
 
@@ -1847,6 +1849,22 @@ function ghcRelier(depot, jeton, branche, table){
 function ghcDetacher(){ GHC.actif = false; ghcGarder(); }
 function ghcOublier(){ GHC.actif = false; GHC.jeton = ''; GHC_VU = ''; ghcGarder(); }
 /* un autre onglet a relié, détaché ou oublié : on suit */
+/* ce qu'on dit après « Sauvegarder en ligne » */
+function ghcPhraseSauvegarde(r, sujet){
+  if(!r.ok) return r.msg || 'La sauvegarde en ligne n’a pas pu se faire.';
+  if(r.rien) return sujet + ' est à jour dans le dépôt ' + GHC.depot + '.';
+  const h = new Date();
+  return sujet + ' est dans le dépôt ' + GHC.depot + ', à ' + String(h.getHours()).padStart(2, '0') + ':' + String(h.getMinutes()).padStart(2, '0') + '.';
+}
+/* pas encore relié : on montre le panneau, prêt à remplir */
+function ghcOuvrirPanneau(){
+  const d = document.getElementById('ghcBloc');
+  if(!d) return;
+  d.open = true;
+  d.scrollIntoView({block:'center', behavior:'smooth'});
+  const champ = ['ghcDepot','ghcJeton'].map(id => document.getElementById(id)).find(i => i && !i.value) || document.getElementById('ghcRelier');
+  if(champ) setTimeout(() => { try{ champ.focus({preventScroll:true}); }catch(e){} }, 450);
+}
 function ghcSurveiller(fn){
   window.addEventListener('storage', e => { if(e.key === GHC_CLE || e.key === null){ ghcCharger(); try{ fn(); }catch(x){} } });
 }
@@ -1966,6 +1984,7 @@ function ghcDoc(o){
     });
     return essai(0).then(v => {
       if(d.errDe === 'ecriture' || d.errDe === 'lecture'){ d.erreur = ''; d.errDe = ''; }
+      d.resultat = v;
       if(o.ecrit) o.ecrit(true, v === 'rien');
       return true;
     }, e => {
@@ -1985,6 +2004,18 @@ function ghcDoc(o){
       }
       signaler();
       return v;
+    });
+  };
+  /* « Sauvegarder en ligne » : on écrit tout de suite, ou dès que GitHub le permet */
+  d.maintenant = function(essais){
+    essais = essais || 0;
+    if(!d.actif) return Promise.resolve({ok:false, msg:d.erreur || 'La sauvegarde en ligne n’est pas en route.'});
+    const attente = d.occupe ? 700 : Math.max(d.pause - Date.now(), d.derniereEcriture + d.tEcart - Date.now());
+    if(attente > 0 && essais < 100) return new Promise(ok => setTimeout(ok, Math.min(attente + 100, 65000))).then(() => d.maintenant(essais + 1));
+    return d.ecrire().then(ok => {
+      if(ok) return {ok:true, rien:d.resultat === 'rien'};
+      if(d.erreur || !d.actif || essais >= 100) return {ok:false, msg:d.erreur || 'L’écriture n’a pas pu partir.'};
+      return new Promise(r => setTimeout(r, 700)).then(() => d.maintenant(essais + 1));
     });
   };
   d.planifier = function(delai){
@@ -2398,8 +2429,36 @@ const DOC_MIENS = ghcDoc({
     if(PANNEAU_MIENS) PANNEAU_MIENS.dessiner();
   }
 });
+/* « Sauvegarder en ligne », dans la fiche : il entre dans tes personnages, et part tout de suite dans le dépôt */
+function sauverEnLigne(){
+  const b = $('enLigne');
+  const dire = (t, ok) => {
+    const m = $('enLigneMsg');
+    m.textContent = t; m.className = 'note mmsg ' + (ok ? 'ok' : 'err'); m.hidden = false;
+    clearTimeout(MIENS_UI.msg2); MIENS_UI.msg2 = setTimeout(() => { m.hidden = true; }, 12000);
+  };
+  if(!(S.nom || '').trim()){ dire('Donne-lui un nom d’abord, en haut de « Qui tu es ».', false); $('nom').focus(); return; }
+  if(!S.id || !MIENS[S.id] || MIENS[S.id].supprime) garderCeMien();
+  if(!ghcPret()){
+    dire('« ' + S.nom + ' » est gardé dans tes personnages, sur ce navigateur. Pour qu’il parte en ligne, relie une fois ton dépôt GitHub : c’est le panneau « Sauvegarde en ligne », ouvert en haut.', false);
+    ghcOuvrirPanneau();
+    return;
+  }
+  if(!DOC_MIENS.actif){
+    dire((DOC_MIENS.erreur || 'La sauvegarde en ligne est à l’arrêt.') + ' Relie de nouveau ton dépôt dans le panneau « Sauvegarde en ligne », ouvert en haut.', false);
+    ghcOuvrirPanneau();
+    return;
+  }
+  b.disabled = true; b.textContent = 'Sauvegarde…';
+  DOC_MIENS.maintenant().then(r => {
+    b.disabled = false; b.textContent = 'Sauvegarder en ligne';
+    dire(ghcPhraseSauvegarde(r, '« ' + (S.nom || 'Sans nom') + ' »'), r.ok);
+    dessinerMiens();
+  });
+}
 function brancherMiens(){
   chargerMiens();
+  $('enLigne').onclick = sauverEnLigne;
   $('mienGarder').onclick = garderCeMien;
   $('mienNouveau').onclick = nouveauMien;
   PANNEAU_MIENS = ghcPanneau($('ghcPlace'), {
@@ -2429,14 +2488,7 @@ function brancherMiens(){
 /* ============ démarrage, en dernier : tout ce qui précède est défini ============ */
 load();
 remettreEnOrdre();
-/* la première fois, un exemple à regarder ; jamais par-dessus un personnage enregistré */
-if(!S.nom && !S.id){
-  S.nom = 'Toum’Balin'; S.peuple = "Ori'Ican"; S.voie = 'Chasseur'; S.sub = {type:'Cornu'};
-  S.car = {Force:7,'Dextérité':7,Constitution:7,Intelligence:0,Sagesse:0,Charisme:0,Contenance:0};
-  ALLSKILLS.forEach(o => S.sk[o.s] = 0);
-  S.sk['Combat'] = 40; S.sk['Tir'] = 40; S.sk['Intimidation'] = 20;
-  S.prat = ['Muer','Fendre','Peau qui repousse'];
-}
+/* la première fois, une fiche vierge : aucun personnage d'exemple */
 brancherMiens();
 draw();
 dessinerMiens();

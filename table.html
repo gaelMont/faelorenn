@@ -368,6 +368,37 @@ button.mention:hover,button.mention:focus-visible{text-decoration-color:var(--fo
 .textrait.agit p{color:var(--ink)}
 .textrait:not(.agit) p{color:var(--muted)}
 .textrait button.mention{color:var(--forest)}
+/* la fiche en grand : tout ce qui concerne quelqu'un, les comptes rendus en entier */
+.grand{margin-bottom:12px;padding:16px 20px}
+.gtete{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px}
+.gtete .gnom{margin:0;font-size:26px;line-height:1.2;overflow-wrap:anywhere}
+.gtete .gnom:focus{outline:none}
+.grand .gsous{margin:4px 0 0}
+.grand .gmeta{margin:2px 0 0}
+.gcorps{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,8fr);gap:6px 32px;margin-top:14px;border-top:1px solid var(--rule);padding-top:4px}
+.glab{font-family:Spectral,Georgia,serif;font-size:16.5px;color:var(--forest);margin:14px 0 6px}
+.gsait{font-family:Spectral,Georgia,serif;font-size:15.5px;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere}
+.gautre p{margin:0 0 8px;font-family:Spectral,Georgia,serif;font-size:15px;line-height:1.5;overflow-wrap:anywhere}
+.gtitre{display:flex;align-items:baseline;gap:10px}
+/* les filtres restent sous la main quand on descend dans les paragraphes */
+.gfiltres{position:sticky;top:env(safe-area-inset-top,0px);z-index:1;background:var(--surface);padding:6px 0 8px;border-bottom:1px solid var(--rule)}
+.gfiltres .seg{flex-wrap:wrap}
+.gfiltres .seg button:disabled{opacity:.45;cursor:default}
+.gsauts{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.gsauts button{font:inherit;font-size:12.5px;padding:3px 9px;border:1px solid var(--rule);background:transparent;color:var(--forest);border-radius:2px;cursor:pointer}
+.gsauts button:hover{background:var(--fill)}
+.ggroupe{scroll-margin-top:64px}
+.gseance{margin:16px 0 4px;font-family:"IBM Plex Sans",sans-serif;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--sage);font-weight:600}
+.gseance .gnb{letter-spacing:0;text-transform:none;font-weight:400;color:var(--muted)}
+.gpara{display:flex;gap:10px;align-items:flex-start;margin:4px 0;padding:6px 0 6px 12px;border-left:3px solid var(--rule)}
+.gpara.agit{border-left-color:var(--forest)}
+.gpara .gtexte{flex:1 1 auto;min-width:0}
+.gpara .gtexte p{margin:0;font-family:Spectral,Georgia,serif;font-size:16px;line-height:1.55;color:var(--ink);white-space:pre-wrap;overflow-wrap:anywhere}
+.gpara .gtexte p.joints{margin-top:3px;font-family:"IBM Plex Sans",sans-serif;font-size:12.5px;line-height:1.4;color:var(--muted);white-space:normal}
+mark.nomici{background:var(--fill);color:var(--forest);font-weight:600;border-radius:2px;padding:0 2px;box-shadow:inset 0 -2px 0 var(--sage)}
+button.mention.lui{font-weight:600;text-decoration-color:var(--forest)}
+@media (max-width:860px){.gcorps{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:560px){.grand{padding:12px 14px}.gtete .gnom{font-size:22px}}
 .vtextes{margin-top:8px;border-top:1px solid var(--rule);padding-top:6px}
 .vtextes summary{cursor:pointer;font-size:13px;color:var(--forest)}
 .vtextes .textes{margin-top:6px}
@@ -484,6 +515,7 @@ svg.reseau:active{cursor:grabbing}
 @page{size:A4;margin:16mm}
 @media print{
   .noprint{display:none!important}
+  .gfiltres{position:static}
   body{background:#fff;color:#000}
   .wrap{padding:0;max-width:none}
   body.imprime-seance header,
@@ -3213,8 +3245,8 @@ function dessinerGensSeance(){
     li.append(b);
     const q = [libelle(ATTITUDES, p.attitude).toLowerCase(), p.pvMax != null ? (p.pv == null ? p.pvMax : p.pv) + '/' + p.pvMax + ' PV' : ''].filter(Boolean).join(' · ');
     if(q) li.append(el('span','mini', q));
-    const a = el('a','fiche', 'fiche'); a.href = 'pnj.html#' + encodeURIComponent(p.id); a.target = ONGLET_VISAGES;
-    a.title = 'La fiche de ' + p.nom + ', dans le Registre des Visages';
+    const a = el('a','fiche', 'fiche'); a.href = 'pnj.html#grand=' + encodeURIComponent('pnj:' + p.id); a.target = ONGLET_VISAGES;
+    a.title = 'La fiche de ' + p.nom + ' en grand, dans le Registre des Visages';
     li.append(a);
     u.append(li);
   });
@@ -5136,6 +5168,7 @@ function cartePnj(p){
   const ouvert = !!PNJ_OUVERTS[p.id];
   const b = (txt, fn, cls) => { const x = el('button','btn ghost sm' + (cls ? ' ' + cls : ''), txt); x.type = 'button'; x.onclick = fn; act.append(x); return x; };
   b(ouvert ? 'Replier' : 'Voir la fiche', () => { PNJ_OUVERTS[p.id] = !ouvert; dessinerListePnj(true); });
+  b('En grand', () => ouvrirGrand('pnj:' + p.id)).setAttribute('aria-label', 'Ouvrir la fiche de ' + (p.nom || 'ce PNJ') + ' en grand');
   b('Modifier', () => ouvrirEditeurPnj(p, false));
   const ti = b('Tisser un lien', () => { TISSE['pnj:' + p.id] = !TISSE['pnj:' + p.id]; dessinerListePnj(true); if(TISSE['pnj:' + p.id]){ const s = document.querySelector('[data-pnj="' + p.id + '"] .fl-avec'); if(s) s.focus(); } });
   ti.setAttribute('aria-expanded', TISSE['pnj:' + p.id] ? 'true' : 'false');
@@ -5183,6 +5216,175 @@ function detailPnj(p){
   d.append(el('h3', null, 'Dans les comptes rendus'));
   d.append(blocTextes(ref, () => dessinerListePnj(true)));
   return d;
+}
+
+/* ============ la fiche en grand ============
+   Tout ce qui concerne quelqu'un, sur toute la largeur : ce qu'on sait de lui, ses liens, les fiches qui le
+   citent, et chaque paragraphe des comptes rendus où il parle, agit, où on le cite ou le nomme, en entier.
+   avant : les fiches d'où l'on vient, en suivant un nom cité */
+const GRAND = {ref:'', filtre:'tout', avant:[], tisse:false};
+function ouvrirGrand(ref, retour){
+  const box = $('pnjGrand');
+  if(!box || !quiRef(ref)) return;
+  if(GRAND.ref && GRAND.ref !== ref && !retour){ GRAND.avant.push(GRAND.ref); if(GRAND.avant.length > 12) GRAND.avant.shift(); }
+  if(GRAND.ref !== ref){ GRAND.filtre = 'tout'; GRAND.tisse = false; }
+  GRAND.ref = ref;
+  dessinerGrand(true);
+  box.scrollIntoView({block:'start', behavior:'smooth'});
+  const h = box.querySelector('.gnom'); if(h) h.focus({preventScroll:true});
+}
+function fermerGrand(){
+  GRAND.ref = ''; GRAND.avant = []; GRAND.tisse = false;
+  const box = $('pnjGrand'); if(box){ box.hidden = true; box.innerHTML = ''; }
+}
+function dessinerGrand(force){
+  const box = $('pnjGrand'); if(!box) return;
+  const q = GRAND.ref ? quiRef(GRAND.ref) : null;
+  /* retiré entre-temps : la fiche en grand se ferme */
+  if(!q){ if(GRAND.ref) fermerGrand(); else box.hidden = true; return; }
+  if(!force && occupe(box)){ apresSaisie(box, () => dessinerGrand(true)); return; }
+  const ref = q.ref, o = q.o;
+  box.hidden = false; box.innerHTML = '';
+  box.setAttribute('aria-label', 'La fiche de ' + q.nom + ', en grand');
+  const gens = gensCitables();
+  const l = textesDe(ref);
+
+  /* en tête : qui c'est, et de quoi agir */
+  const t = el('div','gtete');
+  const r0 = GRAND.avant.length ? GRAND.avant[GRAND.avant.length - 1] : '', q0 = r0 ? quiRef(r0) : null;
+  if(q0){
+    const rv = el('button','btn ghost xs', '← ' + q0.nom); rv.type = 'button';
+    rv.title = 'Revenir à la fiche de ' + q0.nom;
+    rv.onclick = () => { GRAND.avant.pop(); ouvrirGrand(r0, true); };
+    t.append(rv);
+  }
+  const nm = el('h3','gnom', q.nom + (!q.pj && o.statut === 'mort' ? ' †' : '')); nm.tabIndex = -1;
+  t.append(nm);
+  if(!q.pj) t.append(el('span','att att-' + o.attitude, libelle(ATTITUDES, o.attitude)));
+  t.append(el('span','espace'));
+  const fer = el('button','btn ghost sm','Fermer'); fer.type = 'button'; fer.id = 'grandFermer';
+  fer.setAttribute('aria-label', 'Fermer la fiche en grand');
+  fer.onclick = fermerGrand;
+  t.append(fer);
+  box.append(t);
+  const qui = q.pj ? [o.joueur ? 'joué par ' + o.joueur : '', o.peuple, o.voie] : [o.role, o.peuple, o.groupe];
+  box.append(el('p','pqui gsous', qui.filter(Boolean).join(' · ') || 'rien de noté pour l’instant'));
+  const vu = [];
+  l.forEach(x => { const n = x.e.seance || '?'; if(vu.indexOf(n) < 0) vu.push(n); });
+  const nl = liensDe(ref).length;
+  const meta = [q.pj ? '' : o.lieu, vu.length ? 'vu en séance ' + vu.join(', ') : '', nl ? nl + ' lien' + (nl > 1 ? 's' : '') : '',
+    !q.pj && o.statut === 'disparu' ? 'disparu' : '', !q.pj && o.pvMax ? o.pv + '/' + o.pvMax + ' PV' : ''].filter(Boolean);
+  if(meta.length) box.append(el('p','mini gmeta', meta.join(' · ')));
+  const act = el('div','pact');
+  const b = (txt, fn) => { const x = el('button','btn ghost sm', txt); x.type = 'button'; x.onclick = fn; act.append(x); return x; };
+  if(!q.pj){
+    b('Modifier', () => ouvrirEditeurPnj(o, false));
+    b('Faire parler', () => composerPourPnj(o));
+  }
+  const ti = b('Tisser un lien', () => {
+    GRAND.tisse = !GRAND.tisse; dessinerGrand(true);
+    if(GRAND.tisse){ const s = box.querySelector('.fl-avec'); if(s) s.focus(); }
+  });
+  ti.setAttribute('aria-expanded', GRAND.tisse ? 'true' : 'false');
+  b('Dans le réseau', () => { MOI.vuePnj = 'reseau'; RES.sel = ref; RES.focus = ''; sauverLocal(); dessinerPnj(true); $('pnjReseau').scrollIntoView({block:'start', behavior:'smooth'}); });
+  if(q.pj) b('Sa progression', () => ouvrirPage('progression.html#pj=' + encodeURIComponent(o.id), ONGLET_PROGRESSION));
+  box.append(act);
+  if(GRAND.tisse) box.append(formLien(ref, '', () => { GRAND.tisse = false; dessinerGrand(true); }));
+
+  const corps = el('div','gcorps');
+  const cote = el('div','gcote'), lire = el('div','glire');
+  corps.append(cote, lire);
+  box.append(corps);
+
+  /* à gauche : ce qu'on sait, ses liens, les autres fiches qui le citent */
+  cote.append(el('h4','glab', q.pj ? 'Ce qu’il est' : 'Ce qu’on sait'));
+  if(o.texte && o.texte.trim()){ const x = el('div','gsait'); x.append(texteRiche(o.texte, gens)); cote.append(x); }
+  else cote.append(el('p','mini', q.pj ? 'Rien d’écrit : sa fiche se complète dans le Registre de la Table.' : 'Rien d’écrit. « Modifier » pour le compléter.'));
+  if(!q.pj && o.valeurs && o.valeurs.length){
+    cote.append(el('h4','glab', 'Ses valeurs'));
+    cote.append(el('p','mini', o.valeurs.map(v => v.n + ' ' + v.v + ' (d20 ' + d20v(v.v) + ')').join(' · ')));
+  }
+  cote.append(el('h4','glab', 'Ses liens'));
+  const ls = liensDe(ref);
+  if(!ls.length) cote.append(el('p','mini', 'Aucun lien pour l’instant.'));
+  ls.forEach(x => cote.append(ligneLien(x, () => dessinerGrand(true), ref, 'grand')));
+  const f = fichesQuiCitent(ref);
+  if(f.length){
+    cote.append(el('h4','glab', 'Dans d’autres fiches'));
+    f.forEach(x => {
+      const p = el('div','gautre'), tx = el('p');
+      const n = el('button','mention', x.nom); n.type = 'button'; n.title = 'La fiche de ' + x.nom;
+      n.onclick = () => ouvrirGrand(x.ref);
+      tx.append(n, document.createTextNode(' : '), texteSurligne(x.o.texte, ref, gens));
+      p.append(tx);
+      cote.append(p);
+    });
+  }
+
+  /* à droite : les comptes rendus, en entier */
+  lire.append(grandTextes(q, l, gens));
+}
+function grandTextes(q, l, gens){
+  const ref = q.ref;
+  const w = el('div','gtextes');
+  const tete = el('div','gtitre');
+  tete.append(el('h4','glab', 'Dans les comptes rendus'));
+  if(l.length) tete.append(el('span','mini', l.length + ' paragraphe' + (l.length > 1 ? 's' : '')));
+  w.append(tete);
+  if(!l.length){
+    w.append(el('p','vide', 'Rien pour l’instant. Écris « /' + q.nom + ' » dans un paragraphe de la séance pour l’y relier.'));
+    return w;
+  }
+  const nAgit = l.filter(x => x.agit).length, nNomme = l.length - nAgit;
+  if((GRAND.filtre === 'agit' && !nAgit) || (GRAND.filtre === 'nomme' && !nNomme) || ['tout', 'agit', 'nomme'].indexOf(GRAND.filtre) < 0) GRAND.filtre = 'tout';
+  const barre = el('div','gfiltres');
+  const seg = el('div','seg'); seg.setAttribute('role', 'group'); seg.setAttribute('aria-label', 'Quels paragraphes');
+  [['tout', 'Tout', l.length], ['agit', 'Il parle ou agit', nAgit], ['nomme', 'On le nomme', nNomme]].forEach(([k, lab, n]) => {
+    const x = el('button', null, lab + ' · ' + n); x.type = 'button'; x.id = 'grandFiltre-' + k;
+    x.disabled = !n;
+    x.setAttribute('aria-pressed', GRAND.filtre === k ? 'true' : 'false');
+    x.onclick = () => { GRAND.filtre = k; dessinerGrand(true); const g = $('pnjGrand').querySelector('.gtextes'); if(g) g.scrollIntoView({block:'start', behavior:'smooth'}); };
+    seg.append(x);
+  });
+  barre.append(seg);
+  const vus = l.filter(x => GRAND.filtre === 'tout' || (GRAND.filtre === 'agit') === x.agit);
+  const groupes = [];
+  vus.forEach(x => { let g = groupes[groupes.length - 1]; if(!g || g.e.id !== x.e.id){ g = {e:x.e, l:[]}; groupes.push(g); } g.l.push(x); });
+  if(groupes.length > 1){
+    const saut = el('div','gsauts'); saut.setAttribute('role', 'group'); saut.setAttribute('aria-label', 'Aller à une séance');
+    groupes.forEach(g => {
+      const x = el('button', null, 'Séance ' + (g.e.seance || '?')); x.type = 'button';
+      x.title = g.l.length + ' paragraphe' + (g.l.length > 1 ? 's' : '') + (g.e.titre ? ', ' + g.e.titre : '');
+      x.onclick = () => { const c = w.querySelector('[data-gseance="' + g.e.id + '"]'); if(c) c.scrollIntoView({block:'start', behavior:'smooth'}); };
+      saut.append(x);
+    });
+    w.append(barre, saut);
+  } else w.append(barre);
+  groupes.forEach(g => {
+    const s = el('section','ggroupe'); s.setAttribute('data-gseance', g.e.id);
+    const h = el('h5','gseance', 'Séance ' + (g.e.seance || '?') + (g.e.titre ? ' · ' + g.e.titre : ''));
+    h.append(el('span','gnb', ' · ' + g.l.length + ' paragraphe' + (g.l.length > 1 ? 's' : '')));
+    s.append(h);
+    g.l.forEach(x => {
+      const p = el('div','gpara ' + (x.agit ? 'agit' : 'nomme'));
+      p.setAttribute('data-bloc', x.b.id);
+      const tx = el('div','gtexte');
+      const para = el('p');
+      para.append(x.agit ? texteRiche(phrase(x.b), gens) : texteSurligne(phrase(x.b), ref, gens));
+      tx.append(para);
+      const j = joints(x.b);
+      if(j.length) tx.append(el('p','joints', j.join(' · ')));
+      p.append(tx);
+      const aller = el('button','ax', '↗'); aller.type = 'button';
+      aller.title = 'Le retrouver dans la séance';
+      aller.setAttribute('aria-label', 'Retrouver ce paragraphe dans la séance ' + (g.e.seance || ''));
+      aller.onclick = () => allerAuBloc(g.e.id, x.b.id);
+      p.append(aller);
+      s.append(p);
+    });
+    w.append(s);
+  });
+  return w;
 }
 
 /* une ligne de lien : le modifier (une erreur, ou ce qui a changé en jeu), ou le défaire en deux temps.
@@ -6054,7 +6256,10 @@ function dessinerPjVisages(){
     };
     const rs = el('button','btn ghost sm','Dans le réseau'); rs.type = 'button';
     rs.onclick = () => { MOI.vuePnj = 'reseau'; RES.sel = ref; RES.focus = ''; sauverLocal(); dessinerPnj(true); $('secPnj').scrollIntoView({block:'start', behavior:'smooth'}); };
-    act.append(ti, rs);
+    const gr = el('button','btn ghost sm','En grand'); gr.type = 'button';
+    gr.setAttribute('aria-label', 'Ouvrir la fiche de ' + (c.nom || 'ce personnage') + ' en grand');
+    gr.onclick = () => ouvrirGrand(ref);
+    act.append(gr, ti, rs);
     w.append(act);
     if(TISSE[ref]) w.append(formLien(ref, '', () => { TISSE[ref] = false; dessinerPjVisages(); }));
     box.append(w);
@@ -6120,6 +6325,13 @@ function sansMarques(txt, gens){
   return out;
 }
 
+/* un nom cité, dans un texte affiché : un lien vers sa fiche. lui : c'est la fiche qu'on regarde */
+function boutonMention(t, m, lui){
+  const b = el('button','mention' + (lui ? ' lui' : ''), t.substr(m.i + 1, m.n - 1)); b.type = 'button';
+  b.title = 'La fiche de ' + m.nom;
+  b.onclick = ev => { ev.stopPropagation(); ouvrirFiche(m.ref); };
+  return b;
+}
 /* le texte affiché : chaque nom cité devient un lien vers sa fiche */
 function texteRiche(txt, gens){
   const f = document.createDocumentFragment(), t = String(txt == null ? '' : txt);
@@ -6129,29 +6341,47 @@ function texteRiche(txt, gens){
   let k = 0;
   trouverMentions(t, gens).forEach(m => {
     if(m.i > k) f.append(document.createTextNode(morceau(k, m.i)));
-    const b = el('button','mention', t.substr(m.i + 1, m.n - 1)); b.type = 'button';
-    b.title = 'La fiche de ' + m.nom;
-    b.onclick = ev => { ev.stopPropagation(); ouvrirFiche(m.ref); };
-    f.append(b);
+    f.append(boutonMention(t, m));
     k = m.i + m.n;
   });
   if(k < t.length) f.append(document.createTextNode(morceau(k, t.length)));
   return f;
 }
-/* la fiche de quelqu'un : dans le Registre des Visages, qui regroupe ce qu'on a écrit sur lui */
-function ouvrirFiche(ref){
-  const q = quiRef(ref); if(!q) return;
-  if(!$('pnjListe')){ ouvrirPage('pnj.html#' + (q.pj ? 'pj-' : '') + encodeURIComponent(q.o.id), ONGLET_VISAGES); return; }
-  if(q.pj){
-    const c = document.querySelector('[data-pj="' + q.o.id + '"]');
-    if(c){ c.scrollIntoView({block:'start', behavior:'smooth'}); c.classList.add('eclaire'); setTimeout(() => c.classList.remove('eclaire'), 2400); }
-    return;
+/* sur la fiche en grand : ses citations en gras, son nom écrit sans barre surligné */
+function texteSurligne(txt, ref, gens){
+  const f = document.createDocumentFragment(), t = String(txt == null ? '' : txt);
+  gens = gens || gensCitables();
+  const pos = barresDeMarque(t, gens);
+  const ms = trouverMentions(t, gens);
+  const bouts = ms.map(m => ({a:m.i, b:m.i + m.n, m:m}));
+  const ch = chercheNom(ref, gens);
+  if(ch.re){
+    const s = ch.nettoye(t, ms, true);
+    ch.re.lastIndex = 0;
+    let x;
+    while((x = ch.re.exec(s)) !== null){
+      const a = x.index + x[1].length, b = x.index + x[0].length;
+      if(b > a) bouts.push({a:a, b:b});
+      if(!x[0].length) ch.re.lastIndex++;
+    }
   }
-  MOI.vuePnj = 'fiches'; PNJ_OUVERTS[q.o.id] = true; PNJ_FILTRE.q = ''; PNJ_FILTRE.groupe = '';
-  if($('pnjCherche')) $('pnjCherche').value = '';
-  sauverLocal(); dessinerPnj(true);
-  const c = document.querySelector('[data-pnj="' + q.o.id + '"]');
-  if(c){ c.scrollIntoView({block:'start', behavior:'smooth'}); c.classList.add('eclaire'); setTimeout(() => c.classList.remove('eclaire'), 2400); }
+  bouts.sort((x, y) => x.a - y.a);
+  const morceau = (a, b) => { let s = ''; for(let i = a; i < b; i++) if(!pos.has(i)) s += t[i]; return s; };
+  let k = 0;
+  bouts.forEach(x => {
+    if(x.a < k) return;
+    if(x.a > k) f.append(document.createTextNode(morceau(k, x.a)));
+    f.append(x.m ? boutonMention(t, x.m, x.m.ref === ref) : el('mark','nomici', t.slice(x.a, x.b)));
+    k = x.b;
+  });
+  if(k < t.length) f.append(document.createTextNode(morceau(k, t.length)));
+  return f;
+}
+/* la fiche de quelqu'un, en grand : dans le Registre des Visages, avec tout ce qu'on a écrit sur lui */
+function ouvrirFiche(ref){
+  if(!quiRef(ref)) return;
+  if(!$('pnjGrand')){ ouvrirPage('pnj.html#grand=' + encodeURIComponent(ref), ONGLET_VISAGES); return; }
+  ouvrirGrand(ref);
 }
 
 /* ---------- la liste qui s'ouvre sous le texte ---------- */
@@ -6316,28 +6546,37 @@ function renommerMentions(ref, ancien, nouveau){
 /* ---------- ce qu'on a écrit sur quelqu'un ---------- */
 /* les paragraphes où il agit ou parle, où on le cite (« /Nahya ») ou le nomme */
 const echapper = s => String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/['’`´ʼ]/g, '[\'’`´ʼ]');
-function textesDe(ref){
-  const q = quiRef(ref); if(!q) return [];
-  const gens = gensCitables();
-  const nom = cleNom(q.nom);
-  const motif = n => new RegExp('(^|[^\\p{L}\\p{N}])' + echapper(n) + '(?=$|[^\\p{L}\\p{N}])', 'giu');
+const motifNom = n => new RegExp('(^|[^\\p{L}\\p{N}])' + echapper(n) + '(?=$|[^\\p{L}\\p{N}])', 'giu');
+/* son nom écrit sans barre, dans un texte : trois lettres au moins, jamais dans le nom plus long d'un autre */
+function chercheNom(ref, gens){
+  const q = quiRef(ref);
+  const nom = q ? cleNom(q.nom) : '';
   let re = null;
-  try{ re = nom.length >= 3 ? motif(nom) : null; }catch(e){ re = null; }
+  try{ re = nom.length >= 3 ? motifNom(nom) : null; }catch(e){ re = null; }
   /* « Garde » ne se lit pas dans « le Garde du pont » quand quelqu'un d'autre porte ce nom-là */
   const plusLongs = [];
   if(re) gens.forEach(g => {
     if(g.ref === ref || g.nom.length <= nom.length) return;
-    const m = motif(nom); m.lastIndex = 0;
-    if(m.test(g.nom)){ try{ plusLongs.push(motif(g.nom)); }catch(e){} }
+    re.lastIndex = 0;
+    if(re.test(g.nom)){ try{ plusLongs.push(motifNom(g.nom)); }catch(e){} }
   });
-  /* le texte où l'on cherche son nom écrit sans barre : les citations des autres et leurs noms plus longs effacés */
+  if(re) re.lastIndex = 0;
+  /* le texte où l'on cherche : les citations des autres (et les siennes, si on les montre à part) et les noms
+     plus longs effacés, sans rien décaler */
   const blanc = (m, p) => p + ' '.repeat(m.length - p.length);
-  const nettoye = (t, ms) => {
+  const nettoye = (t, ms, aussiLui) => {
     let s = String(t || '');
-    for(let j = ms.length - 1; j >= 0; j--) if(ms[j].ref !== ref) s = s.slice(0, ms[j].i) + ' '.repeat(ms[j].n) + s.slice(ms[j].i + ms[j].n);
+    for(let j = ms.length - 1; j >= 0; j--) if(aussiLui || ms[j].ref !== ref) s = s.slice(0, ms[j].i) + ' '.repeat(ms[j].n) + s.slice(ms[j].i + ms[j].n);
     plusLongs.forEach(x => { x.lastIndex = 0; s = s.replace(x, blanc); });
     return s;
   };
+  return {nom:nom, re:re, nettoye:nettoye};
+}
+function textesDe(ref){
+  const q = quiRef(ref); if(!q) return [];
+  const gens = gensCitables();
+  const nom = cleNom(q.nom);
+  const ch = chercheNom(ref, gens);
   const out = [];
   Object.keys(T.blocs).forEach(id => {
     const b = T.blocs[id];
@@ -6348,7 +6587,7 @@ function textesDe(ref){
       : b.qui.k === 'pnj' && (b.qui.id === q.o.id || (!b.qui.id && cleNom(b.qui.nom) === nom));
     const ms = trouverMentions(b.texte, gens);
     let cite = ms.some(m => m.ref === ref);
-    if(!cite && re){ re.lastIndex = 0; cite = re.test(nettoye(b.texte, ms)); }
+    if(!cite && ch.re){ ch.re.lastIndex = 0; cite = ch.re.test(ch.nettoye(b.texte, ms)); }
     if(agit || cite) out.push({b:b, e:e, agit:agit});
   });
   const num = e => parseFloat(e.seance) || 0;
@@ -7228,6 +7467,7 @@ function dessiner(){
   } else {
     dessinerPnj(false);
     dessinerPjVisages();
+    dessinerGrand(false);
   }
 }
 
@@ -7394,6 +7634,8 @@ function suivreAncre(){
     if(h.indexOf('pj=') === 0 && perso(h.slice(3))){ PROG_PERSO = h.slice(3); dessinerProg(true); fait = true; }
   } else {
     if(h === 'nouveau'){ ouvrirEditeurPnj(null, true); fait = true; }
+    /* un nom cité, ailleurs : sa fiche en grand */
+    else if(h.indexOf('grand=') === 0){ if(quiRef(h.slice(6))){ ouvrirGrand(h.slice(6)); fait = true; } }
     else if(h.indexOf('pj-') === 0){
       const c = document.querySelector('[data-pj="' + h.slice(3) + '"]');
       if(c){ c.scrollIntoView({block:'start'}); c.classList.add('eclaire'); setTimeout(() => c.classList.remove('eclaire'), 2400); fait = true; }

@@ -201,6 +201,23 @@ select:focus-visible,input:focus-visible,button:focus-visible{outline:2px solid 
 .famct{font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums;margin-top:1px}
 .famd{font-size:13px;color:var(--muted);font-style:italic;margin-top:3px;line-height:1.4}
 .bact.famact{margin-left:0}
+/* les entrées du livre, et ce qu'on en retouche */
+.blivre{border-top:1px solid var(--rule);margin-top:14px;padding-top:10px}
+.blivre summary{font-family:Spectral,Georgia,serif;font-size:16px;font-weight:600;color:var(--forest);cursor:pointer}
+.blivre summary span{font-family:"IBM Plex Sans",sans-serif;font-size:12.5px;font-weight:400;color:var(--muted)}
+.livgrille{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:2px 16px}
+.livrow{display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid var(--rule);min-width:0}
+.livtxt{flex:1 1 auto;min-width:0;font-size:14px;line-height:1.3}
+.livnm{overflow-wrap:anywhere}
+.livrow.retouche .livnm{color:var(--forest);font-weight:600}
+.livbadge{display:inline-block;margin-left:6px;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--gold);border:1px solid var(--gold);border-radius:2px;padding:0 4px;vertical-align:1px}
+.livact{display:flex;gap:4px;flex:0 0 auto}
+.btn.xs{font-size:12px;padding:3px 8px}
+/* le butin */
+.butap{color:var(--forest)}
+.butessai{margin-top:4px;font-size:13px;color:var(--forest);background:var(--fill);border-radius:2px;padding:3px 8px;display:inline-block}
+.editeur fieldset.butin{border:1px solid var(--rule);border-radius:3px;padding:10px 12px;background:var(--surface)}
+.editeur fieldset.butin>.aide{margin:0 0 10px}
 .btn:disabled{opacity:.4;cursor:default}
 .famavert{flex:1 1 100%;margin:0;color:var(--rust)}
 .famm{margin-top:4px}
@@ -276,11 +293,12 @@ select:focus-visible,input:focus-visible,button:focus-visible{outline:2px solid 
 </style>
 </head>
 <body>
-<script>try{ if(/^faelorenn-(table|visages)$/.test(window.name)) window.name = ''; }catch(e){}</script>
+<script>try{ if(/^faelorenn-(table|visages|progression)$/.test(window.name)) window.name = ''; }catch(e){}</script>
 <nav class="fae-site" aria-label="Les registres de Faelorenn">
   <a class="fae-accueil" href="./">Faelorenn</a>
   <a href="table.html">Registre de la Table</a>
   <a href="pnj.html">Registre des Visages</a>
+  <a href="progression.html">Registre de la Progression</a>
   <a href="createur.html">Registre du Havre</a>
   <a href="rencontres.html" aria-current="page">Registre des Rencontres</a>
 </nav>
@@ -370,6 +388,11 @@ select:focus-visible,input:focus-visible,button:focus-visible{outline:2px solid 
     </div>
     <div id="bestEditeur" class="editeur" hidden></div>
     <div id="bestListe"></div>
+    <details class="blivre" id="bestLivreBloc">
+      <summary>Les entrées du livre<span id="livreCompte"></span></summary>
+      <p class="note" style="margin:4px 0 8px">« Retoucher » fait ta version d’une entrée : elle prend sa place dans les tirages, ici et à la table, avec son butin. « Revenir au livre » la défait. Pour un adversaire de plus à côté de l’original, « Partir d’une entrée du livre » en fait une variante.</p>
+      <div id="livreListe"></div>
+    </details>
     <div class="bfamilles" id="bestFamilles">
       <div class="bftete">
         <p class="lab" style="margin:0">Tes familles<span id="famCompte"></span></p>
@@ -378,6 +401,15 @@ select:focus-visible,input:focus-visible,button:focus-visible{outline:2px solid 
       <p class="note" style="margin:4px 0 10px">Une famille regroupe ceux qui se présentent ensemble. Tu y mets tes créatures et celles du livre, et elle s'ajoute aux choix de « Qui peut se présenter ». Les sept familles du livre ne changent pas.</p>
       <div id="famEditeur" class="editeur" hidden></div>
       <div id="famListe"></div>
+    </div>
+    <div class="bfamilles" id="bestButins">
+      <div class="bftete">
+        <p class="lab" style="margin:0">Tes tables de butin<span id="butCompte"></span></p>
+        <button class="btn ghost sm" id="butNouvelle" type="button">Nouvelle table</button>
+      </div>
+      <p class="note" style="margin:4px 0 10px">Une table se partage : les poches des bandits, ce que laissent les bêtes d’une vallée. Tu l’écris une fois, une ligne par objet, et tu coches qui la porte, du livre ou à toi. Chaque créature peut aussi avoir sa propre table, dans sa fiche. À la table, « Fouiller » tire dedans.</p>
+      <div id="butEditeur" class="editeur" hidden></div>
+      <div id="butListe"></div>
     </div>
     <div class="bexport">
       <p class="lab">En tirer un bestiaire</p>
@@ -395,7 +427,7 @@ select:focus-visible,input:focus-visible,button:focus-visible{outline:2px solid 
         <input type="file" id="bestFichier" accept=".json,application/json" hidden>
       </div>
       <p class="note" id="bestMsg" hidden></p>
-      <p class="note">« Texte pour le livre » met tes créatures au format du Livre VII, prêtes à coller. La sauvegarde .json, créatures et familles, se réimporte ici, sur un autre appareil ou chez Océane.</p>
+      <p class="note">« Texte pour le livre » met tes créatures au format du Livre VII, prêtes à coller. La sauvegarde .json, créatures, retouches, familles et tables de butin, se réimporte ici, sur un autre appareil ou chez Océane.</p>
       <div id="ghcPlace"></div>
     </div>
   </div>
@@ -533,9 +565,35 @@ ADV.rangs.forEach(r => RANG[r.r] = r);
 /* les entrees du livre recoivent un identifiant stable */
 for(let r = 1; r <= 5; r++) ADV.creatures[r].forEach((c, i) => { c.src = 'livre'; c.id = 'livre-' + r + '-' + (i + 1); c.r = r; });
 
-/* les creatures et les familles maison, remplies par bestiaire.js */
+/* les creatures, les familles et les tables de butin maison, remplies par la page */
 let MAISON = [];
 let FAM_MAISON = [];
+let TABLES_BUTIN = [];
+
+/* ---------- les entrées du livre que tu as retouchées ----------
+   Une retouche porte l'identifiant de l'entrée (livre-2-2) et prend sa place partout : tirages, bestiaire,
+   table. L'entrée telle que le livre l'écrit reste gardée ici, pour « Revenir au livre ». */
+const ORIGINAUX = {};
+for(let r = 1; r <= 5; r++) ADV.creatures[r].forEach(c => { ORIGINAUX[c.id] = JSON.parse(JSON.stringify(c)); });
+let RETOUCHES = [];
+const estRetouche = c => !!c && /^livre-[1-5]-\d{1,2}$/.test(c.id || '');
+const CHAMPS_RETOUCHE = ['n','t','tr','p','a2','mod','renf','desc','ou','veut','fuit','butin','notes'];
+function livreParId(id){ const m = /^livre-([1-5])-(\d{1,2})$/.exec(id || ''); return m ? ADV.creatures[+m[1]][+m[2] - 1] || null : null; }
+function appliquerRetouches(){
+  for(let r = 1; r <= 5; r++) ADV.creatures[r].forEach(c => {
+    const o = ORIGINAUX[c.id];
+    Object.keys(c).forEach(k => { if(!(k in o)) delete c[k]; });
+    Object.assign(c, JSON.parse(JSON.stringify(o)));
+  });
+  RETOUCHES.forEach(x => {
+    const c = livreParId(x.id);
+    if(!c) return;
+    CHAMPS_RETOUCHE.forEach(k => { if(x[k] !== undefined) c[k] = JSON.parse(JSON.stringify(x[k])); });
+    c.retouche = true; c.maj = x.maj || 0;
+  });
+}
+/* les tables de butin qu'une créature porte, du livre ou à toi */
+function tablesDe(c){ const id = c && c.id; return id ? TABLES_BUTIN.filter(t => (t.qui || []).indexOf(id) >= 0) : []; }
 
 /* ---------- les familles : celles du livre, puis les tiennes ---------- */
 function familles(){ return ADV.familles.concat(FAM_MAISON); }
@@ -690,7 +748,277 @@ function adversaireEnvoye(a){
   return {n:c.n || a.n, r:a.r, pvMax:st.pv, pv:pv, red:st.red, deg:st.deg, cartes:st.cartes,
     a2: c.a2 && c.a2.n ? {n:c.a2.n, t:c.a2.el ? 'mag' : (c.a2.t || 'phy'), p:porteeDe(c.a2), e:effetDe(c, st), el:c.a2.el || ''} : null,
     tr:(c.tr || []).slice(), traits:nomsTraits(c), p:c.p || '', renf:c.renf || '',
-    cid:c.id || a.cid || '', fam:(c.t || []).slice(), butin:c.butin || ''};
+    cid:c.id || a.cid || '', fam:(c.t || []).slice(), butin:c.butin || '',
+    tables:tablesDe(c).map(t => ({k:t.k, l:t.l, lignes:t.lignes}))};
+}
+
+/* ============ le butin, Livre VI ============
+   Un d20 pour la rareté, puis un d20 dans la table qu'il désigne. L'endroit décale le premier dé.
+   Les objets uniques ne se tirent pas : on les pose. Tables recopiées du livre (Faelorenn_11). */
+const BUTIN = {
+  rarete: [{de:-99, a:12, k:'courant', l:'Courant'}, {de:13, a:18, k:'rare', l:'Rare'}, {de:19, a:99, k:'precieux', l:'Précieux'}],
+  endroits: [
+    {k:'pauvre', l:'Sur un bandit, une bête, un pauvre', m:-5},
+    {k:'officier', l:'Sur un officier, dans une réserve, dans un Havre', m:0},
+    {k:'avant', l:'Dans une ruine de l’Avant, sur un corps de Marchefleur', m:5}
+  ],
+  tables: {
+ "courant": [
+  {
+   "de": 1,
+   "a": 2,
+   "t": "Fiole de Havre entamée. Rends 1d6 PV, une seule dose."
+  },
+  {
+   "de": 3,
+   "a": 4,
+   "t": "Cuir dépareillé. Réduction 1. Il ne va à personne : −5 Discrétion tant que tu le portes."
+  },
+  {
+   "de": 5,
+   "a": 6,
+   "t": "Dague ébréchée. d4. Sur un 20 naturel, elle casse pour de bon."
+  },
+  {
+   "de": 7,
+   "a": 8,
+   "t": "Flèches, 1d6. Récupérables après le combat, sauf celles d'un critique."
+  },
+  {
+   "de": 9,
+   "a": 9,
+   "t": "Pot de braises presque vide. Une flambée, pas deux."
+  },
+  {
+   "de": 10,
+   "a": 10,
+   "t": "Poudre d'écorce, une pincée. Réduction 1 pendant un combat."
+  },
+  {
+   "de": 11,
+   "a": 11,
+   "t": "Corde de dix pas, usée. Elle porte un homme. Deux, elle casse."
+  },
+  {
+   "de": 12,
+   "a": 12,
+   "t": "Sifflet de garde. S'entend à trois cents pas. Par tout le monde."
+  },
+  {
+   "de": 13,
+   "a": 13,
+   "t": "Peau huilée. Ce qu'elle enveloppe reste sec, quoi qu'il arrive."
+  },
+  {
+   "de": 14,
+   "a": 14,
+   "t": "Craie de mineur, un bâton. Marque ce que la pluie n'efface pas."
+  },
+  {
+   "de": 15,
+   "a": 15,
+   "t": "Clé de service d'un Havre. Lequel, c'est une autre affaire."
+  },
+  {
+   "de": 16,
+   "a": 16,
+   "t": "Registre de tournée, à moitié brûlé. Une information vraie sur la région, au choix de l'Oracle."
+  },
+  {
+   "de": 17,
+   "a": 17,
+   "t": "Collets, une douzaine. Prennent du gibier. Prennent aussi une jambe."
+  },
+  {
+   "de": 18,
+   "a": 18,
+   "t": "Loupe de verre, fêlée. Lit les traces fines. La fêlure dédouble ce qu'on regarde."
+  },
+  {
+   "de": 19,
+   "a": 19,
+   "t": "Bourse de 1d10 argents. Elle porte un nom brodé."
+  },
+  {
+   "de": 20,
+   "a": 20,
+   "t": "Rien, et des traces de quelqu'un qui est passé avant toi."
+  }
+ ],
+ "rare": [
+  {
+   "de": 1,
+   "a": 2,
+   "t": "Maille de la Bannière du Sang. Réduction 3. Elle porte leurs couleurs : on te prend pour eux, en bien comme en mal."
+  },
+  {
+   "de": 3,
+   "a": 4,
+   "t": "Bouclier de gué. +1 de réduction, et il flotte : il porte une personne sur l'eau."
+  },
+  {
+   "de": 5,
+   "a": 6,
+   "t": "Éclat de totem. Rend 1 PC, une seule fois, puis la pierre est morte."
+  },
+  {
+   "de": 7,
+   "a": 8,
+   "t": "Lanterne sourde de bonne facture. Catalyseur de poche pour un Nïhr, et son volet ne grince pas."
+  },
+  {
+   "de": 9,
+   "a": 10,
+   "t": "Arc à double courbure. d6, mais sa portée est doublée."
+  },
+  {
+   "de": 11,
+   "a": 11,
+   "t": "Lame de chitine trouvée. Arme légère, d4. Si l'Élytris dont elle vient la reconnaît, il la reprend."
+  },
+  {
+   "de": 12,
+   "a": 12,
+   "t": "Gourde de combat nyréenne. Compte comme une source d'eau Ordinaire, même en plein désert."
+  },
+  {
+   "de": 13,
+   "a": 13,
+   "t": "Fil ancien, une bobine entière. De quoi monter un rouet zhern, ou 8 ors à leur école."
+  },
+  {
+   "de": 14,
+   "a": 14,
+   "t": "Onction d'Ysse en fiole scellée. Un allié ne tombe pas sous 1 PV pendant le prochain combat."
+  },
+  {
+   "de": 15,
+   "a": 15,
+   "t": "Sceau de péage de l'Or. Tu passes gratuitement, et ceux qui te suivent aussi. Il est nominatif, et ce n'est pas ton nom."
+  },
+  {
+   "de": 16,
+   "a": 16,
+   "t": "Arme de guerre bien tenue. d8, et les critiques ne l'ébrèchent jamais."
+  },
+  {
+   "de": 17,
+   "a": 17,
+   "t": "Trousse de Secouriste complète. Annule le malus de soin sans matériel, pour tout le groupe."
+  },
+  {
+   "de": 18,
+   "a": 18,
+   "t": "Encre ori'ican. Une marque tracée avec tient un mois, et ne part ni à l'eau ni au feu."
+  },
+  {
+   "de": 19,
+   "a": 19,
+   "t": "Carte de racines. Le tracé entre trois Havres, dessiné par un Écorcien. Il n'y a pas de nord dessus."
+  },
+  {
+   "de": 20,
+   "a": 20,
+   "t": "Cuir clouté taillé pour toi. Réduction 2, sans le malus de Discrétion."
+  }
+ ],
+ "precieux": [
+  {
+   "de": 1,
+   "a": 2,
+   "t": "Lampe de l'Avant. Lumière froide qui ne s'éteint pas. Se vide en une saison, se remplit en une saison passée en région instable. Catalyseur installé pour un Zhern."
+  },
+  {
+   "de": 3,
+   "a": 4,
+   "t": "Plates de la Bordure. Réduction 4, mais le trou n'a jamais été rebouché : réduction 3 tant que personne ne les répare."
+  },
+  {
+   "de": 5,
+   "a": 6,
+   "t": "Lance lourde marquée. d12. Chaque encoche du manche est un mort. Il y en a onze."
+  },
+  {
+   "de": 7,
+   "a": 8,
+   "t": "Bague de Scelleur. Tu poses un sceau par jour comme un Scelleur de l'Or, sans rien y connaître."
+  },
+  {
+   "de": 9,
+   "a": 10,
+   "t": "Cœur de braise. Un Ilvès qui le porte puise au-delà de sa Contenance sans payer de PV, une fois par jour."
+  },
+  {
+   "de": 11,
+   "a": 12,
+   "t": "Fiole des Eaux. La fiole-âme d'un Nyréen mort. Boire la Mémoire dessus rend sa dernière journée, entière."
+  },
+  {
+   "de": 13,
+   "a": 14,
+   "t": "Graine écorcienne. Plantée, il en sort un Écorcien identique à celui qui l'a semée, avec ses souvenirs. Personne ne sait quoi en faire."
+  },
+  {
+   "de": 15,
+   "a": 16,
+   "t": "Carnet d'un Marchefleur mort. Trois Floraisons dedans que personne n'a traitées, avec leur position."
+  },
+  {
+   "de": 17,
+   "a": 18,
+   "t": "Deux lames appariées. Armes légères, d4 chacune. Qui porte les deux frappe deux fois par round, et ne peut porter aucun bouclier."
+  },
+  {
+   "de": 19,
+   "a": 19,
+   "t": "Objet de l'Avant. Personne ne sait ce qu'il fait. L'Oracle non plus, tant qu'on ne l'a pas essayé."
+  },
+  {
+   "de": 20,
+   "a": 20,
+   "t": "Quelque chose de vivant."
+  }
+ ]
+}
+};
+
+/* ---------- une table de butin écrite à la main : une ligne par objet ----------
+   « 1-2 Une dent en or », « 3. Une corde », « 4 : rien » sont numérotées, et le dé va jusqu'au plus grand numéro ;
+   sans numéros, chaque ligne a la même chance. Un nombre seul devant un objet, « 5 Un couteau », est un numéro
+   quand la table en a d'autres, ou quand les nombres montent depuis 1 ; sinon, « 2 crocs de loup », une quantité. */
+const NUMERO_BUTIN = /^(\d{1,3})(?:\s*(?:-|à|\u2013)\s*(\d{1,3}))?\s*([.:)\-\u2013])?\s*/;
+function lireTableButin(texte){
+  const brutes = String(texte || '').split(/\n+/).map(s => s.trim()).filter(Boolean).slice(0, 200)
+    .map(l => { const m = NUMERO_BUTIN.exec(l); return {l:l, m:m, net:!!(m && (m[2] || m[3]))}; });
+  const nus = brutes.some(x => x.m && !x.net);
+  const monte = brutes.length > 1 && brutes.every(x => x.m) && brutes.every((x, i) => i === 0 ? +x.m[1] === 1 : +x.m[1] > +(brutes[i - 1].m[2] || brutes[i - 1].m[1]));
+  const nusNumeros = nus && (brutes.some(x => x.net) || monte);
+  const lignes = brutes.map(x => {
+    if(x.m && (x.net || nusNumeros)){ const de = +x.m[1], a = +(x.m[2] || x.m[1]); return {de:Math.min(de, a), a:Math.max(de, a), t:x.l.slice(x.m[0].length).trim()}; }
+    return {de:null, a:null, t:x.l};
+  });
+  const numerotee = lignes.length > 0 && lignes.every(p => p.de != null);
+  const de = numerotee ? Math.max.apply(null, lignes.map(p => p.a)) : lignes.length;
+  const avis = [];
+  if(numerotee && de <= 1000){
+    const vides = [], doubles = [];
+    for(let v = 1; v <= de; v++){
+      const n = lignes.filter(p => v >= p.de && v <= p.a).length;
+      if(!n) vides.push(v); else if(n > 1) doubles.push(v);
+    }
+    const plage = l => l.length > 6 ? l.slice(0, 6).join(', ') + '…' : l.join(', ');
+    if(vides.length) avis.push(vides.length > 1 ? 'Rien aux ' + plage(vides) + ' : ces numéros ne donnent rien.' : 'Rien au ' + vides[0] + ' : ce numéro ne donne rien.');
+    if(doubles.length) avis.push(doubles.length > 1 ? 'Les ' + plage(doubles) + ' tombent sur deux lignes : la première l’emporte.' : 'Le ' + doubles[0] + ' tombe sur deux lignes : la première l’emporte.');
+  } else if(lignes.some(p => p.de != null)) avis.push('Certaines lignes sont numérotées, d’autres pas : on tire une ligne au hasard.');
+  return {lignes:lignes, numerotee:numerotee, de:de, avis:avis};
+}
+/* tirer dans une table : le dé du site, ou celui qu'on a lancé sur la table (v) */
+function tirerTableButin(texte, v){
+  const t = lireTableButin(texte);
+  if(!t.lignes.length) return null;
+  const x = v != null ? v : 1 + Math.floor(Math.random() * t.de);
+  const p = t.numerotee ? t.lignes.find(y => x >= y.de && x <= y.a) : t.lignes[x - 1];
+  return {v:x, de:t.de, t:p ? p.t : '', numerotee:t.numerotee};
 }
 
 const $ = id => document.getElementById(id);
@@ -1219,9 +1547,11 @@ const LORE = [
   {k:'butin', l:'Ce qu’il laisse', ph:'Une ligne par objet. Numérotées « 1-2 Une dent en or », la table y tire au dé quand on le fouille.'},
   {k:'notes', l:'Notes pour le MJ',    ph:'Idées de scène, variantes, pièges à éviter.'}
 ];
-const BST = {mode:'local', db:null, pret:false, erreur:'', source:'', gh:null, ghErreur:'', recherche:'', inclureLivre:true, aSupprimer:null, famASupprimer:null};
+const BST = {mode:'local', db:null, pret:false, erreur:'', source:'', gh:null, ghErreur:'', recherche:'', inclureLivre:true, aSupprimer:null, famASupprimer:null,
+  tableASupprimer:null, retoucheAOter:null, essaiTable:null, flashTable:null};
 let ED = null;   /* la creature en cours d'edition : {c, nouveau} */
 let FED = null;  /* la famille en cours d'edition : {f, nouveau, livre, miennes} */
+let TED = null;  /* la table de butin en cours d'edition : {t, nouveau, qui} */
 const CLE_OK = /^[A-Za-z0-9_.~:@+-]{1,120}$/;
 
 /* ---------- forme d'une creature maison ---------- */
@@ -1237,7 +1567,9 @@ function normalise(o){
   const txt = v => (v == null ? '' : String(v));
   c.id = CLE_OK.test(o.id || '') ? o.id : nouvelId();
   c.n = txt(o.n).slice(0, 120);
-  c.r = [1,2,3,4,5].indexOf(+o.r) >= 0 ? +o.r : 2;
+  /* une entrée du livre retouchée garde le rang de l'entrée */
+  const mr = /^livre-([1-5])-\d{1,2}$/.exec(c.id);
+  c.r = mr ? +mr[1] : [1,2,3,4,5].indexOf(+o.r) >= 0 ? +o.r : 2;
   /* on garde les etiquettes d'une famille pas encore chargee : l'affichage ignore celles qui n'existent pas */
   c.t = Array.isArray(o.t) ? o.t.filter((x, i, a) => typeof x === 'string' && CLE_OK.test(x) && a.indexOf(x) === i).slice(0, 40) : [];
   /* les traits : on garde ceux du catalogue, au rang où ils tiennent */
@@ -1269,15 +1601,43 @@ function normaliseFam(o){
   };
 }
 
+/* ---------- forme d'une table de butin maison ---------- */
+function nouvelleCleTable(){ return 'b-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 6); }
+function normaliseTable(o){
+  const txt = v => (v == null ? '' : String(v));
+  o = o && typeof o === 'object' ? o : {};
+  const k = typeof o.k === 'string' ? o.k : '';
+  return {
+    k: CLE_OK.test(k) ? k : nouvelleCleTable(),
+    l: txt(o.l).trim().slice(0, 60),
+    d: txt(o.d).trim().slice(0, 300),
+    lignes: txt(o.lignes).slice(0, 6000),
+    qui: Array.isArray(o.qui) ? o.qui.filter((id, i, a) => typeof id === 'string' && CLE_OK.test(id) && a.indexOf(id) === i).slice(0, 300) : [],
+    maj: +o.maj || 0
+  };
+}
+/* « Un d6 sur 3 lignes. » : ce que la table donnera, et ce qui cloche */
+function resumeTable(texte){
+  const t = lireTableButin(texte);
+  if(!t.lignes.length) return 'Vide pour l’instant.';
+  const n = t.lignes.length + ' ligne' + (t.lignes.length > 1 ? 's' : '');
+  return (t.numerotee ? 'Un d' + t.de + ', sur ' + n + '.' : 'Une ligne au hasard, sur ' + n + '.') + (t.avis.length ? ' ' + t.avis.join(' ') : '');
+}
+
 /* ---------- stockage : avec la page quand c'est possible, sinon dans ce navigateur ----------
    Ce navigateur garde une copie, plus deux listes : ce qui n'est pas encore parti avec la page
    (attente) et ce qui a ete supprime ici sans que la page l'ait encore su (supprimes).
    Tout le reste vient de la page : ce qui a ete supprime ailleurs ne revient pas. */
+/* les créatures portent aussi tes retouches des entrées du livre (livre-2-2) : elles prennent la place de l'entrée */
 const MAGS = {
   creatures: {col:'creatures', cle:'faelorenn.bestiaire', champ:'id', norm:o => normalise(o),
-    get:() => MAISON, set:l => { MAISON = l; }, attente:[], supprimes:[], pret:false},
+    get:() => MAISON.concat(RETOUCHES),
+    set:l => { MAISON = l.filter(c => !estRetouche(c)); RETOUCHES = l.filter(estRetouche); appliquerRetouches(); },
+    attente:[], supprimes:[], pret:false},
   familles:  {col:'familles', cle:'faelorenn.familles', champ:'k', norm:o => normaliseFam(o),
-    get:() => FAM_MAISON, set:l => { FAM_MAISON = l; }, attente:[], supprimes:[], pret:false}
+    get:() => FAM_MAISON, set:l => { FAM_MAISON = l; }, attente:[], supprimes:[], pret:false},
+  butins:    {col:'butins', cle:'faelorenn.butins', champ:'k', norm:o => normaliseTable(o),
+    get:() => TABLES_BUTIN, set:l => { TABLES_BUTIN = l; }, attente:[], supprimes:[], pret:false}
 };
 function lireMag(m){
   let o = null;
@@ -1414,6 +1774,7 @@ function supprimerDans(m, id){
 function enregistrer(c){ return enregistrerDans(MAGS.creatures, c); }
 function supprimer(id){ supprimerDans(MAGS.creatures, id); }
 function enregistrerFam(f){ return enregistrerDans(MAGS.familles, f); }
+function enregistrerTable(t){ return enregistrerDans(MAGS.butins, t); }
 
 /* supprimer une famille : elle quitte aussi tes creatures, et les tirages */
 function supprimerFamille(k){
@@ -1477,9 +1838,15 @@ function ouvrirEditeur(c, nouveau){
   if(nouveau && c && c.id && trouveId(c.id)) ED.c.id = nouvelId();
   const box = $('bestEditeur'); box.innerHTML = ''; box.hidden = false;
   const c0 = ED.c;
+  /* une entrée du livre qu'on retouche : ta version prend sa place, son rang ne change pas */
+  const livre = ED.livre = estRetouche(c0);
+  /* les tables partagées qu'il porte : on les coche ici, elles s'enregistrent avec lui */
+  ED.tables = TABLES_BUTIN.filter(t => t.qui.indexOf(c0.id) >= 0).map(t => t.k);
 
   const tete = el('div','edtete');
-  tete.append(el('h3', null, nouveau ? 'Nouvelle créature' : 'Modifier ' + (c0.n || 'la créature')));
+  tete.append(el('h3', null, livre ? 'Retoucher « ' + ((ORIGINAUX[c0.id] || {}).n || c0.n) + ' », entrée du livre'
+    : nouveau ? 'Nouvelle créature' : 'Modifier ' + (c0.n || 'la créature')));
+  if(livre) tete.append(el('p','aide', 'Ta version remplace celle du livre partout : dans les tirages, dans ce bestiaire et à la table. « Revenir au livre » la défait ; les tables partagées qu’elle porte restent cochées.'));
   box.append(tete);
 
   const grille = el('div','edgrille');
@@ -1499,9 +1866,12 @@ function ouvrirEditeur(c, nouveau){
     b.setAttribute('role','radio');
     b.append(el('b', null, r.r + ' · ' + r.nom), el('span', null, r.pv + ' PV · ' + r.deg + ' · réd. ' + r.red + ' · ' + COUT[r.r] + ' pt' + (COUT[r.r] > 1 ? 's' : '')));
     b.onclick = () => changerRang(r.r);
+    b.disabled = livre && r.r !== c0.r;
     rseg.append(b);
   });
-  rw.append(rseg); g1.append(rw);
+  rw.append(rseg);
+  if(livre) rw.append(el('p','aide','Une entrée du livre garde son rang. Pour un autre rang, fais-en une variante.'));
+  g1.append(rw);
 
   const fw = el('div','fld'); fw.append(el('span','lab','Familles'));
   const fseg = el('div','seg'); fseg.id = 'ed-familles';
@@ -1617,12 +1987,54 @@ function ouvrirEditeur(c, nouveau){
   renf.oninput = () => { ED.c.renf = renf.value; majApercu(); };
   form.append(g3);
 
+  /* son butin : sa propre table, et les tables partagées qu'il porte */
+  const gB = el('fieldset','butin'); gB.append(el('legend', null, 'Son butin'));
+  gB.append(el('p','aide','Ce qu’on trouve sur lui quand on le fouille, à la table. Sa propre table, une ligne par objet ; et, si tu veux, des tables partagées avec d’autres.'));
+  const zb = champ(gB, 'ed-butin', 'Sa propre table', zone(c0.butin, 'Une ligne par objet. « 1-2 Une dent en or », « 3 Une corde » : on lance un d3. Sans numéros, une ligne au hasard.', 4));
+  const apb = el('p','aide butap'); apb.id = 'ed-butin-apercu';
+  zb.parentNode.insertBefore(apb, zb.nextSibling);
+  const majB = () => { apb.textContent = resumeTable(ED.c.butin); };
+  zb.oninput = () => { ED.c.butin = zb.value; majB(); };
+  majB();
+  const tw2 = el('div','fld'); tw2.append(el('span','lab','Les tables partagées qu’il porte'));
+  const tseg2 = el('div','seg'); tseg2.id = 'ed-tables';
+  tw2.append(tseg2);
+  const tnew = el('div','famnew'); tnew.hidden = true;
+  const tnom = saisie('text', '', 'Les poches d’un bandit'); tnom.id = 'ed-tablenom'; tnom.maxLength = 60;
+  tnom.setAttribute('aria-label', 'Nom de la nouvelle table');
+  const tok = el('button','btn sm','Créer la table'); tok.type = 'button'; tok.id = 'ed-tableok';
+  const tnon = el('button','btn ghost sm','Annuler'); tnon.type = 'button';
+  const terr = el('p','err'); terr.id = 'ed-tablenom-err'; terr.hidden = true;
+  tnew.append(tnom, tok, tnon);
+  tw2.append(tnew, terr);
+  const treplier = () => { tnew.hidden = true; terr.hidden = true; tnom.value = ''; tnom.removeAttribute('aria-invalid'); };
+  const tcreer = () => {
+    const pb = problemeNomTable(tnom.value, null);
+    if(pb){ terr.textContent = pb; terr.hidden = false; tnom.setAttribute('aria-invalid', 'true'); tnom.focus(); return; }
+    const t = enregistrerTable({l:tnom.value});
+    ED.tables.push(t.k);
+    treplier();
+    draw();
+    const b = $('ed-table-' + t.k); if(b) b.focus();
+  };
+  tok.onclick = tcreer;
+  tnon.onclick = treplier;
+  tnom.onkeydown = e => {
+    if(e.key === 'Enter'){ e.preventDefault(); tcreer(); }
+    else if(e.key === 'Escape'){ e.preventDefault(); treplier(); }
+  };
+  ED.redessinerTables = () => chipsTables(tseg2, () => { tnew.hidden = false; tnom.focus(); });
+  ED.redessinerTables();
+  tw2.append(el('p','aide','Une table partagée s’écrit une fois, dans « Tes tables de butin », plus bas.'));
+  gB.append(tw2);
+  form.append(gB);
+
   /* pour le bestiaire */
   const g4 = el('details'); g4.id = 'ed-lore';
-  g4.open = LORE.some(x => c0[x.k]);
+  g4.open = LORE.some(x => x.k !== 'butin' && c0[x.k]);
   g4.append(el('summary', null, 'Pour le bestiaire'));
   g4.append(el('p','aide','Rien de tout ça n’est obligatoire. C’est ce qui sort dans l’export Word, pas dans la rencontre.'));
-  LORE.forEach(x => {
+  LORE.filter(x => x.k !== 'butin').forEach(x => {
     const t = champ(g4, 'ed-' + x.k, x.l, zone(c0[x.k], x.ph, x.k === 'desc' || x.k === 'notes' || x.k === 'butin' ? 3 : 2));
     t.oninput = () => { ED.c[x.k] = t.value; };
   });
@@ -1630,12 +2042,21 @@ function ouvrirEditeur(c, nouveau){
 
   /* boutons */
   const act = el('div','acts edact');
-  const ok = el('button','btn', nouveau ? 'Ajouter au bestiaire' : 'Enregistrer'); ok.type = 'button'; ok.id = 'ed-ok';
+  const ok = el('button','btn', livre ? 'Enregistrer la retouche' : nouveau ? 'Ajouter au bestiaire' : 'Enregistrer'); ok.type = 'button'; ok.id = 'ed-ok';
   const non = el('button','btn ghost sm','Annuler'); non.type = 'button'; non.id = 'ed-non';
   ok.onclick = validerEditeur;
   non.onclick = fermerEditeur;
   const msg = el('p','err'); msg.id = 'ed-msg'; msg.hidden = true;
   act.append(ok, non);
+  if(livre && RETOUCHES.some(x => x.id === c0.id)){
+    const rv = el('button','btn ghost sm','Revenir au livre'); rv.type = 'button'; rv.id = 'ed-revenir';
+    rv.onclick = () => {
+      if(rv.classList.contains('danger')){ oterRetouche(c0.id); return; }
+      rv.classList.add('danger'); rv.textContent = 'Confirmer : ta version disparaît' + (tablesDe(c0).length ? ', ses tables restent' : '');
+      setTimeout(() => { if(rv.isConnected){ rv.classList.remove('danger'); rv.textContent = 'Revenir au livre'; } }, 5000);
+    };
+    act.append(rv);
+  }
   form.append(act, msg);
 
   /* apercu */
@@ -1863,7 +2284,13 @@ function validerEditeur(){
   }
   /* une famille supprimee pendant qu'il etait ouvert ne reste pas collee a lui */
   if(BST.pret) ED.c.t = ED.c.t.filter(k => famille(k));
+  const voulues = ED.tables.slice();
   const c = enregistrer(ED.c);
+  /* les tables partagées qu'il porte : chacune garde la liste de ceux qui la portent */
+  TABLES_BUTIN.slice().forEach(t => {
+    const a = t.qui.indexOf(c.id) >= 0, veut = voulues.indexOf(t.k) >= 0;
+    if(a !== veut) enregistrerTable(Object.assign({}, t, {qui:veut ? t.qui.concat([c.id]) : t.qui.filter(x => x !== c.id)}));
+  });
   ED = null;
   $('bestEditeur').hidden = true; $('bestEditeur').innerHTML = '';
   BST.flash = c.id;
@@ -1884,10 +2311,10 @@ function drawEtat(){
   if(!BST.pret) t = gh ? 'Lecture du bestiaire dans le dépôt GitHub…' : 'Chargement du bestiaire…';
   else if(BST.mode === 'db' && gh){
     const d = BST.gh && BST.gh.doc;
-    t = 'Enregistré dans le dépôt ' + GHC.depot + ' : tu retrouves tes créatures et tes familles sur tout appareil relié au dépôt.';
+    t = 'Enregistré dans le dépôt ' + GHC.depot + ' : tu retrouves tes créatures, tes familles et tes tables de butin sur tout appareil relié au dépôt.';
     if(d && d.erreur) t += ' ' + d.erreur;
   }
-  else if(BST.mode === 'db') t = 'Enregistré avec la page : tu retrouves tes créatures et tes familles sur n’importe quel appareil, et quiconque peut modifier la page les voit aussi.';
+  else if(BST.mode === 'db') t = 'Enregistré avec la page : tu retrouves tes créatures, tes familles et tes tables de butin sur n’importe quel appareil, et quiconque peut modifier la page les voit aussi.';
   else if(gh && BST.erreur) t = 'Le dépôt GitHub n’a pas répondu à l’ouverture' + (BST.ghErreur ? ' (' + BST.ghErreur.replace(/\.$/, '') + ')' : '') + ' : tes créatures restent dans ce navigateur, et partiront dans le dépôt à la prochaine ouverture de la page.';
   else {
     t = 'Enregistré dans ce navigateur seulement. Fais une sauvegarde .json de temps en temps, c’est elle qui te permet de tout récupérer ailleurs.';
@@ -1900,7 +2327,10 @@ function drawEtat(){
 function drawBestiaire(){
   drawEtat();
   drawFamilles();
+  drawTables();
+  drawLivre();
   if(ED && ED.redessinerFamilles) ED.redessinerFamilles();
+  if(ED && ED.redessinerTables) ED.redessinerTables();
   const liste = $('bestListe'); if(!liste) return;
   liste.innerHTML = '';
   $('bestCompte').textContent = MAISON.length ? MAISON.length + ' créature' + (MAISON.length > 1 ? 's' : '') + ' à toi' : 'Aucune créature à toi pour l’instant';
@@ -2122,6 +2552,231 @@ function fermerFamille(){
   $('famEditeur').hidden = true; $('famEditeur').innerHTML = '';
 }
 
+/* ---------- les tables partagées, dans l'éditeur d'une créature ---------- */
+function chipsTables(seg, creer){
+  if(!ED) return;
+  seg.innerHTML = '';
+  TABLES_BUTIN.slice().sort((a, b) => a.l.localeCompare(b.l, 'fr')).forEach(t => {
+    const b = el('button', null, t.l || 'Sans nom'); b.type = 'button'; b.id = 'ed-table-' + t.k;
+    b.setAttribute('aria-pressed', ED.tables.indexOf(t.k) >= 0 ? 'true' : 'false');
+    b.onclick = () => {
+      const i = ED.tables.indexOf(t.k);
+      if(i >= 0) ED.tables.splice(i, 1); else ED.tables.push(t.k);
+      b.setAttribute('aria-pressed', ED.tables.indexOf(t.k) >= 0 ? 'true' : 'false');
+    };
+    seg.append(b);
+  });
+  const plus = el('button','ajout','+ Nouvelle table'); plus.type = 'button'; plus.id = 'ed-tableplus';
+  plus.onclick = creer;
+  seg.append(plus);
+}
+function problemeNomTable(nom, k){
+  const n = (nom || '').trim().toLowerCase();
+  if(!n) return 'Il lui faut un nom.';
+  if(TABLES_BUTIN.some(t => t.k !== k && t.l.trim().toLowerCase() === n)) return 'Une table porte déjà ce nom.';
+  return '';
+}
+
+/* ---------- les entrées du livre : les retoucher, revenir au livre ---------- */
+function oterRetouche(id){
+  supprimerDans(MAGS.creatures, id);
+  if(ED && ED.c.id === id) fermerEditeur();
+  BST.retoucheAOter = null;
+  draw();
+}
+function retoucher(c){
+  const d = normalise(Object.assign({}, c));
+  ouvrirEditeur(d, false);
+}
+function drawLivre(){
+  const box = $('livreListe'); if(!box) return;
+  box.innerHTML = '';
+  const n = RETOUCHES.length;
+  $('livreCompte').textContent = n ? ' · ' + n + ' retouchée' + (n > 1 ? 's' : '') : '';
+  for(let r = 1; r <= 5; r++){
+    box.append(el('p','grang', 'Rang ' + r + ' · ' + RANG[r].nom));
+    const g = el('div','livgrille');
+    ADV.creatures[r].forEach(c => {
+      const w = el('div','livrow' + (c.retouche ? ' retouche' : ''));
+      w.setAttribute('data-cid', c.id);
+      const t = el('div','livtxt');
+      t.append(el('span','livnm', c.n));
+      const plus = [];
+      if(c.retouche) plus.push('retouchée');
+      if(lireTableButin(c.butin).lignes.length || tablesDe(c).length) plus.push('butin');
+      if(plus.length) t.append(el('span','livbadge', plus.join(' · ')));
+      w.append(t);
+      const a = el('div','livact');
+      const b = el('button','btn ghost xs','Retoucher'); b.type = 'button';
+      b.setAttribute('aria-label', 'Retoucher ' + c.n + ', entrée du livre');
+      b.onclick = () => retoucher(c);
+      a.append(b);
+      if(c.retouche){
+        const arme = BST.retoucheAOter === c.id;
+        const x = el('button','btn ghost xs' + (arme ? ' danger' : ''), arme ? 'Confirmer' : 'Revenir au livre'); x.type = 'button';
+        x.setAttribute('aria-label', (arme ? 'Confirmer : ' : '') + 'revenir à l’entrée du livre pour ' + c.n);
+        if(arme && tablesDe(c).length) x.title = 'Ta version disparaît. Les tables partagées qu’elle porte restent cochées.';
+        x.onclick = () => {
+          if(arme){ oterRetouche(c.id); return; }
+          BST.retoucheAOter = c.id; drawLivre();
+          setTimeout(() => { if(BST.retoucheAOter === c.id){ BST.retoucheAOter = null; drawLivre(); } }, 5000);
+        };
+        a.append(x);
+      }
+      w.append(a);
+      g.append(w);
+    });
+    box.append(g);
+  }
+}
+
+/* ---------- tes tables de butin ---------- */
+function drawTables(){
+  const box = $('butListe'); if(!box) return;
+  box.innerHTML = '';
+  $('butCompte').textContent = TABLES_BUTIN.length ? ' · ' + TABLES_BUTIN.length : '';
+  if(!TABLES_BUTIN.length){
+    box.append(el('p','vide','Aucune table pour l’instant. Les poches d’un bandit, ce qu’on arrache à une bête de Floraison : écris-la une fois, et coche qui la porte.'));
+    return;
+  }
+  TABLES_BUTIN.slice().sort((a, b) => a.l.localeCompare(b.l, 'fr')).forEach(t => {
+    const lt = lireTableButin(t.lignes);
+    const qui = t.qui.map(id => trouveId(id)).filter(Boolean);
+    const w = el('div','famrow' + (BST.flashTable === t.k ? ' flash' : ''));
+    w.setAttribute('data-table', t.k);
+    const x = el('div','famtxt');
+    x.append(el('div','famnm', t.l || 'Sans nom'));
+    const forme = lt.lignes.length ? (lt.numerotee ? 'd' + lt.de : 'au hasard') + ' · ' + lt.lignes.length + ' ligne' + (lt.lignes.length > 1 ? 's' : '') : 'vide';
+    x.append(el('div','famct', forme + ' · ' + (qui.length ? 'portée par ' + qui.slice(0, 4).map(c => c.n).join(', ') + (qui.length > 4 ? ' et ' + (qui.length - 4) + ' de plus' : '') : 'personne ne la porte encore')));
+    if(t.d) x.append(el('div','famd', t.d));
+    if(BST.essaiTable && BST.essaiTable.k === t.k) x.append(el('div','butessai', BST.essaiTable.txt));
+    w.append(x);
+    const act = el('div','bact famact');
+    const b1 = el('button','btn ghost sm','Modifier'); b1.type = 'button';
+    b1.onclick = () => ouvrirTable(t, false);
+    const b2 = el('button','btn ghost sm','Tirer pour voir'); b2.type = 'button';
+    b2.disabled = !lt.lignes.length;
+    b2.onclick = () => {
+      const r = tirerTableButin(t.lignes);
+      BST.essaiTable = {k:t.k, txt:r ? 'd' + r.de + ' : ' + r.v + ' · ' + (r.t || 'rien à ce numéro') : ''};
+      drawTables();
+    };
+    const armee = BST.tableASupprimer === t.k;
+    const b3 = el('button','btn ghost sm' + (armee ? ' danger' : ''), armee ? 'Confirmer la suppression' : 'Supprimer'); b3.type = 'button';
+    b3.onclick = () => {
+      if(armee){ BST.tableASupprimer = null; supprimerTable(t.k); draw(); return; }
+      BST.tableASupprimer = t.k; drawTables();
+      setTimeout(() => { if(BST.tableASupprimer === t.k){ BST.tableASupprimer = null; drawTables(); } }, 5000);
+    };
+    act.append(b1, b2, b3);
+    w.append(act);
+    box.append(w);
+  });
+  BST.flashTable = null;
+}
+function supprimerTable(k){
+  supprimerDans(MAGS.butins, k);
+  if(TED && TED.t.k === k) fermerTable();
+  if(ED){ ED.tables = ED.tables.filter(x => x !== k); if(ED.redessinerTables) ED.redessinerTables(); }
+}
+function ouvrirTable(t, nouveau){
+  TED = {t:normaliseTable(t), nouveau:!!nouveau};
+  TED.qui = TED.t.qui.slice();
+  const box = $('butEditeur'); box.innerHTML = ''; box.hidden = false;
+  box.append(el('h3', null, nouveau ? 'Nouvelle table de butin' : 'Modifier ' + (TED.t.l || 'la table')));
+  const l2 = el('div','ligne2');
+  const nom = champ(l2, 'but-nom', 'Nom', saisie('text', TED.t.l, 'Les poches d’un bandit'));
+  nom.maxLength = 60;
+  nom.oninput = () => { TED.t.l = nom.value; };
+  const desc = champ(l2, 'but-desc', 'Quand s’en servir', saisie('text', TED.t.d, 'Sur les hors-la-loi des routes du sud'));
+  desc.maxLength = 300;
+  desc.oninput = () => { TED.t.d = desc.value; };
+  box.append(l2);
+  const z = champ(box, 'but-lignes', 'Ce qu’on trouve', zone(TED.t.lignes, '1-2 Une dent en or\n3-4 Un bout de corde\n5 Rien du tout\n6 Une lettre qu’on n’aurait pas dû lire', 7),
+    'Une ligne par objet. Des numéros comme dans le livre, « 1-2 », « 3 » : le dé va jusqu’au plus grand. Sans numéros, chaque ligne a la même chance. Un objet n’a pas besoin d’exister ailleurs : sa ligne suffit.');
+  const ap = el('p','aide butap'); ap.id = 'but-apercu';
+  z.parentNode.insertBefore(ap, z.nextSibling);
+  const maj = () => { ap.textContent = resumeTable(TED.t.lignes); };
+  z.oninput = () => { TED.t.lignes = z.value; maj(); };
+  maj();
+
+  const mw = el('div','famm');
+  const ml = el('p','lab');
+  mw.append(ml);
+  mw.append(el('p','aide famaide','Coche ceux qui la portent, du livre ou à toi. À la table, « Fouiller » propose de tirer dedans.'));
+  const majCompte = () => {
+    ml.textContent = 'Qui la porte · ' + (TED.qui.length ? TED.qui.length + ' choisi' + (TED.qui.length > 1 ? 's' : '') : 'personne encore');
+    for(let r = 1; r <= 5; r++){
+      const sp = $('but-rang-' + r + '-n');
+      if(!sp) continue;
+      const n = ADV.creatures[r].concat(MAISON.filter(c => c.r === r)).filter(c => TED.qui.indexOf(c.id) >= 0).length;
+      sp.textContent = n ? ' · ' + n : '';
+    }
+  };
+  const coche = c => {
+    const lab = el('label','coche');
+    const i = el('input'); i.type = 'checkbox'; i.id = 'but-m-' + c.id;
+    i.checked = TED.qui.indexOf(c.id) >= 0;
+    i.onchange = () => {
+      const k = TED.qui.indexOf(c.id);
+      if(i.checked && k < 0) TED.qui.push(c.id);
+      else if(!i.checked && k >= 0) TED.qui.splice(k, 1);
+      majCompte();
+    };
+    lab.append(i, el('span', c.src === 'maison' ? 'fm' : null, c.n));
+    return lab;
+  };
+  for(let r = 1; r <= 5; r++){
+    const det = el('details','famrang');
+    const dedans = ADV.creatures[r].concat(MAISON.filter(c => c.r === r)).some(c => TED.qui.indexOf(c.id) >= 0);
+    det.open = dedans || nouveau;
+    const sum = el('summary', null, 'Rang ' + r + ' · ' + RANG[r].nom);
+    const sn = el('span','famrn'); sn.id = 'but-rang-' + r + '-n';
+    sum.append(sn);
+    det.append(sum);
+    const grille = el('div','famgrille');
+    ADV.creatures[r].forEach(c => grille.append(coche(c)));
+    MAISON.filter(c => c.r === r).sort((a, b) => a.n.localeCompare(b.n, 'fr')).forEach(c => grille.append(coche(c)));
+    det.append(grille);
+    mw.append(det);
+  }
+  box.append(mw);
+
+  const act = el('div','acts edact');
+  const ok = el('button','btn', nouveau ? 'Créer la table' : 'Enregistrer'); ok.type = 'button'; ok.id = 'but-ok';
+  const non = el('button','btn ghost sm','Annuler'); non.type = 'button'; non.id = 'but-non';
+  ok.onclick = validerTable;
+  non.onclick = fermerTable;
+  act.append(ok, non);
+  box.append(act);
+  majCompte();
+  box.scrollIntoView({block:'start', behavior:'smooth'});
+  nom.focus({preventScroll:true});
+}
+function validerTable(){
+  const e = $('but-nom-err'), champNom = $('but-nom');
+  e.hidden = true; e.textContent = ''; champNom.removeAttribute('aria-invalid');
+  const pb = problemeNomTable(TED.t.l, TED.t.k);
+  if(pb){ e.textContent = pb; e.hidden = false; champNom.setAttribute('aria-invalid', 'true'); champNom.focus(); return; }
+  const t = enregistrerTable(Object.assign({}, TED.t, {l:TED.t.l.trim(), qui:TED.qui.slice()}));
+  /* la créature ouverte dans l'éditeur suit le même changement */
+  if(ED){
+    const veut = t.qui.indexOf(ED.c.id) >= 0, a = ED.tables.indexOf(t.k) >= 0;
+    if(veut && !a) ED.tables.push(t.k);
+    if(!veut && a) ED.tables = ED.tables.filter(x => x !== t.k);
+  }
+  TED = null;
+  $('butEditeur').hidden = true; $('butEditeur').innerHTML = '';
+  BST.flashTable = t.k;
+  draw();
+  const row = document.querySelector('[data-table="' + t.k + '"]');
+  if(row) row.scrollIntoView({block:'center', behavior:'smooth'});
+}
+function fermerTable(){
+  TED = null;
+  $('butEditeur').hidden = true; $('butEditeur').innerHTML = '';
+}
+
 /* ---------- ce qu'on exporte ---------- */
 function pourExport(){
   const out = [];
@@ -2182,6 +2837,8 @@ function exporterWord(bouton){
       if(aj.length) K.push(X.p([X.lbl('Ajustements'), X.r(aj.join(' · '))], {after:20}));
       if(c.renf) K.push(X.p([X.lbl('Renforts'), X.r(c.renf), X.r('  (gratuits)', {c:C.lbl, i:true})], {after:20}));
       LORE.forEach(x => { if(c[x.k]) K.push(X.p([X.lbl(x.l), X.r(c[x.k])], {before:40, after:20})); });
+      const tb = tablesDe(c).map(t => t.l);
+      if(tb.length) K.push(X.p([X.lbl('Tables de butin'), X.r(tb.join(', '))], {after:20}));
       B.push(X.bloc(K.join('')));
     });
   });
@@ -2197,6 +2854,21 @@ function exporterWord(bouton){
       if(x.f.d) B.push(X.p(X.r(x.f.d, {i:true}), {after:30, keep:true}));
       x.rangs.forEach((g, j) => B.push(X.p([X.lbl('Rang ' + g.r), X.r(g.noms.join(', '))],
         {after:j === x.rangs.length - 1 ? 160 : 10, keep:j < x.rangs.length - 1})));
+    });
+  }
+  /* les tables de butin, avec qui les porte */
+  if(TABLES_BUTIN.length){
+    B.push(X.saut());
+    B.push(X.h2('Tables de butin'));
+    B.push(X.p(X.r('Ce qu’on trouve en fouillant. On lance le dé de la table ; sans numéros, une ligne au hasard.', {i:true, c:C.lbl, sz:18}), {after:140}));
+    TABLES_BUTIN.slice().sort((a, b) => a.l.localeCompare(b.l, 'fr')).forEach(t => {
+      const lt = lireTableButin(t.lignes);
+      const qui = t.qui.map(id => trouveId(id)).filter(Boolean).map(c => c.n);
+      B.push(X.p([X.r(t.l, {b:true, sz:22, c:C.h1}), X.r('   ' + (lt.numerotee ? 'd' + lt.de : 'au hasard'), {sz:14, caps:true, c:C.lbl, sp:20})], {after:20, keep:true}));
+      if(t.d) B.push(X.p(X.r(t.d, {i:true}), {after:30, keep:true}));
+      if(qui.length) B.push(X.p([X.lbl('Qui la porte'), X.r(qui.join(', '))], {after:30, keep:true}));
+      lt.lignes.forEach((l, j) => B.push(X.p([X.r((l.de != null ? (l.de === l.a ? String(l.de) : l.de + '-' + l.a) : '·') + '   ', {b:true, c:C.h2}), X.r(l.t)],
+        {after:j === lt.lignes.length - 1 ? 160 : 10, keep:j < lt.lignes.length - 1})));
     });
   }
   const octets = X.paquet(B.join(''), 'Bestiaire Faelorenn');
@@ -2227,7 +2899,8 @@ function texteLivre(){
 }
 
 function sauvegardeJson(){
-  return JSON.stringify({format:'faelorenn-bestiaire', version:2, exporte:new Date().toISOString(), familles:FAM_MAISON, creatures:MAISON}, null, 2);
+  return JSON.stringify({format:'faelorenn-bestiaire', version:3, exporte:new Date().toISOString(), familles:FAM_MAISON,
+    creatures:MAISON.concat(RETOUCHES), butins:TABLES_BUTIN}, null, 2);
 }
 function importerJson(texte){
   let o;
@@ -2235,9 +2908,10 @@ function importerJson(texte){
   /* le fichier du dépôt range ses pièces par identifiant, et garde la trace de ce qui est supprimé */
   const enListe = (m, champ) => Object.keys(m).filter(id => m[id] && typeof m[id] === 'object' && !m[id].supprime).map(id => Object.assign({}, m[id], {[champ]:id}));
   if(o && !Array.isArray(o) && o.creatures && typeof o.creatures === 'object' && !Array.isArray(o.creatures)){
-    o = {creatures:enListe(o.creatures, 'id'), familles:o.familles && typeof o.familles === 'object' && !Array.isArray(o.familles) ? enListe(o.familles, 'k') : []};
+    o = {creatures:enListe(o.creatures, 'id'), familles:o.familles && typeof o.familles === 'object' && !Array.isArray(o.familles) ? enListe(o.familles, 'k') : [],
+      butins:o.butins && typeof o.butins === 'object' && !Array.isArray(o.butins) ? enListe(o.butins, 'k') : []};
   }
-  const brut = Array.isArray(o) ? o : (o && Array.isArray(o.creatures) ? o.creatures : null);
+  const brut = Array.isArray(o) ? o : (o && Array.isArray(o.creatures) ? o.creatures : (o && Array.isArray(o.butins) ? [] : null));
   if(!brut) return {ok:false, msg:'Ce fichier ne contient pas de bestiaire Faelorenn.'};
   const brutF = !Array.isArray(o) && Array.isArray(o.familles) ? o.familles : [];
   const MF = MAGS.familles, MC = MAGS.creatures;
@@ -2274,11 +2948,18 @@ function importerJson(texte){
     enregistrerFam(f); fNeuves++;
   });
 
-  let neuves = 0, maj = 0, pareilles = 0;
+  let neuves = 0, maj = 0, pareilles = 0, retouches = 0;
   brut.forEach(x => {
     const c = normalise(x);
     if(!c.n.trim()) return;
     c.t = c.t.map(k => vers[k] || k).filter((k, i, a) => a.indexOf(k) === i);
+    /* une retouche d'une entrée du livre : la plus récente l'emporte, elle ne change jamais d'identifiant */
+    if(estRetouche(c)){
+      const r0 = RETOUCHES.find(m => m.id === c.id);
+      if(r0 && (r0.maj || 0) >= (c.maj || 0)) pareilles++;
+      else { enregistrer(c); retouches++; }
+      return;
+    }
     const deja = MAISON.find(m => m.id === c.id);
     if(deja){
       if(JSON.stringify(corpsDb(MC, deja)) === JSON.stringify(corpsDb(MC, Object.assign({}, c, {maj:deja.maj})))){ pareilles++; return; }
@@ -2287,9 +2968,34 @@ function importerJson(texte){
     }
     enregistrer(c); neuves++;
   });
+  /* les tables de butin : une table qui porte le nom d'une des tiennes s'y fond, ses porteurs avec */
+  let tNeuves = 0, tMaj = 0;
+  const brutT = !Array.isArray(o) && Array.isArray(o.butins) ? o.butins : [];
+  brutT.forEach(x => {
+    if(!x || typeof x !== 'object') return;
+    const t = normaliseTable(x);
+    if(!t.l) return;
+    const deja = TABLES_BUTIN.find(y => y.k === t.k);
+    if(deja){
+      if((t.maj || 0) > (deja.maj || 0) && JSON.stringify(corpsDb(MAGS.butins, deja)) !== JSON.stringify(corpsDb(MAGS.butins, Object.assign({}, t, {maj:deja.maj})))){ enregistrerTable(t); tMaj++; }
+      else pareilles++;
+      return;
+    }
+    const homonyme = TABLES_BUTIN.find(y => y.l.trim().toLowerCase() === t.l.toLowerCase());
+    if(homonyme){
+      const plus = t.qui.filter(id => homonyme.qui.indexOf(id) < 0);
+      if(plus.length){ enregistrerTable(Object.assign({}, homonyme, {qui:homonyme.qui.concat(plus)})); tMaj++; }
+      else pareilles++;
+      return;
+    }
+    enregistrerTable(t); tNeuves++;
+  });
   const pl = (n, un, plusieurs) => n + ' ' + (n > 1 ? plusieurs : un);
   const bouts = [];
   if(neuves) bouts.push(pl(neuves, 'créature ajoutée', 'créatures ajoutées'));
+  if(retouches) bouts.push(pl(retouches, 'entrée du livre retouchée', 'entrées du livre retouchées'));
+  if(tNeuves) bouts.push(pl(tNeuves, 'table de butin ajoutée', 'tables de butin ajoutées'));
+  if(tMaj) bouts.push(pl(tMaj, 'table de butin mise à jour', 'tables de butin mises à jour'));
   if(maj) bouts.push(pl(maj, 'créature mise à jour', 'créatures mises à jour'));
   if(fNeuves) bouts.push(pl(fNeuves, 'famille ajoutée', 'familles ajoutées'));
   if(fMaj) bouts.push(pl(fMaj, 'famille mise à jour', 'familles mises à jour'));
@@ -2316,9 +3022,11 @@ function preparerImpression(){
       const fams = nomsFamilles(c);
       if(fams) k.append(el('p','bp-fam', fams));
       const lore = LORE.filter(x => c[x.k]);
-      if(lore.length){
+      const tb = tablesDe(c).map(t => t.l);
+      if(lore.length || tb.length){
         const dl = el('dl','bp-lore');
         lore.forEach(x => dl.append(el('dt', null, x.l), el('dd', null, c[x.k])));
+        if(tb.length) dl.append(el('dt', null, 'Tables de butin'), el('dd', null, tb.join(', ')));
         k.append(dl);
       }
       s.append(k);
@@ -2342,6 +3050,25 @@ function preparerImpression(){
     });
     box.append(s);
   }
+  if(TABLES_BUTIN.length){
+    const s = el('section','bp-rang bp-index');
+    s.append(el('h3', null, 'Tables de butin'));
+    TABLES_BUTIN.slice().sort((a, b) => a.l.localeCompare(b.l, 'fr')).forEach(t => {
+      const lt = lireTableButin(t.lignes);
+      const d = el('div','bp-famille');
+      d.append(el('p','bp-fnom', t.l + ' · ' + (lt.numerotee ? 'd' + lt.de : 'au hasard')));
+      if(t.d) d.append(el('p','bp-fdesc', t.d));
+      const qui = t.qui.map(id => trouveId(id)).filter(Boolean).map(c => c.n);
+      if(qui.length){ const q = el('p','bp-fr'); q.append(el('span','bp-fl', 'Qui la porte'), document.createTextNode(qui.join(', '))); d.append(q); }
+      lt.lignes.forEach(l => {
+        const q = el('p','bp-fr');
+        q.append(el('span','bp-fl', l.de != null ? (l.de === l.a ? String(l.de) : l.de + '-' + l.a) : '·'), document.createTextNode(l.t));
+        d.append(q);
+      });
+      s.append(d);
+    });
+    box.append(s);
+  }
 }
 
 /* ---------- les boutons de la section ---------- */
@@ -2358,6 +3085,7 @@ function brancherBestiaire(){
     ouvrirEditeur(d, true);
   };
   $('famNouvelle').onclick = () => ouvrirFamille({}, true);
+  $('butNouvelle').onclick = () => ouvrirTable({}, true);
   $('bestRecherche').oninput = e => { BST.recherche = e.target.value; drawBestiaire(); };
   $('bestLivre').onchange = e => { BST.inclureLivre = e.target.checked; };
   $('bestWord').onclick = e => exporterWord(e.currentTarget);
@@ -2962,17 +3690,17 @@ function ghcPanneau(boite, opt){
 let PANNEAU_BST = null;
 
 function ghBestiaire(){
-  const COLS = ['creatures','familles'];
-  const CHAMP = {creatures:'id', familles:'k'};
-  const miroir = {creatures:{}, familles:{}};      /* le fichier, avec nos poses pas encore parties */
-  let confirme = {creatures:{}, familles:{}};      /* ce que le dépôt a vraiment, lu ou écrit */
+  const COLS = ['creatures','familles','butins'];
+  const CHAMP = {creatures:'id', familles:'k', butins:'k'};
+  const miroir = {creatures:{}, familles:{}, butins:{}};      /* le fichier, avec nos poses pas encore parties */
+  let confirme = {creatures:{}, familles:{}, butins:{}};      /* ce que le dépôt a vraiment, lu ou écrit */
   let ecritEnCours = null;
-  const ecoutes = {creatures:[], familles:[]};
+  const ecoutes = {creatures:[], familles:[], butins:[]};
   let enVol = [], partis = [];
   const copie = x => JSON.parse(JSON.stringify(x));
   /* le fichier range ses pièces par identifiant ; une sauvegarde .json déposée là, en listes, se lit aussi */
   const lire = o => {
-    const out = {creatures:{}, familles:{}};
+    const out = {creatures:{}, familles:{}, butins:{}};
     COLS.forEach(c => {
       let m = o && o[c] && typeof o[c] === 'object' ? o[c] : {};
       if(Array.isArray(m)){ const t = {}; m.forEach(x => { if(x && typeof x === 'object' && typeof x[CHAMP[c]] === 'string') t[x[CHAMP[c]]] = x; }); m = t; }
@@ -3011,7 +3739,7 @@ function ghBestiaire(){
     /* pas de fichier (premier usage, ou fichier disparu) : tout ce qu'on a ici y part,
        rien ne s'efface ici parce qu'il n'y est pas */
     absent: () => {
-      confirme = {creatures:{}, familles:{}};
+      confirme = {creatures:{}, familles:{}, butins:{}};
       Object.keys(MAGS).forEach(n => { const m = MAGS[n]; m.attente = m.get().map(x => x[m.champ]); ecrireMag(m); });
       doc.servi = true;
       COLS.forEach(servir);
@@ -3019,8 +3747,8 @@ function ghBestiaire(){
     enAvance: o => { const r = lire(o); return COLS.some(c => ghcEnAvance(miroir[c], r[c])); },
     contenu: () => {
       partis = partis.concat(enVol); enVol = [];
-      ecritEnCours = copie({creatures:miroir.creatures, familles:miroir.familles});
-      return {format:'faelorenn-bestiaire', version:3, creatures:miroir.creatures, familles:miroir.familles};
+      ecritEnCours = copie({creatures:miroir.creatures, familles:miroir.familles, butins:miroir.butins});
+      return {format:'faelorenn-bestiaire', version:3, creatures:miroir.creatures, familles:miroir.familles, butins:miroir.butins};
     },
     ecrit: (ok, rien) => {
       if(ok){

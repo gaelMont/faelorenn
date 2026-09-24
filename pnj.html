@@ -265,11 +265,13 @@ ul.tliste li{display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom
 .flivre{display:flex;flex-direction:column;gap:6px;align-items:flex-start}
 .flivre select{width:100%;font-size:13px;padding:5px 7px}
 .fouille .desmode{margin:0}
-.fdes{display:flex;gap:6px;align-items:flex-end;flex-wrap:wrap}
-.fdes label{display:block}
-.fdes input{width:64px;padding:5px 7px}
+.fdes{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
 .fverdict{margin:0;color:var(--forest)}
 .fouille textarea{width:100%;font-size:13.5px}
+.fdes input{width:66px;padding:4px 6px}
+.fsienne .acts,.flivre .acts{gap:5px}
+.jetdes .ou,.degats .ou{margin-left:2px}
+.amain{display:inline-flex;gap:6px;align-items:center;flex-wrap:nowrap}
 .fouille .acts{gap:6px}
 .fouille .acts select{flex:1 1 120px;min-width:0;font-size:13.5px;padding:5px 7px}
 /* les visages de la séance */
@@ -332,7 +334,43 @@ ul.nliens li{display:flex;align-items:center;gap:8px;padding:2px 0;min-width:0;o
 .ltrait.l-dette{border-top:2px dotted var(--muted)}
 .ltrait.l-brouille{border-top:2px dashed var(--rust)}
 .lien.edite{background:var(--paper);margin-inline:-6px;padding-inline:6px}
-.lien .lhist{flex:1 1 100%;margin:0 0 2px 30px;font-style:italic}
+/* l'histoire d'un lien, sous le lien */
+.lien .lhist{flex:1 1 100%;margin:2px 0 4px 30px}
+.lhist .lab{margin:0 0 2px}
+.lhist ul{list-style:none;margin:0;padding:0;font-size:12.5px;color:var(--muted)}
+.lhist li{display:flex;align-items:center;gap:8px;padding:1px 0}
+.lhist li.actuel{color:var(--ink)}
+.lhist .ltrait{width:16px}
+/* l'histoire des liens, séance par séance */
+.histoire h3.hseance{margin:14px 0 4px;font-size:15px}
+.histoire h3.hseance:first-of-type{margin-top:6px}
+ul.hliens{list-style:none;margin:0;padding:0}
+ul.hliens li{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--rule);font-size:13.5px}
+ul.hliens li .q{flex:1 1 auto;min-width:0;overflow-wrap:anywhere}
+ul.hliens li.change .q{color:var(--ink)}
+.hraison{font-style:italic;color:var(--forest)}
+/* « /Nahya » dans un texte : un lien vers sa fiche */
+button.mention{font:inherit;color:var(--forest);background:none;border:0;padding:0;cursor:pointer;text-decoration:underline;text-decoration-color:var(--rule);text-underline-offset:3px}
+button.mention:hover,button.mention:focus-visible{text-decoration-color:var(--forest)}
+.mentions{margin:4px 0 0;border:1px solid var(--forest);border-radius:2px;background:var(--surface);box-shadow:var(--shadow);max-height:260px;overflow-y:auto;font-family:"IBM Plex Sans",sans-serif;font-size:13.5px}
+.mentions button{display:flex;width:100%;align-items:baseline;gap:10px;text-align:left;font:inherit;background:transparent;border:0;border-bottom:1px solid var(--rule);color:var(--ink);padding:6px 10px;cursor:pointer}
+.mentions button.actif,.mentions button:hover{background:var(--fill)}
+.mentions button.neuve .mn{color:var(--forest);font-style:italic}
+.mentions .mn{flex:1 1 auto;min-width:0;overflow-wrap:anywhere}
+.mentions .mq{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.mentions .maide{margin:0;padding:4px 10px;font-size:11.5px;color:var(--muted)}
+/* ce que les comptes rendus disent de quelqu'un, sur sa fiche */
+.textes{display:flex;flex-direction:column;gap:4px;align-items:flex-start}
+.textes .tseance{margin:8px 0 0;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--sage);font-weight:600}
+.textes .tseance:first-child{margin-top:0}
+.textrait{display:flex;gap:6px;align-items:flex-start;width:100%;font-family:Spectral,Georgia,serif;font-size:14.5px;line-height:1.45}
+.textrait p{margin:0;flex:1 1 auto;min-width:0;overflow-wrap:anywhere}
+.textrait.agit p{color:var(--ink)}
+.textrait:not(.agit) p{color:var(--muted)}
+.textrait button.mention{color:var(--forest)}
+.vtextes{margin-top:8px;border-top:1px solid var(--rule);padding-top:6px}
+.vtextes summary{cursor:pointer;font-size:13px;color:var(--forest)}
+.vtextes .textes{margin-top:6px}
 .lien>.flien{flex:1 1 100%}
 .lmode button{font-size:13px;padding:4px 10px;background:var(--surface)}
 .flien>.mini{margin:6px 0 8px}
@@ -465,11 +503,12 @@ svg.reseau:active{cursor:grabbing}
 </style>
 </head>
 <body>
-<script>try{ if(/^faelorenn-(table|visages)$/.test(window.name)) window.name = ''; }catch(e){}</script>
+<script>try{ if(/^faelorenn-(table|visages|progression)$/.test(window.name)) window.name = ''; }catch(e){}</script>
 <nav class="fae-site" aria-label="Les registres de Faelorenn">
   <a class="fae-accueil" href="./">Faelorenn</a>
   <a href="table.html">Registre de la Table</a>
   <a href="pnj.html" aria-current="page">Registre des Visages</a>
+  <a href="progression.html">Registre de la Progression</a>
   <a href="createur.html">Registre du Havre</a>
   <a href="rencontres.html">Registre des Rencontres</a>
 </nav>
@@ -502,6 +541,7 @@ svg.reseau:active{cursor:grabbing}
     <div class="seg" role="group" aria-label="Voir">
       <button type="button" id="pnjVueFiches" aria-pressed="true">Les fiches</button>
       <button type="button" id="pnjVueReseau" aria-pressed="false">Le réseau</button>
+      <button type="button" id="pnjVueHistoire" aria-pressed="false">L’histoire des liens</button>
     </div>
     <span class="espace"></span>
     <button class="btn sm" id="pnjNouveau" type="button">Nouvelle fiche</button>
@@ -514,11 +554,12 @@ svg.reseau:active{cursor:grabbing}
   <div id="pnjEditeur" class="card" hidden style="margin-bottom:12px"></div>
   <div id="pnjListe" class="pgrille"></div>
   <div id="pnjReseau" class="card" hidden></div>
+  <div id="pnjHistoire" class="card histoire" hidden></div>
 </section>
 
 <section id="secPjV">
   <h2><span class="num">2</span> Les personnages</h2>
-  <p class="hint">Ce qui lie les personnages entre eux, et aux PNJ. Leurs PV, leur fiche et leur progression se suivent dans le Registre de la Table.</p>
+  <p class="hint">Ce qui lie les personnages entre eux, et aux PNJ. Leurs PV et leur fiche se suivent dans le Registre de la Table, leur progression dans celui de la Progression.</p>
   <div id="vPjListe" class="pgrille"></div>
 </section>
 
@@ -674,7 +715,7 @@ function slug(s){ return String(s || '').normalize('NFD').replace(/[\u0300-\u036
 function idLibre(base, table){ return !table[base] || table[base].supprime ? base : base + '-' + Math.random().toString(36).slice(2, 6); }
 const maintenant = () => Date.now();
 /* le Registre de la Table et le Registre des Visages s'ouvrent chacun dans son onglet, toujours le même */
-const ONGLET_TABLE = 'faelorenn-table', ONGLET_VISAGES = 'faelorenn-visages';
+const ONGLET_TABLE = 'faelorenn-table', ONGLET_VISAGES = 'faelorenn-visages', ONGLET_PROGRESSION = 'faelorenn-progression';
 function ouvrirPage(url, onglet){
   let w = null;
   try{ w = window.open(url, onglet); }catch(e){ w = null; }
@@ -940,7 +981,10 @@ function normAdversaire(o){
     traits:txtOu(o.traits), p:txtOu(o.p), renf:txtOu(o.renf),
     /* d'où il vient : la créature du livre ou de ton bestiaire, son nom sans numéro, ses familles, ce qu'il laisse */
     cid:txtOu(o.cid), base:txtOu(o.base), fam: Array.isArray(o.fam) ? o.fam.filter(x => typeof x === 'string').slice(0, 20) : [],
-    butin:txtOu(o.butin), fouille:normFouille(o.fouille)};
+    butin:txtOu(o.butin), fouille:normFouille(o.fouille),
+    /* ses tables de butin partagées, telles qu'au moment où il est entré en scène */
+    tables: Array.isArray(o.tables) ? o.tables.filter(t => t && typeof t === 'object').slice(0, 10)
+      .map(t => ({k:txtOu(t.k), l:txtOu(t.l).slice(0, 60), lignes:txtOu(t.lignes).slice(0, 6000)})) : []};
   x.pv0 = o.pv0 != null && !isNaN(+o.pv0) ? n(o.pv0) : x.pv;
   x.vie = normEvts(o.vie, x);
   return recalculerVie(x);
@@ -956,10 +1000,13 @@ function normLien(o){
   return {id:txtOu(o.id) || nouvelId('l'), maj:+o.maj || 0, supprime:!!o.supprime,
     de:txtOu(o.de), vers:txtOu(o.vers), type:typeLienOk(o.type),
     texte:txtOu(o.texte), mutuel:!!o.mutuel, notes:txtOu(o.notes),
-    /* ce que le lien a été avant de changer en jeu : une amitié devenue brouille garde son passé */
+    /* depuis quelle séance il est ce qu'il est, et pourquoi il l'est devenu */
+    depuis:txtOu(o.depuis), raison:txtOu(o.raison), cree:+o.cree || 0,
+    /* ce que le lien a été avant de changer en jeu : une amitié devenue brouille garde son passé,
+       de quelle séance à quelle séance, et ce qui l'avait fait naître */
     hist: Array.isArray(o.hist) ? o.hist.filter(h => h && typeof h === 'object').slice(-20).map(h => ({
       type:typeLienOk(h.type), texte:txtOu(h.texte), mutuel:!!h.mutuel, de:txtOu(h.de), vers:txtOu(h.vers),
-      seance:txtOu(h.seance), t:+h.t || 0})) : []};
+      depuis:txtOu(h.depuis), jusqua:txtOu(h.jusqua || h.seance), raison:txtOu(h.raison), t:+h.t || 0})) : []};
 }
 
 /* ---------- ce que la fiche donne ---------- */
@@ -1422,9 +1469,10 @@ function detailPerso(c){
 
   d.append(el('h3', null, 'Ce qu’il est'));
   const zone = el('textarea'); zone.rows = 5; zone.value = c.texte;
-  zone.placeholder = 'Son histoire, sa voix, ce qu’il cherche. Ce que tu écris ici part dans la table.';
+  zone.placeholder = 'Son histoire, sa voix, ce qu’il cherche. « / » puis un nom cite quelqu’un. Ce que tu écris ici part dans la table.';
   zone.onchange = () => surPerso(c.id, y => { y.texte = zone.value; });
   d.append(zone);
+  brancherMentions(zone);
   return d;
 }
 
@@ -1461,7 +1509,9 @@ function carte(c){
     if(arme){ A_SUPPRIMER = null; surPerso(c.id, y => { y.supprime = true; }); }
     else { A_SUPPRIMER = c.id; dessinerPersos(); setTimeout(() => { if(A_SUPPRIMER === c.id){ A_SUPPRIMER = null; dessinerPersos(); } }, 5000); }
   };
-  act.append(b1, b2, b3, b4, b5);
+  const b6 = el('button','btn ghost sm','Sa progression'); b6.type = 'button';
+  b6.onclick = () => ouvrirPage('progression.html#pj=' + encodeURIComponent(c.id), ONGLET_PROGRESSION);
+  act.append(b1, b2, b3, b4, b6, b5);
   w.append(act);
   if(ouvert) w.append(detailPerso(c));
   return w;
@@ -1571,10 +1621,11 @@ function ouvrirEditeurPerso(c, nouveau){
   box.append(gsac);
 
   const zone = el('textarea'); zone.rows = 4; zone.value = PED.texte;
-  zone.placeholder = 'Son histoire, sa voix, ce qu’il cherche.';
+  zone.placeholder = 'Son histoire, sa voix, ce qu’il cherche. « / » puis un nom cite quelqu’un.';
   zone.oninput = () => PED.texte = zone.value;
   box.append(el('h3', null, 'Ce qu’il est'));
   box.append(zone);
+  brancherMentions(zone);
 
   const act = el('div','acts'); act.style.marginTop = '12px';
   const ok = el('button','btn', nouveau ? 'Ajouter à la table' : 'Enregistrer'); ok.type = 'button'; ok.id = 'ped-ok';
@@ -1598,8 +1649,11 @@ function ouvrirEditeurPerso(c, nouveau){
       if(dPv){ x.pvMax = Math.max(1, x.pvMax + dPv); if(dPv > 0) coup(x, 'pv', dPv); }
       if(dPc){ x.pcMax = Math.max(0, x.pcMax + dPc); if(dPc > 0) coup(x, 'pc', dPc); }
       recalculerVie(x);
+      const renomme = change(c2.nom, PED0.nom) && PED0.nom.trim();
       c2 = x;
       majPerso(x);
+      /* un nom changé ici : les textes qui le citaient (« /Toum’Balin ») suivent, le sien compris */
+      if(renomme) renommerMentions('pj:' + x.id, PED0.nom, x.nom.trim());
     });
     if(!MOI.perso && c2.joueur === MOI.joueur){ MOI.perso = c2.id; sauverLocal(); }
     fermerEditeurPerso();
@@ -1871,6 +1925,10 @@ function dessinerProgDans(box){
   if(!liste.length){ box.append(el('p','vide','Aucun personnage à faire progresser.')); return; }
   if(!liste.some(c => c.id === PROG_PERSO)) PROG_PERSO = MOI.perso && liste.some(c => c.id === MOI.perso) ? MOI.perso : liste[0].id;
   const c = perso(PROG_PERSO);
+  /* où s'écrivent les gains et les achats : la séance que la table montre */
+  const e = seanceCourante();
+  box.append(el('p','mini progou', e ? 'Les gains et les achats s’écrivent dans la séance ' + (e.seance || '?') + (e.titre ? ' · ' + e.titre : '') + ' du Registre de la Table.'
+    : 'Aucune séance pour l’instant : les gains et les achats vont sur la fiche, sans s’écrire dans une séance.'));
 
   const sel = el('select'); sel.id = 'prog-perso'; sel.setAttribute('aria-label', 'Quel personnage');
   liste.forEach(x => sel.add(new Option(x.nom || 'Sans nom', x.id)));
@@ -2227,7 +2285,7 @@ function texteVie(v){
 }
 function joints(b){ return [texteJet(b.jet), texteDegats(b.degats)].concat((b.vies || []).map(texteVie)).filter(Boolean); }
 function lignePlate(b){
-  const p = phrase(b), j = joints(b).join(' · ');
+  const p = sansMarques(phrase(b)), j = joints(b).join(' · ');
   if(!p) return majuscule(j);
   return j ? p + ' (' + j + ')' : p;
 }
@@ -2237,12 +2295,13 @@ function couleurJet(b){ return b.jet && !b.jet.sans ? (b.jet.reussite ? ' ok' : 
 function corpsEncadre(b){
   const d = el('div','encadre');
   d.append(el('p','sep', SEPARATEUR));
+  const gens = gensCitables();
   b.texte.split('\n').forEach((l, i) => {
     const p = el('p');
     const m = i ? /^([^:]{2,40}?) :\s*(.*)$/.exec(l) : null;
-    if(!i) p.append(el('b', null, l));
-    else if(m) p.append(el('b', null, m[1]), document.createTextNode(' : ' + m[2]));
-    else p.textContent = l;
+    if(!i){ const t = el('b'); t.append(texteRiche(l, gens)); p.append(t); }
+    else if(m){ const t = el('b'); t.append(texteRiche(m[1], gens)); p.append(t, document.createTextNode(' : '), texteRiche(m[2], gens)); }
+    else p.append(texteRiche(l, gens));
     d.append(p);
   });
   const j = joints(b);
@@ -2261,7 +2320,7 @@ function rendreBloc(b){
   else {
     const p = el('p');
     const ph = phrase(b), j = joints(b);
-    if(ph) p.append(document.createTextNode(ph));
+    if(ph) p.append(texteRiche(ph));
     if(j.length){
       if(ph) p.append(document.createTextNode(' '));
       p.append(el('span','joints' + couleurJet(b), ph ? '(' + j.join(' · ') + ')' : majuscule(j.join(' · '))));
@@ -2303,6 +2362,7 @@ function retoucheBloc(b, w){
   z.setAttribute('aria-label', 'Le texte du paragraphe');
   z.oninput = () => { if(BED) BED.texte = z.value; };
   w.append(z);
+  brancherMentions(z);
   const j = joints(b);
   if(j.length) w.append(el('p','mini', 'Reste joint : ' + j.join(' · ')));
   const a = el('div','acts'); a.style.marginTop = '6px';
@@ -2727,7 +2787,7 @@ function ajouterDepuisCompo(){
 }
 
 const PLACEHOLDERS = {
-  narration:'Ce que raconte le MJ. Entrée ajoute le paragraphe, Maj+Entrée va à la ligne.',
+  narration:'Ce que raconte le MJ. « / » puis un nom cite quelqu’un. Entrée ajoute le paragraphe, Maj+Entrée va à la ligne.',
   scene:'Havre de Vaurenne, début de matinée.',
   encadre:'Première ligne : le titre. Puis une ligne par information, « Paie : 5 ors ». Ctrl+Entrée ajoute.',
   fait:'Ce qu’il fait. Commence par un verbe, « attrape sa lance et la jette sur le chien », et son nom se met devant.',
@@ -2810,25 +2870,9 @@ function dessinerCompositeur(force){
   if(force && focus && focus !== 'coPnj' && $(focus) && document.activeElement !== $(focus)) $(focus).focus();
 }
 
-/* les dés : lancés par le site, ou sur la table et recopiés ici. Chaque navigateur garde son choix */
-const desSurTable = () => MOI.des === 'table';
-function choixDes(){
-  const w = el('div','desmode');
-  w.append(el('span','lab', 'Les dés'));
-  const s = el('div','seg'); s.setAttribute('role', 'group'); s.setAttribute('aria-label', 'Qui lance les dés');
-  [['site', 'Lancés par le site', 'coDesSite'], ['table', 'Lancés sur la table', 'coDesTable']].forEach(([k, l, id]) => {
-    const b = el('button', null, l); b.type = 'button'; b.id = id;
-    b.setAttribute('aria-pressed', (desSurTable() ? 'table' : 'site') === k ? 'true' : 'false');
-    b.onclick = () => { if((desSurTable() ? 'table' : 'site') === k) return; MOI.des = k; sauverLocal(); dessinerCompositeur(true); };
-    s.append(b);
-  });
-  w.append(s);
-  return w;
-}
-
+/* les dés : le site les lance, ou l'on écrit ceux qu'on a lancés sur la table. Les deux sont toujours là */
 function panneauJet(){
   const p = el('div','panneau');
-  p.append(choixDes());
   const g = el('div','jetform');
   const c = persoCompo();
   if(c){
@@ -2899,28 +2943,29 @@ function panneauJet(){
   champ(g, 'Modificateur', md);
   p.append(g);
 
-  /* le jet : le site le lance, ou on recopie le dé de la table */
-  const a = el('div','acts'); a.style.marginTop = '10px';
+  /* le jet : le site le lance, ou on écrit le dé lancé sur la table */
+  const a = el('div','acts jetdes'); a.style.marginTop = '10px';
   const sans = !!(s0 && s0.sans);
   const faces = s0 && !sans ? (s0.mode === 'd100' ? 100 : 20) : (MOI.mode === 'd20' ? 20 : 100);
   if(sans){
     const u = el('button','btn sm','Utiliser'); u.type = 'button'; u.id = 'coLancer';
     u.onclick = () => jeterCompo(null);
     a.append(u);
-  } else if(desSurTable()){
-    const main = el('input'); main.type = 'number'; main.id = 'coMain'; main.min = '1'; main.max = String(faces);
-    main.placeholder = 'ton d' + faces; main.inputMode = 'numeric'; main.style.width = '110px';
-    if(faces === 100) main.min = '0';
-    main.setAttribute('aria-label', 'Le d' + faces + ' lancé sur la table');
-    const entrer = el('button','btn sm','Entrer le dé'); entrer.type = 'button'; entrer.id = 'coEntrer';
-    const go = () => jeterCompo(parseInt(main.value, 10));
-    entrer.onclick = go;
-    main.onkeydown = ev => { if(ev.key === 'Enter'){ ev.preventDefault(); go(); } };
-    a.append(main, entrer);
   } else {
     const lancer = el('button','btn sm','Lancer le d' + faces); lancer.type = 'button'; lancer.id = 'coLancer';
     lancer.onclick = () => jeterCompo(null);
-    a.append(lancer);
+    const main = el('input'); main.type = 'number'; main.id = 'coMain'; main.min = faces === 100 ? '0' : '1'; main.max = String(faces);
+    main.placeholder = '1 à ' + faces; main.inputMode = 'numeric'; main.style.width = '96px';
+    if(faces === 100) main.title = '00 compte pour 100';
+    main.setAttribute('aria-label', 'Ton d' + faces + ', lancé sur la table');
+    const entrer = el('button','btn ghost sm','Entrer'); entrer.type = 'button'; entrer.id = 'coEntrer';
+    entrer.setAttribute('aria-label', 'Entrer ton d' + faces);
+    const go = () => jeterCompo(parseInt(main.value, 10));
+    entrer.onclick = go;
+    main.onkeydown = ev => { if(ev.key === 'Enter'){ ev.preventDefault(); go(); } };
+    /* sa case et son bouton restent ensemble quand la ligne passe à la suivante */
+    const grp = el('span','amain'); grp.append(el('span','mini ou', 'ou ton d' + faces + ' :'), main, entrer);
+    a.append(lancer, grp);
   }
   const indice = el('span','mini'); indice.id = 'coSeuil';
   a.append(indice);
@@ -2936,7 +2981,7 @@ function panneauJet(){
   /* les dégâts : lancés ici, ou le total des dés de la table */
   const d = el('div','acts degats'); d.style.marginTop = '10px';
   d.append(el('span','lab', 'Dégâts'));
-  const f = el('input'); f.type = 'text'; f.id = 'coDegats'; f.placeholder = desSurTable() ? 'd8+3, si tu veux' : 'd8+3, 2d6'; f.style.width = '130px'; f.value = COMPO.formule;
+  const f = el('input'); f.type = 'text'; f.id = 'coDegats'; f.placeholder = 'd8+3, 2d6'; f.style.width = '130px'; f.value = COMPO.formule;
   f.setAttribute('aria-label', 'Les dés de dégâts');
   f.oninput = () => { COMPO.formule = f.value; };
   d.append(f);
@@ -2947,21 +2992,18 @@ function panneauJet(){
     arme.onchange = () => { const x = c.armes[+arme.value]; const fx = x && formuleArme(c, x); if(fx){ f.value = fx; COMPO.formule = fx; COMPO.sorte = 'phy'; COMPO.perte = null; } };
     d.append(arme);
   }
-  if(desSurTable()){
-    const t = el('input'); t.type = 'number'; t.id = 'coDegatsMain'; t.min = '0'; t.placeholder = 'total'; t.style.width = '90px'; t.inputMode = 'numeric';
-    t.setAttribute('aria-label', 'Le total des dés de dégâts, lancés sur la table');
-    const bd = el('button','btn ghost sm','Entrer les dégâts'); bd.type = 'button'; bd.id = 'coEntrerDegats';
-    const go = () => degatsCompo(f.value, parseInt(t.value, 10));
-    bd.onclick = go;
-    t.onkeydown = ev => { if(ev.key === 'Enter'){ ev.preventDefault(); go(); } };
-    f.onkeydown = ev => { if(ev.key === 'Enter'){ ev.preventDefault(); t.focus(); } };
-    d.append(t, bd);
-  } else {
-    const bd = el('button','btn ghost sm','Lancer les dégâts'); bd.type = 'button'; bd.id = 'coLancerDegats';
-    bd.onclick = () => degatsCompo(f.value);
-    f.onkeydown = ev => { if(ev.key === 'Enter'){ ev.preventDefault(); degatsCompo(f.value); } };
-    d.append(bd);
-  }
+  const bd = el('button','btn ghost sm','Lancer les dégâts'); bd.type = 'button'; bd.id = 'coLancerDegats';
+  bd.onclick = () => degatsCompo(f.value);
+  f.onkeydown = ev => { if(ev.key === 'Enter'){ ev.preventDefault(); degatsCompo(f.value); } };
+  const t = el('input'); t.type = 'number'; t.id = 'coDegatsMain'; t.min = '0'; t.placeholder = 'total'; t.style.width = '80px'; t.inputMode = 'numeric';
+  t.setAttribute('aria-label', 'Le total de tes dés de dégâts, lancés sur la table');
+  const bt = el('button','btn ghost sm','Entrer'); bt.type = 'button'; bt.id = 'coEntrerDegats';
+  bt.setAttribute('aria-label', 'Entrer le total de tes dégâts');
+  const go = () => degatsCompo(f.value, parseInt(t.value, 10));
+  bt.onclick = go;
+  t.onkeydown = ev => { if(ev.key === 'Enter'){ ev.preventDefault(); go(); } };
+  const grp = el('span','amain'); grp.append(el('span','mini ou', 'ou ton total :'), t, bt);
+  d.append(bd, grp);
   p.append(d);
   if(COMPO.degats) p.append(panneauAppliquer());
   return p;
@@ -3129,11 +3171,11 @@ const ech = s => String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'
 function blocHtml(b){
   const gris = t => '<span style="color:#6B7469">' + ech(t) + '</span>';
   const br = t => ech(t).replace(/\n/g, '<br>');
-  const j = joints(b), ph = phrase(b);
+  const j = joints(b), ph = sansMarques(phrase(b));
   const suite = !j.length ? '' : ph ? ' ' + gris('(' + j.join(' · ') + ')') : gris(majuscule(j.join(' · ')));
   if(b.type === 'encadre'){
     const sep = '<p style="text-align:center">' + SEPARATEUR + '</p>';
-    const corps = b.texte.split('\n').map((x, i) => {
+    const corps = sansMarques(b.texte).split('\n').map((x, i) => {
       if(!i) return '<b>' + ech(x) + '</b>';
       const m = /^([^:]{2,40}?) :\s*(.*)$/.exec(x);
       return m ? '<b>' + ech(m[1]) + '</b> : ' + ech(m[2]) : ech(x);
@@ -3159,7 +3201,7 @@ function seanceTexte(e){
   blocsDe(e.id).forEach(b => {
     if(b.type === 'encadre'){
       const j = joints(b);
-      L.push(SEPARATEUR, b.texte + (j.length ? '\n(' + j.join(' · ') + ')' : ''), SEPARATEUR);
+      L.push(SEPARATEUR, sansMarques(b.texte) + (j.length ? '\n(' + j.join(' · ') + ')' : ''), SEPARATEUR);
     } else if(b.type === 'rencontre') L.push(SEPARATEUR, lignesRencontre(b).join('\n'), SEPARATEUR);
     else L.push(lignePlate(b));
     L.push('');
@@ -3220,9 +3262,35 @@ ADV.rangs.forEach(r => RANG[r.r] = r);
 /* les entrees du livre recoivent un identifiant stable */
 for(let r = 1; r <= 5; r++) ADV.creatures[r].forEach((c, i) => { c.src = 'livre'; c.id = 'livre-' + r + '-' + (i + 1); c.r = r; });
 
-/* les creatures et les familles maison, remplies par bestiaire.js */
+/* les creatures, les familles et les tables de butin maison, remplies par la page */
 let MAISON = [];
 let FAM_MAISON = [];
+let TABLES_BUTIN = [];
+
+/* ---------- les entrées du livre que tu as retouchées ----------
+   Une retouche porte l'identifiant de l'entrée (livre-2-2) et prend sa place partout : tirages, bestiaire,
+   table. L'entrée telle que le livre l'écrit reste gardée ici, pour « Revenir au livre ». */
+const ORIGINAUX = {};
+for(let r = 1; r <= 5; r++) ADV.creatures[r].forEach(c => { ORIGINAUX[c.id] = JSON.parse(JSON.stringify(c)); });
+let RETOUCHES = [];
+const estRetouche = c => !!c && /^livre-[1-5]-\d{1,2}$/.test(c.id || '');
+const CHAMPS_RETOUCHE = ['n','t','tr','p','a2','mod','renf','desc','ou','veut','fuit','butin','notes'];
+function livreParId(id){ const m = /^livre-([1-5])-(\d{1,2})$/.exec(id || ''); return m ? ADV.creatures[+m[1]][+m[2] - 1] || null : null; }
+function appliquerRetouches(){
+  for(let r = 1; r <= 5; r++) ADV.creatures[r].forEach(c => {
+    const o = ORIGINAUX[c.id];
+    Object.keys(c).forEach(k => { if(!(k in o)) delete c[k]; });
+    Object.assign(c, JSON.parse(JSON.stringify(o)));
+  });
+  RETOUCHES.forEach(x => {
+    const c = livreParId(x.id);
+    if(!c) return;
+    CHAMPS_RETOUCHE.forEach(k => { if(x[k] !== undefined) c[k] = JSON.parse(JSON.stringify(x[k])); });
+    c.retouche = true; c.maj = x.maj || 0;
+  });
+}
+/* les tables de butin qu'une créature porte, du livre ou à toi */
+function tablesDe(c){ const id = c && c.id; return id ? TABLES_BUTIN.filter(t => (t.qui || []).indexOf(id) >= 0) : []; }
 
 /* ---------- les familles : celles du livre, puis les tiennes ---------- */
 function familles(){ return ADV.familles.concat(FAM_MAISON); }
@@ -3377,7 +3445,8 @@ function adversaireEnvoye(a){
   return {n:c.n || a.n, r:a.r, pvMax:st.pv, pv:pv, red:st.red, deg:st.deg, cartes:st.cartes,
     a2: c.a2 && c.a2.n ? {n:c.a2.n, t:c.a2.el ? 'mag' : (c.a2.t || 'phy'), p:porteeDe(c.a2), e:effetDe(c, st), el:c.a2.el || ''} : null,
     tr:(c.tr || []).slice(), traits:nomsTraits(c), p:c.p || '', renf:c.renf || '',
-    cid:c.id || a.cid || '', fam:(c.t || []).slice(), butin:c.butin || ''};
+    cid:c.id || a.cid || '', fam:(c.t || []).slice(), butin:c.butin || '',
+    tables:tablesDe(c).map(t => ({k:t.k, l:t.l, lignes:t.lignes}))};
 }
 
 /* ============ les traits : ils remplissent la creature a ta place ============
@@ -3824,6 +3893,45 @@ const BUTIN = {
 }
 };
 
+/* ---------- une table de butin écrite à la main : une ligne par objet ----------
+   « 1-2 Une dent en or », « 3. Une corde », « 4 : rien » sont numérotées, et le dé va jusqu'au plus grand numéro ;
+   sans numéros, chaque ligne a la même chance. Un nombre seul devant un objet, « 5 Un couteau », est un numéro
+   quand la table en a d'autres, ou quand les nombres montent depuis 1 ; sinon, « 2 crocs de loup », une quantité. */
+const NUMERO_BUTIN = /^(\d{1,3})(?:\s*(?:-|à|\u2013)\s*(\d{1,3}))?\s*([.:)\-\u2013])?\s*/;
+function lireTableButin(texte){
+  const brutes = String(texte || '').split(/\n+/).map(s => s.trim()).filter(Boolean).slice(0, 200)
+    .map(l => { const m = NUMERO_BUTIN.exec(l); return {l:l, m:m, net:!!(m && (m[2] || m[3]))}; });
+  const nus = brutes.some(x => x.m && !x.net);
+  const monte = brutes.length > 1 && brutes.every(x => x.m) && brutes.every((x, i) => i === 0 ? +x.m[1] === 1 : +x.m[1] > +(brutes[i - 1].m[2] || brutes[i - 1].m[1]));
+  const nusNumeros = nus && (brutes.some(x => x.net) || monte);
+  const lignes = brutes.map(x => {
+    if(x.m && (x.net || nusNumeros)){ const de = +x.m[1], a = +(x.m[2] || x.m[1]); return {de:Math.min(de, a), a:Math.max(de, a), t:x.l.slice(x.m[0].length).trim()}; }
+    return {de:null, a:null, t:x.l};
+  });
+  const numerotee = lignes.length > 0 && lignes.every(p => p.de != null);
+  const de = numerotee ? Math.max.apply(null, lignes.map(p => p.a)) : lignes.length;
+  const avis = [];
+  if(numerotee && de <= 1000){
+    const vides = [], doubles = [];
+    for(let v = 1; v <= de; v++){
+      const n = lignes.filter(p => v >= p.de && v <= p.a).length;
+      if(!n) vides.push(v); else if(n > 1) doubles.push(v);
+    }
+    const plage = l => l.length > 6 ? l.slice(0, 6).join(', ') + '…' : l.join(', ');
+    if(vides.length) avis.push(vides.length > 1 ? 'Rien aux ' + plage(vides) + ' : ces numéros ne donnent rien.' : 'Rien au ' + vides[0] + ' : ce numéro ne donne rien.');
+    if(doubles.length) avis.push(doubles.length > 1 ? 'Les ' + plage(doubles) + ' tombent sur deux lignes : la première l’emporte.' : 'Le ' + doubles[0] + ' tombe sur deux lignes : la première l’emporte.');
+  } else if(lignes.some(p => p.de != null)) avis.push('Certaines lignes sont numérotées, d’autres pas : on tire une ligne au hasard.');
+  return {lignes:lignes, numerotee:numerotee, de:de, avis:avis};
+}
+/* tirer dans une table : le dé du site, ou celui qu'on a lancé sur la table (v) */
+function tirerTableButin(texte, v){
+  const t = lireTableButin(texte);
+  if(!t.lignes.length) return null;
+  const x = v != null ? v : 1 + Math.floor(Math.random() * t.de);
+  const p = t.numerotee ? t.lignes.find(y => x >= y.de && x <= y.a) : t.lignes[x - 1];
+  return {v:x, de:t.de, t:p ? p.t : '', numerotee:t.numerotee};
+}
+
 /* ============ tirer une rencontre depuis la table ============
    Le tirage du Registre des Rencontres (commun/tirage.js), à côté du récit : le budget par personnage,
    l'intensité, une famille, le livre et ton bestiaire. Le bestiaire vient de ce navigateur, où le Registre
@@ -3832,7 +3940,7 @@ const BUTIN = {
 
 const S = {pj:1, inten:'ser', liste:[], pourquoi:'', fam:[], source:'tout'};
 const CLE_TIRAGE = 'faelorenn.table.tirage';
-const TIR = {pjMain:false, ouvert:true, renforts:false, qui:'r2', n:1, lu:0, lecture:false, complet:false, depotC:null, depotF:null};
+const TIR = {pjMain:false, ouvert:true, renforts:false, qui:'r2', n:1, lu:0, lecture:false, complet:false, rate:false, depotC:null, depotF:null, depotB:null};
 const ID_OK = /^[A-Za-z0-9_.~:@+-]{1,120}$/;
 
 /* ---------- le brouillon, gardé dans ce navigateur ---------- */
@@ -3858,7 +3966,9 @@ function majPjTirage(){ if(!TIR.pjMain) S.pj = Math.max(1, Math.min(6, persos().
 /* ---------- ton bestiaire : ce navigateur, puis le dépôt ---------- */
 function normMaison(o, id){
   const txt = v => (v == null ? '' : String(v));
-  const r = [1, 2, 3, 4, 5].indexOf(+o.r) >= 0 ? +o.r : 2;
+  /* une entrée du livre retouchée garde le rang de l'entrée */
+  const mr = /^livre-([1-5])-\d{1,2}$/.exec(id);
+  const r = mr ? +mr[1] : [1, 2, 3, 4, 5].indexOf(+o.r) >= 0 ? +o.r : 2;
   const a = o.a2 && typeof o.a2 === 'object' ? o.a2 : {};
   const elm = ELEM[a.el] ? a.el : '';
   const m = o.mod && typeof o.mod === 'object' ? o.mod : {};
@@ -3867,6 +3977,11 @@ function normMaison(o, id){
     tr: Array.isArray(o.tr) ? trierTraits(o.tr.filter(x => typeof x === 'string'), r) : [],
     p:txt(o.p), a2:{n:txt(a.n), t:elm || a.t === 'mag' ? 'mag' : 'phy', p:txt(a.p) || 'contact', e:txt(a.e), el:elm},
     mod:{pv:txt(m.pv), red:txt(m.red), deg:txt(m.deg), cartes:txt(m.cartes)}, renf:txt(o.renf), butin:txt(o.butin)};
+}
+function normTableMaison(o, k){
+  const txt = v => (v == null ? '' : String(v));
+  return {k:k, l:txt(o.l).trim().slice(0, 60) || 'Sans nom', d:txt(o.d).trim().slice(0, 300), lignes:txt(o.lignes).slice(0, 6000), maj:+o.maj || 0,
+    qui: Array.isArray(o.qui) ? o.qui.filter(id => typeof id === 'string' && ID_OK.test(id)).slice(0, 300) : []};
 }
 function normFamMaison(o, k){
   const txt = v => (v == null ? '' : String(v));
@@ -3900,7 +4015,12 @@ function fondreBestiaire(ici, depot, norm){
   return Object.keys(m).filter(id => !m[id].supprime && !ici.supprimes[id]).map(id => norm(m[id], id));
 }
 function poserBestiaire(){
-  MAISON = fondreBestiaire(bestiaireIci('faelorenn.bestiaire', 'id'), TIR.depotC, normMaison).filter(c => c.n);
+  /* tes créatures, et tes retouches des entrées du livre, qui prennent leur place */
+  const tout = fondreBestiaire(bestiaireIci('faelorenn.bestiaire', 'id'), TIR.depotC, normMaison).filter(c => c.n);
+  MAISON = tout.filter(c => !estRetouche(c));
+  RETOUCHES = tout.filter(estRetouche);
+  appliquerRetouches();
+  TABLES_BUTIN = fondreBestiaire(bestiaireIci('faelorenn.butins', 'k'), TIR.depotB, normTableMaison);
   FAM_MAISON = fondreBestiaire(bestiaireIci('faelorenn.familles', 'k'), TIR.depotF, normFamMaison).filter(f => !ADV.familles.some(x => x.k === f.k));
   /* tant que le dépôt n'est pas lu, une famille ou des créatures à toi peuvent encore arriver */
   if(!TIR.complet) return;
@@ -3909,22 +4029,23 @@ function poserBestiaire(){
 }
 function chargerBestiaire(){
   const gh = ghcPret();
-  if(!gh) TIR.complet = true;
+  if(!gh){ TIR.complet = true; TIR.rate = false; }
   poserBestiaire();
   dessinerCombat();
   if(!gh || TIR.lecture) return;
   TIR.lecture = true;
-  const fin = () => { TIR.lecture = false; TIR.lu = maintenant(); TIR.complet = true; poserBestiaire(); dessinerCombat(); };
+  /* rate : le dépôt n'a pas pu se lire, ce navigateur ne sait peut-être pas tout */
+  const fin = rate => { TIR.lecture = false; TIR.lu = maintenant(); TIR.complet = true; TIR.rate = !!rate; poserBestiaire(); dessinerCombat(); };
   ghcLireUnFichier(GHC_FICHIERS.bestiaire).then(o => {
-    if(o && typeof o === 'object'){ TIR.depotC = parIdentifiant(o.creatures, 'id'); TIR.depotF = parIdentifiant(o.familles, 'k'); }
-    fin();
-  }, fin);
+    if(o && typeof o === 'object'){ TIR.depotC = parIdentifiant(o.creatures, 'id'); TIR.depotF = parIdentifiant(o.familles, 'k'); TIR.depotB = parIdentifiant(o.butins, 'k'); }
+    fin(false);
+  }, () => fin(true));
 }
 /* un bestiaire lu il y a plus de deux minutes se relit, pour le tirage suivant */
 function rafraichirBestiaire(){ if(ghcPret() && !TIR.lecture && maintenant() - TIR.lu > 120000) chargerBestiaire(); }
 /* le Registre des Rencontres, ouvert dans un autre onglet, vient de changer le bestiaire */
 window.addEventListener('storage', e => {
-  if((e.key === 'faelorenn.bestiaire' || e.key === 'faelorenn.familles') && $('seCombat')){ poserBestiaire(); dessinerCombat(); }
+  if((e.key === 'faelorenn.bestiaire' || e.key === 'faelorenn.familles' || e.key === 'faelorenn.butins') && $('seCombat')){ poserBestiaire(); dessinerCombat(); }
 });
 
 /* ---------- le formulaire, dans « En face » ---------- */
@@ -4136,7 +4257,7 @@ function listeNoms(liste){
 /* ce qu'un adversaire envoyé devient à la table : d'où il vient, son nom sans numéro, ce qu'il laisse */
 function champsAdv(a){
   return {rang:a.r, pvMax:a.pvMax, pv:a.pv, red:a.red, deg:a.deg, cartes:a.cartes, a2:a.a2, tr:a.tr, traits:a.traits, p:a.p, renf:a.renf,
-    cid:a.cid, base:a.n, fam:a.fam, butin:a.butin};
+    cid:a.cid, base:a.n, fam:a.fam, butin:a.butin, tables:a.tables};
 }
 /* les noms en face restent uniques dans le combat : un autre « Loup de bordure » prend le numéro d'après,
    même si l'on en a retiré un entre-temps, et même s'il vient d'une autre rencontre en cours */
@@ -4432,12 +4553,13 @@ function lignesRencontre(b){
 
 window.addEventListener('storage', e => { if(e.key === CLE_ENVOI && e.newValue && $('seCombat')) lireEnvoi(); });
 
-/* ============ fouiller ceux qui sont tombés : le butin du Livre VI ============
-   Un d20 pour la rareté, décalé par l'endroit, puis un d20 dans la table qu'il désigne (commun/butin.js).
-   Une créature de ton bestiaire peut porter sa propre liste, « Ce qu'il laisse » : on y tire aussi.
+/* ============ fouiller ceux qui sont tombés ============
+   Sa propre table et les tables partagées qu'il porte, écrites dans le Registre des Rencontres ; et le butin
+   du Livre VI : un d20 pour la rareté, décalé par l'endroit, puis un d20 dans la table qu'il désigne
+   (commun/butin.js). Le site lance les dés, ou l'on écrit ceux lancés sur la table.
    Ce qu'on trouve va dans le sac d'un personnage, ou reste là ; la séance le note. Tout se défait. */
 
-const FOU = {id:'', endroit:'officier', lu:'', texte:'', qui:'', d1:'', d2:''};
+const FOU = {id:'', endroit:'officier', lu:'', texte:'', qui:'', d1:'', d2:'', site:true, des:{}};
 const BTN = {ouvert:null};   /* le bloc « Le butin » : ouvert tant qu'il reste quelqu'un à fouiller, sauf si on l'a replié */
 const SAC_MAX = 80;
 
@@ -4460,34 +4582,39 @@ function lancerQuantite(t){
     return String(s);
   }) + reste;
 }
-/* sa propre liste : une ligne par objet, numérotée « 1-2 » comme dans le livre, ou pas numérotée du tout */
-const lignesButin = txt => String(txt || '').split(/\n+/).map(s => s.trim()).filter(Boolean);
-function tirerDansListe(lignes){
-  /* « 1-2 une dent », « 3. une corde », « 4 : rien » sont numérotées ; « 2 crocs de loup » dit une quantité */
-  const re = /^(\d{1,3})(?:\s*(?:-|à|\u2013)\s*(\d{1,3}))?\s*([.:)\-\u2013])?\s*/;
-  const parts = lignes.map(l => { const m = re.exec(l); return m && (m[2] || m[3]) ? {de:+m[1], a:+(m[2] || m[1]), t:l.slice(m[0].length).trim()} : {de:null, t:l}; });
-  if(parts.every(p => p.de != null)){
-    const max = Math.max.apply(null, parts.map(p => p.a));
-    const v = 1 + Math.floor(Math.random() * max);
-    const p = parts.find(x => v >= x.de && v <= x.a);
-    return {v:v, max:max, t:p ? p.t : ''};
-  }
-  return {v:null, max:parts.length, t:pick(parts).t};
+/* ses tables : la sienne, puis les partagées. Celles du bestiaire d'aujourd'hui quand on l'a lu et qu'il y est
+   encore : une table qu'on lui a ôtée ne revient pas. Sinon celles qu'il portait en entrant en scène */
+function tablesPourFouille(a){
+  const c = a.cid ? trouveId(a.cid) : null;
+  const sur = !!c && TIR.complet && !TIR.rate;
+  const out = [];
+  const propre = sur ? (c.butin || '') : (a.butin || (c && c.butin) || '');
+  if(lireTableButin(propre).lignes.length) out.push({k:'propre', l:'Sa table', lignes:propre});
+  (sur ? tablesDe(c) : (a.tables && a.tables.length ? a.tables : c ? tablesDe(c) : []))
+    .forEach(t => { if(lireTableButin(t.lignes).lignes.length) out.push({k:t.k, l:'Table « ' + t.l + ' »', lignes:t.lignes}); });
+  return out;
 }
-
 function ouvrirFouille(a){
   if(FOU.id === a.id){ FOU.id = ''; dessinerCombat(true); return; }
   const moi = MOI.perso && perso(MOI.perso) ? MOI.perso : '';
-  Object.assign(FOU, {id:a.id, endroit:endroitPar(a), lu:'', texte:'', qui:moi || ((persos()[0] || {}).id || ''), d1:'', d2:''});
+  Object.assign(FOU, {id:a.id, endroit:endroitPar(a), lu:'', texte:'', qui:moi || ((persos()[0] || {}).id || ''), d1:'', d2:'', site:true, des:{}});
   dessinerCombat(true);
   setTimeout(() => { const f = document.querySelector('#seCombat .fouille'); if(f) f.scrollIntoView({block:'nearest', behavior:'smooth'}); }, 30);
 }
-function lireButin(d1, d2){
+/* le butin du livre ; les dés du site lancent aussi la quantité, ceux de la table la laissent à lancer */
+function lireButin(d1, d2, site){
   const e = BUTIN.endroits.find(x => x.k === FOU.endroit) || BUTIN.endroits[1];
   const v = d1 + e.m, r = rareteDe(v), o = objetDe(r.k, d2);
-  FOU.d1 = String(d1); FOU.d2 = String(d2);
+  FOU.d1 = String(d1); FOU.d2 = String(d2); FOU.site = !!site;
   FOU.lu = 'Rareté : ' + d1 + (e.m ? (e.m > 0 ? ' + ' : ' − ') + Math.abs(e.m) + ' = ' + v : '') + ', ' + r.l.toLowerCase() + ' · objet : ' + d2 + '.';
-  FOU.texte = o ? (desSurTable() ? o.t : lancerQuantite(o.t)) : '';
+  FOU.texte = o ? (site ? lancerQuantite(o.t) : o.t) : '';
+}
+/* une de ses tables : le dé du site, ou celui de la table */
+function lireTableFouille(x, v){
+  const r = tirerTableButin(x.lignes, v);
+  if(!r) return;
+  FOU.texte = r.t;
+  FOU.lu = x.l + ', d' + r.de + ' : ' + r.v + (r.t ? '.' : ', rien à ce numéro.');
 }
 function finirFouille(a, etat, txt, qui){
   const x = unAdversaire(a.id); if(!x) return;
@@ -4528,73 +4655,68 @@ function phraseFouille(f){
   return f.texte ? 'Laissé là : ' + f.texte : 'Laissé sans le fouiller.';
 }
 
-/* ---------- le panneau : sa liste, le livre, et à qui ça va ---------- */
+/* ---------- le panneau : ses tables, le livre, et à qui ça va ---------- */
+/* un dé qu'on écrit soi-même, à côté du bouton qui le lance */
+function deAEcrire(id, faces, val, garder, lire){
+  const i = el('input'); i.type = 'number'; i.id = id; i.min = '1'; i.max = String(faces); i.inputMode = 'numeric'; i.value = val || '';
+  i.placeholder = 'd' + faces; i.setAttribute('aria-label', 'Ton d' + faces + ', lancé sur la table');
+  i.oninput = () => garder(i.value);
+  i.onkeydown = ev => { if(ev.key === 'Enter'){ ev.preventDefault(); lire(); } };
+  return i;
+}
 function panneauFouille(a){
   const w = el('div','fouille');
   w.append(el('p','ftitre', 'Fouiller ' + a.nom));
-  const liste = lignesButin(a.butin);
-  if(liste.length){
+  tablesPourFouille(a).forEach((x, n) => {
+    const lt = lireTableButin(x.lignes);
     const s = el('div','fsienne');
-    s.append(el('span','lab', 'Ce qu’il laisse, dans ton bestiaire'));
-    if(liste.length === 1) s.append(el('p','mini', liste[0]));
-    else { const o = el('ul','mini'); liste.slice(0, 20).forEach(l => o.append(el('li', null, l))); s.append(o); }
-    const b = el('button','btn ghost xs', liste.length > 1 ? 'Tirer dans sa liste' : 'Le prendre'); b.type = 'button'; b.id = 'fouSienne';
-    b.onclick = () => {
-      const r = liste.length > 1 ? tirerDansListe(liste) : {v:null, t:liste[0]};
-      FOU.texte = r.t;
-      FOU.lu = r.v != null ? 'Sa liste, d' + r.max + ' : ' + r.v + (r.t ? '.' : ', rien à ce numéro.') : liste.length > 1 ? 'Sa liste, une ligne au hasard.' : '';
-      dessinerCombat(true);
+    s.append(el('span','lab', x.l + ' · ' + (lt.numerotee ? 'd' + lt.de : 'une ligne au hasard')));
+    if(lt.lignes.length <= 12){
+      const u = el('ul','mini');
+      lt.lignes.forEach(l => u.append(el('li', null, (l.de != null ? (l.de === l.a ? l.de : l.de + '-' + l.a) + ' ' : '') + l.t)));
+      s.append(u);
+    }
+    const g = el('div','acts fdes');
+    const b = el('button','btn ghost xs','Tirer'); b.type = 'button'; b.id = 'fouTirer-' + n;
+    b.setAttribute('aria-label', 'Tirer dans ' + x.l);
+    b.onclick = () => { lireTableFouille(x); dessinerCombat(true); };
+    const ok = el('button','btn ghost xs','Lire'); ok.type = 'button'; ok.id = 'fouLireT-' + n;
+    const i = deAEcrire('fouDe-' + n, lt.de, FOU.des[x.k], v => { FOU.des[x.k] = v; }, () => ok.click());
+    ok.onclick = () => {
+      const v = parseInt(i.value, 10);
+      if(!(v >= 1 && v <= lt.de)){ msgTable('Un d' + lt.de + ' : de 1 à ' + lt.de + '.', false); return; }
+      lireTableFouille(x, v); dessinerCombat(true);
     };
-    s.append(b);
+    g.append(b, el('span','mini', 'ou ton d' + lt.de + ' :'), i, ok);
+    s.append(g);
     w.append(s);
-  }
+  });
   const lv = el('div','flivre');
-  lv.append(el('span','lab', liste.length ? 'Ou le butin du livre' : 'Le butin du livre'));
+  lv.append(el('span','lab', tablesPourFouille(a).length ? 'Ou le butin du livre' : 'Le butin du livre'));
   const so = el('select'); so.id = 'fouEndroit'; so.setAttribute('aria-label', 'Où on fouille');
   BUTIN.endroits.forEach(x => so.add(new Option((x.m ? (x.m > 0 ? '+' : '−') + Math.abs(x.m) : 'normal') + ' · ' + x.l.charAt(0).toLowerCase() + x.l.slice(1), x.k)));
   so.value = FOU.endroit;
   so.onchange = () => {
     FOU.endroit = so.value;
-    if(FOU.d1 !== '' && FOU.d2 !== '' && /^Rareté/.test(FOU.lu)) lireButin(+FOU.d1, +FOU.d2);
+    if(FOU.d1 !== '' && FOU.d2 !== '' && /^Rareté/.test(FOU.lu)) lireButin(+FOU.d1, +FOU.d2, FOU.site);
     dessinerCombat(true);
   };
   lv.append(so);
-  const dm = el('div','desmode');
-  const sg = el('div','seg'); sg.setAttribute('role', 'group'); sg.setAttribute('aria-label', 'Qui lance les dés');
-  [['site', 'Le site lance', 'fouDesSite'], ['table', 'Je lance', 'fouDesTable']].forEach(([k, l, id]) => {
-    const b = el('button', null, l); b.type = 'button'; b.id = id;
-    b.setAttribute('aria-pressed', (desSurTable() ? 'table' : 'site') === k ? 'true' : 'false');
-    b.onclick = () => { if((desSurTable() ? 'table' : 'site') === k) return; MOI.des = k; sauverLocal(); dessinerCombat(true); if(COMPO.panneau === 'jet') dessinerCompositeur(true); };
-    sg.append(b);
-  });
-  dm.append(sg);
-  lv.append(dm);
-  if(desSurTable()){
-    const g = el('div','fdes');
-    const d20 = (id, lab, v) => {
-      const i = el('input'); i.type = 'number'; i.id = id; i.min = '1'; i.max = '20'; i.inputMode = 'numeric'; i.value = v; i.placeholder = 'd20';
-      i.setAttribute('aria-label', lab);
-      const x = el('label','mini'); x.htmlFor = id; x.textContent = lab;
-      const c = el('div'); c.append(x, i); g.append(c);
-      return i;
-    };
-    const i1 = d20('fouD1', 'Rareté', FOU.d1), i2 = d20('fouD2', 'Objet', FOU.d2);
-    i1.oninput = () => { FOU.d1 = i1.value; };
-    i2.oninput = () => { FOU.d2 = i2.value; };
-    const ok = el('button','btn sm','Lire'); ok.type = 'button'; ok.id = 'fouLire';
-    ok.onclick = () => {
-      const v1 = parseInt(i1.value, 10), v2 = parseInt(i2.value, 10);
-      if(!(v1 >= 1 && v1 <= 20 && v2 >= 1 && v2 <= 20)){ msgTable('Deux d20 : un pour la rareté, un pour l’objet, de 1 à 20.', false); return; }
-      lireButin(v1, v2); dessinerCombat(true);
-    };
-    [i1, i2].forEach(i => { i.onkeydown = ev => { if(ev.key === 'Enter'){ ev.preventDefault(); ok.click(); } }; });
-    g.append(ok);
-    lv.append(g);
-  } else {
-    const b = el('button','btn sm','Lancer les deux d20'); b.type = 'button'; b.id = 'fouLancer';
-    b.onclick = () => { lireButin(1 + Math.floor(Math.random() * 20), 1 + Math.floor(Math.random() * 20)); dessinerCombat(true); };
-    lv.append(b);
-  }
+  const g = el('div','acts fdes');
+  const b = el('button','btn sm','Lancer les deux d20'); b.type = 'button'; b.id = 'fouLancer';
+  b.onclick = () => { lireButin(1 + Math.floor(Math.random() * 20), 1 + Math.floor(Math.random() * 20), true); dessinerCombat(true); };
+  const ok = el('button','btn ghost xs','Lire'); ok.type = 'button'; ok.id = 'fouLire';
+  const i1 = deAEcrire('fouD1', 20, FOU.site ? '' : FOU.d1, v => { FOU.d1 = v; FOU.site = false; }, () => ok.click());
+  const i2 = deAEcrire('fouD2', 20, FOU.site ? '' : FOU.d2, v => { FOU.d2 = v; FOU.site = false; }, () => ok.click());
+  i1.setAttribute('aria-label', 'Ton d20 de rareté'); i1.placeholder = 'rareté';
+  i2.setAttribute('aria-label', 'Ton d20 d’objet'); i2.placeholder = 'objet';
+  ok.onclick = () => {
+    const v1 = parseInt(i1.value, 10), v2 = parseInt(i2.value, 10);
+    if(!(v1 >= 1 && v1 <= 20 && v2 >= 1 && v2 <= 20)){ msgTable('Deux d20 : un pour la rareté, un pour l’objet, de 1 à 20.', false); return; }
+    lireButin(v1, v2, false); dessinerCombat(true);
+  };
+  g.append(b, el('span','mini', 'ou tes d20 :'), i1, i2, ok);
+  lv.append(g);
   w.append(lv);
   if(FOU.lu) w.append(el('p','mini fverdict', FOU.lu));
 
@@ -4681,6 +4803,7 @@ let PNJ_ED = null;              /* la fiche en cours d'édition */
 let PNJ_LIENS = [];             /* les liens qu'elle tisse en même temps, créés quand on l'enregistre */
 const PNJ_OUVERTS = {};
 const TISSE = {};               /* les « Tisser un lien » ouverts, par personne */
+const PJ_TEXTES_OUVERTS = {};   /* dans le Registre des Visages, les comptes rendus dépliés d'un personnage */
 let PNJ_SUPPR = null;
 let LIEN_SUPPR = null;
 let LIEN_ED = null;             /* le lien qu'on modifie : {id, mode, type, texte, sens, avec, raison} */
@@ -4725,19 +4848,45 @@ const typeLien = k => TYPES_LIEN.find(t => t.k === k) || TYPES_LIEN[TYPES_LIEN.l
    les deux noms se lisent entre eux, « Nahya · grand-mère de · Ohan » ; une vraie phrase suit la flèche,
    « Nahya → Toum’Balin · Dette, promesse : il l’a sauvée, elle en a peur » */
 const FIN_RELIANTE = /(^|\s)(de|d[’']|du|des|à|au|aux|pour|avec|chez|contre|envers|sur|sous|par|vers|que)$/i;
-function phraseLien(l){
+/* marque : les noms s'écrivent « /Nahya », pour que la séance les cite et que la fiche les retrouve */
+function phraseLien(l, marque){
   const a = quiRef(l.de), b = quiRef(l.vers);
   if(!a || !b) return '';
+  const na = (marque ? '/' : '') + a.nom, nb = (marque ? '/' : '') + b.nom;
   const t = typeLien(l.type), x = String(l.texte || '').trim();
-  if(l.mutuel) return a.nom + ' et ' + b.nom + ' · ' + t.l + (x ? ', ' + x : '');
-  if(!x) return a.nom + ' → ' + b.nom + ' · ' + t.l;
-  if(FIN_RELIANTE.test(x) || x.split(/\s+/).length <= 2) return a.nom + ' · ' + x + ' · ' + b.nom;
-  return a.nom + ' → ' + b.nom + ' · ' + t.l + ' : ' + x;
+  if(l.mutuel) return na + ' et ' + nb + ' · ' + t.l + (x ? ', ' + x : '');
+  if(!x) return na + ' → ' + nb + ' · ' + t.l;
+  if(FIN_RELIANTE.test(x) || x.split(/\s+/).length <= 2) return na + ' · ' + x + ' · ' + nb;
+  return na + ' → ' + nb + ' · ' + t.l + ' : ' + x;
 }
-/* ce que le lien a été, avant de changer en jeu */
-function phraseAvant(h){
-  const e = h.seance && T.journal[h.seance] && !T.journal[h.seance].supprime ? T.journal[h.seance] : null;
-  return typeLien(h.type).l + (h.texte ? ', ' + h.texte : '') + (e ? ' (jusqu’à la séance ' + (e.seance || '?') + ')' : '');
+/* ---------- l'histoire d'un lien : ce qu'il a été, de quelle séance à quelle séance, et pourquoi ---------- */
+function numeroSeance(sid){ const e = sid && T.journal[sid] && !T.journal[sid].supprime ? T.journal[sid] : null; return e ? (e.seance || '?') : ''; }
+/* les états d'un lien, du plus ancien à celui d'aujourd'hui */
+function etatsDuLien(l){
+  const h = l.hist || [];
+  return h.map(x => ({s:x, debut:x.depuis, fin:x.jusqua, raison:x.raison, t:x.t}))
+    .concat([{s:l, debut:l.depuis || (h.length ? h[h.length - 1].jusqua : ''), fin:'', raison:l.raison, t:0, actuel:true}]);
+}
+const etatEnLien = (l, s) => Object.assign({}, l, {type:s.type, texte:s.texte, mutuel:s.mutuel, de:s.de || l.de, vers:s.vers || l.vers});
+function quandEtat(e){
+  const a = numeroSeance(e.debut), b = numeroSeance(e.fin);
+  if(e.actuel) return a ? 'depuis la séance ' + a : 'aujourd’hui';
+  if(a && b) return a === b ? 'à la séance ' + a : 'séances ' + a + ' à ' + b;
+  return b ? 'jusqu’à la séance ' + b : a ? 'depuis la séance ' + a : 'avant';
+}
+/* sous le lien, quand il a changé en jeu : chaque état, sa période, et ce qui l'a fait naître */
+function histoireLien(l){
+  const w = el('div','lhist');
+  w.append(el('span','lab', 'Son histoire'));
+  const u = el('ul');
+  etatsDuLien(l).forEach(e => {
+    const li = el('li', e.actuel ? 'actuel' : null);
+    li.append(el('span','ltrait l-' + e.s.type));
+    li.append(document.createTextNode(majuscule(quandEtat(e)) + ' : ' + typeLien(e.s.type).l + (e.s.texte ? ', ' + e.s.texte : '') + (e.raison ? ' · ' + e.raison : '')));
+    u.append(li);
+  });
+  w.append(u);
+  return w;
 }
 
 /* ---------- un nom tapé à la main : Ohan plutôt qu'« ohen » ---------- */
@@ -4778,24 +4927,13 @@ function creerPnj(nom, seanceId){
 }
 const nomAnonyme = n => /^[?\s.]*$/.test(String(n || ''));
 
-/* ---------- où on l'a vu ---------- */
+/* ---------- où on l'a vu : les séances où il agit, parle, où on le cite ou le nomme ---------- */
 function apparitions(p){
-  const nom = cleNom(p.nom);
-  const esc = nom.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  let re = null;
-  try{ re = nom.length >= 3 ? new RegExp('(^|[^\\p{L}])' + esc + '($|[^\\p{L}])', 'iu') : null; }catch(e){ re = null; }
   const par = {};
-  Object.keys(T.blocs).forEach(id => {
-    const b = T.blocs[id];
-    if(!b || b.supprime) return;
-    const e = T.journal[b.seance];
-    if(!e || e.supprime) return;
-    const agit = b.qui.k === 'pnj' && (b.qui.id === p.id || (!b.qui.id && cleNom(b.qui.nom) === nom));
-    const cite = !!(re && re.test(b.texte));
-    if(!agit && !cite) return;
-    const x = par[b.seance] || (par[b.seance] = {e:e, n:0, premier:b});
-    x.n++;
-    if(b.ordre < x.premier.ordre) x.premier = b;
+  textesDe('pnj:' + p.id).forEach(x => {
+    const y = par[x.e.id] || (par[x.e.id] = {e:x.e, n:0, premier:x.b});
+    y.n++;
+    if(x.b.ordre < y.premier.ordre) y.premier = x.b;
   });
   return Object.keys(par).map(k => par[k]).sort((a, b) => (parseFloat(a.e.seance) || 0) - (parseFloat(b.e.seance) || 0));
 }
@@ -4821,17 +4959,21 @@ function composerPourPnj(p){
 }
 
 /* ---------- la section ---------- */
+const vuePnj = () => MOI.vuePnj === 'reseau' || MOI.vuePnj === 'histoire' ? MOI.vuePnj : 'fiches';
 function dessinerPnj(force){
   if(!$('pnjListe')) return;
   majOutilsPnj();
-  const fiches = MOI.vuePnj !== 'reseau';
-  $('pnjListe').hidden = !fiches;
-  $('pnjReseau').hidden = fiches;
-  if(fiches) dessinerListePnj(force); else dessinerReseau(force);
+  const v = vuePnj();
+  $('pnjListe').hidden = v !== 'fiches';
+  $('pnjReseau').hidden = v !== 'reseau';
+  if($('pnjHistoire')) $('pnjHistoire').hidden = v !== 'histoire';
+  if(v === 'fiches') dessinerListePnj(force);
+  else if(v === 'reseau') dessinerReseau(force);
+  else dessinerHistoire(force);
 }
 function majOutilsPnj(){
-  [['pnjVueFiches','fiches'], ['pnjVueReseau','reseau']].forEach(([id, v]) => {
-    $(id).setAttribute('aria-pressed', (MOI.vuePnj === 'reseau' ? 'reseau' : 'fiches') === v ? 'true' : 'false');
+  [['pnjVueFiches','fiches'], ['pnjVueReseau','reseau'], ['pnjVueHistoire','histoire']].forEach(([id, v]) => {
+    if($(id)) $(id).setAttribute('aria-pressed', vuePnj() === v ? 'true' : 'false');
   });
   const s = $('pnjGroupe');
   if(document.activeElement !== s){
@@ -4844,7 +4986,57 @@ function majOutilsPnj(){
   }
   const n = pnjs().length;
   $('pnjCompte').textContent = n ? n + ' fiche' + (n > 1 ? 's' : '') : '';
-  $('pnjOutilsListe').hidden = MOI.vuePnj === 'reseau';
+  $('pnjOutilsListe').hidden = vuePnj() === 'reseau';
+  $('pnjGroupe').hidden = vuePnj() === 'histoire';
+}
+
+/* ---------- l'histoire des liens : ce qui s'est noué, et ce qui a changé, séance par séance ---------- */
+function evenementsLiens(){
+  const ev = [];
+  liensActifs().forEach(l => {
+    const etats = etatsDuLien(l);
+    etats.forEach((e, i) => {
+      const avant = i ? etats[i - 1] : null;
+      ev.push({l:l, etat:e, avant:avant, seance:e.debut || (avant ? avant.fin : ''), t:i ? (avant.t || 0) : (l.cree || 0)});
+    });
+  });
+  const rang = sid => { const n = parseFloat(numeroSeance(sid)); return isNaN(n) ? -1 : n; };
+  return ev.sort((a, b) => (rang(a.seance) - rang(b.seance)) || (a.t - b.t));
+}
+function dessinerHistoire(force){
+  const box = $('pnjHistoire'); if(!box) return;
+  if(!force && occupe(box)){ apresSaisie(box, () => dessinerHistoire(true)); return; }
+  box.innerHTML = '';
+  const q = cleNom(PNJ_FILTRE.q);
+  const ev = evenementsLiens().filter(x => {
+    if(!q) return true;
+    return [quiRef(x.l.de), quiRef(x.l.vers)].some(p => p && cleNom(p.nom).indexOf(q) >= 0);
+  });
+  if(!ev.length){
+    box.append(el('p','vide', q ? 'Aucun lien pour ce nom.' : 'Aucun lien pour l’instant. Chaque lien noué, et chaque lien qui change en jeu (« Modifier », puis « Ça a changé en jeu »), s’écrit ici, séance par séance.'));
+    return;
+  }
+  box.append(el('p','mini', 'Chaque lien noué, et chaque lien qui a changé en jeu, à la séance où c’est arrivé. Les liens tissés avant qu’on note la séance sont en tête.'));
+  let cle = null, u = null;
+  ev.forEach(x => {
+    const k = x.seance && numeroSeance(x.seance) ? x.seance : '';
+    if(k !== cle || !u){
+      cle = k;
+      const e = k ? T.journal[k] : null;
+      box.append(el('h3','hseance', e ? 'Séance ' + (e.seance || '?') + (e.titre ? ' · ' + e.titre : '') : 'Sans séance notée'));
+      u = el('ul','hliens');
+      box.append(u);
+    }
+    const li = el('li', x.avant ? 'change' : 'noue');
+    li.append(el('span','ltrait l-' + x.etat.s.type));
+    const t = el('span','q');
+    t.append(document.createTextNode(phraseLien(etatEnLien(x.l, x.etat.s))));
+    if(x.avant) t.append(el('span','mini', ' · avant : ' + typeLien(x.avant.s.type).l.toLowerCase() + (x.avant.s.texte ? ', ' + x.avant.s.texte : '')));
+    else t.append(el('span','mini', ' · noué'));
+    if(x.etat.raison) t.append(el('span','hraison', ' · ' + x.etat.raison));
+    li.append(t);
+    u.append(li);
+  });
 }
 function pnjFiltres(){
   const q = cleNom(PNJ_FILTRE.q);
@@ -4921,7 +5113,7 @@ function liensEnBref(ref){
 
 function detailPnj(p){
   const d = el('div','detail');
-  if(p.texte){ d.append(el('h3', null, 'Ce qu’on sait')); d.append(el('div','texte', p.texte)); }
+  if(p.texte){ d.append(el('h3', null, 'Ce qu’on sait')); const t = el('div','texte'); t.append(texteRiche(p.texte)); d.append(t); }
   if(p.valeurs.length){
     d.append(el('h3', null, 'Ses valeurs'));
     d.append(el('p','mini', p.valeurs.map(v => v.n + ' ' + v.v + ' (d20 ' + d20v(v.v) + ')').join(' · ')));
@@ -4932,19 +5124,9 @@ function detailPnj(p){
   if(!ls.length) d.append(el('p','mini','Aucun lien pour l’instant.'));
   ls.forEach(l => d.append(ligneLien(l, () => dessinerListePnj(true), ref, 'carte')));
 
-  const ap = apparitions(p);
+  /* tout ce qu'on a écrit sur lui, séance par séance */
   d.append(el('h3', null, 'Dans les comptes rendus'));
-  if(!ap.length) d.append(el('p','mini','Absent des comptes rendus pour l’instant.'));
-  else {
-    const r = el('div','acts apparitions');
-    ap.forEach(a => {
-      const x = el('button','btn ghost sm', 'Séance ' + (a.e.seance || '?') + ' · ' + a.n + ' fois');
-      x.type = 'button';
-      x.onclick = () => allerAuBloc(a.e.id, a.premier.id);
-      r.append(x);
-    });
-    d.append(r);
-  }
+  d.append(blocTextes(ref, () => dessinerListePnj(true)));
   return d;
 }
 
@@ -4973,7 +5155,7 @@ function ligneLien(l, redessiner, ref, lieu){
     setTimeout(() => { if(LIEN_SUPPR === l.id){ LIEN_SUPPR = null; redessiner(); } }, 5000);
   };
   w.append(x);
-  if(l.hist && l.hist.length) w.append(el('p','mini lhist', 'Avant : ' + l.hist.slice().reverse().map(phraseAvant).join(' ; puis avant : ') + '.'));
+  if(l.hist && l.hist.length) w.append(histoireLien(l));
   if(ouvert) w.append(formModifLien(l, () => { LIEN_ED = null; redessiner(); }, redessiner));
   return w;
 }
@@ -5044,13 +5226,17 @@ function formModifLien(l, fini, redessiner){
     const pareil = nv.type === x.type && nv.texte === x.texte && nv.mutuel === x.mutuel && nv.de === x.de && nv.vers === x.vers;
     if(pareil && evol){ msgTable('Rien n’a changé : choisis ce que le lien est devenu.', false); return; }
     if(pareil){ fini(); return; }
-    if(evol) nv.hist = (x.hist || []).concat([{type:x.type, texte:x.texte, mutuel:x.mutuel, de:x.de, vers:x.vers, seance:(seanceCourante() || {}).id || '', t:maintenant()}]);
     const avant = [x.de, x.vers].find(r => r !== E.ref);
     const raison = E.raison.trim();
+    if(evol){
+      const sid = (seanceCourante() || {}).id || '';
+      nv.hist = (x.hist || []).concat([{type:x.type, texte:x.texte, mutuel:x.mutuel, de:x.de, vers:x.vers, depuis:x.depuis, raison:x.raison, jusqua:sid, t:maintenant()}]);
+      nv.depuis = sid; nv.raison = raison;
+    }
     LIEN_ED = null;
     changer(() => {
       T.liens[l.id] = normLien(nv);
-      if(evol) noterDansSeance(phraseLien(nv) + ' (avant : ' + typeLien(x.type).l.toLowerCase() + ')' + (raison ? ' : ' + raison : '') + '.', 'note');
+      if(evol) noterDansSeance(phraseLien(nv, true) + ' (avant : ' + typeLien(x.type).l.toLowerCase() + ')' + (raison ? ' : ' + raison : '') + '.', 'note');
     });
     /* une fiche créée par erreur, que plus rien ne relie : on le dit, sans la retirer à ta place */
     const q = !evol && avant !== E.avec && avant && avant.indexOf('pnj:') === 0 ? unPnj(avant.slice(4)) : null;
@@ -5107,7 +5293,7 @@ function formLien(ref, cible, apres){
   ok.onclick = () => {
     if(!avec.value){ msgTable('Choisis avec qui.', false); return; }
     const aller = sens.value !== 'retour';
-    const l = normLien({id:nouvelId('l'), maj:maintenant(), type:ty.value, texte:tx.value.trim(),
+    const l = normLien({id:nouvelId('l'), maj:maintenant(), cree:maintenant(), depuis:(seanceCourante() || {}).id || '', type:ty.value, texte:tx.value.trim(),
       mutuel:sens.value === 'mutuel', de:aller ? ref : avec.value, vers:aller ? avec.value : ref});
     changer(() => { T.liens[l.id] = l; });
     if(apres) apres(l);
@@ -5242,9 +5428,10 @@ function ouvrirEditeurPnj(p, nouveau){
 
   box.append(el('h3', null, 'Ce qu’on sait'));
   const z = el('textarea'); z.rows = 4; z.id = 'ped-texte'; z.value = PNJ_ED.texte;
-  z.placeholder = 'Ce qu’il a dit, ce qu’il cache, ce qu’il veut. Tout le monde le lit.';
+  z.placeholder = 'Ce qu’il a dit, ce qu’il cache, ce qu’il veut. « / » puis un nom cite quelqu’un. Tout le monde le lit.';
   z.oninput = () => { PNJ_ED.texte = z.value; };
   box.append(z);
+  brancherMentions(z);
 
   box.append(el('h3', null, 'Ses valeurs'));
   box.append(el('p','mini','Une valeur sur 100, comme sur une fiche. Elles apparaissent dans les jets quand ce PNJ agit dans la séance.'));
@@ -5310,6 +5497,7 @@ function ouvrirEditeurPnj(p, nouveau){
     changer(() => {
       T.pnj[x.id] = x;
       /* un nom changé : les paragraphes qui le citaient par son ancien nom suivent la fiche */
+      if(avantNom && avantNom.trim() !== nom) renommerMentions('pnj:' + x.id, avantNom, nom);
       if(avantNom && cleNom(avantNom) !== cleNom(nom)){
         Object.keys(T.blocs).forEach(k => {
           const b = T.blocs[k];
@@ -5323,7 +5511,7 @@ function ouvrirEditeurPnj(p, nouveau){
         if(!ref){ const f = creerPnj(y.avec.trim(), ''); ref = 'pnj:' + f.id; nees.push(f.nom); }
         if(ref === 'pnj:' + x.id) return;
         const sens = y.sens || (typeLien(y.type).mutuel ? 'mutuel' : 'aller'), aller = sens !== 'retour';
-        const l = normLien({id:nouvelId('l'), maj:maintenant(), type:y.type, texte:y.texte.trim(), mutuel:sens === 'mutuel',
+        const l = normLien({id:nouvelId('l'), maj:maintenant(), cree:maintenant(), depuis:(seanceCourante() || {}).id || '', type:y.type, texte:y.texte.trim(), mutuel:sens === 'mutuel',
           de:aller ? 'pnj:' + x.id : ref, vers:aller ? ref : 'pnj:' + x.id});
         T.liens[l.id] = l;
       });
@@ -5792,6 +5980,16 @@ function dessinerPjVisages(){
     if(!ls.length) zl.append(el('p','mini','Aucun lien pour l’instant.'));
     ls.forEach(x => zl.append(ligneLien(x, dessinerPjVisages, ref, 'pj')));
     w.append(zl);
+    /* ce que les comptes rendus disent de lui : replié, un personnage agit à chaque paragraphe */
+    const n = textesDe(ref).length;
+    if(n){
+      const det = el('details','vtextes');
+      det.open = !!PJ_TEXTES_OUVERTS[ref];
+      det.ontoggle = () => { PJ_TEXTES_OUVERTS[ref] = det.open; if(det.open && !det.querySelector('.textes')) det.append(blocTextes(ref, dessinerPjVisages)); };
+      det.append(el('summary', null, 'Dans les comptes rendus · ' + n + ' paragraphe' + (n > 1 ? 's' : '')));
+      if(det.open) det.append(blocTextes(ref, dessinerPjVisages));
+      w.append(det);
+    }
     const act = el('div','pact');
     const ti = el('button','btn ghost sm','Tisser un lien'); ti.type = 'button';
     ti.setAttribute('aria-expanded', TISSE[ref] ? 'true' : 'false');
@@ -5806,6 +6004,358 @@ function dessinerPjVisages(){
     if(TISSE[ref]) w.append(formLien(ref, '', () => { TISSE[ref] = false; dessinerPjVisages(); }));
     box.append(w);
   });
+}
+
+/* ============ « /Nahya » : parler de quelqu'un dans un texte ============
+   Dans le récit, un paragraphe qu'on retouche, ce qu'on sait d'un PNJ ou ce qu'est un personnage :
+   « / » puis un nom ouvre la liste des personnages et des PNJ. Le nom reste écrit « /Nahya » dans le texte,
+   s'affiche comme un lien vers sa fiche, et la fiche regroupe tout ce qu'on a écrit sur lui.
+   Un nom qui n'existe pas encore peut recevoir sa fiche depuis la liste. */
+
+/* les noms qu'on peut citer, du plus long au plus court : « Garde du pont » passe avant « Garde ».
+   avant : {ref, nom}, pour lire les textes comme avant un changement de nom */
+function gensCitables(avant){
+  let l = tousLesGens().filter(x => x);
+  if(avant){
+    if(l.some(x => x.ref === avant.ref)) l = l.map(x => x.ref === avant.ref ? Object.assign({}, x, {nom:avant.nom}) : x);
+    else l.push({ref:avant.ref, nom:avant.nom, pj:/^pj:/.test(avant.ref)});
+  }
+  return l.filter(x => x.nom && x.nom.trim()).map(x => ({ref:x.ref, nom:x.nom.trim(), pj:x.pj}))
+    .sort((a, b) => b.nom.length - a.nom.length);
+}
+const normeNom = s => String(s || '').toLowerCase().replace(/[’`´ʼ]/g, '\'');
+const lettreOuChiffre = ch => !!ch && /[\p{L}\p{N}]/u.test(ch);
+/* une barre qui ouvre une citation : en début de texte ou après autre chose qu'une lettre, un chiffre, « : » ou « / » */
+const barreOuvrante = (t, i) => i === 0 || !/[\p{L}\p{N}:\/]/u.test(t[i - 1]);
+
+/* les « /Nom » d'un texte qui désignent quelqu'un : position de la barre, longueur (barre comprise), qui */
+function trouverMentions(txt, gens){
+  const out = [], t = String(txt || '');
+  if(t.indexOf('/') < 0) return out;
+  gens = gens || gensCitables();
+  let i = t.indexOf('/');
+  while(i >= 0){
+    let pas = 1;
+    if(barreOuvrante(t, i)){
+      const suite = t.slice(i + 1, i + 1 + 90);
+      const g = gens.find(x => normeNom(suite.slice(0, x.nom.length)) === normeNom(x.nom) && !lettreOuChiffre(suite.charAt(x.nom.length)));
+      if(g){ out.push({i:i, n:g.nom.length + 1, ref:g.ref, nom:g.nom, pj:g.pj}); pas = g.nom.length + 1; }
+    }
+    i = t.indexOf('/', i + pas);
+  }
+  return out;
+}
+/* les barres qui marquent quelqu'un : devant un nom qui a sa fiche, ou devant un nom propre qui n'en a pas
+   (encore). « et /ou », « 1/2 » ou un chemin gardent la leur */
+function barresDeMarque(t, gens){
+  const pos = new Set();
+  if(t.indexOf('/') < 0) return pos;
+  trouverMentions(t, gens).forEach(m => pos.add(m.i));
+  for(let i = t.indexOf('/'); i >= 0; i = t.indexOf('/', i + 1))
+    if(!pos.has(i) && barreOuvrante(t, i) && /\p{Lu}/u.test(t.charAt(i + 1))) pos.add(i);
+  return pos;
+}
+/* le texte tel qu'on le lit ou qu'on le copie : sans la barre devant les noms */
+function sansMarques(txt, gens){
+  const t = String(txt == null ? '' : txt);
+  const pos = barresDeMarque(t, gens);
+  if(!pos.size) return t;
+  let out = '';
+  for(let i = 0; i < t.length; i++) if(!pos.has(i)) out += t[i];
+  return out;
+}
+
+/* le texte affiché : chaque nom cité devient un lien vers sa fiche */
+function texteRiche(txt, gens){
+  const f = document.createDocumentFragment(), t = String(txt == null ? '' : txt);
+  gens = gens || gensCitables();
+  const pos = barresDeMarque(t, gens);
+  const morceau = (a, b) => { let s = ''; for(let i = a; i < b; i++) if(!pos.has(i)) s += t[i]; return s; };
+  let k = 0;
+  trouverMentions(t, gens).forEach(m => {
+    if(m.i > k) f.append(document.createTextNode(morceau(k, m.i)));
+    const b = el('button','mention', t.substr(m.i + 1, m.n - 1)); b.type = 'button';
+    b.title = 'La fiche de ' + m.nom;
+    b.onclick = ev => { ev.stopPropagation(); ouvrirFiche(m.ref); };
+    f.append(b);
+    k = m.i + m.n;
+  });
+  if(k < t.length) f.append(document.createTextNode(morceau(k, t.length)));
+  return f;
+}
+/* la fiche de quelqu'un : dans le Registre des Visages, qui regroupe ce qu'on a écrit sur lui */
+function ouvrirFiche(ref){
+  const q = quiRef(ref); if(!q) return;
+  if(!$('pnjListe')){ ouvrirPage('pnj.html#' + (q.pj ? 'pj-' : '') + encodeURIComponent(q.o.id), ONGLET_VISAGES); return; }
+  if(q.pj){
+    const c = document.querySelector('[data-pj="' + q.o.id + '"]');
+    if(c){ c.scrollIntoView({block:'start', behavior:'smooth'}); c.classList.add('eclaire'); setTimeout(() => c.classList.remove('eclaire'), 2400); }
+    return;
+  }
+  MOI.vuePnj = 'fiches'; PNJ_OUVERTS[q.o.id] = true; PNJ_FILTRE.q = ''; PNJ_FILTRE.groupe = '';
+  if($('pnjCherche')) $('pnjCherche').value = '';
+  sauverLocal(); dessinerPnj(true);
+  const c = document.querySelector('[data-pnj="' + q.o.id + '"]');
+  if(c){ c.scrollIntoView({block:'start', behavior:'smooth'}); c.classList.add('eclaire'); setTimeout(() => c.classList.remove('eclaire'), 2400); }
+}
+
+/* ---------- la liste qui s'ouvre sous le texte ---------- */
+/* nav : on a bougé dans la liste avec les flèches ; taire : le texte change parce qu'on vient de citer */
+const MENT = {z:null, debut:-1, q:'', liste:[], i:0, boite:null, nav:false, taire:false};
+function brancherMentions(z){
+  if(!z || z._mentions) return;
+  z._mentions = true;
+  z.addEventListener('input', () => { if(!MENT.taire) majMentions(z); });
+  z.addEventListener('click', () => majMentions(z));
+  z.addEventListener('keydown', ev => clavierMentions(z, ev), true);
+  z.addEventListener('blur', () => setTimeout(() => { if(MENT.z === z && document.activeElement !== z) fermerMentions(); }, 150));
+}
+const mentionOuverte = z => !!(MENT.z && MENT.z === z && MENT.liste.length && MENT.boite && MENT.boite.isConnected);
+/* ce qu'on est en train de taper après une barre, tant que ce n'est pas déjà un nom complet suivi d'autre chose */
+function requeteMention(z, gens){
+  const pos = z.selectionStart;
+  if(pos == null || pos !== z.selectionEnd) return null;
+  const avant = z.value.slice(0, pos), i = avant.lastIndexOf('/');
+  if(i < 0 || !barreOuvrante(avant, i)) return null;
+  const q = avant.slice(i + 1);
+  if(q.length > 32 || /[\n,.;:!?«»()"\/]/.test(q) || q.split(' ').length > 4 || /^\s/.test(q)) return null;
+  /* « /Ohan dit » : le nom est écrit, la phrase continue. « /Garde d » peut encore devenir « /Garde du pont » */
+  const qn = normeNom(q);
+  const fini = gens.some(g => q.length > g.nom.length && normeNom(q.slice(0, g.nom.length)) === normeNom(g.nom) && !lettreOuChiffre(q.charAt(g.nom.length)))
+    && !gens.some(g => g.nom.length > q.length && normeNom(g.nom).indexOf(qn) === 0);
+  return fini ? null : {debut:i, q:q};
+}
+function majMentions(z){
+  const gens = gensCitables();
+  const r = requeteMention(z, gens);
+  if(!r){ if(MENT.z === z) fermerMentions(); return; }
+  const qn = normeNom(r.q).trim();
+  const note = g => {
+    const n = normeNom(g.nom);
+    if(!qn) return g.pj ? 0 : 1;
+    if(n === qn) return -1;
+    if(n.indexOf(qn) === 0) return 0;
+    if(n.split(/[\s'’-]+/).some(m => m.indexOf(qn) === 0)) return 1;
+    if(n.indexOf(qn) >= 0) return 2;
+    /* « ohen » pour Ohan : une lettre sur quatre au plus */
+    return qn.length >= 3 && distanceNoms(cleSimple(qn), cleSimple(n)) <= Math.max(1, Math.floor(qn.length / 4)) ? 3 : 9;
+  };
+  const l = gens.map(g => ({g:g, n:note(g)})).filter(x => x.n < 9)
+    .sort((a, b) => (a.n - b.n) || a.g.nom.localeCompare(b.g.nom, 'fr')).slice(0, 7).map(x => ({g:x.g}));
+  const exact = gens.some(g => normeNom(g.nom) === qn);
+  if(r.q.trim().length >= 2 && !exact) l.push({nouveau:r.q.trim()});
+  if(!l.length){ fermerMentions(); return; }
+  if(MENT.z !== z || MENT.q !== r.q){ MENT.i = 0; MENT.nav = false; }
+  MENT.z = z; MENT.debut = r.debut; MENT.q = r.q; MENT.liste = l;
+  MENT.i = Math.min(MENT.i, l.length - 1);
+  dessinerMentions();
+}
+function dessinerMentions(){
+  const z = MENT.z; if(!z) return;
+  let b = MENT.boite;
+  if(!b){ b = el('div','mentions'); b.setAttribute('role', 'listbox'); b.setAttribute('aria-label', 'Qui citer'); MENT.boite = b; }
+  if(b.previousElementSibling !== z) z.insertAdjacentElement('afterend', b);
+  b.innerHTML = '';
+  b.id = (z.id || 'texte') + '-mentions';
+  z.setAttribute('aria-controls', b.id);
+  MENT.liste.forEach((x, i) => {
+    const o = el('button', i === MENT.i ? 'actif' : null); o.type = 'button';
+    o.setAttribute('role', 'option'); o.setAttribute('aria-selected', i === MENT.i ? 'true' : 'false');
+    if(x.nouveau){ o.append(el('span','mn', 'Nouvelle fiche « ' + x.nouveau + ' »')); o.classList.add('neuve'); }
+    else o.append(el('span','mn', x.g.nom), el('span','mq', x.g.pj ? 'personnage' : 'PNJ'));
+    o.onmousedown = ev => { ev.preventDefault(); choisirMention(i); };
+    b.append(o);
+  });
+  const x = MENT.liste[MENT.i];
+  const aide = el('p','maide', x && x.nouveau && !MENT.nav ? 'Flèche puis Entrée : créer sa fiche · Échap : fermer'
+    : 'Entrée ou Tab : citer · Échap : fermer');
+  b.append(aide);
+}
+function fermerMentions(){
+  if(MENT.boite) MENT.boite.remove();
+  if(MENT.z) MENT.z.removeAttribute('aria-controls');
+  MENT.z = null; MENT.liste = []; MENT.i = 0; MENT.debut = -1; MENT.q = ''; MENT.nav = false;
+}
+/* le nom déjà écrit en entier : Entrée ne cite pas une deuxième fois, elle fait ce qu'elle fait d'habitude
+   (envoyer le paragraphe, aller à la ligne). Une nouvelle fiche ne se crée qu'en la choisissant exprès */
+function clavierMentions(z, ev){
+  if(!mentionOuverte(z)) return;
+  const k = ev.key;
+  if(k === 'ArrowDown' || k === 'ArrowUp'){
+    MENT.i = (MENT.i + (k === 'ArrowDown' ? 1 : -1) + MENT.liste.length) % MENT.liste.length;
+    MENT.nav = true;
+    dessinerMentions();
+  } else if(k === 'Enter' || k === 'Tab'){
+    const x = MENT.liste[MENT.i];
+    if(x && x.nouveau && !MENT.nav){ fermerMentions(); return; }
+    if(k === 'Enter' && x && x.g && !MENT.nav && normeNom(x.g.nom) === normeNom(MENT.q).trim()){
+      const q = MENT.q.replace(/\s+$/, ''), d = MENT.debut;
+      if(q !== x.g.nom && z.value.substr(d + 1, q.length) === q){
+        const c = z.selectionStart - q.length + x.g.nom.length;
+        z.value = z.value.slice(0, d + 1) + x.g.nom + z.value.slice(d + 1 + q.length);
+        z.setSelectionRange(c, c);
+        fermerMentions();
+        MENT.taire = true;
+        try{ z.dispatchEvent(new Event('input', {bubbles:true})); } finally { MENT.taire = false; }
+        return;
+      }
+      fermerMentions();
+      return;
+    }
+    choisirMention(MENT.i);
+  } else if(k === 'Escape'){
+    fermerMentions();
+  } else return;
+  ev.preventDefault(); ev.stopImmediatePropagation();
+}
+/* on cite : le texte reçoit « /Nom », suivi d'une espace si rien ne le suit */
+function choisirMention(i){
+  const z = MENT.z, x = MENT.liste[i];
+  if(!z || !x) return;
+  const debut = MENT.debut, pos = z.selectionStart;
+  let nom = '';
+  if(x.nouveau){
+    const p = creerFicheMention(x.nouveau);
+    if(!p) return;
+    nom = p.nom;
+  } else nom = x.g.nom;
+  const apres = z.value.slice(pos);
+  const espace = /^[\s.,;:!?»)]/.test(apres) ? '' : ' ';
+  z.value = z.value.slice(0, debut) + '/' + nom + espace + apres;
+  const c = debut + 1 + nom.length + espace.length;
+  fermerMentions();
+  z.focus();
+  z.setSelectionRange(c, c);
+  /* le brouillon et l'aperçu suivent ; la liste, elle, ne se rouvre pas sur le nom qu'on vient d'écrire */
+  MENT.taire = true;
+  try{ z.dispatchEvent(new Event('input', {bubbles:true})); } finally { MENT.taire = false; }
+}
+function creerFicheMention(nom){
+  const deja = pnjParNom(nom) || (refParNom(nom) ? quiRef(refParNom(nom)).o : null);
+  if(deja) return deja;
+  let p = null;
+  changer(() => { p = creerPnj(nom, (seanceCourante() || {}).id || ''); });
+  if(p) msgTable('Fiche de ' + p.nom + ' créée, dans le Registre des Visages. Complète-la quand tu veux.', true);
+  return p;
+}
+
+/* ---------- un nom qui change : les textes qui le citaient suivent ----------
+   On lit chaque texte comme avant le changement : seules les citations qui le désignaient, lui, changent.
+   « /Garde du pont » reste à l'autre quand on renomme « Garde ». */
+function renommerMentions(ref, ancien, nouveau){
+  const a = String(ancien || '').trim(), n = String(nouveau || '').trim();
+  if(!ref || !a || !n || a === n) return;
+  const gens = gensCitables({ref:ref, nom:a});
+  const r = t => {
+    let s = String(t || '');
+    const ms = trouverMentions(s, gens).filter(m => m.ref === ref);
+    if(!ms.length) return null;
+    for(let j = ms.length - 1; j >= 0; j--) s = s.slice(0, ms[j].i) + '/' + n + s.slice(ms[j].i + ms[j].n);
+    return s;
+  };
+  Object.keys(T.blocs).forEach(k => { const b = T.blocs[k]; const t = b && !b.supprime ? r(b.texte) : null; if(t !== null) T.blocs[k] = Object.assign({}, b, {texte:t, maj:maintenant()}); });
+  Object.keys(T.pnj).forEach(k => { const p = T.pnj[k]; const t = p && !p.supprime ? r(p.texte) : null; if(t !== null) T.pnj[k] = Object.assign({}, p, {texte:t, maj:maintenant()}); });
+  Object.keys(T.personnages).forEach(k => { const c = T.personnages[k]; const t = c && !c.supprime ? r(c.texte) : null; if(t !== null){ c.texte = t; c.maj = maintenant(); } });
+}
+
+/* ---------- ce qu'on a écrit sur quelqu'un ---------- */
+/* les paragraphes où il agit ou parle, où on le cite (« /Nahya ») ou le nomme */
+const echapper = s => String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/['’`´ʼ]/g, '[\'’`´ʼ]');
+function textesDe(ref){
+  const q = quiRef(ref); if(!q) return [];
+  const gens = gensCitables();
+  const nom = cleNom(q.nom);
+  const motif = n => new RegExp('(^|[^\\p{L}\\p{N}])' + echapper(n) + '(?=$|[^\\p{L}\\p{N}])', 'giu');
+  let re = null;
+  try{ re = nom.length >= 3 ? motif(nom) : null; }catch(e){ re = null; }
+  /* « Garde » ne se lit pas dans « le Garde du pont » quand quelqu'un d'autre porte ce nom-là */
+  const plusLongs = [];
+  if(re) gens.forEach(g => {
+    if(g.ref === ref || g.nom.length <= nom.length) return;
+    const m = motif(nom); m.lastIndex = 0;
+    if(m.test(g.nom)){ try{ plusLongs.push(motif(g.nom)); }catch(e){} }
+  });
+  /* le texte où l'on cherche son nom écrit sans barre : les citations des autres et leurs noms plus longs effacés */
+  const blanc = (m, p) => p + ' '.repeat(m.length - p.length);
+  const nettoye = (t, ms) => {
+    let s = String(t || '');
+    for(let j = ms.length - 1; j >= 0; j--) if(ms[j].ref !== ref) s = s.slice(0, ms[j].i) + ' '.repeat(ms[j].n) + s.slice(ms[j].i + ms[j].n);
+    plusLongs.forEach(x => { x.lastIndex = 0; s = s.replace(x, blanc); });
+    return s;
+  };
+  const out = [];
+  Object.keys(T.blocs).forEach(id => {
+    const b = T.blocs[id];
+    if(!b || b.supprime || b.type === 'rencontre') return;
+    const e = T.journal[b.seance];
+    if(!e || e.supprime) return;
+    const agit = q.pj ? b.qui.k === 'perso' && b.qui.id === q.o.id
+      : b.qui.k === 'pnj' && (b.qui.id === q.o.id || (!b.qui.id && cleNom(b.qui.nom) === nom));
+    const ms = trouverMentions(b.texte, gens);
+    let cite = ms.some(m => m.ref === ref);
+    if(!cite && re){ re.lastIndex = 0; cite = re.test(nettoye(b.texte, ms)); }
+    if(agit || cite) out.push({b:b, e:e, agit:agit});
+  });
+  const num = e => parseFloat(e.seance) || 0;
+  return out.sort((x, y) => (num(x.e) - num(y.e)) || (x.b.ordre - y.b.ordre) || (x.b.id < y.b.id ? -1 : 1));
+}
+/* les autres fiches qui le citent dans ce qu'on sait d'elles */
+function fichesQuiCitent(ref){
+  const gens = gensCitables();
+  return tousLesGens().filter(x => x.ref !== ref && x.o && trouverMentions(x.o.texte, gens).some(m => m.ref === ref));
+}
+const TEXTES_TOUT = {};
+const extrait = (t, n) => { const s = String(t || '').replace(/\s+/g, ' ').trim(); if(s.length <= n) return s; const c = s.slice(0, n); return c.slice(0, Math.max(c.lastIndexOf(' '), n - 20)) + '…'; };
+/* sur la fiche : séance par séance, ce que les comptes rendus disent de lui, avec de quoi y retourner */
+function blocTextes(ref, redessiner){
+  const q = quiRef(ref);
+  const w = el('div','textes');
+  const l = textesDe(ref), f = fichesQuiCitent(ref);
+  if(!l.length && !f.length){
+    w.append(el('p','mini', 'Rien dans les comptes rendus pour l’instant. Écris « /' + (q ? q.nom : '') + ' » dans un paragraphe pour l’y relier.'));
+    return w;
+  }
+  const gens = gensCitables();
+  const tout = !!TEXTES_TOUT[ref];
+  const vus = tout ? l : l.slice(-8);
+  if(l.length > vus.length){
+    const b = el('button','btn ghost xs', 'Tout voir, ' + l.length + ' paragraphes'); b.type = 'button';
+    b.onclick = () => { TEXTES_TOUT[ref] = true; redessiner(); };
+    w.append(b);
+  }
+  let cle = null;
+  vus.forEach(x => {
+    if(x.e.id !== cle){
+      cle = x.e.id;
+      w.append(el('p','tseance', 'Séance ' + (x.e.seance || '?') + (x.e.titre ? ' · ' + x.e.titre : '')));
+    }
+    const p = el('div','textrait' + (x.agit ? ' agit' : ''));
+    const t = el('p');
+    t.append(texteRiche(extrait(phrase(x.b), 320), gens));
+    p.append(t);
+    const aller = el('button','ax', '↗'); aller.type = 'button';
+    aller.title = 'Le retrouver dans la séance'; aller.setAttribute('aria-label', 'Retrouver ce paragraphe dans la séance ' + (x.e.seance || ''));
+    aller.onclick = () => allerAuBloc(x.e.id, x.b.id);
+    p.append(aller);
+    w.append(p);
+  });
+  if(tout && l.length > 8){
+    const b = el('button','btn ghost xs', 'Seulement les derniers'); b.type = 'button';
+    b.onclick = () => { TEXTES_TOUT[ref] = false; redessiner(); };
+    w.append(b);
+  }
+  if(f.length){
+    w.append(el('p','tseance', 'Dans d’autres fiches'));
+    f.forEach(x => {
+      const p = el('div','textrait');
+      const t = el('p');
+      const n = el('button','mention', x.nom); n.type = 'button'; n.onclick = () => ouvrirFiche(x.ref);
+      t.append(n, document.createTextNode(' : '), texteRiche(extrait(x.o.texte, 260), gens));
+      p.append(t);
+      w.append(p);
+    });
+  }
+  return w;
 }
 
 /* ============ la sauvegarde en ligne : un dépôt GitHub privé pour les trois registres ============
@@ -6552,14 +7102,14 @@ function brancherHavre(){
   };
 }
 
-/* ============ la barre de table, les deux pages, et le démarrage ============
-   Le Registre de la Table et le Registre des Visages partagent ce code et le même fichier :
+/* ============ la barre de table, les trois pages, et le démarrage ============
+   Le Registre de la Table, celui des Visages et celui de la Progression partagent ce code et le même fichier :
    la page ouverte se reconnaît à ce qu'elle contient. */
 
-const PAGE = $('secSeance') ? 'table' : 'visages';
+const PAGE = $('secSeance') ? 'table' : $('progBox') ? 'progression' : 'visages';
 let PANNEAU = null;   /* le panneau de la sauvegarde en ligne */
 /* l'onglet se nomme : « Faire parler » ou une fiche ouverte depuis l'autre page viennent ici, sans ouvrir d'onglet de plus */
-try{ window.name = PAGE === 'table' ? ONGLET_TABLE : ONGLET_VISAGES; }catch(e){}
+try{ window.name = PAGE === 'table' ? ONGLET_TABLE : PAGE === 'progression' ? ONGLET_PROGRESSION : ONGLET_VISAGES; }catch(e){}
 
 function msgTable(txt, ok){
   const m = $('tbMsg'); if(!m) return;
@@ -6596,7 +7146,7 @@ function dessinerTable(){
   /* avec GitHub, le fichier partagé n'a plus de raison d'être ; le Registre des Visages ne sait que le reconnecter */
   const o = $('tbOuvrir');
   if(o){
-    o.hidden = gh || (PAGE === 'visages' && SYNC.etat !== 'attente');
+    o.hidden = gh || (PAGE !== 'table' && SYNC.etat !== 'attente');
     o.textContent = SYNC.etat === 'attente' ? 'Reconnecter le fichier' : 'Ouvrir le fichier de table';
   }
   if($('tbCreer')) $('tbCreer').hidden = gh;
@@ -6617,8 +7167,9 @@ function dessiner(){
     dessinerSeance(false);
     dessinerPersos();
     if(HAVRE.ouvert) dessinerHavre();
-    dessinerProg();
     dessinerJets();
+  } else if(PAGE === 'progression'){
+    dessinerProg();
   } else {
     dessinerPnj(false);
     dessinerPjVisages();
@@ -6676,8 +7227,9 @@ if(PAGE === 'table'){
   $('coTexte').oninput = () => { majApercuCompo(); garderBrouillon(); };
   $('coTexte').addEventListener('change', garderBrouillon);
   window.addEventListener('pagehide', () => { try{ localStorage.setItem(CLE_BROUILLON, $('coTexte').value); }catch(e){} });
+  brancherMentions($('coTexte'));
   $('coTexte').onkeydown = ev => {
-    if(ev.key !== 'Enter' || ev.isComposing) return;
+    if(ev.key !== 'Enter' || ev.isComposing || mentionOuverte($('coTexte'))) return;
     if(ev.ctrlKey || ev.metaKey){ ev.preventDefault(); ajouterDepuisCompo(); return; }
     if(!ev.shiftKey && COMPO.genre !== 'encadre'){ ev.preventDefault(); ajouterDepuisCompo(); }
   };
@@ -6698,12 +7250,18 @@ if(PAGE === 'table'){
     VIDER_ARME = false; b.textContent = 'Vider l’historique'; b.classList.remove('danger');
     changer(() => { T.viderAvant = maintenant(); T.jets = []; });
   };
-} else {
+} else if(PAGE === 'visages'){
   /* les PNJ */
   sur('pnjVueFiches', () => { MOI.vuePnj = 'fiches'; sauverLocal(); dessinerPnj(true); });
   sur('pnjVueReseau', () => { MOI.vuePnj = 'reseau'; sauverLocal(); dessinerPnj(true); });
+  sur('pnjVueHistoire', () => { MOI.vuePnj = 'histoire'; sauverLocal(); dessinerPnj(true); });
   sur('pnjNouveau', () => ouvrirEditeurPnj(null, true));
-  $('pnjCherche').oninput = e => { PNJ_FILTRE.q = e.target.value; if(MOI.vuePnj === 'reseau'){ MOI.vuePnj = 'fiches'; sauverLocal(); dessinerPnj(true); } else dessinerListePnj(true); };
+  $('pnjCherche').oninput = e => {
+    PNJ_FILTRE.q = e.target.value;
+    if(MOI.vuePnj === 'reseau'){ MOI.vuePnj = 'fiches'; sauverLocal(); dessinerPnj(true); }
+    else if(MOI.vuePnj === 'histoire') dessinerHistoire(true);
+    else dessinerListePnj(true);
+  };
   $('pnjGroupe').onchange = e => { PNJ_FILTRE.groupe = e.target.value; dessinerListePnj(true); };
 }
 
@@ -6723,13 +7281,13 @@ sur('tbEnLigne', () => {
   b.disabled = true; b.textContent = 'Sauvegarde…';
   GH.maintenant().then(r => {
     b.disabled = false; b.textContent = 'Sauvegarder en ligne';
-    msgTable(ghcPhraseSauvegarde(r, PAGE === 'table' ? 'La table' : 'Les fiches et les liens'), r.ok);
+    msgTable(ghcPhraseSauvegarde(r, PAGE === 'table' ? 'La table' : PAGE === 'progression' ? 'La progression' : 'Les fiches et les liens'), r.ok);
     dessinerTable();
   });
 });
 function etatGithub(){
   if(!GH.actif && !GH.erreur) return null;
-  return {nom:PAGE === 'table' ? 'La table' : 'La table et ses PNJ', texte: GH.actif ? 'dernier échange ' + ilYA(GH.dernier) : 'à l’arrêt', erreur:GH.erreur};
+  return {nom:PAGE === 'table' ? 'La table' : PAGE === 'progression' ? 'La table et la progression' : 'La table et ses PNJ', texte: GH.actif ? 'dernier échange ' + ilYA(GH.dernier) : 'à l’arrêt', erreur:GH.erreur};
 }
 PANNEAU = ghcPanneau($('ghPlace'), {
   table:true,
@@ -6776,6 +7334,9 @@ function suivreAncre(){
       const x = h.slice(5).split('~');
       if(T.journal[x[0]]){ allerAuBloc(x[0], x[1] || ''); fait = true; }
     }
+  } else if(PAGE === 'progression'){
+    /* « Sa progression », depuis la carte d'un personnage */
+    if(h.indexOf('pj=') === 0 && perso(h.slice(3))){ PROG_PERSO = h.slice(3); dessinerProg(true); fait = true; }
   } else {
     if(h === 'nouveau'){ ouvrirEditeurPnj(null, true); fait = true; }
     else if(h.indexOf('pj-') === 0){

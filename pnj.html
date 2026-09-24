@@ -196,7 +196,7 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-vis
 .cpourquoi{font-style:italic}
 .aligne{border-top:1px solid var(--rule);padding:8px 0 6px}
 .aligne.visee{background:var(--fill);margin-inline:-6px;padding-inline:6px}
-.aligne.aterre{opacity:.55}
+.aligne.aterre>:not(.fouille):not(.afouille){opacity:.55}
 .aligne.aterre .anom{text-decoration:line-through;text-decoration-thickness:1px}
 .atete{display:flex;align-items:baseline;gap:8px}
 .anom{font-family:Spectral,Georgia,serif;font-size:15.5px;font-weight:600;color:var(--ink);flex:1 1 auto;min-width:0;overflow-wrap:anywhere}
@@ -223,10 +223,55 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-vis
 .aligne.visee .aviser{background:var(--forest);color:var(--surface)}
 .ajoutadv{margin-top:8px;border-top:1px dashed var(--rule);padding-top:8px}
 .ajoutadv summary{cursor:pointer;font-size:13px;color:var(--forest)}
-.ajoutform{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
-.ajoutform input[type=text]{flex:1 1 100%}
-.ajoutform select{flex:1 1 150px;min-width:0}
-.ajoutform input[type=number]{width:62px}
+.ajoutadv>.tirage{margin-top:8px}
+/* tirer une rencontre, le même tirage que le Registre des Rencontres */
+.tbloc{border-top:1px solid var(--rule);margin-top:6px;padding-top:8px}
+.tbloc>.lab{margin-bottom:6px}
+.tirage{display:flex;flex-direction:column;gap:8px}
+.tirage .acts{gap:6px}
+.tirage>.mini{margin:0}
+.tl{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.tl .lab{margin:0}
+.pas{display:inline-flex;align-items:center;border:1px solid var(--rule);border-radius:2px;background:var(--surface)}
+.pas button{width:28px;height:28px;border:0;background:transparent;color:var(--forest);cursor:pointer;font-size:15px;line-height:1;border-radius:2px}
+.pas button:hover:not(:disabled){background:var(--fill)}
+.pas button:disabled{opacity:.35;cursor:default}
+.pas b{min-width:24px;text-align:center;font-variant-numeric:tabular-nums;font-size:14px}
+.tint{gap:4px}
+.tint button{font-size:12.5px;padding:4px 9px;background:var(--surface)}
+.tsel{display:flex;flex-direction:column;gap:6px}
+.tsel select,.tajout select{width:100%;font-size:13.5px;padding:5px 7px}
+ul.tliste{list-style:none;margin:0;padding:0;border-top:1px solid var(--rule)}
+ul.tliste li{display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:1px solid var(--rule);font-size:13px}
+.tn{flex:1 1 auto;min-width:0;overflow-wrap:anywhere;line-height:1.35}
+.tn b{font-weight:600}
+.rdot{flex:0 0 auto;width:18px;height:18px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:700;color:var(--surface);background:var(--muted);font-variant-numeric:tabular-nums}
+.rdot.r2{background:var(--sage)} .rdot.r3{background:var(--gold)} .rdot.r4{background:var(--rust)} .rdot.r5{background:var(--plum)}
+.tajout{display:flex;flex-wrap:wrap;gap:6px}
+.tajout input[type=number]{width:62px;padding:5px 7px}
+/* le butin de ceux qui sont tombés */
+.atete .afouiller{align-self:center}
+.cote-butin{margin-top:8px;border-top:1px dashed var(--rule);padding-top:8px}
+.cote-butin summary{cursor:pointer;font-size:13px;color:var(--forest);font-weight:600}
+.fligne{border-top:1px solid var(--rule);padding:6px 0 4px}
+.fligne:first-of-type{border-top:0}
+.fligne .atete{align-items:center;flex-wrap:wrap}
+.afouille{margin:5px 0 0;overflow-wrap:anywhere}
+.fouille{margin-top:8px;padding:8px 10px;border:1px solid var(--rule);border-radius:2px;background:var(--paper);display:flex;flex-direction:column;gap:7px}
+.ftitre{margin:0;font-family:Spectral,Georgia,serif;font-weight:700;color:var(--forest);font-size:14.5px}
+.fsienne ul{margin:2px 0 4px;padding-left:16px}
+.fsienne p{margin:0 0 4px}
+.fsienne .lab,.flivre .lab{margin:0 0 3px}
+.flivre{display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.flivre select{width:100%;font-size:13px;padding:5px 7px}
+.fouille .desmode{margin:0}
+.fdes{display:flex;gap:6px;align-items:flex-end;flex-wrap:wrap}
+.fdes label{display:block}
+.fdes input{width:64px;padding:5px 7px}
+.fverdict{margin:0;color:var(--forest)}
+.fouille textarea{width:100%;font-size:13.5px}
+.fouille .acts{gap:6px}
+.fouille .acts select{flex:1 1 120px;min-width:0;font-size:13.5px;padding:5px 7px}
 /* les visages de la séance */
 ul.gens{list-style:none;margin:4px 0 0;padding:0}
 ul.gens li{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 8px;padding:4px 0;border-top:1px solid var(--rule)}
@@ -285,6 +330,16 @@ ul.nliens li{display:flex;align-items:center;gap:8px;padding:2px 0;min-width:0;o
 .ltrait.l-rival{border-top:2px dashed var(--gold)}
 .ltrait.l-ennemi{border-top-color:var(--rust);border-top-width:3px}
 .ltrait.l-dette{border-top:2px dotted var(--muted)}
+.ltrait.l-brouille{border-top:2px dashed var(--rust)}
+.lien.edite{background:var(--paper);margin-inline:-6px;padding-inline:6px}
+.lien .lhist{flex:1 1 100%;margin:0 0 2px 30px;font-style:italic}
+.lien>.flien{flex:1 1 100%}
+.lmode button{font-size:13px;padding:4px 10px;background:var(--surface)}
+.flien>.mini{margin:6px 0 8px}
+.lindice{flex:1 1 100%;margin:0}
+.lindice.doute{color:var(--rust)}
+.lindice .btn{margin-top:4px}
+.pratlue .mini{margin:0}
 .flien{margin-top:10px;padding:10px;border:1px dashed var(--rule);border-radius:2px;background:var(--paper)}
 
 /* le réseau */
@@ -304,9 +359,10 @@ svg.reseau:active{cursor:grabbing}
 .arete.l-rival{stroke:var(--gold);stroke-width:2;stroke-dasharray:7 4}
 .arete.l-ennemi{stroke:var(--rust);stroke-width:2.6}
 .arete.l-dette{stroke-dasharray:2 4}
+.arete.l-brouille{stroke:var(--rust);stroke-width:2;stroke-dasharray:3 5}
 .fl{fill:var(--muted)}
 .fl.l-famille{fill:var(--forest)} .fl.l-amour{fill:var(--plum)} .fl.l-ami,.fl.l-allie{fill:var(--sage)}
-.fl.l-rival{fill:var(--gold)} .fl.l-ennemi{fill:var(--rust)}
+.fl.l-rival{fill:var(--gold)} .fl.l-ennemi,.fl.l-brouille{fill:var(--rust)}
 .elab{font-family:"IBM Plex Sans",sans-serif;font-size:calc(10.5px * var(--k));font-style:italic;fill:var(--muted);paint-order:stroke;stroke:var(--paper);stroke-width:3.5px;stroke-linejoin:round;pointer-events:none}
 .noeud{cursor:pointer;touch-action:none;transition:opacity .15s}
 .noeud:focus{outline:none}
@@ -569,6 +625,13 @@ const ACHATS = [
   {k:'car',  l:'Une caractéristique de +1', cout:20},
   {k:'pv',   l:'+5 PV', cout:20}
 ];
+/* la lance d'un Cornu : on ne la change pas, on la refait. À chaque mue elle remonte d'un cran,
+   avec du métal d'une ruine, une forge, et dix points de progression */
+const LANCES = [
+  {de:'d8', nom:'Sa lance de première mue'},
+  {de:'d10', nom:'Sa lance de tribu'},
+  {de:'d12', nom:'Sa lance à contrepoids', notes:'deux mains, un Cornu qui a mué trois fois au moins'}
+];
 /* ce que paie une mission, en points de progression */
 const MISSIONS = [
   {l:'Observer et noter', n:1},
@@ -590,15 +653,6 @@ function domaineCle(s){
   const d = DOMAINES.find(x => mots.indexOf(x.k) >= 0);
   return d ? d.k : '';
 }
-
-/* les rangs d'adversaire : ce qu'il encaisse et combien il fait mal. L'ennemi touche d'office */
-const RANGS = [
-  {r:1, l:'Nuisance', pv:4, deg:'d4', red:0, cartes:1},
-  {r:2, l:'Ordinaire', pv:8, deg:'d6', red:1, cartes:1},
-  {r:3, l:'Sérieux', pv:14, deg:'d6+2', red:2, cartes:1},
-  {r:4, l:'Lourd', pv:22, deg:'d8+2', red:3, cartes:1},
-  {r:5, l:'Exceptionnel', pv:35, deg:'d10+2', red:3, cartes:2}
-];
 
 /* ============ la table : un document partagé, fusionné pièce par pièce ============
    Chaque personnage, chaque séance et chaque paragraphe du compte rendu porte sa date
@@ -775,7 +829,7 @@ function normPerso(o){
   recalculerVie(c);
   c.red = num(o.red, 0);
   c.armes = Array.isArray(o.armes) ? o.armes.slice(0, 20).map(a => ({nom:txt(a && a.nom), de:txt(a && a.de), notes:txt(a && a.notes)})).filter(a => a.nom) : [];
-  c.sac = Array.isArray(o.sac) ? o.sac.slice(0, 40).map(txt).filter(Boolean) : [];
+  c.sac = Array.isArray(o.sac) ? o.sac.slice(0, 80).map(txt).filter(Boolean) : [];
   const pg = o.prog && typeof o.prog === 'object' ? o.prog : {};
   /* un achat garde tout ce qu'il faut pour être défait, même après un rechargement */
   c.prog = {
@@ -783,9 +837,10 @@ function normPerso(o){
       id:txt(x.id) || nouvelId('g'), t:num(x.t, 0), quoi:txt(x.quoi), n:num(x.n, 0), bloc:txt(x.bloc)})) : [],
     achats: Array.isArray(pg.achats) ? pg.achats.filter(x => x && typeof x === 'object').map(x => ({
       id:txt(x.id) || nouvelId('a'), t:num(x.t, 0), type:txt(x.type), cible:txt(x.cible), n:num(x.n, 1),
-      jet:txt(x.jet), pc:num(x.pc, 0), texte:txt(x.texte), detail:txt(x.detail), cout:num(x.cout, 0), bloc:txt(x.bloc),
+      jet:txt(x.jet), pc:num(x.pc, 0), pct:txt(x.pct), texte:txt(x.texte), detail:txt(x.detail), cout:num(x.cout, 0), bloc:txt(x.bloc),
       maitre:txt(x.maitre), dom:txt(x.dom), b:x.b == null || isNaN(+x.b) ? null : +x.b,
-      ev:Array.isArray(x.ev) ? x.ev.filter(e => typeof e === 'string') : []})) : []
+      ev:Array.isArray(x.ev) ? x.ev.filter(e => typeof e === 'string') : [],
+      avant:x.avant && typeof x.avant === 'object' ? {nom:txt(x.avant.nom), de:txt(x.avant.de), notes:txt(x.avant.notes)} : null})) : []
   };
   return c;
 }
@@ -849,6 +904,7 @@ const TYPES_LIEN = [
   {k:'travail', l:'Travail, service', mutuel:false, ex:'travaille pour'},
   {k:'dette', l:'Dette, promesse', mutuel:false, ex:'doit un service à'},
   {k:'rival', l:'Rivalité', mutuel:true, ex:'rivaux depuis l’enfance'},
+  {k:'brouille', l:'Brouille', mutuel:true, ex:'ne se parlent plus depuis la dispute'},
   {k:'ennemi', l:'Hostilité', mutuel:true, ex:'veut sa peau'},
   {k:'autre', l:'Autre', mutuel:false, ex:'connaît'}
 ];
@@ -881,16 +937,29 @@ function normAdversaire(o){
     pvMax:n(o.pvMax), pv:n(o.pv), red:n(o.red), deg:txtOu(o.deg), cartes:n(o.cartes),
     a2: a2 && txtOu(a2.n) ? {n:txtOu(a2.n), t:a2.t === 'mag' ? 'mag' : 'phy', p:txtOu(a2.p), e:txtOu(a2.e), el:txtOu(a2.el)} : null,
     tr: Array.isArray(o.tr) ? o.tr.filter(x => typeof x === 'string').slice(0, 20) : [],
-    traits:txtOu(o.traits), p:txtOu(o.p), renf:txtOu(o.renf)};
+    traits:txtOu(o.traits), p:txtOu(o.p), renf:txtOu(o.renf),
+    /* d'où il vient : la créature du livre ou de ton bestiaire, son nom sans numéro, ses familles, ce qu'il laisse */
+    cid:txtOu(o.cid), base:txtOu(o.base), fam: Array.isArray(o.fam) ? o.fam.filter(x => typeof x === 'string').slice(0, 20) : [],
+    butin:txtOu(o.butin), fouille:normFouille(o.fouille)};
   x.pv0 = o.pv0 != null && !isNaN(+o.pv0) ? n(o.pv0) : x.pv;
   x.vie = normEvts(o.vie, x);
   return recalculerVie(x);
 }
+/* ce qu'on a trouvé sur lui : pris par un personnage (fait), ou laissé là (laisse) */
+function normFouille(f){
+  if(!f || typeof f !== 'object' || (f.etat !== 'fait' && f.etat !== 'laisse')) return null;
+  return {etat:f.etat, texte:txtOu(f.texte), qui:txtOu(f.qui), bloc:txtOu(f.bloc), t:+f.t || 0};
+}
+const typeLienOk = k => TYPES_LIEN.some(t => t.k === k) ? k : 'autre';
 function normLien(o){
   o = o && typeof o === 'object' ? o : {};
   return {id:txtOu(o.id) || nouvelId('l'), maj:+o.maj || 0, supprime:!!o.supprime,
-    de:txtOu(o.de), vers:txtOu(o.vers), type: TYPES_LIEN.some(t => t.k === o.type) ? o.type : 'autre',
-    texte:txtOu(o.texte), mutuel:!!o.mutuel, notes:txtOu(o.notes)};
+    de:txtOu(o.de), vers:txtOu(o.vers), type:typeLienOk(o.type),
+    texte:txtOu(o.texte), mutuel:!!o.mutuel, notes:txtOu(o.notes),
+    /* ce que le lien a été avant de changer en jeu : une amitié devenue brouille garde son passé */
+    hist: Array.isArray(o.hist) ? o.hist.filter(h => h && typeof h === 'object').slice(-20).map(h => ({
+      type:typeLienOk(h.type), texte:txtOu(h.texte), mutuel:!!h.mutuel, de:txtOu(h.de), vers:txtOu(h.vers),
+      seance:txtOu(h.seance), t:+h.t || 0})) : []};
 }
 
 /* ---------- ce que la fiche donne ---------- */
@@ -1641,31 +1710,72 @@ function dessinerJets(){
   });
 }
 
+const PRATIQUES = {"de la Sève (Écorciens et Élytris)":{"_":[{"n":"Ortie","d":"des orties poussent sur ta cible à vue. La sensation la fait se gratter, et elle s'ouvre la peau : 1d4. L'armure n'y change rien.","j":"Contenance","pc":0,"base":true},{"n":"Le dard","d":"2d6 à vue. Une épine part de ton avant-bras.","j":"Dextérité","pc":1},{"n":"Greffer","d":"contact, rends 1d6+2 PV à un allié. Tu ne perds aucun PV, ça passe par toi.","j":"aucun jet","pc":1},{"n":"Les Racines","d":"à vue, 2 rounds. Des racines saisissent une cible ou un objet : elle ne se déplace plus, une porte ne s'ouvre plus, une roue ne tourne plus. Un jet de FOR par round pour se libérer.","j":"la cible teste","pc":1},{"n":"La Ronce","d":"zone de 3 pas à vue, 2 rounds. Qui y entre subit 1d6.","j":"les cibles testent","pc":2},{"n":"Écorcer","d":"contact, 3 rounds. La cible perd 2 de réduction, tu en gagnes 2.","j":"Force","pc":2},{"n":"Sève noire","d":"contact, 3 rounds. La cible perd 1d4 par round et ne récupère aucun PV tant que ça dure.","j":"Contenance","pc":2}]},"de l'eau (Nyréens)":{"Commune au 3 variant de Nyréen":[{"n":"La Prise du Courant","d":"zone de 3 pas, 3 rounds. Qui s'y déplace fait un jet de DEX ou tombe : à terre, action perdue.","j":"les cibles testent","pc":2},{"n":"Brume","d":"un épais brouillard pendant 1 tour. Les personnages dans la zone ne peuvent pas attaquer.","j":"les cibles testent","pc":2},{"n":"Gouttelettes perçantes","d":"zone de 3 pas. Tu fais pleuvoir une petite quantité d'eau à très haute vitesse, qui en devient tranchante : 1d6 à chacun dans la zone.","j":"les cibles testent","pc":2},{"n":"Givrer","d":"à vue. Une flaque, une surface, une gourde gèle. Sur une créature mouillée, elle perd son déplacement au round suivant.","j":"Contenance","pc":1}],"Les Larges, la mer":[{"n":"Saumure","d":"tu projettes de l'eau lourdement salée dans les yeux de ta cible à vue. Elle se plie de douleur : 1d4. L'armure n'y change rien.","j":"Dextérité","pc":0,"base":true},{"n":"Écumeur","d":"tu ignores un point de réduction d'armure sur toutes tes attaques.","j":"aucun jet","pc":0},{"n":"Prendre l'eau","d":"une cible que tu as touchée ce round ne récupère aucun PV jusqu'à la fin du combat.","j":"aucun jet","pc":0},{"n":"Le Grand Large","d":"une fois par combat, relance tous les dés de dégâts d'une attaque et garde le meilleur total.","j":"aucun jet","pc":0},{"n":"Marée montante","d":"ce round, tu n'attaques pas. Au round suivant, ton attaque fait +1d6.","j":"aucun jet","pc":0},{"n":"Ressac","d":"la première fois qu'on te touche au contact dans un combat, ta prochaine attaque fait +1d6.","j":"aucun jet","pc":0},{"n":"Amarre","d":"tu accroches une cible à dix pas et tu la tires de cinq pas vers toi.","j":"Dextérité","pc":1},{"n":"Inondation","d":"ta prochaine attaque fait +1d6.","j":"aucun jet","pc":1},{"n":"Déferlement","d":"ta prochaine attaque fait le double de dégâts, et tu ne te déplaces pas au round suivant.","j":"aucun jet","pc":2},{"n":"Raz-de-marée","d":"tout ce qui est devant toi tente un jet de FOR. Échec, 2d6 et repoussé de 5 pas.","j":"les cibles testent","pc":2},{"n":"Maelstrom","d":"2d6 sur chaque adversaire autour de toi, l'un après l'autre.","j":"les cibles testent","pc":2}],"Les Vifs, la rivière":[{"n":"Galet","d":"tu lances un galet d'eau qui rebondit sur jusqu'à trois ennemis à vue, 1d4 chacun. La réduction s'applique.","j":"Dextérité","pc":0,"base":true},{"n":"Rupture de courant","d":"si tu t'es déplacé avant d'attaquer, ton attaque fait 2d4.","j":"aucun jet","pc":0},{"n":"Flux critique","d":"pendant 2 rounds, chaque attaque réussie élargit ton critique d'une face. Une attaque ratée remet à zéro.","j":"aucun jet","pc":0},{"n":"Cascade","d":"attaque 2d4. Si la cible tombe, tu te déplaces jusqu'à une seconde cible et ton critique gagne une face.","j":"aucun jet","pc":0},{"n":"Courant meurtrier","d":"attaque 1d4. Si tu changes de cible par rapport au round précédent, +1d4 et ton critique gagne deux faces.","j":"aucun jet","pc":0},{"n":"Contre-courant","d":"une fois par combat, tu prends une deuxième réaction dans le même round.","j":"aucun jet","pc":0},{"n":"Ricochet","d":"quand tu touches, tu te déplaces de trois pas sans que personne ne puisse réagir.","j":"aucun jet","pc":0},{"n":"Crue soudaine","d":"au premier round d'un combat, tu attaques deux fois.","j":"aucun jet","pc":0},{"n":"Saignée","d":"sur un critique, la cible perd 1d4 par round jusqu'à ce qu'on la soigne.","j":"aucun jet","pc":0},{"n":"Remous","d":"si tu t'es déplacé ce round, ton esquive réussit aussi sur un échec de moins de 4.","j":"aucun jet","pc":0},{"n":"Tourbillon","d":"1d6 sur chaque adversaire autour de toi, l'un après l'autre.","j":"les cibles testent","pc":1}],"Les Dormants, le lac":[{"n":"Eau dormante","d":"l'eau que ta cible à vue porte sur elle et en elle s'alourdit d'un coup. Elle tousse et perd son souffle : 1d4. L'armure n'y change rien.","j":"Contenance","pc":0,"base":true},{"n":"Délier","d":"contact. Tu retires une altération d'état d'un allié et tu prends 1d4.","j":"aucun jet","pc":0},{"n":"Le Regard sous l'eau","d":"tu vois à travers l'eau et la brume sans jet, et tu repères ce qui s'y cache.","j":"aucun jet","pc":0},{"n":"Eau lourde","d":"la cible perd 1d4 à ses dégâts pendant 2 rounds.","j":"Contenance","pc":1},{"n":"Sommeil du lac","d":"la cible n'a pas de réaction au round suivant.","j":"Contenance","pc":1},{"n":"Noyade sèche","d":"la cible suffoque sans raison. −4 au d20 sur tout pendant 1 round.","j":"Contenance","pc":1},{"n":"Immobilité","d":"la cible tente un jet de FOR. Échec, elle ne se déplace pas au round suivant.","j":"la cible teste","pc":1},{"n":"Miroir noyé","d":"pendant 2 rounds, la cible ne peut pas viser deux rounds de suite le même adversaire.","j":"Contenance","pc":1},{"n":"Marque d'eau","d":"tu poses une marque sur quelqu'un que tu as touché. Tant qu'elle tient, tu sais où il est.","j":"aucun jet","pc":1},{"n":"Veillée","d":"un rituel de dix minutes. Un allié présent gagne +10 à une compétence jusqu'à la fin de la scène.","j":"aucun jet","pc":1},{"n":"Reflet perdu","d":"la cible ne distingue plus les siens et attaque son allié le plus proche pendant 1 round. Elle résiste sur Contenance fois deux.","j":"la cible teste","pc":3}]},"de la Mue (Ori'Ican)":{"Cornu":[{"n":"Phalange","d":"tu te fais pousser une nouvelle phalange et tu la propulses sur une cible à vue, 1d4. La réduction s'applique.","j":"Dextérité","pc":0,"base":true},{"n":"Muer","d":"une fois par scénario, jusqu'à la mue suivante : +2 dégâts · Réduction 2 · +10 Acrobatie · Voir dans le noir. Sur un échec, la mue se fait quand même : le MJ choisit, et tu subis 1d6.","j":"Contenance","pc":1},{"n":"Charger","d":"tu traverses 10 pas en ligne droite. La première créature subit 1d6+2 et tombe.","j":"Force","pc":1},{"n":"Broyer","d":"contact, 1d6+2. L'arme ou l'armure de la cible perd un dé ou un point de réduction jusqu'à réparation.","j":"Force","pc":1},{"n":"Fendre","d":"contact, 1d6+2 sur deux cibles côte à côte.","j":"Force","pc":1},{"n":"Encorner","d":"contact, 2d6. Tes cornes poussent temporairement. Si tu as chargé ce round, la cible tombe.","j":"Force","pc":1},{"n":"Peau qui repousse","d":"3 rounds. Tu récupères 1d4 PV par round.","j":"aucun jet","pc":1}],"Ritualiste":[{"n":"Verrue","d":"une verrue pousse sur ta cible à vue, elle gonfle et elle éclate : 1d4. L'armure n'y change rien.","j":"Contenance","pc":0,"base":true},{"n":"Que la Mue soit","d":"à vue. La cible résiste sur Contenance fois deux. Si elle rate, elle mue 3 rounds selon un d4 : 1 : +2 dégâts subis · 2 : demi-vitesse · 3 : −2 dégâts infligés · 4 : son arme ou son armure se déforme","j":"la cible teste","pc":1},{"n":"Hâter la Mue","d":"contact, 3 rounds. Un allié gagne +2 dégâts, ou réduction 2, ou +10 Acrobatie.","j":"aucun jet","pc":1},{"n":"Déformer","d":"la matière mue. Tu changes la forme d'un objet sans changer sa matière, une barre devient une clé ; ou tu la fais céder, et une porte, un mur, une arme ou un mécanisme lâche.","j":"aucun jet","pc":1,"pct":"1 PC au contact, 2 PC à vue"},{"n":"Emprunter la forme","d":"dix minutes. Tu prends l'apparence de quelqu'un que tu as vu. Ta voix ne change pas.","j":"aucun jet","pc":1},{"n":"Refaire","d":"contact, dix minutes. Une blessure se referme, 1d6+2 PV. Une fois par personne et par jour.","j":"aucun jet","pc":1},{"n":"Défaire la Forme","d":"à vue, 3 rounds. Un membre de la cible se déforme : −4 au d20 sur tout ce qui l'utilise.","j":"Contenance","pc":2}],"Figé":[{"n":"Le défaut","d":"tu vois le point où un corps ne tient pas, celui que ta propre mue t'a appris, et tu frappes là, au contact : 1d4. La réduction s'applique.","j":"Dextérité","pc":0,"base":true},{"n":"Anticipé","d":"quand un combat s'engage, tu agis une fois avant la distribution des cartes.","j":"aucun jet","pc":1},{"n":"Emprunt","d":"3 rounds. Ton corps tente la forme d'un autre type sans y parvenir tout à fait : tu gagnes soit les cornes, contact 1d6+2, soit la peau, réduction 2. Puis ça retombe.","j":"aucun jet","pc":1},{"n":"Se faufiler","d":"réaction. Tu ne prends que la moitié des dégâts et tu te déplaces de 5 pas.","j":"Dextérité","pc":1},{"n":"Insensible","d":"3 rounds, réduction 2. Tu ne peux être ni mis à terre, ni ralenti, ni repoussé.","j":"aucun jet","pc":2},{"n":"Résilience","d":"réaction. Quand tu tombes à 0 PV, tu restes debout à 1 PV jusqu'à la fin du round.","j":"aucun jet","pc":2},{"n":"Deux lames","d":"3 rounds. Avec une arme légère, tu frappes deux fois par round.","j":"aucun jet","pc":2}]},"du feu (Ilvès et Eshar)":{"_":[{"n":"Escarbille","d":"une braise saute de ta main sur ta cible à vue, 1d4, et ce qu'elle porte prend feu si ça peut brûler. Le feu traverse l'armure.","j":"Contenance","pc":0,"base":true},{"n":"La Braise Jetée","d":"2d6 de feu à vue.","j":"Dextérité","pc":1},{"n":"Chauffer","d":"contact. L'objet devient brûlant : qui le tient le lâche, ou prend 1d6+2 par round. Maintiens trois rounds et le métal coule : une arme, une grille, une serrure ou une armure perd un point de réduction, définitivement.","j":"Contenance","pc":1},{"n":"Brûlant","d":"3 rounds. Qui te touche ou t'attaque au contact prend 1d4.","j":"aucun jet","pc":1},{"n":"Le Mur de feu","d":"mur de 6 pas, 3 rounds. Le traverser coûte 2d6.","j":"les cibles testent","pc":2},{"n":"La Fièvre","d":"à vue, 3 rounds. 1d4 par round et −4 au d20 sur tout.","j":"Contenance","pc":2},{"n":"Embrasement","d":"zone de 3 pas à vue. 1d6+2 à tout le monde dedans.","j":"les cibles testent","pc":2}]},"du vent (Vaellen et Velh)":{"_":[{"n":"Fil d'air","d":"une lame d'air fine passe sur ta cible à vue, une coupure nette qu'on ne voit qu'après : 1d4. La réduction s'applique.","j":"Dextérité","pc":0,"base":true},{"n":"Lame de Vent","d":"2d6 à vue.","j":"Dextérité","pc":1},{"n":"Suivre le Vent","d":"2 rounds, vitesse doublée, pour toi et ceux qui te suivent.","j":"aucun jet","pc":1},{"n":"Effacer l'odeur","d":"une heure. Rien ne te suit à l'odeur.","j":"aucun jet","pc":1},{"n":"La Spirale","d":"zone de 3 pas, 1 round. Tout ce qui est léger s'envole, et personne n'y voit plus rien.","j":"les cibles testent","pc":1},{"n":"Bourrasque","d":"1d6+2 à vue. La cible est repoussée de 5 pas et tombe. Elle perd son déplacement au round suivant.","j":"Dextérité","pc":2},{"n":"Le Mur d'air","d":"3 rounds. Les flèches et tout ce qui vole s'arrêtent devant toi.","j":"aucun jet","pc":2}]},"de l'onde (Zhern)":{"_":[{"n":"Arc sec","d":"un arc part de ta main et trouve le métal le plus proche de ta cible à vue, 1d4. L'onde traverse l'armure.","j":"Dextérité","pc":0,"base":true},{"n":"L'Arc","d":"2d6 à vue. 2d6+2 si la cible porte du métal ou a les pieds dans l'eau.","j":"Dextérité","pc":1},{"n":"Le Choc","d":"contact, 1d6+2. La cible perd sa réaction du round.","j":"Contenance","pc":1},{"n":"Onde de choc","d":"une onde part de toi et repousse l'adversaire qui vient au contact. 1 tour.","j":"Contenance","pc":1},{"n":"Le Fil","d":"dix minutes. Tu parles à un allié que tu as touché avant de partir, où qu'il soit.","j":"aucun jet","pc":1},{"n":"Coup de jus","d":"contact. La cible tente un jet de Constitution fois deux. Si elle rate, elle tombe inconsciente pendant 3 rounds.","j":"la cible teste","pc":2},{"n":"Rappeler","d":"contact. Un allié tombé à 0 depuis moins d'une minute revient à 1 PV. Une seule fois par personne et par jour.","j":"aucun jet","pc":2}]},"de la pierre (Cimérans et Khaor)":{"_":[{"n":"Éclat de roche","d":"un éclat part du sol ou du mur le plus proche de ta cible à vue, 1d4. La réduction s'applique.","j":"Dextérité","pc":0,"base":true},{"n":"Peau de pierre","d":"3 rounds, réduction 3. Tu te déplaces à demi-vitesse.","j":"aucun jet","pc":1},{"n":"L'Éclat","d":"2d6+1 jusqu'à 10 pas. Il te faut de la pierre à portée : sur un plancher ou un pont de bois, la Pratique ne part pas.","j":"Dextérité","pc":1},{"n":"Percer","d":"dix minutes par pas d'épaisseur. Un tunnel d'homme à travers la roche.","j":"aucun jet","pc":1},{"n":"Le Rempart","d":"3 rounds. Tout le reste du groupe a réduction 2, tant que tu ne te déplaces pas.","j":"aucun jet","pc":2},{"n":"Ancrer","d":"3 rounds. Tes alliés à 5 pas de la pierre récupèrent 1 PV par round. Elle ne bouge pas.","j":"aucun jet","pc":2},{"n":"Impulsion","d":"le sol bouge, et personne ne tient debout dans la zone. 1 tour.","j":"les cibles testent","pc":2}]},"du sacré (Église d'Ysse)":{"_":[{"n":"Châtiment","d":"une lumière brève tombe sur ta cible à vue et ne brûle qu'elle, 1d4. Le sacré traverse l'armure.","j":"Contenance","pc":0,"base":true},{"n":"Soin","d":"rends 1d6+2 PV à un allié.","j":"aucun jet","pc":1},{"n":"Protection sacrée","d":"protège un allié de la prochaine attaque.","j":"aucun jet","pc":1},{"n":"Relever","d":"contact. Un allié à terre se relève et récupère sa réaction du round.","j":"aucun jet","pc":1},{"n":"Le Sursis","d":"réaction. Les dégâts qu'un allié vient de subir ne s'appliquent qu'à la fin du round suivant. S'il a été soigné d'ici là, il teste sous Constitution fois deux : réussite, les dégâts ne tombent jamais. Échec, ils tombent quand même.","j":"aucun jet","pc":1},{"n":"La Bénédiction","d":"3 rounds. Un allié à vue a +4 au d20 sur tout. Jamais sur toi-même.","j":"aucun jet","pc":2},{"n":"L'Onction","d":"dix minutes. Un allié ne peut pas tomber sous 1 PV pendant le prochain combat.","j":"aucun jet","pc":3}]},"de l'ombre (Nïhr)":{"_":[{"n":"Morsure d'ombre","d":"l'ombre de ta cible à vue se referme une seconde sur celle qui la porte, 1d4. L'ombre traverse l'armure.","j":"Contenance","pc":0,"base":true},{"n":"Éteindre","d":"à vue. Une source de lumière s'éteint, et rien ne la rallume pendant 3 rounds.","j":"aucun jet","pc":1},{"n":"Se fondre","d":"tant que tu avances sans attaquer, on ne te voit pas. Ta première attaque en sortant fait +1d6.","j":"aucun jet","pc":1},{"n":"La Chose derrière toi","d":"à vue, 1 round. La cible voit ce qui n'existe pas et perd son action. Elle résiste sur Contenance fois deux.","j":"la cible teste","pc":2},{"n":"Doubler","d":"3 rounds. Une silhouette de toi se tient à cinq pas. La première attaque qui te vise chaque round frappe la silhouette et ne te fait rien.","j":"aucun jet","pc":2},{"n":"Le Voile","d":"zone de 3 pas, 3 rounds. Personne n'y voit rien, sauf toi.","j":"les cibles testent","pc":2},{"n":"Le Passager","d":"3 rounds. Une ombre se lève et frappe une cible à vue, 1d6+2 par round. Elle n'a pas de carte, elle agit sur ton tour, et rien ne l'atteint.","j":"Contenance","pc":3}]},"de la Bannière de l'Or":{"_":[{"n":"Scelleur","d":"tu scelles un accord avec une partie consentante, et tu choisis en le posant ce qui arrive à celui qui le rompt.","j":"aucun jet","pc":0},{"n":"Dompteur","d":"tu apposes un sceau sur un être vivant dépourvu de conscience et non altéré, qui t'obéit tant que le sceau tient. Une seule bête à la fois.","j":"aucun jet","pc":0},{"n":"Serrurier","d":"tu rends un objet impossible à ouvrir, ou tu en forces l'ouverture.","j":"aucun jet","pc":0},{"n":"Péager","d":"tu poses un sceau sur le sol ou un mur, et un passage se ferme d'un bord à l'autre, de la largeur d'une porte charretière. Rien de solide ne traverse, ni corps ni objet ; la lumière, le son et la chaleur passent. Le barrage tient sans toi jusqu'à ce que tu le lèves. Un seul à la fois.","j":"aucun jet","pc":0},{"n":"Passeur","d":"tu apposes un sceau sur un objet et tu peux le faire venir à toi, où que tu sois. Il reste ensuite là où tu l'as appelé. Un seul objet à la fois, et il ne vient pas si quelqu'un le tient.","j":"aucun jet","pc":0}]},"de la Bannière du Sang":{"_":[{"n":"Second","d":"tu dépenses ta réaction du round pour qu'un allié en ait une deuxième.","j":"aucun jet","pc":0},{"n":"Vétéran","d":"sur un échec de défense de moins de 4, tu attaques quand même au round suivant. Et rien ne te met en fuite.","j":"aucun jet","pc":0},{"n":"Affûteur","d":"tu passes la main sur une lame et elle mord. +1d4 aux dégâts, jusqu'à la fin du combat.","j":"aucun jet","pc":0},{"n":"Armurier","d":"tu renforces une pièce d'équipement. +1 de réduction, jusqu'à la fin du combat.","j":"aucun jet","pc":0},{"n":"Bretteur","d":"une fois par combat, tu attaques deux fois dans le même tour.","j":"aucun jet","pc":0},{"n":"Avant-garde","d":"au premier round d'un combat, tu agis avant tout le monde, quelle que soit ta carte.","j":"aucun jet","pc":0},{"n":"Duelliste","d":"réussite critique en combat sur 1 et 2 plutôt que sur 1 seulement.","j":"aucun jet","pc":0}]}};
+
 /* ============ la progression, telle que le livre l'écrit ============
    Une compétence : 1 point par +1 jusqu'à +40, 2 de +41 à +60, 3 au-delà.
-   Une Pratique : 10 points, et quelqu'un pour te l'enseigner ; elle démarre à +20.
+   Une Pratique : 10 points, et quelqu'un pour te l'enseigner ; elle démarre à +20. On la prend dans la liste
+   de son domaine, celui de son peuple ou de son école, comme à la création.
    Une caractéristique : 20 points, une seule fois par caractéristique, plafond 18.
    +5 PV : 20 points. */
 
 let PROG_PERSO = '';
-const ACHAT = {type:'comp', cible:'Combat', n:1, nom:'', jet:'Force', pc:1, texte:'', maitre:'', dom:''};
+const ACHAT = {type:'comp', cible:'Combat', n:1, nom:'', maitre:'', dom:''};
 const GAIN = {mission:'', quoi:'', n:1, tous:true};
 
 function bonusComp(c, s){ return compTotal(c, s) - c.car[CAR_DE[s]] * 2; }
+/* un Cornu et sa lance : l'arme dont le nom dit « lance », et le cran où elle en est */
+function estCornu(c){ return /ori.?ican/i.test(c.peuple) && (/cornu/i.test((c.sub && c.sub.type) || '') || c.armes.some(a => /lance/i.test(a.nom))); }
+function lanceDe(c){
+  const i = c.armes.findIndex(a => /lance/i.test(a.nom) && LANCES.some(l => (a.de || '').replace(/\s+/g, '').toLowerCase() === l.de));
+  if(i < 0) return null;
+  const cran = LANCES.findIndex(l => (c.armes[i].de || '').replace(/\s+/g, '').toLowerCase() === l.de);
+  return {i:i, arme:c.armes[i], cran:cran, suivant:LANCES[cran + 1] || null};
+}
 /* une caractéristique ne monte qu'une fois par la progression */
 function dejaMontee(c, car){ return (c.prog.achats || []).some(a => a.type === 'car' && a.cible === car); }
-/* le domaine de la Pratique apprise : le sien lui donne son bonus de peuple ou d'école, un autre démarre à +20 */
-function domainePerso(c){ return domaineCle(c.domaine); }
-function bonusApprise(c, dom){
-  const sien = domainePerso(c);
-  if(dom === 'sien' || (sien && dom === sien)) return c.bonusPratique || 40;
-  return 20;
+/* le domaine de ses Pratiques : celui que sa fiche porte, celui de son école, ou celui que son peuple ouvre */
+const sansAccents = s => String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+function domainesPratiques(){ return Object.keys(PRATIQUES).filter(k => domaineCle(k)); }
+function domaineDe(c){
+  const cles = domainesPratiques();
+  if(cles.indexOf(c.domaine) >= 0) return c.domaine;
+  const k = domaineCle(c.domaine) || domaineCle(c.sub && c.sub.ecole);
+  if(k) return cles.find(x => domaineCle(x) === k) || '';
+  const mots = x => sansAccents(x).replace(/[^a-z]+/g, ' ').trim().split(' ').filter(m => m.length > 2).map(m => m.replace(/s$/, ''));
+  const miens = mots(c.peuple);
+  if(!miens.length) return '';
+  return cles.find(x => { const par = /\(([^)]*)\)/.exec(x); return !!par && mots(par[1]).some(m => miens.indexOf(m) >= 0); }) || '';
 }
+/* le domaine retenu pour l'achat : le sien, ou celui qu'on choisit quand sa fiche ne le dit pas */
+function domaineAchat(c){ return domaineDe(c) || (domainesPratiques().indexOf(ACHAT.dom) >= 0 ? ACHAT.dom : ''); }
+/* ce qu'il peut apprendre : la liste de son domaine, sa branche ou son type seulement, sans l'attaque de base
+   (donnée d'office) ni ce qu'il connaît déjà */
+function pratiquesApprenables(c, dom){
+  const g = PRATIQUES[dom]; if(!g) return [];
+  const sub = c.sub || {}, k = domaineCle(dom), cles = Object.keys(g);
+  const branche = k === 'eau' && cles.indexOf(sub.branche) >= 0 ? sub.branche : '';
+  const type = k === 'mue' && cles.indexOf(sub.type) >= 0 ? sub.type : '';
+  const connues = c.pratiques.map(p => clePratique(p.n));
+  return cles.filter(x => (!branche || /^commune/i.test(x) || x === branche) && (!type || x === type))
+    .map(x => ({grp:x === '_' ? '' : /^commune/i.test(x) ? 'Communes aux trois branches' : x,
+      items:g[x].filter(it => !it.base && connues.indexOf(clePratique(it.n)) < 0)}))
+    .filter(x => x.items.length);
+}
+/* « Le dard » et « Dard » sont la même Pratique, écrite avant ou après le livre */
+const clePratique = n => cleNom(n).replace(/^(le |la |les |l['’]\s*)/, '');
+function pratiqueDuLivre(dom, nom){
+  const g = PRATIQUES[dom]; if(!g || !nom) return null;
+  for(const x of Object.keys(g)){ const it = g[x].find(p => p.n === nom); if(it) return it; }
+  return null;
+}
+const jetDePratique = j => JETS_SANS.indexOf(j) >= 0 ? (j === 'aucun jet' ? 'ne se lance pas' : j) : 'se lance sous ' + j;
 function coutAchat(c){
   if(ACHAT.type === 'comp') return coutCompetence(bonusComp(c, ACHAT.cible), bonusComp(c, ACHAT.cible) + Math.max(1, ACHAT.n));
   if(ACHAT.type === 'prat') return 10;
   if(ACHAT.type === 'car') return 20;
   if(ACHAT.type === 'pv') return 20;
+  if(ACHAT.type === 'lance') return 10;
   return 0;
 }
 /* le détail du prix d'une compétence : combien de +1 à chaque tarif */
@@ -1676,14 +1786,22 @@ function detailCoutComp(de1, vers){
 }
 function detailAchat(c){
   if(ACHAT.type === 'comp') return ACHAT.cible + ' +' + Math.max(1, ACHAT.n) + ' (de +' + bonusComp(c, ACHAT.cible) + ' à +' + (bonusComp(c, ACHAT.cible) + Math.max(1, ACHAT.n)) + ')';
-  if(ACHAT.type === 'prat') return (ACHAT.nom.trim() || 'Pratique sans nom') + ', à +' + bonusApprise(c, ACHAT.dom) + (ACHAT.maitre.trim() ? ', auprès de ' + ACHAT.maitre.trim() : '');
+  if(ACHAT.type === 'prat') return (ACHAT.nom || 'une Pratique de son domaine') + ', à +' + (c.bonusPratique || 40) + (ACHAT.maitre.trim() ? ', ' + aupresDe(ACHAT.maitre) : '');
   if(ACHAT.type === 'car') return ACHAT.cible + ' +1 (de ' + c.car[ACHAT.cible] + ' à ' + (c.car[ACHAT.cible] + 1) + ')';
+  if(ACHAT.type === 'lance'){ const l = lanceDe(c); return l && l.suivant ? 'sa lance, de ' + l.arme.de + ' à ' + l.suivant.de : 'sa lance, d’un cran'; }
   return '+5 PV';
+}
+/* « auprès d’un Cornu », « auprès du maître », « auprès de Nahya » */
+function aupresDe(n){
+  const x = String(n || '').trim();
+  if(/^le\s/i.test(x)) return 'auprès du ' + x.slice(3);
+  if(/^les\s/i.test(x)) return 'auprès des ' + x.slice(4);
+  return /^[aeiouyàâéèêëîïôöûüœ]/i.test(x) ? 'auprès d’' + x : 'auprès de ' + x;
 }
 /* ce que la séance en cours garde d'un achat */
 function phraseAchat(c, a){
   const nom = c.nom || 'Sans nom', p = a.cout + ' point' + (a.cout > 1 ? 's' : '');
-  if(a.type === 'prat') return nom + ' apprend une Pratique, ' + a.cible + (a.maitre ? ', auprès de ' + a.maitre : '') +
+  if(a.type === 'prat') return nom + ' apprend une Pratique, ' + a.cible + (a.maitre ? ', ' + aupresDe(a.maitre) : '') +
     (a.jet && JETS_SANS.indexOf(a.jet) < 0 ? ', sous ' + a.jet : '') + ' (' + p + ').';
   return nom + ' dépense ' + p + ' : ' + a.detail + '.';
 }
@@ -1705,8 +1823,21 @@ function appliquerAchat(c, a, sens){
     if(a.cible === 'Contenance'){ c.pcMax = Math.floor(c.car.Contenance / 2); if(c.pcMax !== pcAvant) vie('pc', c.pcMax - pcAvant); }
   }
   else if(a.type === 'pv'){ c.pvMax += s * 5; vie('pv', s * 5); }
+  else if(a.type === 'lance'){
+    if(s > 0){
+      const l = lanceDe(c);
+      if(l && l.suivant){
+        a.avant = {nom:l.arme.nom, de:l.arme.de, notes:l.arme.notes};
+        c.armes[l.i] = {nom:l.suivant.nom, de:l.suivant.de, notes:l.suivant.notes || l.arme.notes || ''};
+      }
+    } else if(a.avant){
+      /* défaire : la lance revient à ce qu'elle était */
+      const i = c.armes.findIndex(x => /lance/i.test(x.nom));
+      if(i >= 0) c.armes[i] = {nom:a.avant.nom, de:a.avant.de, notes:a.avant.notes || ''};
+    }
+  }
   else if(a.type === 'prat'){
-    if(s > 0) c.pratiques.push({n:a.cible, j:a.jet || 'aucun jet', pc:a.pc || 0, pct:'', d:a.texte || '', base:false, banniere:false,
+    if(s > 0) c.pratiques.push({n:a.cible, j:a.jet || 'aucun jet', pc:a.pc || 0, pct:a.pct || '', d:a.texte || '', base:false, banniere:false,
       b:a.b == null ? null : a.b, maitre:a.maitre || '', dom:a.dom || ''});
     else {
       const i = c.pratiques.map(p => p.n).lastIndexOf(a.cible);
@@ -1808,6 +1939,8 @@ function dessinerProgDans(box){
   const la = el('div','table');
   const st = el('select'); st.id = 'prog-type';
   ACHATS.forEach(a => st.add(new Option(a.l, a.k)));
+  if(estCornu(c)) st.add(new Option('Refaire sa lance, d’un cran (Cornu)', 'lance'));
+  if(ACHAT.type === 'lance' && !estCornu(c)) ACHAT.type = 'comp';
   st.value = ACHAT.type;
   st.onchange = () => {
     ACHAT.type = st.value;
@@ -1836,42 +1969,51 @@ function dessinerProgDans(box){
     sc.value = CARS.indexOf(ACHAT.cible) >= 0 ? ACHAT.cible : 'Force';
     sc.onchange = () => { ACHAT.cible = sc.value; dessinerProg(true); };
     champ(la, 'Laquelle', sc, 'Une seule fois par caractéristique, jamais au-delà de 18.');
+  } else if(ACHAT.type === 'lance'){
+    const l = lanceDe(c);
+    const p = el('p','mini');
+    p.textContent = !l ? 'Pas de lance ori’ican sur sa fiche : ajoute-la dans ses armes (d8, d10 ou d12).'
+      : !l.suivant ? l.arme.nom + ' est déjà au plus haut cran que la progression donne (' + l.arme.de + ').'
+      : l.arme.nom + ' (' + l.arme.de + ') devient ' + l.suivant.nom.toLowerCase() + ' (' + l.suivant.de + ')' + (l.suivant.notes ? ', ' + l.suivant.notes : '') +
+        '. À une mue, avec du métal rapporté d’une ruine et une forge.';
+    const w = el('div'); w.style.flex = '1 1 100%'; w.append(el('span','lab', 'Sa lance'), p);
+    la.append(w);
   } else if(ACHAT.type === 'prat'){
-    const nm = el('input'); nm.type = 'text'; nm.id = 'prog-nom'; nm.value = ACHAT.nom; nm.placeholder = 'Le nom de la Pratique'; nm.style.width = '100%';
-    nm.oninput = () => { ACHAT.nom = nm.value; majCoutAchat(c); };
-    champ(la, 'Nom', nm);
+    const sien = domaineDe(c), dom = domaineAchat(c);
+    if(!sien){
+      /* une fiche faite à la main ne dit ni son peuple ni son école : on choisit son domaine une fois */
+      const sd = el('select'); sd.id = 'prog-dom';
+      sd.add(new Option('Son domaine…', ''));
+      domainesPratiques().forEach(k => sd.add(new Option(majuscule(k), k)));
+      sd.value = dom;
+      sd.onchange = () => { ACHAT.dom = sd.value; ACHAT.nom = ''; dessinerProg(true); };
+      champ(la, 'Son domaine', sd, 'Sa fiche ne dit ni son peuple ni son école.');
+    }
+    if(dom){
+      const gs = pratiquesApprenables(c, dom);
+      const sp = el('select'); sp.id = 'prog-prat';
+      sp.add(new Option(gs.length ? 'Laquelle…' : 'Il connaît déjà toute sa liste', ''));
+      gs.forEach(g => {
+        const par = g.grp ? el('optgroup') : sp;
+        if(g.grp){ par.label = g.grp; sp.append(par); }
+        g.items.forEach(it => par.append(new Option(it.n + (it.pc ? ' · ' + it.pc + ' PC' : ''), it.n)));
+      });
+      if(!gs.some(g => g.items.some(it => it.n === ACHAT.nom))) ACHAT.nom = '';
+      sp.value = ACHAT.nom;
+      sp.onchange = () => { ACHAT.nom = sp.value; dessinerProg(true); };
+      champ(la, 'Laquelle', sp, sien ? 'Dans la liste de son domaine, ' + sien.replace(/\s*\(.*\)$/, '') + '.' : '');
+    }
     const ma = el('input'); ma.type = 'text'; ma.id = 'prog-maitre'; ma.value = ACHAT.maitre; ma.placeholder = 'Nahya, un maître d’école…'; ma.style.width = '100%';
     ma.setAttribute('list', listeDonnees('dl-maitres', tousLesGens().filter(x => x.ref !== 'pj:' + c.id).map(x => x.nom)));
     ma.oninput = () => { ACHAT.maitre = ma.value; majCoutAchat(c); };
     champ(la, 'Qui te l’enseigne', ma);
-    const sd = el('select'); sd.id = 'prog-dom';
-    const sien = domainePerso(c);
-    if(sien){
-      const d0 = DOMAINES.find(x => x.k === sien);
-      sd.add(new Option(majuscule(d0.l) + ', son domaine : +' + (c.bonusPratique || 40), sien));
-      const og = el('optgroup'); og.label = 'Un autre domaine : +20';
-      DOMAINES.filter(x => x.k !== sien).forEach(x => og.append(new Option(x.l, x.k)));
-      sd.append(og);
-    } else {
-      /* une fiche faite à la main ne dit pas son domaine : par défaut, le +20 du livre */
-      const og = el('optgroup'); og.label = 'Hors de son domaine : +20';
-      DOMAINES.forEach(x => og.append(new Option(majuscule(x.l), x.k)));
-      sd.append(og);
-      sd.add(new Option('Dans son domaine : +' + (c.bonusPratique || 40), 'sien'));
+    const it = dom ? pratiqueDuLivre(dom, ACHAT.nom) : null;
+    if(it){
+      const w = el('div','pratlue'); w.style.flex = '1 1 100%';
+      w.append(el('span','lab', 'Ce qu’elle fait'));
+      w.append(el('p','mini', majuscule(jetDePratique(it.j)) + ' · ' + (it.pct || (it.pc ? it.pc + ' PC' : 'sans PC')) + ' · ' + it.d));
+      la.append(w);
     }
-    if(!ACHAT.dom || ![].some.call(sd.options, o => o.value === ACHAT.dom)) ACHAT.dom = sd.options[0].value;
-    sd.value = ACHAT.dom;
-    sd.onchange = () => { ACHAT.dom = sd.value; majCoutAchat(c); };
-    champ(la, 'Son domaine', sd);
-    const sj = el('select'); sj.id = 'prog-jet';
-    ['Force','Dextérité','Contenance'].concat(JETS_SANS).forEach(j => sj.add(new Option(j, j)));
-    sj.value = ACHAT.jet; sj.onchange = () => { ACHAT.jet = sj.value; };
-    champ(la, 'Se lance sous', sj);
-    const sp = nombre(ACHAT.pc, 0, 9); sp.id = 'prog-pc'; sp.oninput = () => { ACHAT.pc = Math.max(0, +sp.value || 0); };
-    champ(la, 'PC', sp);
-    const tx = el('input'); tx.type = 'text'; tx.id = 'prog-texte'; tx.value = ACHAT.texte; tx.placeholder = 'Ce qu’elle fait'; tx.style.width = '100%';
-    tx.oninput = () => { ACHAT.texte = tx.value; };
-    champ(la, 'Ce qu’elle fait', tx);
   }
   form.append(la);
 
@@ -1881,21 +2023,24 @@ function dessinerProgDans(box){
   ok.onclick = () => {
     const c = perso(PROG_PERSO); if(!c) return;
     const prix = coutAchat(c);
-    if(ACHAT.type === 'prat' && !ACHAT.nom.trim()){ msgTable('Donne un nom à la Pratique.', false); return; }
+    const dom = ACHAT.type === 'prat' ? domaineAchat(c) : '';
+    const it = ACHAT.type === 'prat' ? pratiqueDuLivre(dom, ACHAT.nom) : null;
+    if(ACHAT.type === 'prat' && !dom){ msgTable('Choisis d’abord son domaine : sa fiche ne dit ni son peuple ni son école.', false); return; }
+    if(ACHAT.type === 'prat' && !it){ msgTable('Choisis la Pratique dans la liste de son domaine.', false); return; }
     if(ACHAT.type === 'prat' && !ACHAT.maitre.trim()){ msgTable('Le livre le demande : quelqu’un pour te l’enseigner. Écris qui.', false); return; }
-    if(ACHAT.type === 'prat' && c.pratiques.some(p => cleNom(p.n) === cleNom(ACHAT.nom))){ msgTable((c.nom || 'Il') + ' connaît déjà « ' + ACHAT.nom.trim() + ' ».', false); return; }
+    if(ACHAT.type === 'prat' && c.pratiques.some(p => clePratique(p.n) === clePratique(ACHAT.nom))){ msgTable((c.nom || 'Il') + ' connaît déjà « ' + ACHAT.nom.trim() + ' ».', false); return; }
     if(ACHAT.type === 'car' && dejaMontee(c, ACHAT.cible)){ msgTable(ACHAT.cible + ' est déjà montée une fois : le livre n’en permet qu’une.', false); return; }
     if(ACHAT.type === 'car' && c.car[ACHAT.cible] >= 18){ msgTable('Le livre plafonne une caractéristique à 18.', false); return; }
+    if(ACHAT.type === 'lance'){ const l = lanceDe(c); if(!l || !l.suivant){ msgTable(!l ? 'Pas de lance ori’ican sur sa fiche.' : 'Sa lance est déjà au plus haut cran.', false); return; } }
     if(prix > pointsRestants(c)){ msgTable('Il manque ' + (prix - pointsRestants(c)) + ' point' + (prix - pointsRestants(c) > 1 ? 's' : '') + '.', false); return; }
-    const b = ACHAT.type === 'prat' ? bonusApprise(c, ACHAT.dom) : null;
+    /* une Pratique de son domaine : elle prend son bonus de peuple ou d'école, comme les autres */
     const a = {id:nouvelId('a'), t:maintenant(), type:ACHAT.type,
-      cible: ACHAT.type === 'prat' ? ACHAT.nom.trim() : ACHAT.cible,
+      cible: it ? it.n : ACHAT.cible,
       n: ACHAT.type === 'comp' ? Math.max(1, ACHAT.n) : 1,
-      jet:ACHAT.jet, pc:ACHAT.pc, texte:ACHAT.texte, maitre:ACHAT.type === 'prat' ? ACHAT.maitre.trim() : '',
-      dom: ACHAT.type === 'prat' ? (ACHAT.dom === 'sien' ? domainePerso(c) : ACHAT.dom) : '',
-      b: ACHAT.type === 'prat' && b !== (c.bonusPratique || 40) ? b : null,
+      jet: it ? it.j : '', pc: it ? +it.pc || 0 : 0, pct: it ? it.pct || '' : '', texte: it ? it.d : '',
+      maitre: it ? ACHAT.maitre.trim() : '', dom: it ? domaineCle(dom) : '', b:null,
       detail:detailAchat(c), cout:prix};
-    if(ACHAT.type === 'prat'){ ACHAT.nom = ''; ACHAT.texte = ''; ACHAT.maitre = ''; ACHAT.dom = ''; }
+    if(it){ ACHAT.nom = ''; ACHAT.maitre = ''; }
     changer(() => {
       appliquerAchat(c, a, 1);
       a.bloc = noterDansSeance(phraseAchat(c, a), 'achat');
@@ -1909,6 +2054,7 @@ function dessinerProgDans(box){
   zone.append(form);
   const regle = el('div','progregle');
   regle.append(el('p','lab', 'Ce que dit le livre'), tableauProgression());
+  if(estCornu(c)) regle.append(el('p','mini', 'Un Cornu, à chaque mue : sa lance remonte d’un cran, avec du métal rapporté d’une ruine, une forge, et dix points de progression.'));
   zone.append(regle);
   box.append(zone);
   majCoutAchat(c);
@@ -3049,16 +3195,921 @@ function copierSeance(e, bouton){
   repli();
 }
 
+const ADV = {"rangs": [{"r": 1, "nom": "Nuisance", "pv": 4, "deg": "d4", "red": 0, "cartes": 1}, {"r": 2, "nom": "Ordinaire", "pv": 8, "deg": "d6", "red": 1, "cartes": 1}, {"r": 3, "nom": "Sérieux", "pv": 14, "deg": "d6+2", "red": 2, "cartes": 1}, {"r": 4, "nom": "Lourd", "pv": 22, "deg": "d8+2", "red": 3, "cartes": 1}, {"r": 5, "nom": "Exceptionnel", "pv": 35, "deg": "d10+2", "red": 3, "cartes": 2}], "pourquoi": ["Ils chassent, et vous êtes sur leur territoire", "Ils gardent quelque chose que vous voulez voir", "Ils fuient autre chose, et ils vous rentrent dedans", "On les a envoyés pour vous", "Ils veulent ce que vous portez", "Ils sont sortis de la Floraison hier", "Ils vous prennent pour quelqu'un d'autre", "Ils sont là depuis plus longtemps que le village", "Ils veulent vous empêcher d'arriver, pas vous tuer", "Ils sont blessés, et ça les rend imprévisibles", "Ils ne vous ont pas encore vus", "Ils veulent parler d'abord"], "creatures": {"1": [{"n": "Rôdeur de bordure", "p": "Il a faim depuis trois jours. Un repas le fait changer de camp", "t": ["gens", "horsloi"], "a2": {"n": "Jet de pierre", "p": "10 pas", "t": "phy", "e": "le dé du rang"}}, {"n": "Chien de ferme altéré", "p": "Il ne lâche plus ce qu'il a mordu. Un jet de FOR par round pour s'en défaire", "t": ["bete", "floraison"], "a2": {"n": "Serrer", "p": "contact", "t": "phy", "e": "aucun dégât, la cible ne se dégage qu'à un jet de FOR"}}, {"n": "Nuée de mouches de sève", "p": "Les armes ne lui font rien. Le feu, le vent et l'eau la dispersent d'un coup", "t": ["floraison"], "a2": {"n": "Envahir", "p": "contact", "t": "mag", "e": "le dé du rang, et rien n'arrête la nuée"}}, {"n": "Gamin armé d'une faux", "p": "Il frappe à d6, pas à d4, et il ne sait pas s'arrêter", "t": ["gens"], "a2": {"n": "Moulinet", "p": "contact", "t": "phy", "e": "d6 au lieu du dé du rang, sur deux cibles côte à côte"}}, {"n": "Rat de ruine", "p": "Il vole un objet et part avec. Il faut le rattraper, pas le tuer", "t": ["bete"], "a2": {"n": "Détrousser", "p": "contact", "t": "phy", "e": "aucun dégât, il emporte un objet et fuit"}}, {"n": "Pilleur isolé", "p": "Il se rend dès qu'il tombe sous la moitié de ses PV", "t": ["gens", "horsloi"], "a2": {"n": "Sommation", "p": "10 pas", "t": "phy", "e": "aucun dégât, il exige ce que tu portes"}}, {"n": "Corbeau de Floraison", "p": "Il vole ce qui brille et le rapporte à son nid, avec le reste", "t": ["bete", "floraison"], "a2": {"n": "Fondre dessus", "p": "contact", "t": "phy", "e": "le dé du rang, puis il reprend de la hauteur"}}, {"n": "Lièvre de pierre", "p": "Réduction 2 au lieu de 0, mais il ne fait aucun dégât. Il veut juste passer", "t": ["bete", "floraison"], "a2": {"n": "Ruer", "p": "contact", "t": "phy", "e": "aucun dégât, la cible recule de 5 pas"}}, {"n": "Fiévreux", "p": "Quelqu'un qu'une Floraison a traversé. Ce qui sort de lui ne suit aucune intention", "t": ["gens", "floraison"], "a2": {"n": "Décharge", "p": "5 pas", "t": "mag", "e": "le dé du rang, et il ne vise personne en particulier"}}, {"n": "Chien errant, et sa meute", "p": "Ils sont cinq. Un seul qui tombe, les quatre autres partent", "t": ["bete"], "a2": {"n": "Encercler", "p": "contact", "t": "phy", "e": "le dé du rang, et la meute prend la cible à revers"}}], "2": [{"n": "Garde de péage", "p": "Il veut votre argent, pas votre peau. Il sonne du cor au deuxième round", "t": ["gens", "soldat"], "a2": {"n": "Sonner du cor", "p": "aucune", "t": "phy", "e": "aucun dégât, des renforts arrivent au round suivant"}}, {"n": "Bandit de route", "p": "Il attaque toujours celui qui porte le sac le plus lourd", "t": ["gens", "horsloi"], "a2": {"n": "Croc-en-jambe", "p": "contact", "t": "phy", "e": "aucun dégât, la cible tombe"}}, {"n": "Sanglier d'ombre", "p": "Invisible tant qu'il ne charge pas. Une lumière vive le fige un round", "t": ["bete", "floraison"], "a2": {"n": "Charge d'ombre", "p": "10 pas", "t": "mag", "e": "le dé du rang, et il redevient invisible"}}, {"n": "Chien de guerre du Sang", "p": "Dressé pour désarmer. S'il touche, tu lâches ton arme", "t": ["bete", "soldat"], "a2": {"n": "Désarmer", "p": "contact", "t": "phy", "e": "aucun dégât, la cible lâche son arme"}}, {"n": "Contrebandier", "p": "Il porte un catalyseur volé et s'en sert mal : 1d6 de feu autour de lui s'il tombe", "t": ["gens", "horsloi", "pratique"], "a2": {"n": "Catalyseur mal tenu", "p": "5 pas", "t": "mag", "e": "1d6 de feu, à lui aussi s'il rate"}}, {"n": "Mante de sève", "p": "Réduction 3 de face, 0 de dos", "t": ["bete", "floraison"], "a2": {"n": "Faux de sève", "p": "contact", "t": "mag", "e": "le dé du rang, et seulement de face"}}, {"n": "Loup de bordure", "p": "Il n'attaque jamais seul, et jamais de face", "t": ["bete"], "a2": {"n": "Harceler", "p": "contact", "t": "phy", "e": "le dé du rang, uniquement si un autre loup est au contact"}}, {"n": "Milicien de village", "p": "Il se bat mal, mais il connaît chaque pierre du lieu", "t": ["gens", "soldat"], "a2": {"n": "Connaître le terrain", "p": "10 pas", "t": "phy", "e": "aucun dégât, il se place où tu ne peux pas le suivre"}}, {"n": "Bête de Floraison végétale", "p": "Elle repousse : 1d4 PV par round tant que la Floraison brûle encore", "t": ["floraison"], "a2": {"n": "Repousse", "p": "aucune", "t": "mag", "e": "aucun dégât, elle récupère 1d4 PV"}}, {"n": "Déserteur", "p": "Il connaît les ordres de la Bannière, et il les vendra pour un passage", "t": ["gens", "soldat", "horsloi"], "a2": {"n": "Marchander", "p": "aucune", "t": "phy", "e": "aucun dégât, il propose un passage contre un service"}}], "3": [{"n": "Sergent du Sang", "p": "Les Ordinaires autour de lui gagnent +2 aux dégâts tant qu'il tient debout", "t": ["gens", "soldat"], "a2": {"n": "Ordre", "p": "aucune", "t": "phy", "e": "aucun dégât, les Ordinaires autour de lui gagnent +2 aux dégâts"}}, {"n": "Ours de brume", "p": "On ne le voit qu'à trois pas. À trois pas, il est déjà au contact", "t": ["bete", "floraison"], "a2": {"n": "Sortir de la brume", "p": "contact", "t": "phy", "e": "le dé du rang, et personne ne l'a vu venir"}}, {"n": "Golem de chantier", "p": "Réduction 4. Il ne poursuit personne au-delà du chantier", "t": ["golem"], "a2": {"n": "Coup de masse", "p": "contact", "t": "phy", "e": "d8 au lieu du dé du rang, mais il ne se déplace pas"}}, {"n": "Braconnier de Floraison", "p": "Il connaît la Floraison mieux que vous, et il a posé des pièges partout", "t": ["gens", "horsloi"], "a2": {"n": "Déclencher un piège", "p": "à vue", "t": "phy", "e": "le dé du rang, sur qui marche là où il a posé"}}, {"n": "Cerf-roi altéré", "p": "Il charge en ligne droite, 2d6, et il traverse tout ce qui est sur le chemin", "t": ["bete", "floraison"], "a2": {"n": "Charge en ligne", "p": "20 pas", "t": "phy", "e": "2d6, et il traverse tout ce qui est sur le chemin"}}, {"n": "Scelleur véreux", "p": "Il pose un sceau par combat : une porte se ferme, ou une arme reste au fourreau", "t": ["gens", "horsloi", "pratique"], "a2": {"n": "Poser un sceau", "p": "à vue", "t": "mag", "e": "aucun dégât, une porte se ferme ou une arme reste au fourreau"}}, {"n": "Ilvès renégat", "p": "Un souffle de feu à vue, 2d6, une fois tous les trois rounds", "t": ["gens", "pratique"], "a2": {"n": "Souffle de feu", "p": "à vue", "t": "mag", "e": "2d6, une fois tous les trois rounds"}}, {"n": "Pirate des Larges", "p": "Il vous pousse à l'eau dès qu'il y a de l'eau", "t": ["gens", "horsloi"], "a2": {"n": "Crocheter", "p": "contact", "t": "phy", "e": "aucun dégât, la cible est poussée à l'eau s'il y en a"}}, {"n": "Ce qui vit dans les cales", "p": "Il éteint les lumières avant d'attaquer", "t": ["floraison"], "a2": {"n": "Éteindre", "p": "à vue", "t": "mag", "e": "aucun dégât, toutes les lumières meurent pour 3 rounds"}}, {"n": "Mercenaire vétéran", "p": "Il a une réaction de plus que tout le monde", "t": ["gens", "soldat"], "a2": {"n": "Seconde réaction", "p": "aucune", "t": "phy", "e": "il pare ou esquive une fois de plus que tout le monde"}}], "4": [{"n": "Capitaine du Sang", "p": "Il arrive avec quatre Ordinaires, et il les envoie devant", "t": ["gens", "soldat"], "a2": {"n": "Envoyer devant", "p": "aucune", "t": "phy", "e": "aucun dégât, ses quatre Ordinaires attaquent à sa place"}}, {"n": "Golem de carrière", "p": "Réduction 5. Chaque coup qu'il encaisse lui arrache un éclat : ses dégâts baissent de 1", "t": ["golem"], "a2": {"n": "Éclat de carrière", "p": "10 pas", "t": "phy", "e": "le dé du rang, et il perd 1 à ses dégâts"}}, {"n": "Ori'Ican en fureur", "p": "Il ne peut plus s'arrêter. Il frappe l'allié le plus proche si aucun ennemi n'est à portée", "t": ["gens"], "a2": {"n": "Fureur", "p": "contact", "t": "phy", "e": "le dé du rang sur l'allié le plus proche si aucun ennemi n'est à portée"}}, {"n": "Bête-mère", "p": "Elle appelle 1d4 Nuisances au premier round, puis encore autant au troisième", "t": ["bete", "floraison"], "a2": {"n": "Appeler", "p": "aucune", "t": "mag", "e": "aucun dégât, 1d4 Nuisances arrivent"}}, {"n": "Écorcien qui a brûlé", "p": "Le feu l'a rendu fou. Réduction 4, mais le feu compte double contre lui", "t": ["gens", "floraison"], "a2": {"n": "Flambée", "p": "5 pas", "t": "mag", "e": "le dé du rang, et le feu compte double contre lui en retour"}}, {"n": "Maître de Nïhr", "p": "Une silhouette de lui se tient à cinq pas. La première attaque de chaque round frappe la fausse", "t": ["gens", "pratique"], "a2": {"n": "Ombre double", "p": "à vue", "t": "mag", "e": "le dé du rang, et la première attaque de chaque round frappe la fausse silhouette"}}, {"n": "Ce qui habite la ruine", "p": "Le bâtiment se réorganise autour de lui : les portes changent de place chaque round", "t": ["floraison"], "a2": {"n": "Refermer la ruine", "p": "aucune", "t": "mag", "e": "aucun dégât, les portes changent de place"}}, {"n": "Chef de bande", "p": "Il prend les otages avant de se battre", "t": ["gens", "horsloi"], "a2": {"n": "Prendre en otage", "p": "contact", "t": "phy", "e": "aucun dégât, il tient quelqu'un devant lui"}}, {"n": "Aurochs de mythril", "p": "Sa peau vaut une fortune, et elle vaut réduction 5", "t": ["bete", "floraison"], "a2": {"n": "Encorner", "p": "contact", "t": "phy", "e": "le dé du rang, et la cible recule de 10 pas"}}, {"n": "Praticien de Zhern, banni", "p": "Un arc à vue, 2d6+2 sur qui porte du métal. Il vise les armures d'abord", "t": ["gens", "pratique"], "a2": {"n": "Arc de Zhern", "p": "à vue", "t": "mag", "e": "2d6+2 sur qui porte du métal"}}], "5": [{"n": "Un Assis", "p": "Il ne vous attaque pas. Il mange la Floraison, et ce qui est entre lui et elle est écrasé", "t": ["floraison"], "a2": {"n": "Écraser", "p": "contact", "t": "phy", "e": "le dé du rang sur ce qui est entre lui et la Floraison"}}, {"n": "Golem d'un vieux chantier", "p": "Réduction 6. Il finit un ouvrage dont personne ne se souvient, et il ne s'arrêtera pas", "t": ["golem"], "a2": {"n": "Poursuivre l'ouvrage", "p": "contact", "t": "phy", "e": "le dé du rang, et rien ne l'arrête"}}, {"n": "Le centre d'une Floraison Vivant", "p": "Tant qu'elle est alimentée, il revient à 10 PV la nuit suivante", "t": ["floraison"], "a2": {"n": "Refleurir", "p": "aucune", "t": "mag", "e": "aucun dégât, il revient à 10 PV la nuit suivante"}}, {"n": "Un Confondu", "p": "Quelqu'un qui ne se distingue plus tout à fait de la Floraison. Tout ce qu'il touche s'altère, et il ne le veut pas", "t": ["gens", "floraison"], "a2": {"n": "Altérer", "p": "contact", "t": "mag", "e": "le dé du rang, et ce qu'il touche change sans qu'il le veuille"}}, {"n": "Colonne du Sang", "p": "Douze soldats qui agissent comme un seul. Deux cartes, et ils encerclent", "t": ["gens", "soldat"], "a2": {"n": "Encercler", "p": "contact", "t": "phy", "e": "le dé du rang, et la colonne referme la ligne"}}, {"n": "La Chose de la canopée", "p": "Elle attaque d'en haut et remonte. Impossible à atteindre entre deux passages", "t": ["bete", "floraison"], "a2": {"n": "Piqué", "p": "d'en haut", "t": "phy", "e": "le dé du rang, puis elle remonte hors de portée"}}, {"n": "Le Gardien d'une ruine de l'Avant", "p": "Il ne sort jamais. À l'intérieur, il connaît chaque angle", "t": ["golem"], "a2": {"n": "Connaître chaque angle", "p": "à vue", "t": "phy", "e": "le dé du rang, depuis un endroit que tu n'avais pas vu"}}, {"n": "Marchefleur retourné", "p": "Une Floraison l'a gardé trop longtemps. Il a toutes vos Pratiques, et aucun contrôle sur elles", "t": ["gens", "pratique", "floraison"], "a2": {"n": "Pratique volée", "p": "à vue", "t": "mag", "e": "le dé du rang, avec une de vos Pratiques et aucun contrôle"}}, {"n": "Ce qui pousse dans les terres creuses", "p": "Il n'a pas de forme fixe. La réduction qui marche change chaque round", "t": ["floraison"], "a2": {"n": "Changer de forme", "p": "contact", "t": "mag", "e": "le dé du rang, et la réduction qui marche change chaque round"}}, {"n": "La bête que le village nourrit", "p": "Elle est là depuis quatre générations, et le village se battra pour elle", "t": ["bete", "floraison"], "a2": {"n": "Ce qu'on lui a appris", "p": "contact", "t": "phy", "e": "le dé du rang, et le village la défendra"}}]}, "familles": [{"k": "gens", "l": "Gens"}, {"k": "horsloi", "l": "Hors-la-loi"}, {"k": "soldat", "l": "Soldats"}, {"k": "bete", "l": "Bêtes"}, {"k": "floraison", "l": "Floraison"}, {"k": "pratique", "l": "Praticiens"}, {"k": "golem", "l": "Golems"}], "attaques": {"regle": "Un adversaire a deux attaques et n'en utilise qu'une par round. L'attaque de rang est au contact, physique, au dé de son rang. L'attaque propre est ci-dessous.", "armure": "La réduction d'armure s'applique au physique. Elle s'applique aussi au magique quand l'élément envoie de la matière : Sève, eau, pierre, vent, Mue. Le feu, l'onde, l'ombre et le sacré la traversent.", "humain": "Un humain compte une fois et demie les dégâts magiques."}};
+
+/* ============ le tirage d'une rencontre : commun au Registre des Rencontres et au Registre de la Table ============
+   Le budget vient du nombre de personnages et du genre de combat ; les adversaires viennent du livre et du
+   bestiaire maison, filtrés par les familles retenues. L'état du tirage (S) et le bestiaire maison (MAISON,
+   FAM_MAISON) appartiennent à la page qui s'en sert. */
+const pick = a => a[Math.floor(Math.random() * a.length)];
+
+const COUT = [0, 1, 2, 4, 8, 16];
+const INTENSITES = [
+  {k:'esc', l:'Escarmouche', pts:2, d:'deux points par personnage'},
+  {k:'ser', l:'Sérieux',     pts:4, d:'quatre points par personnage'},
+  {k:'mor', l:'Mortel',      pts:8, d:'huit points par personnage, quelqu’un peut y rester'}
+];
+const SOURCES = [
+  {k:'tout',   l:'Le livre et les miennes'},
+  {k:'livre',  l:'Le livre seul'},
+  {k:'maison', l:'Les miennes seules'}
+];
+const RANG = {};
+ADV.rangs.forEach(r => RANG[r.r] = r);
+
+/* les entrees du livre recoivent un identifiant stable */
+for(let r = 1; r <= 5; r++) ADV.creatures[r].forEach((c, i) => { c.src = 'livre'; c.id = 'livre-' + r + '-' + (i + 1); c.r = r; });
+
+/* les creatures et les familles maison, remplies par bestiaire.js */
+let MAISON = [];
+let FAM_MAISON = [];
+
+/* ---------- les familles : celles du livre, puis les tiennes ---------- */
+function familles(){ return ADV.familles.concat(FAM_MAISON); }
+function famille(k){ return ADV.familles.find(f => f.k === k) || FAM_MAISON.find(f => f.k === k) || null; }
+function estMaisonFam(k){ return FAM_MAISON.some(f => f.k === k); }
+/* tes creatures entrent dans une famille par leurs etiquettes,
+   celles du livre entrent dans une famille maison par la liste de la famille */
+function membre(c, k){
+  if((c.t || []).indexOf(k) >= 0) return true;
+  if(c.src !== 'livre') return false;
+  const f = FAM_MAISON.find(x => x.k === k);
+  return !!(f && f.livre.indexOf(c.id) >= 0);
+}
+function famillesDe(c){ return familles().filter(f => membre(c, f.k)); }
+
+/* ---------- etat de la rencontre ---------- */
+
+const intensite = () => INTENSITES.find(i => i.k === S.inten) || INTENSITES[1];
+const budget = () => S.pj * intensite().pts;
+const depense = () => S.liste.reduce((a, x) => a + COUT[x.r], 0);
+const compte = r => S.liste.filter(x => x.r === r).length;
+
+/* ---------- le catalogue : le livre et les creatures maison ---------- */
+function toutRang(r){ return ADV.creatures[r].concat(MAISON.filter(c => c.r === r)); }
+function catalogue(r){
+  if(S.source === 'livre') return ADV.creatures[r].slice();
+  if(S.source === 'maison') return MAISON.filter(c => c.r === r);
+  return toutRang(r);
+}
+function trouveId(id){
+  for(let r = 1; r <= 5; r++){ const c = ADV.creatures[r].find(x => x.id === id); if(c) return c; }
+  return MAISON.find(x => x.id === id) || null;
+}
+/* ce que vaut une creature une fois ses ajustements appliques */
+function statsDe(c){
+  const base = RANG[c.r], m = c.mod || {};
+  const num = v => (v === null || v === undefined || v === '' || isNaN(+v)) ? null : +v;
+  return {
+    pv:     num(m.pv)     != null ? num(m.pv)     : base.pv,
+    red:    num(m.red)    != null ? num(m.red)    : base.red,
+    cartes: num(m.cartes) != null ? num(m.cartes) : base.cartes,
+    deg:    (m.deg && String(m.deg).trim()) ? String(m.deg).trim() : base.deg
+  };
+}
+function effetDe(c, st){ return c.a2 && c.a2.e ? c.a2.e.replace(/le dé du rang/g, st.deg) : ''; }
+
+/* ---------- tirage ---------- */
+/* les familles retenues, et tout le catalogue du rang si le filtre ne laisse personne */
+function vivier(r){
+  const tout = catalogue(r);
+  if(!S.fam || !S.fam.length) return {liste:tout, force:false};
+  const f = tout.filter(c => S.fam.some(k => membre(c, k)));
+  return f.length ? {liste:f, force:false} : {liste:tout, force:true};
+}
+function rangsDisponibles(){
+  const out = [];
+  for(let r = 1; r <= 5; r++){ const v = vivier(r); if(!v.force && v.liste.length) out.push(r); }
+  return out;
+}
+function entree(c, r){
+  return {r:r, n:c.n, p:c.p, pv:statsDe(c).pv, id:Math.random().toString(36).slice(2, 8), cid:c.id};
+}
+/* on evite de tirer deux fois la meme creature dans un meme rang */
+function creature(r, evite){
+  let pool = vivier(r).liste;
+  if(!pool.length) pool = toutRang(r);
+  if(!pool.length) pool = ADV.creatures[r];
+  const pris = evite || S.liste.filter(x => x.r === r).map(x => x.cid);
+  const libres = pool.filter(c => pris.indexOf(c.id) < 0);
+  return entree(pick(libres.length ? libres : pool), r);
+}
+function ajouter(r){ S.liste.push(creature(r)); }
+function retirer(r){
+  for(let i = S.liste.length - 1; i >= 0; i--){ if(S.liste[i].r === r){ S.liste.splice(i, 1); return; } }
+}
+const plusGros = b => { for(let i = 5; i >= 1; i--) if(COUT[i] <= b) return i; return 0; };
+function plusGrosDispo(b){
+  const ok = rangsDisponibles();
+  for(let i = 5; i >= 1; i--) if(COUT[i] <= b && ok.indexOf(i) >= 0) return i;
+  return plusGros(b);
+}
+
+function grandir(reste, rangsOk){
+  let garde = 0;
+  while(reste > 0 && garde++ < 60){
+    const ordre = S.liste.map((a, i) => i).sort((x, y) => S.liste[x].r - S.liste[y].r);
+    let fait = false;
+    for(const i of ordre){
+      const r0 = S.liste[i].r;
+      for(let r = 5; r > r0; r--){
+        const diff = COUT[r] - COUT[r0];
+        if(diff <= reste && rangsOk.indexOf(r) >= 0){ S.liste[i] = creature(r); reste -= diff; fait = true; break; }
+      }
+      if(fait) break;
+    }
+    if(!fait) break;
+  }
+  return reste;
+}
+
+function tirerComposition(){
+  const B = budget();
+  S.liste = [];
+  if(B < 1) return;
+  let reste = B;
+  const ok = rangsDisponibles();
+  const add = (r, n) => { for(let i = 0; i < n; i++){
+    if(r >= 1 && COUT[r] <= reste && S.liste.length < 12 && ok.indexOf(r) >= 0){ ajouter(r); reste -= COUT[r]; }
+  } };
+  /* dernier recours : on termine le budget meme hors des familles retenues */
+  const addForce = r => { if(r >= 1 && COUT[r] <= reste && S.liste.length < 12){ ajouter(r); reste -= COUT[r]; } };
+  const forme = pick(['solo','duo','chef','bande','melange','melange']);
+
+  if(forme === 'solo'){
+    add(plusGrosDispo(reste), 1);
+  } else if(forme === 'duo'){
+    const r = plusGrosDispo(Math.floor(reste / 2));
+    add(r || 1, 2);
+  } else if(forme === 'chef'){
+    const r = plusGrosDispo(reste);
+    add(r, 1);
+    const s = Math.max(1, r - 2);
+    add(s, Math.min(6, Math.floor(reste / COUT[s])));
+  } else if(forme === 'bande'){
+    const r = Math.max(1, plusGrosDispo(reste) - 2);
+    add(r, Math.min(8, Math.floor(reste / COUT[r])));
+  } else {
+    let garde = 0;
+    while(reste > 0 && S.liste.length < 8 && garde++ < 40){
+      const hi = plusGrosDispo(reste);
+      add(1 + Math.floor(Math.random() * hi), 1);
+    }
+  }
+  let garde = 0;
+  while(reste > 0 && S.liste.length < 12 && garde++ < 40) addForce(plusGrosDispo(reste));
+  /* douze au plus : quand la place manque, on fait grandir les plus petits,
+     dans les familles retenues d'abord, hors d'elles en dernier recours */
+  reste = grandir(reste, ok);
+  if(reste > 0) reste = grandir(reste, [1, 2, 3, 4, 5]);
+
+  S.liste.sort((a, b) => b.r - a.r);
+  S.pourquoi = pick(ADV.pourquoi);
+}
+
+/* ---------- ce qu'un adversaire tiré emporte à la table ----------
+   Ses valeurs, son attaque propre, ses familles (l'endroit du butin s'en devine) et ce qu'il laisse,
+   quand c'est une des tiennes. Porté par l'envoi du Registre des Rencontres comme par le tirage de la table. */
+function adversaireEnvoye(a){
+  const c = trouveId(a.cid) || {r:a.r, n:a.n, p:a.p};
+  const st = statsDe(c);
+  const pv = a.pv == null || isNaN(+a.pv) ? st.pv : Math.max(0, Math.min(+a.pv, st.pv));
+  return {n:c.n || a.n, r:a.r, pvMax:st.pv, pv:pv, red:st.red, deg:st.deg, cartes:st.cartes,
+    a2: c.a2 && c.a2.n ? {n:c.a2.n, t:c.a2.el ? 'mag' : (c.a2.t || 'phy'), p:porteeDe(c.a2), e:effetDe(c, st), el:c.a2.el || ''} : null,
+    tr:(c.tr || []).slice(), traits:nomsTraits(c), p:c.p || '', renf:c.renf || '',
+    cid:c.id || a.cid || '', fam:(c.t || []).slice(), butin:c.butin || ''};
+}
+
+/* ============ les traits : ils remplissent la creature a ta place ============
+   Chaque trait vient d'une entree du livre, citee dans « modele ». Ce qui va plus loin
+   que le livre porte valider:true et se retrouve dans le brouillon des traits. */
+
+const ELEMENTS = [
+  {k:'seve',   l:'Sève',   de:'de sève',   matiere:true,  modele:'la Mante de sève'},
+  {k:'eau',    l:'Eau',    de:"d'eau",     matiere:true,  modele:'la règle de l’armure'},
+  {k:'pierre', l:'Pierre', de:'de pierre', matiere:true,  modele:'la règle de l’armure'},
+  {k:'vent',   l:'Vent',   de:'de vent',   matiere:true,  modele:'la règle de l’armure'},
+  {k:'mue',    l:'Mue',    de:'de Mue',    matiere:true,  modele:'la règle de l’armure'},
+  {k:'feu',    l:'Feu',    de:'de feu',    matiere:false, modele:'l’Ilvès renégat'},
+  {k:'onde',   l:'Onde',   de:"d'onde",    matiere:false, modele:'le Praticien de Zhern'},
+  {k:'ombre',  l:'Ombre',  de:"d'ombre",   matiere:false, modele:'le Sanglier d’ombre'},
+  {k:'sacre',  l:'Sacré',  adj:{m:'sacré', f:'sacrée'}, matiere:false, modele:'la règle de l’armure'}
+];
+const ELEM = {};
+ELEMENTS.forEach(e => ELEM[e.k] = e);
+
+const DES = [4, 6, 8, 10, 12];
+/* le cran de dé au-dessus : d4 devient d6, d6+2 devient d8+2 */
+function cran(de, n){
+  const m = /^(\d*)d(\d+)(.*)$/i.exec(String(de || '').trim());
+  if(!m) return String(de || '');
+  const i = DES.indexOf(+m[2]);
+  const face = i < 0 ? +m[2] : DES[Math.min(DES.length - 1, i + (n || 1))];
+  return (m[1] || '') + 'd' + face + (m[3] || '');
+}
+function rangNom(r, pluriel){
+  const n = RANG[r] ? RANG[r].nom : '';
+  return pluriel && n && !/x$/.test(n) ? n + 's' : n;
+}
+
+const TRAITS = [
+  /* ---------- sa façon d'attaquer : celles qui blessent ---------- */
+  {k:'coup', g:'facon', sub:'blesse', l:'Frapper fort', n:'Coup puissant', ne:['Frappe','f'], p:'contact', t:'phy',
+   e:x => cran(x.deg) + ", mais il ne se déplace pas du round", modele:'le Golem de chantier', valider:true},
+  {k:'balayer', g:'facon', sub:'blesse', l:'Balayer', n:'Balayage', ne:['Vague','f'], p:'contact', t:'phy',
+   e:() => 'le dé du rang, sur deux cibles côte à côte', modele:'le Gamin armé d’une faux'},
+  {k:'charge', g:'facon', sub:'blesse', l:'Charger', n:'Charge', ne:['Charge','f'], p:'10 pas', t:'phy',
+   e:() => 'le dé du rang, et il traverse tout ce qui est sur le chemin', modele:'le Cerf-roi altéré'},
+  {k:'tir', g:'facon', sub:'blesse', l:'Tirer', n:'Tir', ne:['Trait','m'], p:'10 pas', t:'phy',
+   e:() => 'le dé du rang', modele:'le Rôdeur de bordure'},
+  {k:'souffle', g:'facon', sub:'blesse', l:'Souffler', n:'Volée', ne:['Souffle','m'], p:'5 pas', t:'phy',
+   e:() => 'le dé du rang, sur tous ceux qui sont devant lui, une fois tous les trois rounds', modele:'l’Ilvès renégat', valider:true},
+  {k:'pique', g:'facon', sub:'blesse', l:'Fondre d’en haut', n:'Piqué', ne:null, p:"d'en haut", t:'phy',
+   e:() => 'le dé du rang, puis il reprend de la hauteur', modele:'le Corbeau de Floraison'},
+  {k:'surgir', g:'facon', sub:'blesse', l:'Surgir', n:'Surgir', ne:null, p:'contact', t:'phy',
+   e:() => "le dé du rang, et personne ne l'a vu venir", modele:'l’Ours de brume'},
+  {k:'pieger', g:'facon', sub:'blesse', l:'Piéger', n:'Déclencher un piège', ne:['Piège','m'], p:'à vue', t:'phy',
+   e:() => 'le dé du rang, sur qui marche là où il a posé', modele:'le Braconnier de Floraison'},
+  {k:'repousser', g:'facon', sub:'blesse', l:'Repousser', n:'Encorner', ne:['Poussée','f'], p:'contact', t:'phy',
+   e:() => 'le dé du rang, et la cible recule de 10 pas', modele:'l’Aurochs de mythril'},
+
+  /* ---------- sa façon d'attaquer : celles qui changent la scène ---------- */
+  {k:'saisir', g:'facon', sub:'scene', l:'Saisir', n:'Serrer', ne:['Étreinte','f'], p:'contact', t:'phy',
+   e:() => "aucun dégât, la cible ne se dégage qu'à un jet de FOR", modele:'le Chien de ferme altéré'},
+  {k:'tomber', g:'facon', sub:'scene', l:'Faire tomber', n:'Croc-en-jambe', ne:null, p:'contact', t:'phy',
+   e:() => 'aucun dégât, la cible tombe', modele:'le Bandit de route'},
+  {k:'desarmer', g:'facon', sub:'scene', l:'Désarmer', n:'Désarmer', ne:null, p:'contact', t:'phy',
+   e:() => "aucun dégât, la cible lâche son arme", modele:'le Chien de guerre du Sang'},
+  {k:'derober', g:'facon', sub:'scene', l:'Dérober', n:'Détrousser', ne:null, p:'contact', t:'phy',
+   e:() => 'aucun dégât, il emporte un objet et fuit', modele:'le Rat de ruine'},
+  {k:'appeler', g:'facon', sub:'scene', l:'Appeler', n:'Appeler', ne:null, p:'aucune', t:'phy',
+   e:() => 'aucun dégât, 1d4 Nuisances arrivent', modele:'la Bête-mère', valider:true},
+  {k:'envoyer', g:'facon', sub:'scene', l:'Envoyer devant', n:'Envoyer devant', ne:null, p:'aucune', t:'phy',
+   e:() => "aucun dégât, ceux qui l'accompagnent attaquent à sa place", modele:'le Capitaine du Sang', min:3, requiert:['escorte'], valider:true},
+  {k:'eteindre', g:'facon', sub:'scene', l:'Éteindre', n:'Éteindre', ne:null, p:'à vue', t:'mag',
+   e:() => 'aucun dégât, toutes les lumières meurent pour 3 rounds', modele:'Ce qui vit dans les cales'},
+  {k:'refaire', g:'facon', sub:'scene', l:'Se refaire', n:'Se refaire', ne:null, p:'aucune', t:'mag',
+   e:() => 'aucun dégât, il récupère 1d4 PV', modele:'la Bête de Floraison végétale'},
+  {k:'sceller', g:'facon', sub:'scene', l:'Sceller', n:'Poser un sceau', ne:null, p:'à vue', t:'mag',
+   e:() => 'aucun dégât, une porte se ferme ou une arme reste au fourreau', modele:'le Scelleur véreux'},
+  {k:'otage', g:'facon', sub:'scene', l:'Prendre en otage', n:'Prendre en otage', ne:null, p:'contact', t:'phy',
+   e:() => "aucun dégât, il tient quelqu'un devant lui", modele:'le Chef de bande'},
+
+  /* ---------- son corps ---------- */
+  {k:'blinde', g:'corps', l:'Blindé', red:r => r + 1, excl:['carapace'], modele:'le Golem de chantier et l’Aurochs de mythril'},
+  {k:'carapace', g:'corps', l:'Carapace', excl:['blinde'], phrase:r => 'Réduction ' + (r + 1) + ' de face, 0 de dos', modele:'la Mante de sève'},
+  {k:'lourde', g:'corps', l:'Frappe lourde', cran:1, modele:'le Gamin armé d’une faux'},
+  {k:'volant', g:'corps', l:'Volant', phrase:() => "Il vole : entre deux attaques il reprend de la hauteur, et une chute ne lui fait rien",
+   modele:'le Corbeau de Floraison et la règle des chutes', valider:true},
+  {k:'cache', g:'corps', l:'Caché', phrase:() => "On ne le voit pas tant qu'il n'attaque pas", modele:'le Sanglier d’ombre'},
+  {k:'nuee', g:'corps', l:'Nuée', phrase:() => "Les armes ne lui font rien. Le feu, le vent et l'eau le dispersent d'un coup",
+   modele:'la Nuée de mouches de sève'},
+  {k:'repousse', g:'corps', l:'Il repousse', phrase:() => 'Il récupère 1d4 PV par round tant que la Floraison brûle encore',
+   modele:'la Bête de Floraison végétale'},
+  {k:'lumiere', g:'corps', l:'Craint la lumière', phrase:() => 'Une lumière vive le fige un round', modele:'le Sanglier d’ombre'},
+  {k:'craintfeu', g:'corps', l:'Craint le feu', phrase:() => 'Le feu compte double contre lui', modele:'l’Écorcien qui a brûlé'},
+
+  /* ---------- sa conduite ---------- */
+  {k:'meute', g:'conduite', l:'En meute', phrase:() => "Il n'attaque jamais seul, et jamais de face", modele:'le Loup de bordure'},
+  {k:'lache', g:'conduite', l:'Lâche', phrase:() => "Il se rend dès qu'il tombe sous la moitié de ses PV", modele:'le Pilleur isolé'},
+  {k:'gardien', g:'conduite', l:'Gardien', phrase:() => "Il ne poursuit personne au-delà de ce qu'il garde", modele:'le Golem de chantier'},
+  {k:'meneur', g:'conduite', l:'Meneur', min:2,
+   phrase:r => 'Les ' + rangNom(r - 1, true) + " autour de lui gagnent +2 aux dégâts tant qu'il tient debout",
+   modele:'le Sergent du Sang', valider:true},
+  {k:'escorte', g:'conduite', l:'Escorte', min:3, renf:r => 'Il arrive avec quatre ' + rangNom(r - 2, true),
+   modele:'le Capitaine du Sang', valider:true},
+  {k:'furieux', g:'conduite', l:'Furieux',
+   phrase:() => "Il ne peut plus s'arrêter. Il frappe l'allié le plus proche si aucun ennemi n'est à portée", modele:'l’Ori’Ican en fureur'},
+  {k:'cupide', g:'conduite', l:'Cupide', phrase:() => 'Il attaque toujours celui qui porte le sac le plus lourd', modele:'le Bandit de route'},
+  {k:'monnayable', g:'conduite', l:'Monnayable', phrase:() => "Il change de camp si on lui offre ce qu'il veut",
+   modele:'le Rôdeur de bordure et le Déserteur', valider:true},
+  {k:'instable', g:'conduite', l:'Instable', phrase:() => "S'il tombe, ce qu'il porte éclate : 1d6 sur tout ce qui l'entoure",
+   modele:'le Contrebandier', valider:true}
+].concat(ELEMENTS.map(e => ({k:e.k, g:'element', l:e.l, modele:e.modele})));
+
+const TRAIT = {};
+TRAITS.forEach(t => TRAIT[t.k] = t);
+/* quand il n'y a qu'un élément et aucune façon : une frappe de cet élément, au contact */
+const FRAPPE_ELEM = {n:'Frappe', ne:['Frappe','f'], p:'contact', t:'mag', e:() => 'le dé du rang'};
+
+const GROUPES = [
+  {g:'facon', l:'Sa façon d’attaquer', sous:[{k:'blesse', l:'qui blessent'}, {k:'scene', l:'qui changent la scène'}], seul:true},
+  {g:'element', l:'Ce qui l’anime', seul:true, vide:'Rien de magique',
+   aide:'Sève, eau, pierre, vent et Mue : l’armure les arrête. Feu, onde, ombre et sacré : ils la traversent.'},
+  {g:'corps', l:'Son corps'},
+  {g:'conduite', l:'Sa conduite'}
+];
+
+function traitsDe(c){ return (c.tr || []).map(k => TRAIT[k]).filter(Boolean); }
+function nomsTraits(c){ return traitsDe(c).map(t => t.l).join(' · '); }
+function traitPossible(t, r){ return !t.min || r >= t.min; }
+
+/* le nom d'une attaque, avec ou sans élément */
+function nomAttaque(f, el){
+  if(!el || !f.ne) return f.n;
+  const base = f.ne[0], genre = f.ne[1];
+  return base + ' ' + (el.de || el.adj[genre]);
+}
+/* la portée telle qu'on la lit, avec ce que l'armure fait de l'élément */
+function porteeDe(a2){
+  if(!a2) return '';
+  const p = a2.p || '';
+  const e = a2.el && ELEM[a2.el];
+  /* l'armure ne dit rien d'une attaque qui ne blesse pas */
+  if(!e || /aucun dégât/i.test(a2.e || '')) return p;
+  return p + (p ? ' · ' : '') + (e.matiere ? 'l’armure l’arrête' : 'traverse l’armure');
+}
+
+/* ---------- ce que les traits donnent, pour cette créature ---------- */
+function produitTraits(c){
+  const tr = traitsDe(c), rg = RANG[c.r] || RANG[2];
+  const out = {a2:null, red:'', deg:'', phrases:{}, renfs:{}};
+  tr.forEach(t => {
+    if(t.red) out.red = String(t.red(c.r));
+    if(t.cran) out.deg = cran(rg.deg, t.cran);
+  });
+  tr.forEach(t => {
+    if(t.phrase) out.phrases[t.k] = t.phrase(c.r);
+    if(t.renf) out.renfs[t.k] = t.renf(c.r);
+  });
+  const fa = tr.find(t => t.g === 'facon'), el = tr.find(t => t.g === 'element');
+  if(fa || el){
+    const f = fa || FRAPPE_ELEM;
+    const e = el ? ELEM[el.k] : null;
+    out.a2 = {n:nomAttaque(f, e), p:f.p, t:e ? 'mag' : f.t, e:f.e({r:c.r, deg:out.deg || rg.deg}), el:e ? e.k : ''};
+  }
+  return out;
+}
+
+/* ---------- appliquer un changement sans écraser ce que tu as écrit ---------- */
+function memeA2(a, b){
+  if(!a || !b) return false;
+  return a.n === b.n && a.p === b.p && a.t === b.t && a.e === b.e && (a.el || '') === (b.el || '');
+}
+function a2Vide(a){ return !a || (!String(a.n || '').trim() && !String(a.e || '').trim()); }
+function oterPhrase(txt, ph){
+  let t = txt || '';
+  if(!ph || t.indexOf(ph) < 0) return t;
+  let out = t.replace('. ' + ph, '');
+  if(out === t) out = t.replace(ph + '. ', '');
+  if(out === t) out = t.replace(ph, '');
+  return out.replace(/\s{2,}/g, ' ').replace(/^[\s.]+/, '').trim();
+}
+function ajouterPhrase(txt, ph){
+  const base = String(txt || '').replace(/[\s.]+$/, '').trim();
+  return base ? base + '. ' + ph : ph;
+}
+function retoucherTexte(txt, avant, apres){
+  let t = String(txt || '');
+  Object.keys(avant).forEach(k => {
+    if(!(k in apres)) t = oterPhrase(t, avant[k]);
+    else if(apres[k] !== avant[k] && t.indexOf(avant[k]) >= 0) t = t.split(avant[k]).join(apres[k]);
+  });
+  Object.keys(apres).forEach(k => { if(!(k in avant) && t.indexOf(apres[k]) < 0) t = ajouterPhrase(t, apres[k]); });
+  return t;
+}
+function appliquerProduit(c, avant, apres, force){
+  force = force || {};
+  if(force.a2 || a2Vide(c.a2) || memeA2(c.a2, avant.a2))
+    c.a2 = apres.a2 ? Object.assign({}, apres.a2) : {n:'', t:'phy', p:'contact', e:'', el:''};
+  ['red', 'deg'].forEach(k => {
+    if(force[k] || c.mod[k] === '' || c.mod[k] === avant[k]) c.mod[k] = apres[k];
+  });
+  c.p = retoucherTexte(c.p, avant.phrases, apres.phrases);
+  c.renf = retoucherTexte(c.renf, avant.renfs, apres.renfs);
+}
+
+/* la liste des traits une fois nettoyée : un seul par groupe unique, rien d'impossible à ce rang */
+function trierTraits(tr, r){
+  const out = [];
+  tr.forEach(k => {
+    const t = TRAIT[k];
+    if(!t || !traitPossible(t, r) || out.indexOf(k) >= 0) return;
+    out.push(k);
+  });
+  /* ce qui exige un autre trait tombe si celui-ci n'est plus là */
+  return out.filter(k => {
+    const t = TRAIT[k];
+    return !t.requiert || t.requiert.every(q => out.indexOf(q) >= 0);
+  });
+}
+
+/* ============ le butin, Livre VI ============
+   Un d20 pour la rareté, puis un d20 dans la table qu'il désigne. L'endroit décale le premier dé.
+   Les objets uniques ne se tirent pas : on les pose. Tables recopiées du livre (Faelorenn_11). */
+const BUTIN = {
+  rarete: [{de:-99, a:12, k:'courant', l:'Courant'}, {de:13, a:18, k:'rare', l:'Rare'}, {de:19, a:99, k:'precieux', l:'Précieux'}],
+  endroits: [
+    {k:'pauvre', l:'Sur un bandit, une bête, un pauvre', m:-5},
+    {k:'officier', l:'Sur un officier, dans une réserve, dans un Havre', m:0},
+    {k:'avant', l:'Dans une ruine de l’Avant, sur un corps de Marchefleur', m:5}
+  ],
+  tables: {
+ "courant": [
+  {
+   "de": 1,
+   "a": 2,
+   "t": "Fiole de Havre entamée. Rends 1d6 PV, une seule dose."
+  },
+  {
+   "de": 3,
+   "a": 4,
+   "t": "Cuir dépareillé. Réduction 1. Il ne va à personne : −5 Discrétion tant que tu le portes."
+  },
+  {
+   "de": 5,
+   "a": 6,
+   "t": "Dague ébréchée. d4. Sur un 20 naturel, elle casse pour de bon."
+  },
+  {
+   "de": 7,
+   "a": 8,
+   "t": "Flèches, 1d6. Récupérables après le combat, sauf celles d'un critique."
+  },
+  {
+   "de": 9,
+   "a": 9,
+   "t": "Pot de braises presque vide. Une flambée, pas deux."
+  },
+  {
+   "de": 10,
+   "a": 10,
+   "t": "Poudre d'écorce, une pincée. Réduction 1 pendant un combat."
+  },
+  {
+   "de": 11,
+   "a": 11,
+   "t": "Corde de dix pas, usée. Elle porte un homme. Deux, elle casse."
+  },
+  {
+   "de": 12,
+   "a": 12,
+   "t": "Sifflet de garde. S'entend à trois cents pas. Par tout le monde."
+  },
+  {
+   "de": 13,
+   "a": 13,
+   "t": "Peau huilée. Ce qu'elle enveloppe reste sec, quoi qu'il arrive."
+  },
+  {
+   "de": 14,
+   "a": 14,
+   "t": "Craie de mineur, un bâton. Marque ce que la pluie n'efface pas."
+  },
+  {
+   "de": 15,
+   "a": 15,
+   "t": "Clé de service d'un Havre. Lequel, c'est une autre affaire."
+  },
+  {
+   "de": 16,
+   "a": 16,
+   "t": "Registre de tournée, à moitié brûlé. Une information vraie sur la région, au choix de l'Oracle."
+  },
+  {
+   "de": 17,
+   "a": 17,
+   "t": "Collets, une douzaine. Prennent du gibier. Prennent aussi une jambe."
+  },
+  {
+   "de": 18,
+   "a": 18,
+   "t": "Loupe de verre, fêlée. Lit les traces fines. La fêlure dédouble ce qu'on regarde."
+  },
+  {
+   "de": 19,
+   "a": 19,
+   "t": "Bourse de 1d10 argents. Elle porte un nom brodé."
+  },
+  {
+   "de": 20,
+   "a": 20,
+   "t": "Rien, et des traces de quelqu'un qui est passé avant toi."
+  }
+ ],
+ "rare": [
+  {
+   "de": 1,
+   "a": 2,
+   "t": "Maille de la Bannière du Sang. Réduction 3. Elle porte leurs couleurs : on te prend pour eux, en bien comme en mal."
+  },
+  {
+   "de": 3,
+   "a": 4,
+   "t": "Bouclier de gué. +1 de réduction, et il flotte : il porte une personne sur l'eau."
+  },
+  {
+   "de": 5,
+   "a": 6,
+   "t": "Éclat de totem. Rend 1 PC, une seule fois, puis la pierre est morte."
+  },
+  {
+   "de": 7,
+   "a": 8,
+   "t": "Lanterne sourde de bonne facture. Catalyseur de poche pour un Nïhr, et son volet ne grince pas."
+  },
+  {
+   "de": 9,
+   "a": 10,
+   "t": "Arc à double courbure. d6, mais sa portée est doublée."
+  },
+  {
+   "de": 11,
+   "a": 11,
+   "t": "Lame de chitine trouvée. Arme légère, d4. Si l'Élytris dont elle vient la reconnaît, il la reprend."
+  },
+  {
+   "de": 12,
+   "a": 12,
+   "t": "Gourde de combat nyréenne. Compte comme une source d'eau Ordinaire, même en plein désert."
+  },
+  {
+   "de": 13,
+   "a": 13,
+   "t": "Fil ancien, une bobine entière. De quoi monter un rouet zhern, ou 8 ors à leur école."
+  },
+  {
+   "de": 14,
+   "a": 14,
+   "t": "Onction d'Ysse en fiole scellée. Un allié ne tombe pas sous 1 PV pendant le prochain combat."
+  },
+  {
+   "de": 15,
+   "a": 15,
+   "t": "Sceau de péage de l'Or. Tu passes gratuitement, et ceux qui te suivent aussi. Il est nominatif, et ce n'est pas ton nom."
+  },
+  {
+   "de": 16,
+   "a": 16,
+   "t": "Arme de guerre bien tenue. d8, et les critiques ne l'ébrèchent jamais."
+  },
+  {
+   "de": 17,
+   "a": 17,
+   "t": "Trousse de Secouriste complète. Annule le malus de soin sans matériel, pour tout le groupe."
+  },
+  {
+   "de": 18,
+   "a": 18,
+   "t": "Encre ori'ican. Une marque tracée avec tient un mois, et ne part ni à l'eau ni au feu."
+  },
+  {
+   "de": 19,
+   "a": 19,
+   "t": "Carte de racines. Le tracé entre trois Havres, dessiné par un Écorcien. Il n'y a pas de nord dessus."
+  },
+  {
+   "de": 20,
+   "a": 20,
+   "t": "Cuir clouté taillé pour toi. Réduction 2, sans le malus de Discrétion."
+  }
+ ],
+ "precieux": [
+  {
+   "de": 1,
+   "a": 2,
+   "t": "Lampe de l'Avant. Lumière froide qui ne s'éteint pas. Se vide en une saison, se remplit en une saison passée en région instable. Catalyseur installé pour un Zhern."
+  },
+  {
+   "de": 3,
+   "a": 4,
+   "t": "Plates de la Bordure. Réduction 4, mais le trou n'a jamais été rebouché : réduction 3 tant que personne ne les répare."
+  },
+  {
+   "de": 5,
+   "a": 6,
+   "t": "Lance lourde marquée. d12. Chaque encoche du manche est un mort. Il y en a onze."
+  },
+  {
+   "de": 7,
+   "a": 8,
+   "t": "Bague de Scelleur. Tu poses un sceau par jour comme un Scelleur de l'Or, sans rien y connaître."
+  },
+  {
+   "de": 9,
+   "a": 10,
+   "t": "Cœur de braise. Un Ilvès qui le porte puise au-delà de sa Contenance sans payer de PV, une fois par jour."
+  },
+  {
+   "de": 11,
+   "a": 12,
+   "t": "Fiole des Eaux. La fiole-âme d'un Nyréen mort. Boire la Mémoire dessus rend sa dernière journée, entière."
+  },
+  {
+   "de": 13,
+   "a": 14,
+   "t": "Graine écorcienne. Plantée, il en sort un Écorcien identique à celui qui l'a semée, avec ses souvenirs. Personne ne sait quoi en faire."
+  },
+  {
+   "de": 15,
+   "a": 16,
+   "t": "Carnet d'un Marchefleur mort. Trois Floraisons dedans que personne n'a traitées, avec leur position."
+  },
+  {
+   "de": 17,
+   "a": 18,
+   "t": "Deux lames appariées. Armes légères, d4 chacune. Qui porte les deux frappe deux fois par round, et ne peut porter aucun bouclier."
+  },
+  {
+   "de": 19,
+   "a": 19,
+   "t": "Objet de l'Avant. Personne ne sait ce qu'il fait. L'Oracle non plus, tant qu'on ne l'a pas essayé."
+  },
+  {
+   "de": 20,
+   "a": 20,
+   "t": "Quelque chose de vivant."
+  }
+ ]
+}
+};
+
+/* ============ tirer une rencontre depuis la table ============
+   Le tirage du Registre des Rencontres (commun/tirage.js), à côté du récit : le budget par personnage,
+   l'intensité, une famille, le livre et ton bestiaire. Le bestiaire vient de ce navigateur, où le Registre
+   des Rencontres le garde, et de bestiaire.json quand la sauvegarde en ligne est reliée. Ce qu'on tire reste
+   un brouillon de ce navigateur jusqu'à « Mettre en face ». */
+
+const S = {pj:1, inten:'ser', liste:[], pourquoi:'', fam:[], source:'tout'};
+const CLE_TIRAGE = 'faelorenn.table.tirage';
+const TIR = {pjMain:false, ouvert:true, renforts:false, qui:'r2', n:1, lu:0, lecture:false, complet:false, depotC:null, depotF:null};
+const ID_OK = /^[A-Za-z0-9_.~:@+-]{1,120}$/;
+
+/* ---------- le brouillon, gardé dans ce navigateur ---------- */
+function garderTirage(){
+  try{ localStorage.setItem(CLE_TIRAGE, JSON.stringify({pj:S.pj, pjMain:TIR.pjMain, inten:S.inten, source:S.source, fam:S.fam, pourquoi:S.pourquoi, liste:S.liste})); }catch(e){}
+}
+function lireTirage(){
+  let o = null;
+  try{ o = JSON.parse(localStorage.getItem(CLE_TIRAGE) || 'null'); }catch(e){ o = null; }
+  if(!o || typeof o !== 'object') return;
+  if(INTENSITES.some(i => i.k === o.inten)) S.inten = o.inten;
+  if(SOURCES.some(s => s.k === o.source)) S.source = o.source;
+  S.fam = Array.isArray(o.fam) ? o.fam.filter(k => typeof k === 'string').slice(0, 1) : [];
+  if(o.pjMain && +o.pj >= 1 && +o.pj <= 6){ S.pj = +o.pj; TIR.pjMain = true; }
+  S.pourquoi = typeof o.pourquoi === 'string' ? o.pourquoi : '';
+  S.liste = Array.isArray(o.liste) ? o.liste.filter(a => a && [1, 2, 3, 4, 5].indexOf(+a.r) >= 0 && typeof a.n === 'string').slice(0, 12).map(a => ({
+    r:+a.r, n:a.n, p:typeof a.p === 'string' ? a.p : '', pv:a.pv == null || isNaN(+a.pv) ? null : +a.pv,
+    id:typeof a.id === 'string' ? a.id : Math.random().toString(36).slice(2, 8), cid:typeof a.cid === 'string' ? a.cid : ''})) : [];
+}
+/* le budget suit la compagnie, tant qu'on n'a pas choisi un autre nombre */
+function majPjTirage(){ if(!TIR.pjMain) S.pj = Math.max(1, Math.min(6, persos().length || 1)); }
+
+/* ---------- ton bestiaire : ce navigateur, puis le dépôt ---------- */
+function normMaison(o, id){
+  const txt = v => (v == null ? '' : String(v));
+  const r = [1, 2, 3, 4, 5].indexOf(+o.r) >= 0 ? +o.r : 2;
+  const a = o.a2 && typeof o.a2 === 'object' ? o.a2 : {};
+  const elm = ELEM[a.el] ? a.el : '';
+  const m = o.mod && typeof o.mod === 'object' ? o.mod : {};
+  return {id:id, src:'maison', n:txt(o.n).trim().slice(0, 120), r:r, maj:+o.maj || 0,
+    t: Array.isArray(o.t) ? o.t.filter(x => typeof x === 'string').slice(0, 40) : [],
+    tr: Array.isArray(o.tr) ? trierTraits(o.tr.filter(x => typeof x === 'string'), r) : [],
+    p:txt(o.p), a2:{n:txt(a.n), t:elm || a.t === 'mag' ? 'mag' : 'phy', p:txt(a.p) || 'contact', e:txt(a.e), el:elm},
+    mod:{pv:txt(m.pv), red:txt(m.red), deg:txt(m.deg), cartes:txt(m.cartes)}, renf:txt(o.renf), butin:txt(o.butin)};
+}
+function normFamMaison(o, k){
+  const txt = v => (v == null ? '' : String(v));
+  return {k:k, l:txt(o.l).trim().slice(0, 60) || 'Sans nom', d:txt(o.d).trim().slice(0, 300), maj:+o.maj || 0,
+    livre: Array.isArray(o.livre) ? o.livre.filter(id => typeof id === 'string' && /^livre-[1-5]-\d{1,2}$/.test(id)) : []};
+}
+/* ce que le Registre des Rencontres garde ici : {items, supprimes}, ou une simple liste avant */
+function bestiaireIci(cle, champ){
+  let o = null;
+  try{ o = JSON.parse(localStorage.getItem(cle) || 'null'); }catch(e){ o = null; }
+  const items = Array.isArray(o) ? o : o && Array.isArray(o.items) ? o.items : [];
+  const out = {items:{}, supprimes:{}};
+  items.forEach(x => { if(x && typeof x === 'object' && ID_OK.test(x[champ] || '')) out.items[x[champ]] = x; });
+  if(o && Array.isArray(o.supprimes)) o.supprimes.forEach(id => { if(typeof id === 'string') out.supprimes[id] = 1; });
+  return out;
+}
+/* le fichier range par identifiant ; une sauvegarde déposée en listes se lit aussi */
+function parIdentifiant(m, champ){
+  if(Array.isArray(m)){ const t = {}; m.forEach(x => { if(x && typeof x === 'object' && typeof x[champ] === 'string') t[x[champ]] = x; }); return t; }
+  return m && typeof m === 'object' ? m : {};
+}
+/* le plus récent l'emporte, une trace de suppression aussi ; ce qu'on vient de supprimer ici ne revient pas du dépôt */
+function fondreBestiaire(ici, depot, norm){
+  const m = {};
+  Object.keys(ici.items).forEach(id => m[id] = ici.items[id]);
+  Object.keys(depot || {}).forEach(id => {
+    const x = depot[id];
+    if(!x || typeof x !== 'object' || !ID_OK.test(id)) return;
+    if(!m[id] || (+x.maj || 0) > (+m[id].maj || 0)) m[id] = x;
+  });
+  return Object.keys(m).filter(id => !m[id].supprime && !ici.supprimes[id]).map(id => norm(m[id], id));
+}
+function poserBestiaire(){
+  MAISON = fondreBestiaire(bestiaireIci('faelorenn.bestiaire', 'id'), TIR.depotC, normMaison).filter(c => c.n);
+  FAM_MAISON = fondreBestiaire(bestiaireIci('faelorenn.familles', 'k'), TIR.depotF, normFamMaison).filter(f => !ADV.familles.some(x => x.k === f.k));
+  /* tant que le dépôt n'est pas lu, une famille ou des créatures à toi peuvent encore arriver */
+  if(!TIR.complet) return;
+  if(S.fam.length && !famille(S.fam[0])) S.fam = [];
+  if(S.source === 'maison' && !MAISON.length) S.source = 'tout';
+}
+function chargerBestiaire(){
+  const gh = ghcPret();
+  if(!gh) TIR.complet = true;
+  poserBestiaire();
+  dessinerCombat();
+  if(!gh || TIR.lecture) return;
+  TIR.lecture = true;
+  const fin = () => { TIR.lecture = false; TIR.lu = maintenant(); TIR.complet = true; poserBestiaire(); dessinerCombat(); };
+  ghcLireUnFichier(GHC_FICHIERS.bestiaire).then(o => {
+    if(o && typeof o === 'object'){ TIR.depotC = parIdentifiant(o.creatures, 'id'); TIR.depotF = parIdentifiant(o.familles, 'k'); }
+    fin();
+  }, fin);
+}
+/* un bestiaire lu il y a plus de deux minutes se relit, pour le tirage suivant */
+function rafraichirBestiaire(){ if(ghcPret() && !TIR.lecture && maintenant() - TIR.lu > 120000) chargerBestiaire(); }
+/* le Registre des Rencontres, ouvert dans un autre onglet, vient de changer le bestiaire */
+window.addEventListener('storage', e => {
+  if((e.key === 'faelorenn.bestiaire' || e.key === 'faelorenn.familles') && $('seCombat')){ poserBestiaire(); dessinerCombat(); }
+});
+
+/* ---------- le formulaire, dans « En face » ---------- */
+const PTS = n => n + ' point' + (n > 1 ? 's' : '');
+function formTirage(enCours){
+  majPjTirage();
+  const w = el('div','tirage');
+
+  /* combien ils sont en face : le budget du livre */
+  const l1 = el('div','tl');
+  l1.append(el('span','lab', 'Contre'));
+  const st = el('div','pas');
+  const moins = el('button', null, '−'); moins.type = 'button'; moins.id = 'tirMoins'; moins.setAttribute('aria-label', 'Un personnage de moins');
+  const plus = el('button', null, '+'); plus.type = 'button'; plus.id = 'tirPlus'; plus.setAttribute('aria-label', 'Un personnage de plus');
+  moins.disabled = S.pj <= 1; plus.disabled = S.pj >= 6;
+  const regle = v => { S.pj = Math.max(1, Math.min(6, v)); TIR.pjMain = S.pj !== Math.max(1, Math.min(6, persos().length || 1)); garderTirage(); dessinerCombat(true); };
+  moins.onclick = () => regle(S.pj - 1);
+  plus.onclick = () => regle(S.pj + 1);
+  st.append(moins, el('b', null, String(S.pj)), plus);
+  l1.append(st, el('span','mini', S.pj > 1 ? 'personnages' : 'personnage'));
+  l1.title = TIR.pjMain ? 'Choisi à la main' : 'Autant que de personnages à la table';
+  w.append(l1);
+
+  const seg = el('div','seg tint'); seg.setAttribute('role', 'group'); seg.setAttribute('aria-label', 'Le genre de combat');
+  INTENSITES.forEach(i => {
+    const b = el('button', null, i.l); b.type = 'button'; b.id = 'tirInt-' + i.k;
+    b.setAttribute('aria-pressed', S.inten === i.k ? 'true' : 'false');
+    b.title = i.d;
+    b.onclick = () => { S.inten = i.k; garderTirage(); dessinerCombat(true); };
+    seg.append(b);
+  });
+  w.append(seg);
+
+  /* d'où ils viennent : une famille, le livre, ton bestiaire */
+  const l2 = el('div','tsel');
+  const sf = el('select'); sf.id = 'tirFam'; sf.setAttribute('aria-label', 'Quelle famille');
+  sf.add(new Option('Toutes les familles', ''));
+  familles().forEach(f => sf.add(new Option(f.l + (estMaisonFam(f.k) ? ' (à toi)' : ''), f.k)));
+  if(S.fam[0] && !famille(S.fam[0])) sf.add(new Option('Une famille à toi, en lecture…', S.fam[0]));
+  sf.value = S.fam[0] || '';
+  sf.onchange = () => { S.fam = sf.value ? [sf.value] : []; garderTirage(); dessinerCombat(true); };
+  const ss = el('select'); ss.id = 'tirSrc'; ss.setAttribute('aria-label', 'Le livre, ton bestiaire');
+  SOURCES.forEach(s => {
+    const o = new Option(s.k === 'maison' ? 'Ton bestiaire seul (' + MAISON.length + ')' : s.k === 'tout' ? 'Le livre et ton bestiaire' : 'Le livre seul', s.k);
+    o.disabled = s.k === 'maison' && !MAISON.length;
+    ss.add(o);
+  });
+  ss.value = S.source;
+  ss.onchange = () => { S.source = ss.value; garderTirage(); dessinerCombat(true); };
+  l2.append(sf, ss);
+  w.append(l2);
+  if(S.fam.length && !rangsDisponibles().length) w.append(el('p','mini', 'Personne dans cette famille pour l’instant : le tirage reprend tout le catalogue.'));
+
+  const a1 = el('div','acts');
+  const tirer = el('button','btn sm', S.liste.length ? 'Tirer de nouveau' : 'Tirer'); tirer.type = 'button'; tirer.id = 'tirTirer';
+  tirer.onclick = () => { tirerComposition(); garderTirage(); dessinerCombat(true); rafraichirBestiaire(); };
+  a1.append(tirer);
+  if(S.liste.length){
+    const vider = el('button','btn ghost xs','Vider'); vider.type = 'button'; vider.id = 'tirVider';
+    vider.onclick = () => { S.liste = []; S.pourquoi = ''; garderTirage(); dessinerCombat(true); };
+    a1.append(vider);
+  }
+  w.append(a1);
+  w.append(el('p','mini tbudget', 'Budget : ' + PTS(budget()) + ', ' + intensite().d + '.' + (S.liste.length ? ' Posé : ' + depense() + '.' : '')));
+
+  /* ce qui est tiré : on retire une tête, on en change une, on en ajoute */
+  if(S.liste.length){
+    if(S.pourquoi){
+      const p = el('p','mini cpourquoi tmotif');
+      p.append(document.createTextNode(S.pourquoi + ' '));
+      const re = el('button','ax', '↻'); re.type = 'button'; re.id = 'tirMotif'; re.title = 'Une autre raison';
+      re.setAttribute('aria-label', 'Tirer une autre raison');
+      re.onclick = () => { S.pourquoi = pick(ADV.pourquoi); garderTirage(); dessinerCombat(true); };
+      p.append(re);
+      w.append(p);
+    }
+    const u = el('ul','tliste');
+    S.liste.forEach((a, i) => {
+      const c = trouveId(a.cid);
+      const stc = c ? statsDe(c) : RANG[a.r];
+      const li = el('li');
+      li.append(el('span','rdot r' + a.r, String(a.r)));
+      const t = el('span','tn');
+      t.append(el('b', null, c ? c.n : a.n));
+      if(c && c.src === 'maison') t.append(el('span','mini', ' à toi'));
+      t.append(el('span','mini', ' · ' + stc.pv + ' PV, ' + stc.deg));
+      li.append(t);
+      const re = el('button','ax', '↻'); re.type = 'button'; re.title = 'Un autre de ce rang';
+      re.setAttribute('aria-label', 'Un autre de rang ' + a.r + ' à la place de ' + (c ? c.n : a.n));
+      re.onclick = () => { S.liste[i] = creature(a.r); garderTirage(); dessinerCombat(true); };
+      const x = el('button','ax', '×'); x.type = 'button';
+      x.setAttribute('aria-label', 'Retirer ' + (c ? c.n : a.n) + ' du tirage');
+      x.onclick = () => { S.liste.splice(i, 1); if(!S.liste.length) S.pourquoi = ''; garderTirage(); dessinerCombat(true); };
+      li.append(re, x);
+      u.append(li);
+    });
+    w.append(u);
+  }
+
+  /* quelqu'un de précis, ou au hasard d'un rang */
+  const l3 = el('div','tajout');
+  const sq = el('select'); sq.id = 'tirQui'; sq.setAttribute('aria-label', 'Qui ajouter');
+  const og0 = el('optgroup'); og0.label = 'Au hasard, dans le tirage choisi';
+  for(let r = 1; r <= 5; r++) og0.append(new Option('Un de rang ' + r + ' · ' + RANG[r].nom, 'r' + r));
+  sq.append(og0);
+  for(let r = 1; r <= 5; r++){
+    const og = el('optgroup'); og.label = 'Rang ' + r + ' · ' + RANG[r].nom;
+    toutRang(r).forEach(c => og.append(new Option(c.n + (c.src === 'maison' ? ' (à toi)' : ''), c.id)));
+    sq.append(og);
+  }
+  if(![].some.call(sq.options, o => o.value === TIR.qui)) TIR.qui = 'r2';
+  sq.value = TIR.qui;
+  sq.onchange = () => { TIR.qui = sq.value; };
+  const nb = el('input'); nb.type = 'number'; nb.id = 'tirNb'; nb.min = '1'; nb.max = '12'; nb.inputMode = 'numeric'; nb.value = String(TIR.n);
+  nb.setAttribute('aria-label', 'Combien');
+  nb.oninput = () => { TIR.n = Math.max(1, Math.min(12, parseInt(nb.value, 10) || 1)); };
+  const aj = el('button','btn ghost sm','Ajouter'); aj.type = 'button'; aj.id = 'tirAjouter';
+  aj.onclick = () => {
+    const place = 12 - S.liste.length;
+    if(place <= 0){ msgTable('Douze en face au plus, comme dans le Registre des Rencontres.', false); return; }
+    const n = Math.min(place, Math.max(1, TIR.n));
+    for(let i = 0; i < n; i++){
+      if(/^r[1-5]$/.test(TIR.qui)) S.liste.push(creature(+TIR.qui[1]));
+      else { const c = trouveId(TIR.qui); if(c) S.liste.push(entree(c, c.r)); }
+    }
+    if(!S.pourquoi && !enCours) S.pourquoi = pick(ADV.pourquoi);
+    TIR.n = 1; garderTirage(); dessinerCombat(true);
+  };
+  l3.append(sq, nb, aj);
+  w.append(l3);
+
+  const a2 = el('div','acts tposer');
+  /* une créature à toi que le dépôt n'a pas encore rendue partirait avec les valeurs du rang : on attend */
+  const attend = TIR.lecture && S.liste.some(a => !trouveId(a.cid));
+  const poser = el('button','btn sm', attend ? 'Lecture de ton bestiaire…' : enCours ? 'Les faire entrer dans le combat' : 'Mettre en face'); poser.type = 'button'; poser.id = 'tirPoser';
+  poser.disabled = !S.liste.length || attend;
+  poser.onclick = mettreEnFace;
+  a2.append(poser);
+  w.append(a2);
+  w.append(el('p','mini', 'Le même tirage que le Registre des Rencontres' + (MAISON.length ? ', avec ' + MAISON.length + ' créature' + (MAISON.length > 1 ? 's' : '') + ' de ton bestiaire' : '') +
+    (TIR.lecture ? ' (lecture du dépôt…)' : '') + '. L’ennemi touche d’office.'));
+  return w;
+}
+function blocTirage(enCours){
+  if(!enCours){
+    const w = el('div','tbloc');
+    w.append(el('p','lab', 'Tirer une rencontre'));
+    w.append(formTirage(false));
+    return w;
+  }
+  const d = el('details','ajoutadv');
+  d.open = TIR.renforts;
+  d.ontoggle = () => { TIR.renforts = d.open; };
+  d.append(el('summary', null, 'D’autres arrivent en face'));
+  d.append(formTirage(true));
+  return d;
+}
+
+/* ---------- ce qui est tiré entre dans la séance ---------- */
+function mettreEnFace(){
+  if(!S.liste.length) return;
+  const e = seanceCourante();
+  if(!e){ msgTable('Commence d’abord une séance.', false); return; }
+  const adv = S.liste.map(adversaireEnvoye), pourquoi = S.pourquoi || '';
+  const r = combatEnCours();
+  S.liste = []; S.pourquoi = ''; TIR.renforts = false; garderTirage();
+  if(r) ajouterAuCombat(r, adv);
+  else poserRencontre({id:nouvelId('t'), titre:'', pourquoi:pourquoi, adversaires:adv}, e);
+  dessinerCombat(true);
+  msgTable((r ? 'Arrivent en face : ' : 'En face : ') + listeNoms(adv.map(a => a.n)) + '.', true);
+}
+function demarrerTirage(){
+  lireTirage();
+  chargerBestiaire();
+}
+
 /* ============ le combat : une rencontre du Registre des Rencontres, suivie dans la séance ============
    Le Registre des Rencontres pose la rencontre validée dans ce navigateur (CLE_ENVOI) ; la table la
    prend, l'écrit dans la séance en cours et suit les PV de ceux d'en face. Le reste, le récit,
-   c'est vous qui l'écrivez autour. On peut aussi poser quelqu'un en face à la main. */
+   c'est vous qui l'écrivez autour. Le même tirage se fait aussi ici, à côté du récit (rencontre.js). */
 
 const CLE_ENVOI = 'faelorenn.envoi.rencontre';
 const ENVOI = {attente:null};
 let FIN_ARMEE = '';
 let ADV_SUPPR = '';
-const AJOUT = {ouvert:false, nom:'', rang:2, n:1};
 
 function rencontresDe(sid){
   return Object.keys(T.rencontres).map(k => T.rencontres[k]).filter(r => r && !r.supprime && r.seance === sid)
@@ -3082,6 +4133,32 @@ function listeNoms(liste){
   return ordre.map(x => x + (n[x] > 1 ? ' (×' + n[x] + ')' : '')).join(', ');
 }
 
+/* ce qu'un adversaire envoyé devient à la table : d'où il vient, son nom sans numéro, ce qu'il laisse */
+function champsAdv(a){
+  return {rang:a.r, pvMax:a.pvMax, pv:a.pv, red:a.red, deg:a.deg, cartes:a.cartes, a2:a.a2, tr:a.tr, traits:a.traits, p:a.p, renf:a.renf,
+    cid:a.cid, base:a.n, fam:a.fam, butin:a.butin};
+}
+/* les noms en face restent uniques dans le combat : un autre « Loup de bordure » prend le numéro d'après,
+   même si l'on en a retiré un entre-temps, et même s'il vient d'une autre rencontre en cours */
+const nomSansNumero = a => a.base || String(a.nom || '').replace(/ \d+$/, '');
+function enJeu(sid){
+  const ids = rencontresDe(sid).filter(r => !r.fini).map(r => r.id);
+  return Object.keys(T.adversaires).map(k => T.adversaires[k]).filter(x => x && ids.indexOf(x.rencontre) >= 0);
+}
+function nommer(adv, pris){
+  const max = {}, deja = {}, neufs = {}, vus = {};
+  pris.forEach(x => {
+    const b = nomSansNumero(x), m = / (\d+)$/.exec(x.nom || '');
+    deja[b] = 1;
+    max[b] = Math.max(max[b] || 0, m && x.nom !== b ? +m[1] : 1);
+  });
+  adv.forEach(a => { neufs[a.n] = (neufs[a.n] || 0) + 1; });
+  return adv.map(a => {
+    if(!deja[a.n] && neufs[a.n] === 1) return a.n;
+    vus[a.n] = (vus[a.n] || 0) + 1;
+    return a.n + ' ' + ((max[a.n] || 0) + vus[a.n]);
+  });
+}
 /* la rencontre entre dans une séance ; ses identifiants viennent d'elle et de la séance : deux onglets ne la posent
    pas deux fois, et la même composition renvoyée à la séance suivante y entre bien */
 function poserRencontre(o, e){
@@ -3090,16 +4167,12 @@ function poserRencontre(o, e){
   const base = String(o.id || nouvelId('x')).replace(/[^\w-]/g, '').slice(0, 40) + '-' + String(e.id).replace(/[^\w-]/g, '').slice(0, 20);
   const rid = 'r-' + base;
   if(T.rencontres[rid] && !T.rencontres[rid].supprime) return 'deja';
-  const t = maintenant(), noms = {}, vus = {};
-  o.adversaires.forEach(a => { noms[a.n] = (noms[a.n] || 0) + 1; });
+  const t = maintenant(), noms = nommer(o.adversaires, enJeu(e.id));
   changer(() => {
     const bid = 'b-' + rid;
     T.rencontres[rid] = normRencontre({id:rid, maj:t, seance:e.id, bloc:bid, titre:o.titre || '', pourquoi:o.pourquoi || '', auteur:MOI.joueur || ''});
     o.adversaires.forEach((a, i) => {
-      vus[a.n] = (vus[a.n] || 0) + 1;
-      const x = normAdversaire({id:'a-' + base + '-' + (i + 1), maj:t, rencontre:rid, ordre:i,
-        nom:noms[a.n] > 1 ? a.n + ' ' + vus[a.n] : a.n, rang:a.r, pvMax:a.pvMax, pv:a.pv, red:a.red, deg:a.deg,
-        cartes:a.cartes, a2:a.a2, tr:a.tr, traits:a.traits, p:a.p, renf:a.renf});
+      const x = normAdversaire(Object.assign(champsAdv(a), {id:'a-' + base + '-' + (i + 1), maj:t, rencontre:rid, ordre:i, nom:noms[i]}));
       T.adversaires[x.id] = x;
     });
     T.blocs[bid] = normBloc({id:bid, maj:t, seance:e.id, ordre:t, type:'rencontre', rencontre:rid, auteur:MOI.joueur || '',
@@ -3183,6 +4256,7 @@ function finirCombat(){
   const rs = rencontresEnCours(); if(!rs.length) return;
   const l = adversairesEnCombat();
   const bas = l.filter(aTerre).map(a => a.nom), debout = l.filter(a => !aTerre(a)).map(a => a.nom + ' (' + a.pv + '/' + a.pvMax + ' PV)');
+  BTN.ouvert = null;
   changer(() => {
     rs.forEach(r => { T.rencontres[r.id] = Object.assign({}, T.rencontres[r.id], {fini:true, maj:maintenant()}); });
     noterDansSeance('Fin du combat.' + (bas.length ? ' À terre : ' + bas.join(', ') + '.' : '') + (debout.length ? ' Encore debout : ' + debout.join(', ') + '.' : ''), 'note');
@@ -3191,27 +4265,19 @@ function finirCombat(){
 function reprendreCombat(r){
   changer(() => { T.rencontres[r.id] = Object.assign({}, T.rencontres[r.id], {fini:false, maj:maintenant()}); });
 }
-/* quelqu'un de plus en face, au rang du livre : un combat qui commence ici, ou des renforts */
-function ajouterEnFace(nom, rang, n){
-  const R = RANGS.find(x => x.r === +rang) || RANGS[1];
-  const qui = String(nom || '').trim() || R.l;
-  const combien = Math.max(1, Math.min(12, parseInt(n, 10) || 1));
-  const adv = [];
-  for(let i = 0; i < combien; i++) adv.push({n:qui, r:R.r, pvMax:R.pv, pv:R.pv, red:R.red, deg:R.deg, cartes:R.cartes});
-  const r = combatEnCours();
-  if(!r) return poserRencontre({id:nouvelId('m'), titre:'', pourquoi:'', adversaires:adv}, seanceCourante());
-  const base = r.id.replace(/^r-/, ''), deja = adversairesDe(r.id), t = maintenant();
-  const memes = deja.filter(a => a.nom === qui || a.nom.indexOf(qui + ' ') === 0).length;
+/* d'autres arrivent pendant le combat : ils rejoignent la dernière rencontre, numérotés à la suite des leurs */
+function ajouterAuCombat(r, adv){
+  const base = r.id.replace(/^r-/, ''), t = maintenant();
   const sel = Math.random().toString(36).slice(2, 5);
+  const noms = nommer(adv, enJeu(r.seance));
+  const ordre = Object.keys(T.adversaires).map(k => T.adversaires[k]).filter(x => x && x.rencontre === r.id).reduce((m, x) => Math.max(m, x.ordre), -1) + 1;
   changer(() => {
     adv.forEach((a, i) => {
-      const x = normAdversaire({id:'a-' + base + '-' + sel + (i + 1), maj:t, rencontre:r.id, ordre:deja.length + i,
-        nom:memes + combien > 1 ? qui + ' ' + (memes + i + 1) : qui, rang:a.r, pvMax:a.pvMax, pv:a.pv, red:a.red, deg:a.deg, cartes:a.cartes});
+      const x = normAdversaire(Object.assign(champsAdv(a), {id:'a-' + base + '-' + sel + (i + 1), maj:t, rencontre:r.id, ordre:ordre + i, nom:noms[i]}));
       T.adversaires[x.id] = x;
     });
     noterDansSeance('Arrivent en face : ' + listeNoms(adv.map(a => a.n)) + '.', 'note');
   });
-  return true;
 }
 function retirerAdversaire(a){
   changer(() => { const x = T.adversaires[a.id]; if(x) T.adversaires[a.id] = Object.assign({}, x, {supprime:true, maj:maintenant()}); });
@@ -3235,6 +4301,11 @@ function ligneAdversaire(a){
     v.setAttribute('aria-label', 'Viser ' + a.nom + ' : les dégâts iront à lui');
     v.onclick = () => viser(a);
     t.append(v);
+  } else if(!a.fouille){
+    const f = el('button','btn ghost xs afouiller' + (FOU.id === a.id ? ' on' : ''), 'Fouiller'); f.type = 'button';
+    f.setAttribute('aria-label', 'Fouiller ' + a.nom);
+    f.onclick = () => ouvrirFouille(a);
+    t.append(f);
   }
   const arme = ADV_SUPPR === a.id;
   const x = el('button','ax' + (arme ? ' danger' : ''), arme ? 'Retirer ?' : '×'); x.type = 'button';
@@ -3279,36 +4350,8 @@ function ligneAdversaire(a){
   if(a.a2) attaque(a.a2.t === 'mag', a.a2.n, [a.a2.p, a.a2.e].filter(Boolean).join(' · '), true);
   w.append(at);
   if(a.traits || a.p) w.append(el('p','mini apart', [a.traits, a.p].filter(Boolean).join(' · ')));
+  if(aTerre(a)) fouilleSurLigne(a, w);
   return w;
-}
-function formAjout(enCours){
-  const d = el('details','ajoutadv');
-  d.open = AJOUT.ouvert;
-  d.ontoggle = () => { AJOUT.ouvert = d.open; };
-  d.append(el('summary', null, enCours ? 'Ajouter quelqu’un en face' : 'Poser des adversaires à la main'));
-  const g = el('div','ajoutform');
-  const n = el('input'); n.type = 'text'; n.id = 'advNom'; n.value = AJOUT.nom; n.placeholder = 'Loup de bordure';
-  n.setAttribute('aria-label', 'Son nom');
-  n.oninput = () => { AJOUT.nom = n.value; };
-  const r = el('select'); r.id = 'advRang'; r.setAttribute('aria-label', 'Son rang');
-  RANGS.forEach(x => r.add(new Option(x.r + ' · ' + x.l + ' · ' + x.pv + ' PV, ' + x.deg, String(x.r))));
-  r.value = String(AJOUT.rang);
-  r.onchange = () => { AJOUT.rang = +r.value; };
-  const c = el('input'); c.type = 'number'; c.id = 'advNb'; c.min = '1'; c.max = '12'; c.value = String(AJOUT.n); c.inputMode = 'numeric';
-  c.setAttribute('aria-label', 'Combien');
-  c.oninput = () => { AJOUT.n = Math.max(1, Math.min(12, parseInt(c.value, 10) || 1)); };
-  const ok = el('button','btn sm','Poser'); ok.type = 'button'; ok.id = 'advPoser';
-  ok.onclick = () => {
-    if(!seanceCourante()){ msgTable('Commence d’abord une séance.', false); return; }
-    ajouterEnFace(AJOUT.nom, AJOUT.rang, AJOUT.n);
-    AJOUT.nom = ''; AJOUT.n = 1; AJOUT.ouvert = false;
-    dessinerCombat(true);
-  };
-  n.onkeydown = ev => { if(ev.key === 'Enter'){ ev.preventDefault(); ok.click(); } };
-  g.append(n, r, c, ok);
-  d.append(g);
-  d.append(el('p','mini', 'Au rang du livre : ses PV, ses dégâts, sa réduction. L’ennemi touche d’office.'));
-  return d;
 }
 function dessinerCombat(force){
   const box = $('seCombat'); if(!box) return;
@@ -3329,8 +4372,9 @@ function dessinerCombat(force){
     const t = el('div','ctete');
     t.append(el('p','ctitre', 'En face'), el('span','mini', 'personne'));
     box.append(t);
-    box.append(el('p','mini', 'Une rencontre validée dans le Registre des Rencontres arrive ici toute seule.'));
-    box.append(formAjout(false));
+    const bt = blocButin(); if(bt) box.append(bt);
+    box.append(blocTirage(false));
+    box.append(el('p','mini', 'Une rencontre validée dans le Registre des Rencontres arrive aussi ici toute seule.'));
     return;
   }
   const t = el('div','ctete');
@@ -3349,7 +4393,8 @@ function dessinerCombat(force){
   box.append(t);
   rencontresEnCours().forEach(x => { if(x.pourquoi) box.append(el('p','mini cpourquoi', x.pourquoi)); });
   l.forEach(a => box.append(ligneAdversaire(a)));
-  box.append(formAjout(true));
+  box.append(blocTirage(true));
+  const bt = blocButin(); if(bt) box.append(bt);
 }
 
 /* ---------- dans le récit et dans le Doc ---------- */
@@ -3387,6 +4432,249 @@ function lignesRencontre(b){
 
 window.addEventListener('storage', e => { if(e.key === CLE_ENVOI && e.newValue && $('seCombat')) lireEnvoi(); });
 
+/* ============ fouiller ceux qui sont tombés : le butin du Livre VI ============
+   Un d20 pour la rareté, décalé par l'endroit, puis un d20 dans la table qu'il désigne (commun/butin.js).
+   Une créature de ton bestiaire peut porter sa propre liste, « Ce qu'il laisse » : on y tire aussi.
+   Ce qu'on trouve va dans le sac d'un personnage, ou reste là ; la séance le note. Tout se défait. */
+
+const FOU = {id:'', endroit:'officier', lu:'', texte:'', qui:'', d1:'', d2:''};
+const BTN = {ouvert:null};   /* le bloc « Le butin » : ouvert tant qu'il reste quelqu'un à fouiller, sauf si on l'a replié */
+const SAC_MAX = 80;
+
+/* l'endroit, deviné : un soldat ou un praticien vaut un officier, un Marchefleur ou une ruine de l'Avant vaut le +5 */
+function endroitPar(a){
+  const nom = [a.base, a.nom].join(' ');
+  if(/marchefleur|l.avant\b/i.test(nom)) return 'avant';
+  if((a.fam || []).some(k => k === 'soldat' || k === 'pratique' || k === 'golem')) return 'officier';
+  return 'pauvre';
+}
+const rareteDe = v => BUTIN.rarete.find(x => v >= x.de && v <= x.a) || BUTIN.rarete[0];
+const objetDe = (k, v) => (BUTIN.tables[k] || []).find(x => v >= x.de && v <= x.a) || null;
+/* « Flèches, 1d6. » devient « Flèches, 4. » : seul le nombre d'objets se lance, pas les dés de ce qu'ils font */
+function lancerQuantite(t){
+  const i = t.indexOf('. ');
+  const tete = i >= 0 ? t.slice(0, i) : t, reste = i >= 0 ? t.slice(i) : '';
+  return tete.replace(/\b(\d*)d(\d+)\b/g, (m, n, f) => {
+    let s = 0;
+    for(let k = 0; k < (+n || 1); k++) s += 1 + Math.floor(Math.random() * +f);
+    return String(s);
+  }) + reste;
+}
+/* sa propre liste : une ligne par objet, numérotée « 1-2 » comme dans le livre, ou pas numérotée du tout */
+const lignesButin = txt => String(txt || '').split(/\n+/).map(s => s.trim()).filter(Boolean);
+function tirerDansListe(lignes){
+  /* « 1-2 une dent », « 3. une corde », « 4 : rien » sont numérotées ; « 2 crocs de loup » dit une quantité */
+  const re = /^(\d{1,3})(?:\s*(?:-|à|\u2013)\s*(\d{1,3}))?\s*([.:)\-\u2013])?\s*/;
+  const parts = lignes.map(l => { const m = re.exec(l); return m && (m[2] || m[3]) ? {de:+m[1], a:+(m[2] || m[1]), t:l.slice(m[0].length).trim()} : {de:null, t:l}; });
+  if(parts.every(p => p.de != null)){
+    const max = Math.max.apply(null, parts.map(p => p.a));
+    const v = 1 + Math.floor(Math.random() * max);
+    const p = parts.find(x => v >= x.de && v <= x.a);
+    return {v:v, max:max, t:p ? p.t : ''};
+  }
+  return {v:null, max:parts.length, t:pick(parts).t};
+}
+
+function ouvrirFouille(a){
+  if(FOU.id === a.id){ FOU.id = ''; dessinerCombat(true); return; }
+  const moi = MOI.perso && perso(MOI.perso) ? MOI.perso : '';
+  Object.assign(FOU, {id:a.id, endroit:endroitPar(a), lu:'', texte:'', qui:moi || ((persos()[0] || {}).id || ''), d1:'', d2:''});
+  dessinerCombat(true);
+  setTimeout(() => { const f = document.querySelector('#seCombat .fouille'); if(f) f.scrollIntoView({block:'nearest', behavior:'smooth'}); }, 30);
+}
+function lireButin(d1, d2){
+  const e = BUTIN.endroits.find(x => x.k === FOU.endroit) || BUTIN.endroits[1];
+  const v = d1 + e.m, r = rareteDe(v), o = objetDe(r.k, d2);
+  FOU.d1 = String(d1); FOU.d2 = String(d2);
+  FOU.lu = 'Rareté : ' + d1 + (e.m ? (e.m > 0 ? ' + ' : ' − ') + Math.abs(e.m) + ' = ' + v : '') + ', ' + r.l.toLowerCase() + ' · objet : ' + d2 + '.';
+  FOU.texte = o ? (desSurTable() ? o.t : lancerQuantite(o.t)) : '';
+}
+function finirFouille(a, etat, txt, qui){
+  const x = unAdversaire(a.id); if(!x) return;
+  const texte = String(txt || '').replace(/\s*\n+\s*/g, ' ').trim();
+  const c = etat === 'fait' ? perso(qui) : null;
+  if(etat === 'fait' && !c){ msgTable('Choisis qui le prend.', false); return; }
+  if(etat === 'fait' && !texte){ msgTable('Rien à donner : tire le butin, ou écris ce qu’on trouve.', false); return; }
+  if(c && c.sac.length >= SAC_MAX){ msgTable('Le sac de ' + (c.nom || 'ce personnage') + ' est plein : ' + SAC_MAX + ' objets. Vide-le un peu dans sa fiche.', false); return; }
+  if(FOU.id === a.id) FOU.id = '';
+  changer(() => {
+    let bloc = '';
+    if(c){
+      bloc = noterDansSeance((c.nom || 'Sans nom') + ' prend sur ' + x.nom + ' : ' + texte.replace(/[\s.]+$/, '') + '.', 'note');
+      const y = T.personnages[c.id];
+      y.sac = y.sac.concat([texte]);
+      majPerso(y);
+    } else if(texte) bloc = noterDansSeance('Sur ' + x.nom + ' : ' + texte.replace(/[\s.]+$/, '') + '. On le laisse là.', 'note');
+    T.adversaires[x.id] = Object.assign({}, T.adversaires[x.id], {fouille:{etat:etat, texte:texte, qui:c ? c.id : '', bloc:bloc, t:maintenant()}, maj:maintenant()});
+  });
+  msgTable(c ? 'Dans le sac de ' + (c.nom || 'Sans nom') + ' : ' + texte : texte ? 'Laissé là, et noté dans la séance.' : x.nom + ' : laissé sans le fouiller.', true);
+}
+/* défaire : l'objet sort du sac, la ligne de la séance s'en va, on peut fouiller de nouveau */
+function defaireFouille(a){
+  const x = unAdversaire(a.id); if(!x || !x.fouille) return;
+  const f = x.fouille;
+  changer(() => {
+    const y = f.qui && T.personnages[f.qui];
+    if(f.etat === 'fait' && y && !y.supprime){
+      const i = y.sac.lastIndexOf(f.texte);
+      if(i >= 0){ y.sac = y.sac.slice(0, i).concat(y.sac.slice(i + 1)); majPerso(y); }
+    }
+    oublierBloc(f.bloc);
+    T.adversaires[x.id] = Object.assign({}, T.adversaires[x.id], {fouille:null, maj:maintenant()});
+  });
+}
+function phraseFouille(f){
+  if(f.etat === 'fait'){ const c = perso(f.qui); return (c ? c.nom || 'Sans nom' : 'Quelqu’un') + ' a pris : ' + f.texte; }
+  return f.texte ? 'Laissé là : ' + f.texte : 'Laissé sans le fouiller.';
+}
+
+/* ---------- le panneau : sa liste, le livre, et à qui ça va ---------- */
+function panneauFouille(a){
+  const w = el('div','fouille');
+  w.append(el('p','ftitre', 'Fouiller ' + a.nom));
+  const liste = lignesButin(a.butin);
+  if(liste.length){
+    const s = el('div','fsienne');
+    s.append(el('span','lab', 'Ce qu’il laisse, dans ton bestiaire'));
+    if(liste.length === 1) s.append(el('p','mini', liste[0]));
+    else { const o = el('ul','mini'); liste.slice(0, 20).forEach(l => o.append(el('li', null, l))); s.append(o); }
+    const b = el('button','btn ghost xs', liste.length > 1 ? 'Tirer dans sa liste' : 'Le prendre'); b.type = 'button'; b.id = 'fouSienne';
+    b.onclick = () => {
+      const r = liste.length > 1 ? tirerDansListe(liste) : {v:null, t:liste[0]};
+      FOU.texte = r.t;
+      FOU.lu = r.v != null ? 'Sa liste, d' + r.max + ' : ' + r.v + (r.t ? '.' : ', rien à ce numéro.') : liste.length > 1 ? 'Sa liste, une ligne au hasard.' : '';
+      dessinerCombat(true);
+    };
+    s.append(b);
+    w.append(s);
+  }
+  const lv = el('div','flivre');
+  lv.append(el('span','lab', liste.length ? 'Ou le butin du livre' : 'Le butin du livre'));
+  const so = el('select'); so.id = 'fouEndroit'; so.setAttribute('aria-label', 'Où on fouille');
+  BUTIN.endroits.forEach(x => so.add(new Option((x.m ? (x.m > 0 ? '+' : '−') + Math.abs(x.m) : 'normal') + ' · ' + x.l.charAt(0).toLowerCase() + x.l.slice(1), x.k)));
+  so.value = FOU.endroit;
+  so.onchange = () => {
+    FOU.endroit = so.value;
+    if(FOU.d1 !== '' && FOU.d2 !== '' && /^Rareté/.test(FOU.lu)) lireButin(+FOU.d1, +FOU.d2);
+    dessinerCombat(true);
+  };
+  lv.append(so);
+  const dm = el('div','desmode');
+  const sg = el('div','seg'); sg.setAttribute('role', 'group'); sg.setAttribute('aria-label', 'Qui lance les dés');
+  [['site', 'Le site lance', 'fouDesSite'], ['table', 'Je lance', 'fouDesTable']].forEach(([k, l, id]) => {
+    const b = el('button', null, l); b.type = 'button'; b.id = id;
+    b.setAttribute('aria-pressed', (desSurTable() ? 'table' : 'site') === k ? 'true' : 'false');
+    b.onclick = () => { if((desSurTable() ? 'table' : 'site') === k) return; MOI.des = k; sauverLocal(); dessinerCombat(true); if(COMPO.panneau === 'jet') dessinerCompositeur(true); };
+    sg.append(b);
+  });
+  dm.append(sg);
+  lv.append(dm);
+  if(desSurTable()){
+    const g = el('div','fdes');
+    const d20 = (id, lab, v) => {
+      const i = el('input'); i.type = 'number'; i.id = id; i.min = '1'; i.max = '20'; i.inputMode = 'numeric'; i.value = v; i.placeholder = 'd20';
+      i.setAttribute('aria-label', lab);
+      const x = el('label','mini'); x.htmlFor = id; x.textContent = lab;
+      const c = el('div'); c.append(x, i); g.append(c);
+      return i;
+    };
+    const i1 = d20('fouD1', 'Rareté', FOU.d1), i2 = d20('fouD2', 'Objet', FOU.d2);
+    i1.oninput = () => { FOU.d1 = i1.value; };
+    i2.oninput = () => { FOU.d2 = i2.value; };
+    const ok = el('button','btn sm','Lire'); ok.type = 'button'; ok.id = 'fouLire';
+    ok.onclick = () => {
+      const v1 = parseInt(i1.value, 10), v2 = parseInt(i2.value, 10);
+      if(!(v1 >= 1 && v1 <= 20 && v2 >= 1 && v2 <= 20)){ msgTable('Deux d20 : un pour la rareté, un pour l’objet, de 1 à 20.', false); return; }
+      lireButin(v1, v2); dessinerCombat(true);
+    };
+    [i1, i2].forEach(i => { i.onkeydown = ev => { if(ev.key === 'Enter'){ ev.preventDefault(); ok.click(); } }; });
+    g.append(ok);
+    lv.append(g);
+  } else {
+    const b = el('button','btn sm','Lancer les deux d20'); b.type = 'button'; b.id = 'fouLancer';
+    b.onclick = () => { lireButin(1 + Math.floor(Math.random() * 20), 1 + Math.floor(Math.random() * 20)); dessinerCombat(true); };
+    lv.append(b);
+  }
+  w.append(lv);
+  if(FOU.lu) w.append(el('p','mini fverdict', FOU.lu));
+
+  const tx = el('textarea'); tx.id = 'fouTexte'; tx.rows = Math.min(7, Math.max(2, Math.ceil(FOU.texte.length / 32) + 1)); tx.value = FOU.texte;
+  tx.placeholder = 'Ce qu’on trouve. Un objet unique ne se tire pas : écris-le ici.';
+  tx.setAttribute('aria-label', 'Ce qu’on trouve');
+  tx.oninput = () => { FOU.texte = tx.value; };
+  w.append(tx);
+
+  const act = el('div','acts');
+  const gens = persos();
+  if(gens.length){
+    const sq = el('select'); sq.id = 'fouQui'; sq.setAttribute('aria-label', 'Qui le prend');
+    gens.forEach(c => sq.add(new Option(c.nom || 'Sans nom', c.id)));
+    if(!gens.some(c => c.id === FOU.qui)) FOU.qui = gens[0].id;
+    sq.value = FOU.qui;
+    const don = el('button','btn sm','Donner'); don.type = 'button'; don.id = 'fouDonner';
+    sq.onchange = () => { FOU.qui = sq.value; };
+    don.onclick = () => finirFouille(a, 'fait', FOU.texte, FOU.qui);
+    act.append(sq, don);
+  }
+  const la = el('button','btn ghost sm','Le laisser là'); la.type = 'button'; la.id = 'fouLaisser';
+  la.onclick = () => finirFouille(a, 'laisse', FOU.texte, '');
+  const fe = el('button','btn ghost xs','Fermer'); fe.type = 'button'; fe.id = 'fouFermer';
+  fe.onclick = () => { FOU.id = ''; dessinerCombat(true); };
+  act.append(la, fe);
+  w.append(act);
+  return w;
+}
+/* sur la ligne de quelqu'un à terre : fouiller, ou ce qu'on y a trouvé */
+function fouilleSurLigne(a, w){
+  if(a.fouille){
+    const p = el('p','mini afouille');
+    p.append(document.createTextNode(phraseFouille(a.fouille) + ' '));
+    const d = el('button','btn ghost xs','Défaire'); d.type = 'button';
+    d.setAttribute('aria-label', 'Défaire la fouille de ' + a.nom);
+    d.onclick = () => defaireFouille(a);
+    p.append(d);
+    w.append(p);
+    return;
+  }
+  if(FOU.id === a.id) w.append(panneauFouille(a));
+}
+
+/* ---------- après le combat : ceux qui sont restés à terre ---------- */
+function tombesDeLaSeance(){
+  const e = seanceCourante(); if(!e) return [];
+  return rencontresDe(e.id).filter(r => r.fini).reduce((acc, r) => acc.concat(adversairesDe(r.id).filter(aTerre)), []);
+}
+function blocButin(){
+  const l = tombesDeLaSeance();
+  if(!l.length) return null;
+  const reste = l.filter(a => !a.fouille).length;
+  const d = el('details','cote-butin');
+  const auto = reste > 0 || !!(FOU.id && l.some(a => a.id === FOU.id));
+  d.open = BTN.ouvert == null ? auto : BTN.ouvert;
+  /* seul un geste contraire à ce qui s'ouvre tout seul se retient */
+  d.ontoggle = () => { BTN.ouvert = d.open === auto ? null : d.open; };
+  d.append(el('summary', null, 'Le butin · ' + (reste ? reste + ' à fouiller' : 'tout est fouillé')));
+  l.forEach(a => {
+    const w = el('div','fligne');
+    w.setAttribute('data-adv', a.id);
+    const t = el('div','atete');
+    t.append(el('b','anom', a.nom), el('span','arang', 'rang ' + a.rang));
+    if(!a.fouille){
+      const f = el('button','btn ghost xs' + (FOU.id === a.id ? ' on' : ''), 'Fouiller'); f.type = 'button';
+      f.setAttribute('aria-label', 'Fouiller ' + a.nom);
+      f.onclick = () => ouvrirFouille(a);
+      const x = el('button','btn ghost xs','Laisser'); x.type = 'button';
+      x.setAttribute('aria-label', 'Laisser ' + a.nom + ' sans le fouiller');
+      x.onclick = () => finirFouille(a, 'laisse', '', '');
+      t.append(f, x);
+    }
+    w.append(t);
+    fouilleSurLigne(a, w);
+    d.append(w);
+  });
+  return d;
+}
+
 /* ============ les PNJ, et le réseau de ceux qu'on croise ============ */
 
 let PNJ_ED = null;              /* la fiche en cours d'édition */
@@ -3395,6 +4683,7 @@ const PNJ_OUVERTS = {};
 const TISSE = {};               /* les « Tisser un lien » ouverts, par personne */
 let PNJ_SUPPR = null;
 let LIEN_SUPPR = null;
+let LIEN_ED = null;             /* le lien qu'on modifie : {id, mode, type, texte, sens, avec, raison} */
 const PNJ_FILTRE = {q:'', groupe:''};
 const RES = {sel:'', relier:'', cible:'', focus:'', prof:1, etiquettes:true, reorg:false,
   vue:{s:1, tx:0, ty:0}, noeuds:[], aretes:[], cadre:null};
@@ -3432,13 +4721,52 @@ function groupes(){
 const libelle = (liste, k) => { const x = liste.find(y => y.k === k); return x ? x.l : ''; };
 const typeLien = k => TYPES_LIEN.find(t => t.k === k) || TYPES_LIEN[TYPES_LIEN.length - 1];
 
-/* une phrase pour un lien : « Nahya · grand-mère de · Ohan », ou « Yvellis et Vaurys · Rivalité » */
+/* une phrase pour un lien. Réciproque : « Yvellis et Vaurys · Rivalité ». Dans un sens, les mots qui relient
+   les deux noms se lisent entre eux, « Nahya · grand-mère de · Ohan » ; une vraie phrase suit la flèche,
+   « Nahya → Toum’Balin · Dette, promesse : il l’a sauvée, elle en a peur » */
+const FIN_RELIANTE = /(^|\s)(de|d[’']|du|des|à|au|aux|pour|avec|chez|contre|envers|sur|sous|par|vers|que)$/i;
 function phraseLien(l){
   const a = quiRef(l.de), b = quiRef(l.vers);
   if(!a || !b) return '';
-  const t = typeLien(l.type);
-  if(l.mutuel) return a.nom + ' et ' + b.nom + ' · ' + t.l + (l.texte ? ', ' + l.texte : '');
-  return a.nom + ' · ' + (l.texte || t.l.toLowerCase()) + ' · ' + b.nom;
+  const t = typeLien(l.type), x = String(l.texte || '').trim();
+  if(l.mutuel) return a.nom + ' et ' + b.nom + ' · ' + t.l + (x ? ', ' + x : '');
+  if(!x) return a.nom + ' → ' + b.nom + ' · ' + t.l;
+  if(FIN_RELIANTE.test(x) || x.split(/\s+/).length <= 2) return a.nom + ' · ' + x + ' · ' + b.nom;
+  return a.nom + ' → ' + b.nom + ' · ' + t.l + ' : ' + x;
+}
+/* ce que le lien a été, avant de changer en jeu */
+function phraseAvant(h){
+  const e = h.seance && T.journal[h.seance] && !T.journal[h.seance].supprime ? T.journal[h.seance] : null;
+  return typeLien(h.type).l + (h.texte ? ', ' + h.texte : '') + (e ? ' (jusqu’à la séance ' + (e.seance || '?') + ')' : '');
+}
+
+/* ---------- un nom tapé à la main : Ohan plutôt qu'« ohen » ---------- */
+const cleSimple = n => String(n || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '');
+function distanceNoms(a, b){
+  if(Math.abs(a.length - b.length) > 3) return 99;
+  let prev = [];
+  for(let j = 0; j <= b.length; j++) prev.push(j);
+  for(let i = 1; i <= a.length; i++){
+    const cur = [i];
+    for(let j = 1; j <= b.length; j++) cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+    prev = cur;
+  }
+  return prev[b.length];
+}
+/* quelqu'un qui existe déjà et dont le nom ressemble beaucoup : une lettre sur quatre au plus */
+function nomProche(nom, sauf){
+  if(refParNom(nom)) return null;
+  const n = cleSimple(nom);
+  if(n.length < 3) return null;
+  let mieux = null, dm = 99;
+  tousLesGens().forEach(x => {
+    if(x.ref === sauf) return;
+    const m = cleSimple(x.nom);
+    if(!m) return;
+    const d = distanceNoms(n, m);
+    if(d <= Math.max(1, Math.floor(Math.min(n.length, m.length) / 4)) && d < dm){ mieux = x; dm = d; }
+  });
+  return mieux;
 }
 
 /* créée depuis le compte rendu : une fiche minimale, qu'on complète quand on veut */
@@ -3602,7 +4930,7 @@ function detailPnj(p){
   d.append(el('h3', null, 'Ses liens'));
   const ls = liensDe(ref);
   if(!ls.length) d.append(el('p','mini','Aucun lien pour l’instant.'));
-  ls.forEach(l => d.append(ligneLien(l, () => dessinerListePnj(true))));
+  ls.forEach(l => d.append(ligneLien(l, () => dessinerListePnj(true), ref, 'carte')));
 
   const ap = apparitions(p);
   d.append(el('h3', null, 'Dans les comptes rendus'));
@@ -3620,12 +4948,22 @@ function detailPnj(p){
   return d;
 }
 
-/* une ligne de lien, avec sa suppression en deux temps */
-function ligneLien(l, redessiner){
-  const w = el('div','lien');
+/* une ligne de lien : le modifier (une erreur, ou ce qui a changé en jeu), ou le défaire en deux temps.
+   ref : la personne dont on regarde les liens */
+function ligneLien(l, redessiner, ref, lieu){
+  /* le formulaire ne s'ouvre qu'à l'endroit où l'on a cliqué, même si le lien se voit ailleurs aussi */
+  const ici = (lieu || '') + '|' + (ref || '');
+  const ouvert = !!(LIEN_ED && LIEN_ED.id === l.id && LIEN_ED.lieu === ici);
+  const w = el('div','lien' + (ouvert ? ' edite' : ''));
+  w.setAttribute('data-lien', l.id);
   w.append(el('span','ltrait l-' + l.type));
   w.append(el('span','q', phraseLien(l)));
   if(l.notes) w.append(el('span','mini', ' · ' + l.notes));
+  const m = el('button','btn ghost sm lmodif', ouvert ? 'Fermer' : 'Modifier'); m.type = 'button';
+  m.setAttribute('aria-expanded', ouvert ? 'true' : 'false');
+  m.setAttribute('aria-label', (ouvert ? 'fermer : ' : 'modifier le lien ') + phraseLien(l));
+  m.onclick = () => { LIEN_ED = ouvert ? null : Object.assign(edLien(l, ref), {lieu:ici}); redessiner(); };
+  w.append(m);
   const arme = LIEN_SUPPR === l.id;
   const x = el('button','btn ghost sm' + (arme ? ' danger' : ''), arme ? 'Confirmer' : 'Défaire'); x.type = 'button';
   x.setAttribute('aria-label', (arme ? 'confirmer : défaire le lien ' : 'défaire le lien ') + phraseLien(l));
@@ -3635,7 +4973,97 @@ function ligneLien(l, redessiner){
     setTimeout(() => { if(LIEN_SUPPR === l.id){ LIEN_SUPPR = null; redessiner(); } }, 5000);
   };
   w.append(x);
+  if(l.hist && l.hist.length) w.append(el('p','mini lhist', 'Avant : ' + l.hist.slice().reverse().map(phraseAvant).join(' ; puis avant : ') + '.'));
+  if(ouvert) w.append(formModifLien(l, () => { LIEN_ED = null; redessiner(); }, redessiner));
   return w;
+}
+/* ce qu'on modifie se garde hors de la page : une mise à jour venue d'ailleurs ne l'efface pas */
+function edLien(l, ref){
+  const moi = ref === l.vers ? l.vers : l.de, autre = moi === l.de ? l.vers : l.de;
+  return {id:l.id, ref:moi, mode:'corr', type:l.type, texte:l.texte, sens:l.mutuel ? 'mutuel' : moi === l.de ? 'aller' : 'retour', avec:autre, raison:''};
+}
+function formModifLien(l, fini, redessiner){
+  const E = LIEN_ED;
+  const f = el('div','flien');
+  const n = ++N_FORM;
+  const moi = quiRef(E.ref);
+  const seg = el('div','seg lmode'); seg.setAttribute('role', 'group'); seg.setAttribute('aria-label', 'Ce qui se passe');
+  [['corr', 'Je me suis trompé', 'Le lien est corrigé, sans laisser de trace.'],
+   ['evol', 'Ça a changé en jeu', 'Le lien change, ce qu’il était reste dans son histoire et la séance le note.']].forEach(([k, lab, aide]) => {
+    const b = el('button', null, lab); b.type = 'button'; b.id = 'fm-' + k + '-' + n; b.title = aide;
+    b.setAttribute('aria-pressed', E.mode === k ? 'true' : 'false');
+    b.onclick = () => { E.mode = k; redessiner(); };
+    seg.append(b);
+  });
+  f.append(seg);
+  f.append(el('p','mini', E.mode === 'corr' ? 'Le lien est corrigé, sans laisser de trace.' : 'Une amitié qui tourne à la brouille : le lien change, ce qu’il était reste écrit dessous, et la séance en cours le note.'));
+  const g = el('div','jetform');
+  if(E.mode === 'corr'){
+    const av = el('select'); av.id = 'fm-avec-' + n;
+    const og1 = el('optgroup'); og1.label = 'Les personnages';
+    const og2 = el('optgroup'); og2.label = 'Les PNJ';
+    tousLesGens().filter(x => x.ref !== E.ref).forEach(x => (x.pj ? og1 : og2).append(new Option(x.nom, x.ref)));
+    if(og1.children.length) av.append(og1);
+    if(og2.children.length) av.append(og2);
+    av.value = E.avec;
+    av.onchange = () => { E.avec = av.value; redessiner(); };
+    champ(g, 'Avec qui', av);
+  }
+  const ty = el('select'); ty.id = 'fm-type-' + n;
+  TYPES_LIEN.forEach(t => ty.add(new Option(t.l, t.k)));
+  ty.value = E.type;
+  ty.onchange = () => { E.type = ty.value; tx.placeholder = typeLien(E.type).ex; };
+  champ(g, 'Quel lien', ty);
+  const tx = el('input'); tx.type = 'text'; tx.id = 'fm-texte-' + n; tx.value = E.texte; tx.placeholder = typeLien(E.type).ex;
+  tx.oninput = () => { E.texte = tx.value; };
+  champ(g, 'En quelques mots', tx);
+  const se = el('select'); se.id = 'fm-sens-' + n;
+  const a = moi ? moi.nom : '?', b = (quiRef(E.avec) || {}).nom || 'l’autre';
+  se.add(new Option('Réciproque', 'mutuel'));
+  se.add(new Option(a + ' → ' + b, 'aller'));
+  se.add(new Option(b + ' → ' + a, 'retour'));
+  se.value = E.sens;
+  se.onchange = () => { E.sens = se.value; };
+  champ(g, 'Dans quel sens', se);
+  if(E.mode === 'evol'){
+    const r = el('input'); r.type = 'text'; r.id = 'fm-raison-' + n; r.value = E.raison; r.placeholder = 'la dispute au pont de Ronceval';
+    r.oninput = () => { E.raison = r.value; };
+    champ(g, 'Ce qui s’est passé', r);
+  }
+  f.append(g);
+  const act = el('div','acts'); act.style.marginTop = '8px';
+  const ok = el('button','btn sm fm-ok', E.mode === 'corr' ? 'Corriger le lien' : 'Le lien change'); ok.type = 'button'; ok.id = 'fm-ok-' + n;
+  ok.onclick = () => {
+    const x = T.liens[l.id];
+    if(!x || x.supprime){ fini(); return; }
+    if(!quiRef(E.avec) || E.avec === E.ref){ msgTable('Choisis avec qui.', false); return; }
+    const aller = E.sens !== 'retour';
+    const nv = Object.assign({}, x, {type:E.type, texte:E.texte.trim(), mutuel:E.sens === 'mutuel',
+      de:aller ? E.ref : E.avec, vers:aller ? E.avec : E.ref, maj:maintenant()});
+    const evol = E.mode === 'evol';
+    const pareil = nv.type === x.type && nv.texte === x.texte && nv.mutuel === x.mutuel && nv.de === x.de && nv.vers === x.vers;
+    if(pareil && evol){ msgTable('Rien n’a changé : choisis ce que le lien est devenu.', false); return; }
+    if(pareil){ fini(); return; }
+    if(evol) nv.hist = (x.hist || []).concat([{type:x.type, texte:x.texte, mutuel:x.mutuel, de:x.de, vers:x.vers, seance:(seanceCourante() || {}).id || '', t:maintenant()}]);
+    const avant = [x.de, x.vers].find(r => r !== E.ref);
+    const raison = E.raison.trim();
+    LIEN_ED = null;
+    changer(() => {
+      T.liens[l.id] = normLien(nv);
+      if(evol) noterDansSeance(phraseLien(nv) + ' (avant : ' + typeLien(x.type).l.toLowerCase() + ')' + (raison ? ' : ' + raison : '') + '.', 'note');
+    });
+    /* une fiche créée par erreur, que plus rien ne relie : on le dit, sans la retirer à ta place */
+    const q = !evol && avant !== E.avec && avant && avant.indexOf('pnj:') === 0 ? unPnj(avant.slice(4)) : null;
+    if(q && !liensDe(avant).length && !q.role && !q.texte.trim() && !q.groupe && !q.lieu && !q.peuple && !apparitions(q).length)
+      msgTable('La fiche « ' + q.nom + ' » n’a plus aucun lien. Si c’était une faute de frappe, retire-la : « Retirer » sur sa carte.', true);
+    else msgTable(evol ? 'Le lien a changé, et la séance le note.' : 'Lien corrigé.', true);
+    fini();
+  };
+  const non = el('button','btn ghost sm','Annuler'); non.type = 'button';
+  non.onclick = fini;
+  act.append(ok, non);
+  f.append(act);
+  return f;
 }
 
 /* tisser un lien : avec qui, quel genre, dans quel sens */
@@ -3749,7 +5177,7 @@ function ouvrirEditeurPnj(p, nouveau){
   const gens = listeDonnees('dl-gens', tousLesGens().filter(x => x.ref !== 'pnj:' + PNJ_ED.id).map(x => x.nom));
   const dessinerLiensEd = () => {
     lb.innerHTML = '';
-    if(!nouveau) liensDe('pnj:' + PNJ_ED.id).forEach(l => lb.append(ligneLien(l, dessinerLiensEd)));
+    if(!nouveau) liensDe('pnj:' + PNJ_ED.id).forEach(l => lb.append(ligneLien(l, dessinerLiensEd, 'pnj:' + PNJ_ED.id, 'editeur')));
     PNJ_LIENS.forEach((x, i) => {
       const g = el('div','jetform elien');
       const av = el('input'); av.type = 'text'; av.id = 'ped-lien-avec-' + i; av.value = x.avec; av.placeholder = 'Ohan, Toum’Balin';
@@ -3772,7 +5200,27 @@ function ouvrirEditeurPnj(p, nouveau){
         se.value = x.sens || (typeLien(x.type).mutuel ? 'mutuel' : 'aller');
       };
       majSens();
-      av.oninput = () => { x.avec = av.value; const v = se.value; majSens(); se.value = v; };
+      /* un nom qu'on n'a pas encore : sa fiche se crée ; un nom qui ressemble beaucoup à quelqu'un : on demande */
+      const ind = el('p','mini lindice'); ind.id = 'ped-lien-indice-' + i;
+      const majIndice = () => {
+        ind.innerHTML = '';
+        const nom = x.avec.trim(), q = nom ? nomProche(nom, 'pnj:' + PNJ_ED.id) : null;
+        ind.hidden = !nom || !!refParNom(nom);
+        if(ind.hidden) return;
+        if(q && x.voulu !== cleNom(nom)){
+          ind.classList.add('doute');
+          ind.append(document.createTextNode('Personne ne s’appelle « ' + nom + ' ». Tu voulais dire ' + q.nom + ' ? '));
+          const oui = el('button','btn ghost xs','Oui, ' + q.nom); oui.type = 'button'; oui.id = 'ped-lien-oui-' + i;
+          oui.onclick = () => { x.avec = q.nom; av.value = q.nom; const v = se.value; majSens(); se.value = v; majIndice(); };
+          const non = el('button','btn ghost xs','Non, une nouvelle fiche'); non.type = 'button'; non.id = 'ped-lien-non-' + i;
+          non.onclick = () => { x.voulu = cleNom(x.avec); majIndice(); };
+          ind.append(oui, document.createTextNode(' '), non);
+        } else {
+          ind.classList.remove('doute');
+          ind.textContent = 'Pas encore de fiche « ' + nom + ' » : elle se crée en même temps.';
+        }
+      };
+      av.oninput = () => { x.avec = av.value; const v = se.value; majSens(); se.value = v; majIndice(); };
       ty.onchange = () => { x.type = ty.value; tx.placeholder = typeLien(x.type).ex; if(!x.sens){ majSens(); } };
       se.onchange = () => { x.sens = se.value; };
       champ(g, 'Dans quel sens', se);
@@ -3781,6 +5229,8 @@ function ouvrirEditeurPnj(p, nouveau){
       r.onclick = () => { PNJ_LIENS.splice(i, 1); dessinerLiensEd(); };
       const w = el('div','eret'); w.append(el('span','lab', ' '), r);
       g.append(w);
+      g.append(ind);
+      majIndice();
       lb.append(g);
     });
   };
@@ -3838,6 +5288,14 @@ function ouvrirEditeurPnj(p, nouveau){
     if(nouveau) x.id = idLibre('n-' + slug(nom), T.pnj);
     const ancien = T.pnj[x.id] && !T.pnj[x.id].supprime ? T.pnj[x.id] : null;
     const neufs = PNJ_LIENS.filter(y => y.avec.trim());
+    /* « ohen » pour Ohan : on ne crée pas une fiche de trop sans l'avoir demandé */
+    const douteux = neufs.find(y => nomProche(y.avec.trim(), 'pnj:' + PNJ_ED.id) && y.voulu !== cleNom(y.avec));
+    if(douteux){
+      const q = nomProche(douteux.avec.trim(), 'pnj:' + PNJ_ED.id);
+      msgTable('« ' + douteux.avec.trim() + ' » ressemble à ' + q.nom + ' : réponds sous le lien, ' + q.nom + ' ou une nouvelle fiche.', false);
+      const z = document.querySelector('#ped-liens .lindice.doute'); if(z) z.scrollIntoView({block:'center', behavior:'smooth'});
+      return;
+    }
     /* ses PV : ceux d'aujourd'hui, pas ceux de l'ouverture de l'éditeur */
     if(x.pvMax == null){ baseVie(x, null); }
     else if(!ancien || ancien.pvMax == null){ baseVie(x, x.pvMax); }
@@ -4082,7 +5540,8 @@ function dessinerReseau(force){
     e.path.append(e.titre);
     gA.append(e.path);
     if(RES.etiquettes){
-      e.lab = sv('text', {class:'elab', 'text-anchor':'middle'}, e.l.texte || typeLien(e.l.type).l);
+      const lab = e.l.texte || typeLien(e.l.type).l;
+      e.lab = sv('text', {class:'elab', 'text-anchor':'middle'}, lab.length > 30 ? lab.slice(0, 28).replace(/\s+\S*$/, '') + '…' : lab);
       gE.append(e.lab);
     }
   });
@@ -4268,7 +5727,7 @@ function dessinerPanneau(){
   }
   const ls = liensDe(q.ref);
   box.append(el('h3', null, ls.length ? 'Ses liens' : 'Aucun lien pour l’instant'));
-  ls.forEach(l => box.append(ligneLien(l, dessinerPanneau)));
+  ls.forEach(l => box.append(ligneLien(l, dessinerPanneau, q.ref, 'reseau')));
   const act = el('div','acts'); act.style.marginTop = '10px';
   const b = (txt, fn) => { const x = el('button','btn ghost sm', txt); x.type = 'button'; x.onclick = fn; act.append(x); return x; };
   b('Relier à…', () => { RES.relier = q.ref; RES.cible = ''; choisirNoeud(q.ref); });
@@ -4331,7 +5790,7 @@ function dessinerPjVisages(){
     const ls = liensDe(ref);
     const zl = el('div','vliens');
     if(!ls.length) zl.append(el('p','mini','Aucun lien pour l’instant.'));
-    ls.forEach(x => zl.append(ligneLien(x, dessinerPjVisages)));
+    ls.forEach(x => zl.append(ligneLien(x, dessinerPjVisages, ref, 'pj')));
     w.append(zl);
     const act = el('div','pact');
     const ti = el('button','btn ghost sm','Tisser un lien'); ti.type = 'button';
@@ -5288,7 +6747,8 @@ ghcSurveiller(() => {
    le temps d'envoyer part d'ici : l'écriture ne part que s'il y a du neuf pour le dépôt */
 window.addEventListener('storage', e => {
   if(e.key === CLE_MOI && e.newValue){
-    try{ adopterMoi(JSON.parse(e.newValue)); MOI_VU = copie(MOI); }catch(x){}
+    /* ce que le navigateur garde maintenant, pas l'instantané de l'événement : il peut arriver après notre propre écriture */
+    try{ adopterMoi(JSON.parse(localStorage.getItem(CLE_MOI) || 'null')); MOI_VU = copie(MOI); }catch(x){}
     dessiner();
     return;
   }
@@ -5341,6 +6801,7 @@ dessiner();
 if(!parGithub) reprendreFichier();
 /* une rencontre qui attend : on la pose après la première lecture du dépôt, dans la séance la plus récente */
 if(PAGE === 'table'){
+  demarrerTirage();   /* le tirage des rencontres, avec ton bestiaire */
   if(parGithub){ let fait = false; const go = () => { if(!fait){ fait = true; lireEnvoi(); } }; parGithub.then(go, go); setTimeout(go, 6000); }
   else lireEnvoi();
 }

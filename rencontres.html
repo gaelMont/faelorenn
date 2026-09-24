@@ -250,7 +250,7 @@ select:focus-visible,input:focus-visible,button:focus-visible{outline:2px solid 
   .bestprint .bp-carte .adv{border-bottom:0;padding:6px 0 2px}
   .bestprint .bp-lore{display:grid;grid-template-columns:auto 1fr;gap:1px 10px;margin:2px 0 0 76px;font-size:9pt}
   .bestprint .bp-lore dt{color:#6B7469;font-size:7.5pt;letter-spacing:.08em;text-transform:uppercase;padding-top:2px}
-  .bestprint .bp-lore dd{margin:0}
+  .bestprint .bp-lore dd{margin:0;white-space:pre-line}
   .bestprint .bp-tr{margin:0 0 1px 76px;font-size:8pt;color:#6B7469}
   .bestprint .bp-fam{margin:0 0 2px 76px;font-size:7pt;letter-spacing:.08em;text-transform:uppercase;color:#6B7469}
   .bestprint .bp-famille{break-inside:avoid;margin:0 0 9px}
@@ -451,7 +451,8 @@ const DX = (function(){
     pr += '<w:color w:val="' + (o.c || C.txt) + '"/>';
     const sz = o.sz || 19; pr += '<w:sz w:val="' + sz + '"/><w:szCs w:val="' + sz + '"/>';
     if(o.sp) pr += '<w:spacing w:val="' + o.sp + '"/>';
-    return '<w:r><w:rPr>' + pr + '</w:rPr><w:t xml:space="preserve">' + xe(txt) + '</w:t></w:r>';
+    /* un retour à la ligne reste un retour à la ligne : une liste de butin, une description en plusieurs lignes */
+    return '<w:r><w:rPr>' + pr + '</w:rPr><w:t xml:space="preserve">' + String(txt == null ? '' : txt).split('\n').map(xe).join('</w:t><w:br/><w:t xml:space="preserve">') + '</w:t></w:r>';
   }
   function p(runs, o){
     o = o || {};
@@ -509,8 +510,10 @@ const DX = (function(){
   return {C:C, r:r, p:p, saut:saut, titre:titre, h2:h2, lbl:lbl, bloc:bloc, paquet:paquet};
 })();
 
-const $ = id => document.getElementById(id);
-const el = (tag, cls, txt) => { const e = document.createElement(tag); if(cls) e.className = cls; if(txt != null) e.textContent = txt; return e; };
+/* ============ le tirage d'une rencontre : commun au Registre des Rencontres et au Registre de la Table ============
+   Le budget vient du nombre de personnages et du genre de combat ; les adversaires viennent du livre et du
+   bestiaire maison, filtrés par les familles retenues. L'état du tirage (S) et le bestiaire maison (MAISON,
+   FAM_MAISON) appartiennent à la page qui s'en sert. */
 const pick = a => a[Math.floor(Math.random() * a.length)];
 
 const COUT = [0, 1, 2, 4, 8, 16];
@@ -549,9 +552,6 @@ function membre(c, k){
 function famillesDe(c){ return familles().filter(f => membre(c, f.k)); }
 
 /* ---------- etat de la rencontre ---------- */
-const S = {pj:2, inten:'ser', liste:[], pourquoi:'', fam:[], source:'tout'};
-function save(){ try{ localStorage.setItem('faelorenn.rencontre', JSON.stringify(S)); }catch(e){} }
-function load(){ try{ const r = localStorage.getItem('faelorenn.rencontre'); if(r) Object.assign(S, JSON.parse(r)); }catch(e){} }
 
 const intensite = () => INTENSITES.find(i => i.k === S.inten) || INTENSITES[1];
 const budget = () => S.pj * intensite().pts;
@@ -679,6 +679,26 @@ function tirerComposition(){
   S.liste.sort((a, b) => b.r - a.r);
   S.pourquoi = pick(ADV.pourquoi);
 }
+
+/* ---------- ce qu'un adversaire tiré emporte à la table ----------
+   Ses valeurs, son attaque propre, ses familles (l'endroit du butin s'en devine) et ce qu'il laisse,
+   quand c'est une des tiennes. Porté par l'envoi du Registre des Rencontres comme par le tirage de la table. */
+function adversaireEnvoye(a){
+  const c = trouveId(a.cid) || {r:a.r, n:a.n, p:a.p};
+  const st = statsDe(c);
+  const pv = a.pv == null || isNaN(+a.pv) ? st.pv : Math.max(0, Math.min(+a.pv, st.pv));
+  return {n:c.n || a.n, r:a.r, pvMax:st.pv, pv:pv, red:st.red, deg:st.deg, cartes:st.cartes,
+    a2: c.a2 && c.a2.n ? {n:c.a2.n, t:c.a2.el ? 'mag' : (c.a2.t || 'phy'), p:porteeDe(c.a2), e:effetDe(c, st), el:c.a2.el || ''} : null,
+    tr:(c.tr || []).slice(), traits:nomsTraits(c), p:c.p || '', renf:c.renf || '',
+    cid:c.id || a.cid || '', fam:(c.t || []).slice(), butin:c.butin || ''};
+}
+
+const $ = id => document.getElementById(id);
+const el = (tag, cls, txt) => { const e = document.createElement(tag); if(cls) e.className = cls; if(txt != null) e.textContent = txt; return e; };
+
+const S = {pj:2, inten:'ser', liste:[], pourquoi:'', fam:[], source:'tout'};
+function save(){ try{ localStorage.setItem('faelorenn.rencontre', JSON.stringify(S)); }catch(e){} }
+function load(){ try{ const r = localStorage.getItem('faelorenn.rencontre'); if(r) Object.assign(S, JSON.parse(r)); }catch(e){} }
 
 /* ---------- rendu ---------- */
 function stepper(get, set, min, max){
@@ -944,14 +964,7 @@ function hacher(s){ let h = 2166136261; for(let i = 0; i < s.length; i++){ h ^= 
 /* la même rencontre envoyée deux fois porte le même nom : la table ne la pose qu'une fois */
 function paquetRencontre(){
   const sig = S.liste.map(a => a.id + ':' + a.cid).join(',') + '|' + S.pourquoi;
-  return {id:'e' + hacher(sig), t:Date.now(), titre:'', pourquoi:S.pourquoi || '',
-    adversaires:S.liste.map(a => {
-      const c = trouveId(a.cid) || {r:a.r, n:a.n, p:a.p};
-      const st = statsDe(c);
-      return {n:c.n || a.n, r:a.r, pvMax:st.pv, pv:Math.max(0, Math.min(a.pv, st.pv)), red:st.red, deg:st.deg, cartes:st.cartes,
-        a2: c.a2 && c.a2.n ? {n:c.a2.n, t:c.a2.el ? 'mag' : (c.a2.t || 'phy'), p:porteeDe(c.a2), e:effetDe(c, st), el:c.a2.el || ''} : null,
-        tr:(c.tr || []).slice(), traits:nomsTraits(c), p:c.p || '', renf:c.renf || ''};
-    })};
+  return {id:'e' + hacher(sig), t:Date.now(), titre:'', pourquoi:S.pourquoi || '', adversaires:S.liste.map(adversaireEnvoye)};
 }
 function direEnvoi(t, ok, lien){
   const m = $('envoiMsg');
@@ -1203,7 +1216,7 @@ const LORE = [
   {k:'ou',    l:'Où on le croise',     ph:'Terrain, région, registre de Floraison, moment de la journée.'},
   {k:'veut',  l:'Ce qu’il veut',  ph:'Pourquoi il est là, comment il se bat, quand il s’arrête.'},
   {k:'fuit',  l:'Ce qui le fait fuir', ph:'Sa faiblesse, ce qui le fait céder, reculer ou changer de camp.'},
-  {k:'butin', l:'Ce qu’il laisse', ph:'Butin, trophée, ce qui se revend et à qui.'},
+  {k:'butin', l:'Ce qu’il laisse', ph:'Une ligne par objet. Numérotées « 1-2 Une dent en or », la table y tire au dé quand on le fouille.'},
   {k:'notes', l:'Notes pour le MJ',    ph:'Idées de scène, variantes, pièges à éviter.'}
 ];
 const BST = {mode:'local', db:null, pret:false, erreur:'', source:'', gh:null, ghErreur:'', recherche:'', inclureLivre:true, aSupprimer:null, famASupprimer:null};
@@ -1610,7 +1623,7 @@ function ouvrirEditeur(c, nouveau){
   g4.append(el('summary', null, 'Pour le bestiaire'));
   g4.append(el('p','aide','Rien de tout ça n’est obligatoire. C’est ce qui sort dans l’export Word, pas dans la rencontre.'));
   LORE.forEach(x => {
-    const t = champ(g4, 'ed-' + x.k, x.l, zone(c0[x.k], x.ph, x.k === 'desc' || x.k === 'notes' ? 3 : 2));
+    const t = champ(g4, 'ed-' + x.k, x.l, zone(c0[x.k], x.ph, x.k === 'desc' || x.k === 'notes' || x.k === 'butin' ? 3 : 2));
     t.oninput = () => { ED.c[x.k] = t.value; };
   });
   form.append(g4);
@@ -2205,7 +2218,7 @@ function texteLivre(){
     if(lore.length){
       L.push('### Pour le MJ', '');
       lore.forEach(c => {
-        L.push('**' + c.n + '.**' + LORE.filter(x => c[x.k]).map(x => ' ' + x.l + ' : ' + c[x.k].trim().replace(/\.$/, '') + '.').join(''));
+        L.push('**' + c.n + '.**' + LORE.filter(x => c[x.k]).map(x => ' ' + x.l + ' : ' + c[x.k].trim().replace(/\s*\n+\s*/g, ' · ').replace(/\.$/, '') + '.').join(''));
         L.push('');
       });
     }

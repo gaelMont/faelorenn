@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Registre de la Table</title>
+<title>Registre des Missions</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,600;0,700;1,400&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
 <style>
 :root{
@@ -589,10 +589,10 @@ svg.reseau:active{cursor:grabbing}
 </head>
 <body>
 <script>try{ if(/^faelorenn-(table|visages|progression|missions)$/.test(window.name)) window.name = ''; }catch(e){}</script>
-<nav class="fae-site" aria-label="Les registres de Faelorenn" style="max-width:1260px">
+<nav class="fae-site" aria-label="Les registres de Faelorenn">
   <a class="fae-accueil" href="./">Faelorenn</a>
-  <a href="missions.html">Registre des Missions</a>
-  <a href="table.html" aria-current="page">Registre de la Table</a>
+  <a href="missions.html" aria-current="page">Registre des Missions</a>
+  <a href="table.html">Registre de la Table</a>
   <a href="pnj.html">Registre des Visages</a>
   <a href="progression.html">Registre de la Progression</a>
   <a href="createur.html">Registre du Havre</a>
@@ -607,122 +607,55 @@ svg.reseau:active{cursor:grabbing}
 @media print{.fae-site{display:none!important}}
 </style>
 
-<div class="wrap large">
+<div class="wrap">
 <header>
-  <h1>Registre de la Table</h1>
-  <p class="sub">Faelorenn · la partie en cours, et tout ce qu’on en écrit</p>
+  <h1>Registre des Missions</h1>
+  <p class="sub">Faelorenn · ce que le Havre confie, le matin, avant qu’on parte</p>
   <nav class="saut noprint" aria-label="Aller à">
-    <a href="#secTable">La table</a>
-    <a href="#secSeance">La séance</a>
-    <a href="#secPerso">Les personnages</a>
-    <a href="#secJets">Les jets</a>
-    <a href="progression.html" target="faelorenn-progression">La progression, dans son registre</a>
-    <a href="pnj.html" target="faelorenn-visages">Les PNJ et leurs liens, dans le Registre des Visages</a>
+    <a href="#secTableau">Le tableau</a>
+    <a href="#secSauve">La sauvegarde</a>
+    <a href="table.html" target="faelorenn-table">La séance, dans le Registre de la Table</a>
+    <a href="pnj.html" target="faelorenn-visages">Les PNJ, dans le Registre des Visages</a>
   </nav>
+  <div class="etatsync"><span class="pastille" id="tbPastille"></span><span id="tbEtat"></span></div>
 </header>
 
-<section id="secTable">
-  <h2><span class="num">1</span> La table</h2>
-  <p class="hint">Dis qui tu es, puis choisis comment partager la table : la sauvegarde en ligne sur GitHub, un fichier dans un dossier partagé, ou un .json qu’on s’envoie. Sans rien de tout ça, tout reste dans ce navigateur.</p>
+<section id="secTableau">
+  <h2><span class="num">1</span> Le tableau du Havre</h2>
+  <p class="hint">Le Havre annonce la paie et les points de progression avant le départ : c’est sur ça qu’on choisit. « Partir » lance la mission dans la table : une séance neuve qui s’ouvre sur son annonce, ses visages dans le Registre des Visages, sa rencontre prête à tirer. « La boucler » donne ses points à chaque personnage.</p>
+  <div class="acts misbarre">
+    <div class="seg" role="group" aria-label="Voir">
+      <button type="button" id="misVueTableau" aria-pressed="true">Au tableau</button>
+      <button type="button" id="misVueCours" aria-pressed="false">En cours</button>
+      <button type="button" id="misVueFinies" aria-pressed="false">Finies</button>
+    </div>
+    <span class="espace"></span>
+    <button class="btn ghost sm" id="misTirer" type="button" title="Le générateur de mission du Livre VIII : un d20 par colonne">Tirer une mission</button>
+    <button class="btn sm" id="misNouvelle" type="button">Nouvelle mission</button>
+  </div>
+  <div id="misEditeur" class="card medit" hidden></div>
+  <div id="misLire" class="card mlire" role="region" hidden></div>
+  <div id="misBox" class="mgrille"></div>
+</section>
+
+<section id="secSauve">
+  <h2><span class="num">2</span> La sauvegarde</h2>
+  <p class="hint">Les missions vivent dans le même fichier que la table : relier la sauvegarde en ligne ici ou dans un autre registre de la table revient au même.</p>
   <div class="card">
     <div class="table">
       <div>
         <label class="lab" for="tbJoueur">Tu es</label>
         <input type="text" id="tbJoueur" placeholder="Gaël" style="width:100%">
       </div>
-      <div>
-        <label class="lab" for="tbNom">Nom de la campagne</label>
-        <input type="text" id="tbNom" placeholder="La Tournée d'Almeth" style="width:100%">
-      </div>
     </div>
     <div class="acts" style="margin-top:12px">
       <button class="btn" id="tbEnLigne" type="button">Sauvegarder en ligne</button>
-      <button class="btn ghost sm" id="tbOuvrir" type="button">Ouvrir le fichier de table</button>
-      <button class="btn ghost sm" id="tbCreer" type="button">Créer un fichier de table</button>
-      <button class="btn ghost sm" id="tbDetacher" type="button" hidden>Détacher le fichier</button>
-      <button class="btn ghost sm" id="tbJson" type="button">Enregistrer un .json</button>
+      <button class="btn ghost sm" id="tbOuvrir" type="button" hidden>Reconnecter le fichier</button>
+      <button class="btn ghost sm" id="tbJson" type="button">Enregistrer la table en .json</button>
       <button class="btn ghost sm" id="tbImport" type="button">Importer un .json</button>
       <input type="file" id="tbFichier" accept=".json,application/json" hidden>
     </div>
-    <div class="etatsync"><span class="pastille" id="tbPastille"></span><span id="tbEtat"></span></div>
-    <p class="note" id="tbAide"></p>
     <div id="ghPlace"></div>
-  </div>
-</section>
-
-<section id="secSeance">
-  <h2><span class="num">2</span> La séance</h2>
-  <p class="hint">Le compte rendu s’écrit ici, comme dans le Doc : le MJ raconte, chacun écrit ce que son personnage fait et dit, et les jets se joignent au paragraphe. Une rencontre validée dans le Registre des Rencontres arrive toute seule, et le combat se suit à côté du récit.</p>
-  <div class="card seance">
-    <div id="seTete"></div>
-    <div class="jeu">
-      <div class="jeu-main">
-        <div id="seRecit" class="feuille" tabindex="-1"></div>
-        <div id="seCompo" class="compo noprint" hidden>
-          <div class="qui" id="coQui"></div>
-          <div class="seg genre" id="coGenre"></div>
-          <textarea id="coTexte" rows="3" aria-label="Le paragraphe"></textarea>
-          <div class="joint" id="coJoint" hidden></div>
-          <div class="acts outils">
-            <button class="btn ghost sm" id="coOutilJet" type="button" aria-pressed="false">Jet et dégâts</button>
-            <button class="btn ghost sm" id="coOutilPv" type="button" aria-pressed="false">PV et PC</button>
-            <span class="espace"></span>
-            <button class="btn" id="coAjouter" type="button">Ajouter</button>
-          </div>
-          <div id="coPanneau"></div>
-        </div>
-      </div>
-      <aside class="jeu-cote noprint" aria-label="Sous la main pendant la partie">
-        <div id="seMission" class="cote mission" hidden></div>
-        <div id="seEtat" class="cote cie-liste" hidden></div>
-        <div id="seCombat" class="cote combat" hidden></div>
-        <div id="seGens" class="cote" hidden></div>
-        <details class="cote aide" id="seAide">
-          <summary>Ce que dit le livre, en combat</summary>
-          <ul>
-            <li><b>L’initiative</b> : une carte par combattant à chaque round, on agit de la plus petite à la plus grande. Un exceptionnel en reçoit deux.</li>
-            <li><b>Attaquer</b> : d20 sous la valeur divisée par cinq. 1 naturel, dégâts doublés ; 20 naturel, quelque chose se passe mal.</li>
-            <li><b>L’ennemi touche d’office</b>, sans jet du MJ. Une seule réaction par round : esquive sous Acrobatie, parade sous Combat, au d20.</li>
-            <li><b>Réaction ratée de moins de 4</b> : aucun dégât, mais pas d’attaque au prochain round. De 4 ou plus : les dégâts passent.</li>
-            <li><b>Les dégâts</b> : on retire d’abord la réduction, puis la contrainte du corps, et on arrondit vers le bas.</li>
-            <li><b>La réduction</b> arrête le physique et la matière : Sève, eau, pierre, vent, Mue. Le feu, l’onde, l’ombre et le sacré la traversent.</li>
-            <li><b>Un échec consomme le PC</b>, sauf l’attaque de base, qui ne coûte rien.</li>
-            <li><b>À 0 PV</b>, on tombe, inconscient. En groupe, sans stabilisation avant la fin du combat, on meurt.</li>
-            <li><b>Modificateurs</b> : difficile −20 ou −4 · quasiment impossible −40 ou −8 · les circonstances aident +20 ou +4.</li>
-          </ul>
-        </details>
-      </aside>
-    </div>
-  </div>
-</section>
-
-<section id="secPerso">
-  <h2><span class="num">3</span> Les personnages</h2>
-  <p class="hint">Chacun tient le sien. Les PV et les PC se suivent ici, et tout le monde voit la même chose. La progression a son registre, celui de la Progression ; les liens avec les autres se tissent dans le Registre des Visages.</p>
-  <div class="acts" style="margin-bottom:12px">
-    <button class="btn" id="pHavreOuvrir" type="button" aria-expanded="false" aria-controls="pHavre">Choisir dans tes personnages</button>
-    <button class="btn ghost sm" id="pImporter" type="button">Importer un .json du Registre du Havre</button>
-    <button class="btn ghost sm" id="pNouveau" type="button">Créer à la main</button>
-    <input type="file" id="pFichier" accept=".json,application/json" multiple hidden>
-  </div>
-  <div id="pHavre" class="card havre" hidden style="margin-bottom:12px">
-    <div class="htete"><p class="lab" style="margin:0">Tes personnages du Registre du Havre</p><span class="mini" id="pHavreSource"></span></div>
-    <div id="pHavreListe" class="hliste"></div>
-    <p class="note" id="pHavreMsg" role="status" hidden></p>
-  </div>
-  <div id="pEditeur" class="card" hidden style="margin-bottom:12px"></div>
-  <div id="pListe" class="pgrille"></div>
-</section>
-
-<section id="secJets">
-  <h2><span class="num">4</span> Les jets</h2>
-  <p class="hint">Tout ce qui a été lancé, par qui, et contre quelle cible. Les jets se font dans la séance.</p>
-  <div class="card">
-    <div class="acts" style="margin-bottom:6px">
-      <select id="jFiltre" aria-label="Filtrer par personnage"></select>
-      <button class="btn ghost sm" id="jVider" type="button">Vider l'historique</button>
-    </div>
-    <div class="histo" id="jHisto"></div>
   </div>
 </section>
 </div>

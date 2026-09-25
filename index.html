@@ -70,10 +70,15 @@ footer{margin-top:44px;padding-top:12px;border-top:1px solid var(--rule);font-si
 <header>
   <p class="sur">Faelorenn</p>
   <h1>Les registres de la table</h1>
-  <p class="intro">Cinq outils pour jouer, solo avec l’Oracle ou à plusieurs : créer ses Marchefleurs, tenir la partie séance après séance, garder trace de ceux qu’on croise, faire progresser les personnages, tirer ce qui se dresse sur la route.</p>
+  <p class="intro">Six outils pour jouer, solo avec l’Oracle ou à plusieurs : choisir une mission au tableau du Havre, créer ses Marchefleurs, tenir la partie séance après séance, garder trace de ceux qu’on croise, faire progresser les personnages, tirer ce qui se dresse sur la route.</p>
 </header>
 
 <nav class="registres" aria-label="Les registres">
+  <a class="registre" href="missions.html">
+    <span class="rnom">Registre des Missions</span>
+    <span class="rquoi">le tableau du Havre</span>
+    <span class="rdesc">Les missions que le Havre affiche, avec leur paie et leurs points annoncés avant le départ. « Partir » la lance dans la table : la séance s’ouvre sur son annonce, ses visages et sa rencontre sont prêts. Écris les tiennes, ou tire-les au d20 dans le générateur du livre.</span>
+  </a>
   <a class="registre" href="table.html">
     <span class="rnom">Registre de la Table</span>
     <span class="rquoi">la partie</span>
@@ -136,7 +141,7 @@ footer{margin-top:44px;padding-top:12px;border-top:1px solid var(--rule);font-si
 
 <footer>Faelorenn · mis à jour le 24 septembre 2026</footer>
 </div>
-<script>try{ if(/^faelorenn-(table|visages|progression)$/.test(window.name)) window.name = ''; }catch(e){}</script>
+<script>try{ if(/^faelorenn-(table|visages|progression|missions)$/.test(window.name)) window.name = ''; }catch(e){}</script>
 <script>
 /* ============ la sauvegarde en ligne : un dépôt GitHub privé pour les trois registres ============
    Le dépôt et le jeton se donnent une fois, dans n'importe quelle page du site : ils restent dans
@@ -224,7 +229,7 @@ function ghcEnAvance(ici, labas){
     const a = ici[id], b = labas[id];
     if(!a) return false;
     if(!b) return true;
-    return (+a.maj || 0) > (+b.maj || 0) || (+a.majPv || 0) > (+b.majPv || 0);
+    return (+a.maj || 0) > (+b.maj || 0) || (+a.majPv || 0) > (+b.majPv || 0) || (+a.majEtat || 0) > (+b.majEtat || 0);
   });
 }
 function ghcJoueur(){

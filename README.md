@@ -1,19 +1,20 @@
 # Faelorenn · les registres
 
-Cinq outils pour jouer à Faelorenn, dans un navigateur :
+Six outils pour jouer à Faelorenn, dans un navigateur :
 
+- `missions.html` : le Registre des Missions. Le tableau du Havre : les missions, leur paie et leurs points, un clic pour lancer la mission dans la table, un éditeur pour écrire les siennes, le générateur de mission du livre.
 - `table.html` : le Registre de la Table. La partie en cours : compte rendu des séances avec les jets et les dégâts, combat et butin suivis à côté du récit, personnages. À plusieurs.
 - `pnj.html` : le Registre des Visages. Fiches de PNJ, leurs liens entre eux et avec les personnages, réseau, histoire des liens.
 - `progression.html` : le Registre de la Progression. Les points des missions, et les achats au prix du livre.
 - `createur.html` : le Registre du Havre. Création de personnage, liste de tes personnages, impression, export Word, export .json pour la Table.
 - `rencontres.html` : le Registre des Rencontres. Tirage de rencontres, envoi dans la séance, bestiaire maison, familles, tables de butin, traits.
 
-`index.html` est la page d'accueil qui mène aux cinq, et où l'on relie la sauvegarde en ligne.
+`index.html` est la page d'accueil qui mène aux six, et où l'on relie la sauvegarde en ligne.
 
 ## Mettre le site en ligne
 
 1. Sur GitHub, crée un dépôt **public**, `faelorenn` par exemple. Avec un compte gratuit, GitHub Pages ne publie que les dépôts publics.
-2. Dans le dépôt, « Add file », puis « Upload files ». Glisse les sept fichiers : `index.html`, `table.html`, `pnj.html`, `progression.html`, `createur.html`, `rencontres.html`, `README.md`. Valide avec « Commit changes ».
+2. Dans le dépôt, « Add file », puis « Upload files ». Glisse les huit fichiers : `index.html`, `missions.html`, `table.html`, `pnj.html`, `progression.html`, `createur.html`, `rencontres.html`, `README.md`. Valide avec « Commit changes ».
 3. Dans « Settings », rubrique « Code and automation », ouvre « Pages ». Sous « Build and deployment », choisis « Deploy from a branch », puis la branche `main` et le dossier `/ (root)`. « Save ».
 4. Attends quelques minutes (jusqu'à dix, selon GitHub). L'adresse apparaît en haut de la page « Pages », avec « Visit site » : `https://ton-nom.github.io/faelorenn/`.
 

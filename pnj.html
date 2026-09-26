@@ -218,6 +218,7 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-vis
 .aattxt b{font-weight:600}
 .aty{display:inline-block;font-size:9.5px;letter-spacing:.07em;text-transform:uppercase;border:1px solid var(--rule);border-radius:2px;padding:0 4px;margin-right:5px;color:var(--muted);vertical-align:1px}
 .aty.tmag{border-color:var(--plum);color:var(--plum)}
+.aty.tspe{border-color:var(--gold);color:var(--gold)}
 .apart{margin:5px 0 0}
 .atete .aviser{align-self:center}
 .aligne.visee .aviser{background:var(--forest);color:var(--surface)}
@@ -1099,7 +1100,7 @@ function normAdversaire(o){
   const x = {id:txtOu(o.id) || nouvelId('a'), maj:+o.maj || 0, majPv:+o.majPv || 0, supprime:!!o.supprime,
     rencontre:txtOu(o.rencontre), ordre:+o.ordre || 0, nom:txtOu(o.nom), rang:Math.min(5, Math.max(1, n(o.rang) || 1)),
     pvMax:n(o.pvMax), pv:n(o.pv), red:n(o.red), deg:txtOu(o.deg), cartes:n(o.cartes),
-    a2: a2 && txtOu(a2.n) ? {n:txtOu(a2.n), t:a2.t === 'mag' ? 'mag' : 'phy', p:txtOu(a2.p), e:txtOu(a2.e), el:txtOu(a2.el)} : null,
+    a2: a2 && txtOu(a2.n) ? {n:txtOu(a2.n), t:a2.t === 'mag' ? 'mag' : 'phy', p:txtOu(a2.p), e:txtOu(a2.e), el:txtOu(a2.el), ty:txtOu(a2.ty).slice(0, 40)} : null,
     tr: Array.isArray(o.tr) ? o.tr.filter(x => typeof x === 'string').slice(0, 20) : [],
     traits:txtOu(o.traits), p:txtOu(o.p), renf:txtOu(o.renf),
     /* d'où il vient : la créature du livre ou de ton bestiaire, son nom sans numéro, ses familles, ce qu'il laisse */
@@ -3398,7 +3399,8 @@ function copierSeance(e, bouton){
   repli();
 }
 
-const ADV = {"rangs": [{"r": 1, "nom": "Nuisance", "pv": 4, "deg": "d4", "red": 0, "cartes": 1}, {"r": 2, "nom": "Ordinaire", "pv": 8, "deg": "d6", "red": 1, "cartes": 1}, {"r": 3, "nom": "Sérieux", "pv": 14, "deg": "d6+2", "red": 2, "cartes": 1}, {"r": 4, "nom": "Lourd", "pv": 22, "deg": "d8+2", "red": 3, "cartes": 1}, {"r": 5, "nom": "Exceptionnel", "pv": 35, "deg": "d10+2", "red": 3, "cartes": 2}], "pourquoi": ["Ils chassent, et vous êtes sur leur territoire", "Ils gardent quelque chose que vous voulez voir", "Ils fuient autre chose, et ils vous rentrent dedans", "On les a envoyés pour vous", "Ils veulent ce que vous portez", "Ils sont sortis de la Floraison hier", "Ils vous prennent pour quelqu'un d'autre", "Ils sont là depuis plus longtemps que le village", "Ils veulent vous empêcher d'arriver, pas vous tuer", "Ils sont blessés, et ça les rend imprévisibles", "Ils ne vous ont pas encore vus", "Ils veulent parler d'abord"], "creatures": {"1": [{"n": "Rôdeur de bordure", "p": "Il a faim depuis trois jours. Un repas le fait changer de camp", "t": ["gens", "horsloi"], "a2": {"n": "Jet de pierre", "p": "10 pas", "t": "phy", "e": "le dé du rang"}}, {"n": "Chien de ferme altéré", "p": "Il ne lâche plus ce qu'il a mordu. Un jet de FOR par round pour s'en défaire", "t": ["bete", "floraison"], "a2": {"n": "Serrer", "p": "contact", "t": "phy", "e": "aucun dégât, la cible ne se dégage qu'à un jet de FOR"}}, {"n": "Nuée de mouches de sève", "p": "Les armes ne lui font rien. Le feu, le vent et l'eau la dispersent d'un coup", "t": ["floraison"], "a2": {"n": "Envahir", "p": "contact", "t": "mag", "e": "le dé du rang, et rien n'arrête la nuée"}}, {"n": "Gamin armé d'une faux", "p": "Il frappe à d6, pas à d4, et il ne sait pas s'arrêter", "t": ["gens"], "a2": {"n": "Moulinet", "p": "contact", "t": "phy", "e": "d6 au lieu du dé du rang, sur deux cibles côte à côte"}}, {"n": "Rat de ruine", "p": "Il vole un objet et part avec. Il faut le rattraper, pas le tuer", "t": ["bete"], "a2": {"n": "Détrousser", "p": "contact", "t": "phy", "e": "aucun dégât, il emporte un objet et fuit"}}, {"n": "Pilleur isolé", "p": "Il se rend dès qu'il tombe sous la moitié de ses PV", "t": ["gens", "horsloi"], "a2": {"n": "Sommation", "p": "10 pas", "t": "phy", "e": "aucun dégât, il exige ce que tu portes"}}, {"n": "Corbeau de Floraison", "p": "Il vole ce qui brille et le rapporte à son nid, avec le reste", "t": ["bete", "floraison"], "a2": {"n": "Fondre dessus", "p": "contact", "t": "phy", "e": "le dé du rang, puis il reprend de la hauteur"}}, {"n": "Lièvre de pierre", "p": "Réduction 2 au lieu de 0, mais il ne fait aucun dégât. Il veut juste passer", "t": ["bete", "floraison"], "a2": {"n": "Ruer", "p": "contact", "t": "phy", "e": "aucun dégât, la cible recule de 5 pas"}}, {"n": "Fiévreux", "p": "Quelqu'un qu'une Floraison a traversé. Ce qui sort de lui ne suit aucune intention", "t": ["gens", "floraison"], "a2": {"n": "Décharge", "p": "5 pas", "t": "mag", "e": "le dé du rang, et il ne vise personne en particulier"}}, {"n": "Chien errant, et sa meute", "p": "Ils sont cinq. Un seul qui tombe, les quatre autres partent", "t": ["bete"], "a2": {"n": "Encercler", "p": "contact", "t": "phy", "e": "le dé du rang, et la meute prend la cible à revers"}}], "2": [{"n": "Garde de péage", "p": "Il veut votre argent, pas votre peau. Il sonne du cor au deuxième round", "t": ["gens", "soldat"], "a2": {"n": "Sonner du cor", "p": "aucune", "t": "phy", "e": "aucun dégât, des renforts arrivent au round suivant"}}, {"n": "Bandit de route", "p": "Il attaque toujours celui qui porte le sac le plus lourd", "t": ["gens", "horsloi"], "a2": {"n": "Croc-en-jambe", "p": "contact", "t": "phy", "e": "aucun dégât, la cible tombe"}}, {"n": "Sanglier d'ombre", "p": "Invisible tant qu'il ne charge pas. Une lumière vive le fige un round", "t": ["bete", "floraison"], "a2": {"n": "Charge d'ombre", "p": "10 pas", "t": "mag", "e": "le dé du rang, et il redevient invisible"}}, {"n": "Chien de guerre du Sang", "p": "Dressé pour désarmer. S'il touche, tu lâches ton arme", "t": ["bete", "soldat"], "a2": {"n": "Désarmer", "p": "contact", "t": "phy", "e": "aucun dégât, la cible lâche son arme"}}, {"n": "Contrebandier", "p": "Il porte un catalyseur volé et s'en sert mal : 1d6 de feu autour de lui s'il tombe", "t": ["gens", "horsloi", "pratique"], "a2": {"n": "Catalyseur mal tenu", "p": "5 pas", "t": "mag", "e": "1d6 de feu, à lui aussi s'il rate"}}, {"n": "Mante de sève", "p": "Réduction 3 de face, 0 de dos", "t": ["bete", "floraison"], "a2": {"n": "Faux de sève", "p": "contact", "t": "mag", "e": "le dé du rang, et seulement de face"}}, {"n": "Loup de bordure", "p": "Il n'attaque jamais seul, et jamais de face", "t": ["bete"], "a2": {"n": "Harceler", "p": "contact", "t": "phy", "e": "le dé du rang, uniquement si un autre loup est au contact"}}, {"n": "Milicien de village", "p": "Il se bat mal, mais il connaît chaque pierre du lieu", "t": ["gens", "soldat"], "a2": {"n": "Connaître le terrain", "p": "10 pas", "t": "phy", "e": "aucun dégât, il se place où tu ne peux pas le suivre"}}, {"n": "Bête de Floraison végétale", "p": "Elle repousse : 1d4 PV par round tant que la Floraison brûle encore", "t": ["floraison"], "a2": {"n": "Repousse", "p": "aucune", "t": "mag", "e": "aucun dégât, elle récupère 1d4 PV"}}, {"n": "Déserteur", "p": "Il connaît les ordres de la Bannière, et il les vendra pour un passage", "t": ["gens", "soldat", "horsloi"], "a2": {"n": "Marchander", "p": "aucune", "t": "phy", "e": "aucun dégât, il propose un passage contre un service"}}], "3": [{"n": "Sergent du Sang", "p": "Les Ordinaires autour de lui gagnent +2 aux dégâts tant qu'il tient debout", "t": ["gens", "soldat"], "a2": {"n": "Ordre", "p": "aucune", "t": "phy", "e": "aucun dégât, les Ordinaires autour de lui gagnent +2 aux dégâts"}}, {"n": "Ours de brume", "p": "On ne le voit qu'à trois pas. À trois pas, il est déjà au contact", "t": ["bete", "floraison"], "a2": {"n": "Sortir de la brume", "p": "contact", "t": "phy", "e": "le dé du rang, et personne ne l'a vu venir"}}, {"n": "Golem de chantier", "p": "Réduction 4. Il ne poursuit personne au-delà du chantier", "t": ["golem"], "a2": {"n": "Coup de masse", "p": "contact", "t": "phy", "e": "d8 au lieu du dé du rang, mais il ne se déplace pas"}}, {"n": "Braconnier de Floraison", "p": "Il connaît la Floraison mieux que vous, et il a posé des pièges partout", "t": ["gens", "horsloi"], "a2": {"n": "Déclencher un piège", "p": "à vue", "t": "phy", "e": "le dé du rang, sur qui marche là où il a posé"}}, {"n": "Cerf-roi altéré", "p": "Il charge en ligne droite, 2d6, et il traverse tout ce qui est sur le chemin", "t": ["bete", "floraison"], "a2": {"n": "Charge en ligne", "p": "20 pas", "t": "phy", "e": "2d6, et il traverse tout ce qui est sur le chemin"}}, {"n": "Scelleur véreux", "p": "Il pose un sceau par combat : une porte se ferme, ou une arme reste au fourreau", "t": ["gens", "horsloi", "pratique"], "a2": {"n": "Poser un sceau", "p": "à vue", "t": "mag", "e": "aucun dégât, une porte se ferme ou une arme reste au fourreau"}}, {"n": "Ilvès renégat", "p": "Un souffle de feu à vue, 2d6, une fois tous les trois rounds", "t": ["gens", "pratique"], "a2": {"n": "Souffle de feu", "p": "à vue", "t": "mag", "e": "2d6, une fois tous les trois rounds"}}, {"n": "Pirate des Larges", "p": "Il vous pousse à l'eau dès qu'il y a de l'eau", "t": ["gens", "horsloi"], "a2": {"n": "Crocheter", "p": "contact", "t": "phy", "e": "aucun dégât, la cible est poussée à l'eau s'il y en a"}}, {"n": "Ce qui vit dans les cales", "p": "Il éteint les lumières avant d'attaquer", "t": ["floraison"], "a2": {"n": "Éteindre", "p": "à vue", "t": "mag", "e": "aucun dégât, toutes les lumières meurent pour 3 rounds"}}, {"n": "Mercenaire vétéran", "p": "Il a une réaction de plus que tout le monde", "t": ["gens", "soldat"], "a2": {"n": "Seconde réaction", "p": "aucune", "t": "phy", "e": "il pare ou esquive une fois de plus que tout le monde"}}], "4": [{"n": "Capitaine du Sang", "p": "Il arrive avec quatre Ordinaires, et il les envoie devant", "t": ["gens", "soldat"], "a2": {"n": "Envoyer devant", "p": "aucune", "t": "phy", "e": "aucun dégât, ses quatre Ordinaires attaquent à sa place"}}, {"n": "Golem de carrière", "p": "Réduction 5. Chaque coup qu'il encaisse lui arrache un éclat : ses dégâts baissent de 1", "t": ["golem"], "a2": {"n": "Éclat de carrière", "p": "10 pas", "t": "phy", "e": "le dé du rang, et il perd 1 à ses dégâts"}}, {"n": "Ori'Ican en fureur", "p": "Il ne peut plus s'arrêter. Il frappe l'allié le plus proche si aucun ennemi n'est à portée", "t": ["gens"], "a2": {"n": "Fureur", "p": "contact", "t": "phy", "e": "le dé du rang sur l'allié le plus proche si aucun ennemi n'est à portée"}}, {"n": "Bête-mère", "p": "Elle appelle 1d4 Nuisances au premier round, puis encore autant au troisième", "t": ["bete", "floraison"], "a2": {"n": "Appeler", "p": "aucune", "t": "mag", "e": "aucun dégât, 1d4 Nuisances arrivent"}}, {"n": "Écorcien qui a brûlé", "p": "Le feu l'a rendu fou. Réduction 4, mais le feu compte double contre lui", "t": ["gens", "floraison"], "a2": {"n": "Flambée", "p": "5 pas", "t": "mag", "e": "le dé du rang, et le feu compte double contre lui en retour"}}, {"n": "Maître de Nïhr", "p": "Une silhouette de lui se tient à cinq pas. La première attaque de chaque round frappe la fausse", "t": ["gens", "pratique"], "a2": {"n": "Ombre double", "p": "à vue", "t": "mag", "e": "le dé du rang, et la première attaque de chaque round frappe la fausse silhouette"}}, {"n": "Ce qui habite la ruine", "p": "Le bâtiment se réorganise autour de lui : les portes changent de place chaque round", "t": ["floraison"], "a2": {"n": "Refermer la ruine", "p": "aucune", "t": "mag", "e": "aucun dégât, les portes changent de place"}}, {"n": "Chef de bande", "p": "Il prend les otages avant de se battre", "t": ["gens", "horsloi"], "a2": {"n": "Prendre en otage", "p": "contact", "t": "phy", "e": "aucun dégât, il tient quelqu'un devant lui"}}, {"n": "Aurochs de mythril", "p": "Sa peau vaut une fortune, et elle vaut réduction 5", "t": ["bete", "floraison"], "a2": {"n": "Encorner", "p": "contact", "t": "phy", "e": "le dé du rang, et la cible recule de 10 pas"}}, {"n": "Praticien de Zhern, banni", "p": "Un arc à vue, 2d6+2 sur qui porte du métal. Il vise les armures d'abord", "t": ["gens", "pratique"], "a2": {"n": "Arc de Zhern", "p": "à vue", "t": "mag", "e": "2d6+2 sur qui porte du métal"}}], "5": [{"n": "Un Assis", "p": "Il ne vous attaque pas. Il mange la Floraison, et ce qui est entre lui et elle est écrasé", "t": ["floraison"], "a2": {"n": "Écraser", "p": "contact", "t": "phy", "e": "le dé du rang sur ce qui est entre lui et la Floraison"}}, {"n": "Golem d'un vieux chantier", "p": "Réduction 6. Il finit un ouvrage dont personne ne se souvient, et il ne s'arrêtera pas", "t": ["golem"], "a2": {"n": "Poursuivre l'ouvrage", "p": "contact", "t": "phy", "e": "le dé du rang, et rien ne l'arrête"}}, {"n": "Le centre d'une Floraison Vivant", "p": "Tant qu'elle est alimentée, il revient à 10 PV la nuit suivante", "t": ["floraison"], "a2": {"n": "Refleurir", "p": "aucune", "t": "mag", "e": "aucun dégât, il revient à 10 PV la nuit suivante"}}, {"n": "Un Confondu", "p": "Quelqu'un qui ne se distingue plus tout à fait de la Floraison. Tout ce qu'il touche s'altère, et il ne le veut pas", "t": ["gens", "floraison"], "a2": {"n": "Altérer", "p": "contact", "t": "mag", "e": "le dé du rang, et ce qu'il touche change sans qu'il le veuille"}}, {"n": "Colonne du Sang", "p": "Douze soldats qui agissent comme un seul. Deux cartes, et ils encerclent", "t": ["gens", "soldat"], "a2": {"n": "Encercler", "p": "contact", "t": "phy", "e": "le dé du rang, et la colonne referme la ligne"}}, {"n": "La Chose de la canopée", "p": "Elle attaque d'en haut et remonte. Impossible à atteindre entre deux passages", "t": ["bete", "floraison"], "a2": {"n": "Piqué", "p": "d'en haut", "t": "phy", "e": "le dé du rang, puis elle remonte hors de portée"}}, {"n": "Le Gardien d'une ruine de l'Avant", "p": "Il ne sort jamais. À l'intérieur, il connaît chaque angle", "t": ["golem"], "a2": {"n": "Connaître chaque angle", "p": "à vue", "t": "phy", "e": "le dé du rang, depuis un endroit que tu n'avais pas vu"}}, {"n": "Marchefleur retourné", "p": "Une Floraison l'a gardé trop longtemps. Il a toutes vos Pratiques, et aucun contrôle sur elles", "t": ["gens", "pratique", "floraison"], "a2": {"n": "Pratique volée", "p": "à vue", "t": "mag", "e": "le dé du rang, avec une de vos Pratiques et aucun contrôle"}}, {"n": "Ce qui pousse dans les terres creuses", "p": "Il n'a pas de forme fixe. La réduction qui marche change chaque round", "t": ["floraison"], "a2": {"n": "Changer de forme", "p": "contact", "t": "mag", "e": "le dé du rang, et la réduction qui marche change chaque round"}}, {"n": "La bête que le village nourrit", "p": "Elle est là depuis quatre générations, et le village se battra pour elle", "t": ["bete", "floraison"], "a2": {"n": "Ce qu'on lui a appris", "p": "contact", "t": "phy", "e": "le dé du rang, et le village la défendra"}}]}, "familles": [{"k": "gens", "l": "Gens"}, {"k": "horsloi", "l": "Hors-la-loi"}, {"k": "soldat", "l": "Soldats"}, {"k": "bete", "l": "Bêtes"}, {"k": "floraison", "l": "Floraison"}, {"k": "pratique", "l": "Praticiens"}, {"k": "golem", "l": "Golems"}], "attaques": {"regle": "Un adversaire a deux attaques et n'en utilise qu'une par round. L'attaque de rang est au contact, physique, au dé de son rang. L'attaque propre est ci-dessous.", "armure": "La réduction d'armure s'applique au physique. Elle s'applique aussi au magique quand l'élément envoie de la matière : Sève, eau, pierre, vent, Mue. Le feu, l'onde, l'ombre et le sacré la traversent.", "humain": "Un humain compte une fois et demie les dégâts magiques."}};
+/* le bestiaire, tiré du classeur de Gaël (feuille Bestiaire) par classeur/vers_site.py */
+const ADV = {"rangs": [{"r": 1, "nom": "Nuisance", "pv": 4, "deg": "d4", "red": 0, "cartes": 1}, {"r": 2, "nom": "Ordinaire", "pv": 8, "deg": "d6", "red": 1, "cartes": 1}, {"r": 3, "nom": "Sérieux", "pv": 14, "deg": "d6+2", "red": 2, "cartes": 1}, {"r": 4, "nom": "Lourd", "pv": 22, "deg": "d8+2", "red": 3, "cartes": 1}, {"r": 5, "nom": "Exceptionnel", "pv": 35, "deg": "d10+2", "red": 3, "cartes": 2}], "pourquoi": ["Ils chassent, et vous êtes sur leur territoire", "Ils gardent quelque chose que vous voulez voir", "Ils fuient autre chose, et ils vous rentrent dedans", "On les a envoyés pour vous", "Ils veulent ce que vous portez", "Ils sont sortis de la Floraison hier", "Ils vous prennent pour quelqu'un d'autre", "Ils sont là depuis plus longtemps que le village", "Ils veulent vous empêcher d'arriver, pas vous tuer", "Ils sont blessés, et ça les rend imprévisibles", "Ils ne vous ont pas encore vus", "Ils veulent parler d'abord"], "creatures": {"1": [{"id": "livre-animal-de-taille-moyenne", "n": "Animal de taille moyenne", "p": "Assez gros pour faire mal, assez petit pour qu'on le sous-estime. Il défend son coin.", "t": ["bete"], "a2": {"n": "Repousser", "ty": "Corps à corps (Perforant)", "t": "phy", "p": "contact", "e": "le dé du rang, et la cible recule de 5 pas"}}, {"id": "livre-animal-volant", "n": "Animal volant", "p": "Il tombe du ciel, frappe et remonte. On ne l'atteint qu'au moment où il frappe.", "t": ["bete"], "a2": {"n": "Fondre dessus", "ty": "Corps à corps (Tranchant)", "t": "phy", "p": "contact", "e": "le dé du rang, puis il reprend de la hauteur"}}, {"id": "livre-petit-animal", "n": "Petit animal", "p": "Il se glisse partout : dans les sacs, sous les armures, entre les jambes.", "t": ["bete"], "a2": {"n": "Se faufiler", "ty": "Corps à corps (Perforant)", "t": "phy", "p": "contact", "e": "le dé du rang, et la réduction d'armure ne compte pas"}}, {"id": "livre-rat-epineux", "n": "Rat-épineux", "p": "Toucher le rat, c'est toucher les épines. Même mort, il pique encore.", "t": ["chimere", "floraison"], "a2": {"n": "Hérisser", "ty": "Spécial", "t": "phy", "p": "contact", "e": "aucun dégât, qui le frappe au contact ce round prend le dé du rang"}}, {"id": "livre-slime", "n": "Slime", "p": "Une flaque qui a décidé de bouger. Elle colle, et elle digère lentement.", "t": ["elementaire", "floraison"], "a2": {"n": "Engluer", "ty": "Corps à corps (Contondant)", "t": "phy", "p": "contact", "e": "aucun dégât, la cible est collée : un jet de FOR pour se dégager"}}, {"id": "livre-plante-vivante", "n": "Plante vivante", "p": "Une racine qui se tend, une liane qui serre. On ne la voit qu'en marchant dessus.", "t": ["flore", "floraison"], "a2": {"n": "Entraver", "ty": "Corps à corps (Contondant)", "t": "phy", "p": "contact", "e": "aucun dégât, la cible ne se déplace plus avant un jet de FOR"}}, {"id": "livre-spore-explosive", "n": "Spore explosive", "p": "Une boule gonflée qui éclate quand on s'approche. Le nuage fait tousser, ou pire.", "t": ["flore", "floraison"], "a2": {"n": "Éclater", "ty": "Magique", "t": "mag", "p": "5 pas", "e": "le dé du rang sur tout ce qui est à 5 pas, et elle disparaît", "el": "seve"}}, {"id": "livre-sentinelle-defectueuse", "n": "Sentinelle défectueuse", "p": "Une machine de l'Avant qui garde encore sa porte. Elle se trompe souvent de cible.", "t": ["golem", "relique"], "a2": {"n": "Tir erratique", "ty": "Distance", "t": "phy", "p": "10 pas", "e": "le dé du rang sur la cible la plus proche, quelle qu'elle soit"}}, {"id": "livre-acolyte", "n": "Acolyte", "p": "Il sert quelqu'un de plus fort, et il le tient debout.", "t": ["gens", "pratique"], "a2": {"n": "Soigner", "ty": "Spécial", "t": "phy", "p": "10 pas", "e": "aucun dégât, un allié récupère 1d4 PV"}}, {"id": "livre-archer", "n": "Archer", "p": "Il reste à distance, derrière quelqu'un ou quelque chose.", "t": ["gens", "soldat", "horsloi"], "a2": {"n": "Flèche", "ty": "Distance", "t": "phy", "p": "20 pas", "e": "le dé du rang"}}, {"id": "livre-bandit", "n": "Bandit", "p": "Il veut ce que vous portez, pas mourir pour ça.", "t": ["gens", "horsloi"], "a2": {"n": "Sommation", "ty": "Spécial", "t": "phy", "p": "10 pas", "e": "aucun dégât, il exige ce que vous portez ; il fuit sous la moitié de ses PV"}}, {"id": "livre-contrebandier", "n": "Contrebandier", "p": "Il transporte ce qu'il ne devrait pas avoir, et il le protège mal.", "t": ["gens", "horsloi"], "a2": {"n": "Coup bas", "ty": "Corps à corps (Tranchant)", "t": "phy", "p": "contact", "e": "le dé du rang, puis il recule de 10 pas"}}, {"id": "livre-ecuyer", "n": "Écuyer", "p": "Il suit plus fort que lui, et il veut qu'on le remarque.", "t": ["gens", "soldat"], "a2": {"n": "Couvrir", "ty": "Spécial", "t": "phy", "p": "contact", "e": "aucun dégât, il prend pour un allié la prochaine attaque qui le vise"}}, {"id": "livre-gamin-des-rues", "n": "Gamin des rues", "p": "Il est plus rapide que vous, et il connaît les passages.", "t": ["gens", "horsloi"], "a2": {"n": "Détrousser", "ty": "Corps à corps (Tranchant)", "t": "phy", "p": "contact", "e": "aucun dégât, il emporte un objet et s'enfuit"}}, {"id": "livre-milicien", "n": "Milicien", "p": "Il défend chez lui avec ce qu'il a sous la main.", "t": ["gens", "soldat"], "a2": {"n": "Donner l'alerte", "ty": "Spécial", "t": "phy", "p": "aucune", "e": "aucun dégât, 1d4 autres miliciens arrivent au round suivant"}}, {"id": "livre-nuee-d-insectes", "n": "Nuée d'insectes", "p": "Mille petites piqûres. Les armes n'y font rien, le feu et le vent la dispersent.", "t": ["insecte", "floraison"], "a2": {"n": "Envahir", "ty": "Corps à corps (Perforant)", "t": "phy", "p": "contact", "e": "le dé du rang, et la réduction d'armure ne compte pas"}}], "2": [{"id": "livre-loup", "n": "Loup", "p": "Jamais seul. Pendant qu'un loup occupe la proie, les autres cherchent son dos.", "t": ["bete"], "a2": {"n": "Harceler", "ty": "Corps à corps (Perforant)", "t": "phy", "p": "contact", "e": "le dé du rang, +2 si un autre loup est au contact de la cible"}}, {"id": "livre-oiseau-geant", "n": "Oiseau géant", "p": "Son ombre passe avant lui. Il cherche quelque chose à emporter jusqu'à son nid.", "t": ["bete", "floraison"], "a2": {"n": "Emporter", "ty": "Corps à corps (Tranchant)", "t": "phy", "p": "contact", "e": "une cible légère est soulevée puis lâchée 5 pas plus loin : elle tombe de 5 mètres"}}, {"id": "livre-molosse-greffe", "n": "Molosse greffé", "p": "Quelqu'un lui a cousu autre chose sur le corps. Il n'obéit qu'à un seul maître.", "t": ["chimere", "soldat", "horsloi"], "a2": {"n": "Mâchoire greffée", "ty": "Corps à corps (Perforant)", "t": "phy", "p": "contact", "e": "le dé du rang, et la cible ne se dégage qu'à un jet de FOR"}}, {"id": "livre-vase-corrosive", "n": "Vase corrosive", "p": "Elle ronge ce qu'elle touche, le métal d'abord.", "t": ["elementaire", "floraison"], "a2": {"n": "Ronger", "ty": "Corps à corps (Contondant)", "t": "phy", "p": "contact", "e": "le dé du rang, et l'armure de la cible perd 1 de réduction jusqu'à ce qu'on la répare"}}, {"id": "livre-plante-carnivore-geante", "n": "Plante carnivore géante", "p": "Elle attend la bouche ouverte, et elle sait attendre.", "t": ["flore", "floraison"], "a2": {"n": "Happer", "ty": "Corps à corps (Perforant)", "t": "phy", "p": "contact", "e": "le dé du rang, et la cible est tenue jusqu'à un jet de FOR"}}, {"id": "livre-drone", "n": "Drone", "p": "Il flotte, observe, et revient toujours au même endroit. Quelque chose écoute peut-être.", "t": ["golem", "relique"], "a2": {"n": "Éclair", "ty": "Magique", "t": "mag", "p": "10 pas", "e": "le dé du rang, puis il reprend de la hauteur", "el": "onde"}}, {"id": "livre-braconnier", "n": "Braconnier", "p": "Il chasse là où c'est interdit, et il a posé ses pièges avant votre arrivée.", "t": ["gens", "horsloi", "floraison"], "a2": {"n": "Piège", "ty": "Distance", "t": "phy", "p": "à vue", "e": "le dé du rang sur qui marche là où il a posé"}}, {"id": "livre-fanatique-de-la-floraison", "n": "Fanatique de la Floraison", "p": "Il croit que la Floraison l'a choisi, et il la défendra contre vous.", "t": ["gens", "floraison"], "a2": {"n": "Offrande", "ty": "Magique", "t": "mag", "p": "contact", "e": "le dé du rang, et il perd lui-même autant de PV", "elt": "celui de la Floraison"}}, {"id": "livre-homme-d-armes", "n": "Homme d'armes", "p": "Armé, entraîné, payé. Il se bat pour qui paie le mieux.", "t": ["gens", "soldat", "horsloi"], "a2": {"n": "Tenir la ligne", "ty": "Corps à corps (Tranchant)", "t": "phy", "p": "contact", "e": "le dé du rang, et personne ne passe à côté de lui ce round"}}, {"id": "livre-praticien-debutant", "n": "Praticien débutant", "p": "Il connaît une Pratique, et il s'en sert trop tôt.", "t": ["gens", "pratique"], "a2": {"n": "Pratique", "ty": "Magique", "t": "mag", "p": "10 pas", "e": "le dé du rang ; s'il rate, la Pratique le touche aussi", "elt": "au choix"}}, {"id": "livre-ouvriere-blindee", "n": "Ouvrière blindée", "p": "Une carapace qui travaille pour la colonie. Elle ne se bat que si on gêne le travail.", "t": ["insecte", "floraison"], "a2": {"n": "Mandibules", "ty": "Corps à corps (Tranchant)", "t": "phy", "p": "contact", "e": "le dé du rang ; de face, sa réduction monte à 3"}}], "3": [{"id": "livre-animal-geant", "n": "Animal géant", "p": "Une bête ordinaire qu'une Floraison a laissée grandir. Elle ne connaît pas encore sa force.", "t": ["bete", "floraison"], "a2": {"n": "Piétiner", "ty": "Corps à corps (Contondant)", "t": "phy", "p": "contact", "e": "le dé du rang, et tout ce qui est au contact tombe"}}, {"id": "livre-manticore", "n": "Manticore", "p": "Trop de bêtes en une. Elle chasse ce qui a peur, et elle sent la peur.", "t": ["chimere", "floraison"], "a2": {"n": "Aiguillon", "ty": "Distance", "t": "phy", "p": "10 pas", "e": "le dé du rang, et la cible est à −10 à son prochain jet"}}, {"id": "livre-gros-slime", "n": "Gros slime", "p": "Coupé en deux, il fait deux slimes. Le feu le gêne plus que la lame.", "t": ["elementaire", "floraison"], "a2": {"n": "Se diviser", "ty": "Spécial", "t": "phy", "p": "aucune", "e": "aucun dégât, il se sépare en deux Nuisances qui agissent au round suivant"}}, {"id": "livre-marche-bois", "n": "Marche-bois", "p": "Un arbre qui a appris à marcher, lentement. Il protège la forêt, pas ceux qui la traversent.", "t": ["flore", "floraison"], "a2": {"n": "Branche", "ty": "Corps à corps (Contondant)", "t": "phy", "p": "5 pas", "e": "le dé du rang, et la cible tombe"}}, {"id": "livre-golem-moussu", "n": "Golem moussu", "p": "Une pierre qu'une Floraison a levée. La mousse le répare pendant qu'il se bat.", "t": ["golem", "floraison"], "a2": {"n": "Poing de pierre", "ty": "Corps à corps (Contondant)", "t": "phy", "p": "contact", "e": "le dé du rang, et il récupère 1d4 PV"}}, {"id": "livre-robot-humanoide", "n": "Robot humanoïde", "p": "Il a notre forme, et il imite nos gestes sans les comprendre.", "t": ["golem", "relique"], "a2": {"n": "Imiter", "ty": "Corps à corps (Contondant)", "t": "phy", "p": "contact", "e": "le dé du rang contre qui l'a frappé au round précédent"}}, {"id": "livre-alchimiste-de-combat", "n": "Alchimiste de combat", "p": "Des fioles à la ceinture, et aucune ne contient la même chose.", "t": ["gens", "pratique"], "a2": {"n": "Fiole", "ty": "Distance", "t": "phy", "p": "10 pas", "e": "le dé du rang sur tout ce qui est à 2 pas du point d'impact"}}, {"id": "livre-assassin", "n": "Assassin", "p": "On ne le voit qu'une fois, au moment où il frappe.", "t": ["gens", "horsloi"], "a2": {"n": "Frapper dans le dos", "ty": "Corps à corps (Perforant)", "t": "phy", "p": "contact", "e": "2d6 si la cible ne l'a pas vu venir, le dé du rang sinon"}}, {"id": "livre-chevalier", "n": "Chevalier", "p": "Une armure, un serment, et l'habitude de gagner.", "t": ["gens", "soldat"], "a2": {"n": "Charge", "ty": "Corps à corps (Perforant)", "t": "phy", "p": "10 pas", "e": "le dé du rang, et la cible tombe"}}, {"id": "livre-saboteur", "n": "Saboteur", "p": "Il ne cherche pas le combat. Il cherche ce qui vous fait avancer.", "t": ["gens", "horsloi", "soldat"], "a2": {"n": "Faire sauter", "ty": "Distance", "t": "phy", "p": "10 pas", "e": "le dé du rang sur tout ce qui est à 3 pas du point d'impact, et le passage est coupé"}}, {"id": "livre-insecte-geant", "n": "Insecte géant", "p": "Une seule bête, grande comme un cheval, qui n'aurait jamais dû grandir.", "t": ["insecte", "floraison"], "a2": {"n": "Dard", "ty": "Corps à corps (Perforant)", "t": "phy", "p": "contact", "e": "le dé du rang, et la cible est à −10 à ses jets jusqu'au prochain repos court"}}], "4": [{"id": "livre-animal-alpha", "n": "Animal alpha", "p": "Le plus vieux, le plus marqué. La meute tient tant qu'il tient debout.", "t": ["bete"], "a2": {"n": "Appel de la meute", "ty": "Spécial", "t": "phy", "p": "aucune", "e": "aucun dégât, 1d4 Nuisances de son espèce arrivent au round suivant"}}, {"id": "livre-chimere", "n": "Chimère", "p": "Chaque tête veut autre chose. On ne sait jamais laquelle va mordre.", "t": ["chimere", "floraison"], "a2": {"n": "Têtes multiples", "ty": "Corps à corps (Perforant)", "t": "phy", "p": "contact", "e": "le dé du rang sur deux cibles au contact"}}, {"id": "livre-avatar-de-la-floraison", "n": "Avatar de la Floraison", "p": "La Floraison s'est donné un corps pour se défendre. Il ne s'éloigne jamais d'elle.", "t": ["elementaire", "floraison"], "a2": {"n": "Pulsation", "ty": "Magique", "t": "mag", "p": "10 pas", "e": "le dé du rang sur tout ce qui est à 10 pas de lui", "elt": "tiré un élément au hasard"}}, {"id": "livre-gardien-de-la-floraison", "n": "Gardien de la Floraison", "p": "Il se tient entre la Floraison et ceux qui viennent la défaire. Il ne poursuit personne au-delà.", "t": ["flore", "floraison"], "a2": {"n": "Barrer la route", "ty": "Magique", "t": "mag", "p": "10 pas", "e": "le dé du rang sur qui s'approche du centre de la Floraison", "el": "seve"}}, {"id": "livre-robot-geant", "n": "Robot géant", "p": "Il dormait sous la ruine. Le bruit l'a réveillé.", "t": ["golem", "relique"], "a2": {"n": "Balayer", "ty": "Corps à corps (Contondant)", "t": "phy", "p": "5 pas", "e": "le dé du rang sur tout ce qui est devant lui"}}, {"id": "livre-bretteur", "n": "Bretteur", "p": "Il se bat pour le plaisir, et ça se voit.", "t": ["gens", "horsloi", "soldat"], "a2": {"n": "Botte", "ty": "Corps à corps (Perforant)", "t": "phy", "p": "contact", "e": "le dé du rang, et il pare la prochaine attaque de la cible"}}, {"id": "livre-capitaine", "n": "Capitaine", "p": "Il donne les ordres, et on les suit. Les siens se battent mieux tant qu'il crie.", "t": ["gens", "soldat", "horsloi"], "a2": {"n": "Donner l'ordre", "ty": "Spécial", "t": "phy", "p": "aucune", "e": "aucun dégât, ses alliés gagnent +2 aux dégâts ce round"}}, {"id": "livre-praticien-expert", "n": "Praticien expert", "p": "Il connaît plusieurs Pratiques, et il sait lesquelles vous gênent.", "t": ["gens", "pratique"], "a2": {"n": "Pratique maîtrisée", "ty": "Magique", "t": "mag", "p": "à vue", "e": "2d6+2, une fois tous les trois rounds", "elt": "au choix"}}, {"id": "livre-briseur-de-remparts", "n": "Briseur de remparts", "p": "La colonie l'envoie contre ce qui lui résiste : murs, portes, boucliers.", "t": ["insecte", "floraison"], "a2": {"n": "Enfoncer", "ty": "Corps à corps (Contondant)", "t": "phy", "p": "contact", "e": "le dé du rang, et la réduction de la cible compte pour 0"}}], "5": [{"id": "livre-grand-devoreur", "n": "Grand Dévoreur", "p": "Il mange, et le paysage change derrière lui. Personne n'a vu la fin de son corps.", "t": ["bete", "floraison"], "a2": {"n": "Engloutir", "ty": "Corps à corps (Perforant)", "t": "phy", "p": "contact", "e": "le dé du rang, et une cible qui rate sa réaction est avalée : elle ressort quand il perd la moitié de ses PV"}}, {"id": "livre-leviathan-de-synthese", "n": "Léviathan de synthèse", "p": "L'Avant l'a fabriqué pour une raison que personne ne connaît. Il l'accomplit encore.", "t": ["chimere", "relique"], "a2": {"n": "Onde de rappel", "ty": "Magique", "t": "mag", "p": "à vue", "e": "le dé du rang sur tout ce qui est devant lui, et la cible agit en dernier au round suivant", "el": "onde"}}, {"id": "livre-amibe-primordiale", "n": "Amibe primordiale", "p": "Elle absorbe ce qu'elle touche, et elle en grandit.", "t": ["elementaire", "floraison"], "a2": {"n": "Absorber", "ty": "Corps à corps (Contondant)", "t": "phy", "p": "contact", "e": "le dé du rang, et elle récupère autant de PV qu'elle en retire"}}, {"id": "livre-behemoth-sylvestre", "n": "Béhémoth sylvestre", "p": "Une colline de mousse qui se lève. Là où il passe, la forêt suit.", "t": ["flore", "floraison"], "a2": {"n": "Piétinement", "ty": "Corps à corps (Contondant)", "t": "phy", "p": "contact", "e": "le dé du rang sur tout ce qui est au contact, et le sol devient difficile à traverser"}}, {"id": "livre-boss-vegetal-massif", "n": "Boss végétal massif", "p": "Le cœur d'une forêt en Floraison. Tout ce qui pousse autour de lui obéit.", "t": ["flore", "floraison"], "a2": {"n": "Faire pousser", "ty": "Spécial", "t": "phy", "p": "aucune", "e": "aucun dégât, 1d4 Plantes vivantes surgissent autour des personnages"}}, {"id": "livre-titan-mecanique", "n": "Titan mécanique", "p": "La ruine entière s'est levée. Il suit un ordre que plus personne ne peut annuler.", "t": ["golem", "relique"], "a2": {"n": "Rayon", "ty": "Magique", "t": "mag", "p": "à vue", "e": "2d10 en ligne droite, une fois tous les trois rounds", "el": "feu"}}, {"id": "livre-archimage", "n": "Archimage", "p": "Les autres praticiens baissent la voix quand il passe.", "t": ["gens", "pratique"], "a2": {"n": "Déchaîner", "ty": "Magique", "t": "mag", "p": "à vue", "e": "le dé du rang sur tout ce qui est à 10 pas du point visé", "elt": "au choix"}}, {"id": "livre-caid", "n": "Caïd", "p": "Toute la ville lui doit quelque chose, et il ne se bat jamais seul.", "t": ["gens", "horsloi"], "a2": {"n": "Ses hommes", "ty": "Spécial", "t": "phy", "p": "aucune", "e": "aucun dégât, 1d4+1 Nuisances hors-la-loi arrivent"}}, {"id": "livre-champion", "n": "Champion", "p": "Il n'a jamais perdu, et il veut vous voir essayer.", "t": ["gens", "soldat", "horsloi"], "a2": {"n": "Coup de champion", "ty": "Corps à corps (Tranchant)", "t": "phy", "p": "contact", "e": "le dé du rang deux fois, sur la même cible ou sur deux"}}, {"id": "livre-marechal", "n": "Maréchal", "p": "Il ne se bat pas : il fait se battre les autres, et il gagne.", "t": ["gens", "soldat"], "a2": {"n": "Manœuvre", "ty": "Spécial", "t": "phy", "p": "aucune", "e": "aucun dégât, tous ses alliés attaquent une seconde fois ce round"}}, {"id": "livre-reine-insecte", "n": "Reine insecte", "p": "Elle ne quitte jamais le cœur de la colonie, et toute la colonie la protège.", "t": ["insecte", "floraison"], "a2": {"n": "Pondre", "ty": "Spécial", "t": "phy", "p": "aucune", "e": "aucun dégât, 1d4 Nuisances de la colonie éclosent autour d'elle"}}]}, "familles": [{"k": "bete", "l": "Bête", "g": "cat"}, {"k": "chimere", "l": "Chimère", "g": "cat"}, {"k": "elementaire", "l": "Élémentaire", "g": "cat"}, {"k": "flore", "l": "Flore consciente", "g": "cat"}, {"k": "golem", "l": "Golem", "g": "cat"}, {"k": "gens", "l": "Humanoïde", "g": "cat"}, {"k": "insecte", "l": "Insectoïde", "g": "cat"}, {"k": "soldat", "l": "Soldat", "g": "sous"}, {"k": "horsloi", "l": "Hors-la-loi", "g": "sous"}, {"k": "pratique", "l": "Praticien", "g": "sous"}, {"k": "floraison", "l": "Floraison", "g": "sous"}, {"k": "relique", "l": "Relique de l'Avant", "g": "sous"}], "groupes": [{"g": "cat", "l": "Catégorie"}, {"g": "sous", "l": "Sous-catégorie"}], "types": [{"k": "Corps à corps (Tranchant)", "t": "phy", "l": "corps à corps · tranchant"}, {"k": "Corps à corps (Contondant)", "t": "phy", "l": "corps à corps · contondant"}, {"k": "Corps à corps (Perforant)", "t": "phy", "l": "corps à corps · perforant"}, {"k": "Distance", "t": "phy", "l": "distance"}, {"k": "Magique", "t": "mag", "l": "magique"}, {"k": "Spécial", "t": "phy", "l": "spécial"}], "attaques": {"regle": "Un adversaire a deux attaques et n'en utilise qu'une par round. L'attaque de rang est au contact, physique, au dé de son rang. L'attaque propre est ci-dessous.", "armure": "La réduction d'armure s'applique au physique. Elle s'applique aussi au magique quand l'élément envoie de la matière : Sève, eau, pierre, vent, Mue. Le feu, l'onde, l'ombre et le sacré la traversent.", "humain": "Un humain compte une fois et demie les dégâts magiques."}};
 
 /* ============ le tirage d'une rencontre : commun au Registre des Rencontres et au Registre de la Table ============
    Le budget vient du nombre de personnages et du genre de combat ; les adversaires viennent du livre et du
@@ -3420,8 +3422,11 @@ const SOURCES = [
 const RANG = {};
 ADV.rangs.forEach(r => RANG[r.r] = r);
 
-/* les entrees du livre recoivent un identifiant stable */
-for(let r = 1; r <= 5; r++) ADV.creatures[r].forEach((c, i) => { c.src = 'livre'; c.id = 'livre-' + r + '-' + (i + 1); c.r = r; });
+/* les entrées du livre portent leur identifiant, écrit dans le bestiaire (livre-loup) : il ne bouge pas quand
+   l'ordre des entrées change. Ceux de l'ancien bestiaire (livre-2-2) ne mènent plus nulle part */
+const LIVRE = Object.create(null);
+for(let r = 1; r <= 5; r++) ADV.creatures[r].forEach(c => { c.src = 'livre'; c.r = r; LIVRE[c.id] = c; });
+const ANCIEN_ID = /^livre-[1-5]-\d{1,2}$/;
 
 /* les creatures, les familles et les tables de butin maison, remplies par la page */
 let MAISON = [];
@@ -3429,14 +3434,18 @@ let FAM_MAISON = [];
 let TABLES_BUTIN = [];
 
 /* ---------- les entrées du livre que tu as retouchées ----------
-   Une retouche porte l'identifiant de l'entrée (livre-2-2) et prend sa place partout : tirages, bestiaire,
-   table. L'entrée telle que le livre l'écrit reste gardée ici, pour « Revenir au livre ». */
-const ORIGINAUX = {};
+   Une retouche porte l'identifiant de l'entrée (livre-loup) et prend sa place partout : tirages, bestiaire,
+   table. L'entrée telle que le livre l'écrit reste gardée ici, pour « Revenir au livre ».
+   Une retouche dont l'entrée n'existe plus (l'ancien bestiaire) ne s'applique nulle part : elle attend
+   qu'on en fasse une créature à soi, ou qu'on l'efface. */
+const ORIGINAUX = Object.create(null);
 for(let r = 1; r <= 5; r++) ADV.creatures[r].forEach(c => { ORIGINAUX[c.id] = JSON.parse(JSON.stringify(c)); });
 let RETOUCHES = [];
-const estRetouche = c => !!c && /^livre-[1-5]-\d{1,2}$/.test(c.id || '');
+let ANCIENNES = [];
+function livreParId(id){ return LIVRE[id || ''] || null; }
+const estRetouche = c => !!c && !!livreParId(c.id);
+const estAncienne = c => !!c && /^livre-/.test(c.id || '') && !livreParId(c.id);
 const CHAMPS_RETOUCHE = ['n','t','tr','p','a2','mod','renf','desc','ou','veut','fuit','butin','notes'];
-function livreParId(id){ const m = /^livre-([1-5])-(\d{1,2})$/.exec(id || ''); return m ? ADV.creatures[+m[1]][+m[2] - 1] || null : null; }
 function appliquerRetouches(){
   for(let r = 1; r <= 5; r++) ADV.creatures[r].forEach(c => {
     const o = ORIGINAUX[c.id];
@@ -3453,10 +3462,25 @@ function appliquerRetouches(){
 /* les tables de butin qu'une créature porte, du livre ou à toi */
 function tablesDe(c){ const id = c && c.id; return id ? TABLES_BUTIN.filter(t => (t.qui || []).indexOf(id) >= 0) : []; }
 
-/* ---------- les familles : celles du livre, puis les tiennes ---------- */
+/* ---------- les familles : celles du livre, en deux lignes (la catégorie, la sous-catégorie), puis les tiennes ---------- */
 function familles(){ return ADV.familles.concat(FAM_MAISON); }
 function famille(k){ return ADV.familles.find(f => f.k === k) || FAM_MAISON.find(f => f.k === k) || null; }
 function estMaisonFam(k){ return FAM_MAISON.some(f => f.k === k); }
+/* la ligne d'une famille : cat, sous, ou maison pour les tiennes (et celles qu'on n'a pas encore lues) */
+function groupeFam(k){ const f = ADV.familles.find(x => x.k === k); return f ? f.g : 'maison'; }
+function lignesFamilles(){
+  return ADV.groupes.map(g => ({g:g.g, l:g.l, fams:ADV.familles.filter(f => f.g === g.g)}))
+    .concat([{g:'maison', l:'Tes familles', fams:FAM_MAISON.slice()}]);
+}
+/* un menu des familles, rangé comme les lignes */
+function remplirFamilles(sel, marque){
+  lignesFamilles().forEach(L => {
+    if(!L.fams.length) return;
+    const og = document.createElement('optgroup'); og.label = L.l;
+    L.fams.forEach(f => og.append(new Option(f.l + (marque && L.g === 'maison' ? ' (à toi)' : ''), f.k)));
+    sel.append(og);
+  });
+}
 /* tes creatures entrent dans une famille par leurs etiquettes,
    celles du livre entrent dans une famille maison par la liste de la famille */
 function membre(c, k){
@@ -3499,11 +3523,20 @@ function statsDe(c){
 function effetDe(c, st){ return c.a2 && c.a2.e ? c.a2.e.replace(/le dé du rang/g, st.deg) : ''; }
 
 /* ---------- tirage ---------- */
-/* les familles retenues, et tout le catalogue du rang si le filtre ne laisse personne */
+/* les familles retenues : d'une ligne à l'autre il faut les deux (un Humanoïde Hors-la-loi),
+   dans une même ligne l'un ou l'autre suffit (une Bête ou une Chimère) */
+function passeFamilles(c, choix){
+  choix = choix || S.fam || [];
+  if(!choix.length) return true;
+  const par = {};
+  choix.forEach(k => { const g = groupeFam(k); (par[g] = par[g] || []).push(k); });
+  return Object.keys(par).every(g => par[g].some(k => membre(c, k)));
+}
+/* et tout le catalogue du rang si le filtre ne laisse personne */
 function vivier(r){
   const tout = catalogue(r);
   if(!S.fam || !S.fam.length) return {liste:tout, force:false};
-  const f = tout.filter(c => S.fam.some(k => membre(c, k)));
+  const f = tout.filter(c => passeFamilles(c));
   return f.length ? {liste:f, force:false} : {liste:tout, force:true};
 }
 function rangsDisponibles(){
@@ -3604,7 +3637,7 @@ function adversaireEnvoye(a){
   const st = statsDe(c);
   const pv = a.pv == null || isNaN(+a.pv) ? st.pv : Math.max(0, Math.min(+a.pv, st.pv));
   return {n:c.n || a.n, r:a.r, pvMax:st.pv, pv:pv, red:st.red, deg:st.deg, cartes:st.cartes,
-    a2: c.a2 && c.a2.n ? {n:c.a2.n, t:c.a2.el ? 'mag' : (c.a2.t || 'phy'), p:porteeDe(c.a2), e:effetDe(c, st), el:c.a2.el || ''} : null,
+    a2: c.a2 && c.a2.n ? {n:c.a2.n, t:c.a2.el ? 'mag' : (c.a2.t || 'phy'), p:porteeDe(c.a2), e:effetDe(c, st), el:c.a2.el || '', ty:c.a2.ty || ''} : null,
     tr:(c.tr || []).slice(), traits:nomsTraits(c), p:c.p || '', renf:c.renf || '',
     cid:c.id || a.cid || '', fam:(c.t || []).slice(), butin:c.butin || '',
     tables:tablesDe(c).map(t => ({k:t.k, l:t.l, lignes:t.lignes}))};
@@ -3740,14 +3773,28 @@ function nomAttaque(f, el){
   const base = f.ne[0], genre = f.ne[1];
   return base + ' ' + (el.de || el.adj[genre]);
 }
-/* la portée telle qu'on la lit, avec ce que l'armure fait de l'élément */
+/* la portée telle qu'on la lit, avec l'élément (quand le nom de l'attaque ne le dit pas déjà) et ce que l'armure
+   en fait. Un élément que le bestiaire laisse ouvert (au choix, celui de la Floraison) : l'armure selon l'élément */
 function porteeDe(a2){
   if(!a2) return '';
   const p = a2.p || '';
   const e = a2.el && ELEM[a2.el];
+  const nomEl = e ? (e.k === 'seve' || e.k === 'mue' ? e.l : e.l.toLowerCase()) : String(a2.elt || '').trim();
   /* l'armure ne dit rien d'une attaque qui ne blesse pas */
-  if(!e || /aucun dégât/i.test(a2.e || '')) return p;
-  return p + (p ? ' · ' : '') + (e.matiere ? 'l’armure l’arrête' : 'traverse l’armure');
+  if(!nomEl || /aucun dégât/i.test(a2.e || '')) return p;
+  const sans = s => String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+  const dit = !!e && sans(a2.n).indexOf(sans(nomEl)) >= 0;
+  const armure = e ? (e.matiere ? 'l’armure l’arrête' : 'traverse l’armure') : 'l’armure selon l’élément';
+  return p + (p ? ' · ' : '') + (dit ? '' : nomEl + ', ') + armure;
+}
+/* le type d'une attaque tel qu'on l'écrit : celui du bestiaire (corps à corps · perforant, distance, spécial),
+   sinon physique ou magique. cls donne la couleur : phy, mag, ou spe pour ce qui ne blesse pas */
+const TYPE_ATQ = Object.create(null);
+(ADV.types || []).forEach(x => { TYPE_ATQ[x.k] = x; });
+function typeAttaque(a2){
+  const x = a2 && a2.ty ? TYPE_ATQ[a2.ty] : null;
+  if(x) return {cls:x.l === 'spécial' ? 'spe' : x.t, l:x.l};
+  return a2 && a2.t === 'mag' ? {cls:'mag', l:'magique'} : {cls:'phy', l:'physique'};
 }
 
 /* ---------- ce que les traits donnent, pour cette créature ---------- */
@@ -4120,6 +4167,13 @@ function lireTirage(){
   S.liste = Array.isArray(o.liste) ? o.liste.filter(a => a && [1, 2, 3, 4, 5].indexOf(+a.r) >= 0 && typeof a.n === 'string').slice(0, 12).map(a => ({
     r:+a.r, n:a.n, p:typeof a.p === 'string' ? a.p : '', pv:a.pv == null || isNaN(+a.pv) ? null : +a.pv,
     id:typeof a.id === 'string' ? a.id : Math.random().toString(36).slice(2, 8), cid:typeof a.cid === 'string' ? a.cid : ''})) : [];
+  /* un brouillon tiré dans l'ancien bestiaire : ses entrées n'existent plus, on en tire d'autres au même rang */
+  if(S.liste.some(a => ANCIEN_ID.test(a.cid))){
+    /* ton bestiaire d'abord : tes créatures, tes familles et tes retouches comptent dans ce tirage */
+    poserBestiaire();
+    S.liste = S.liste.map(a => ANCIEN_ID.test(a.cid) ? Object.assign(creature(a.r), {id:a.id}) : a);
+    garderTirage();
+  }
 }
 /* le budget suit la compagnie, tant qu'on n'a pas choisi un autre nombre */
 function majPjTirage(){ if(!TIR.pjMain) S.pj = Math.max(1, Math.min(6, persos().length || 1)); }
@@ -4127,16 +4181,21 @@ function majPjTirage(){ if(!TIR.pjMain) S.pj = Math.max(1, Math.min(6, persos().
 /* ---------- ton bestiaire : ce navigateur, puis le dépôt ---------- */
 function normMaison(o, id){
   const txt = v => (v == null ? '' : String(v));
-  /* une entrée du livre retouchée garde le rang de l'entrée */
-  const mr = /^livre-([1-5])-\d{1,2}$/.exec(id);
-  const r = mr ? +mr[1] : [1, 2, 3, 4, 5].indexOf(+o.r) >= 0 ? +o.r : 2;
+  /* une entrée du livre retouchée garde le rang de l'entrée ; une retouche de l'ancien bestiaire, celui de son identifiant */
+  const lv = livreParId(id);
+  const r = lv ? lv.r : ANCIEN_ID.test(id) ? +id.split('-')[1] : [1, 2, 3, 4, 5].indexOf(+o.r) >= 0 ? +o.r : 2;
   const a = o.a2 && typeof o.a2 === 'object' ? o.a2 : {};
   const elm = ELEM[a.el] ? a.el : '';
   const m = o.mod && typeof o.mod === 'object' ? o.mod : {};
+  const a2 = {n:txt(a.n), t:elm || a.t === 'mag' ? 'mag' : 'phy', p:txt(a.p) || 'contact', e:txt(a.e), el:elm};
+  /* le type et l'élément tels que le bestiaire les écrit, tant qu'ils disent la même chose que le reste */
+  const ty = a.ty ? TYPE_ATQ[a.ty] : null;
+  if(ty && ty.t === a2.t) a2.ty = a.ty;
+  if(!elm && a2.t === 'mag' && txt(a.elt).trim()) a2.elt = txt(a.elt).trim().slice(0, 60);
   return {id:id, src:'maison', n:txt(o.n).trim().slice(0, 120), r:r, maj:+o.maj || 0,
     t: Array.isArray(o.t) ? o.t.filter(x => typeof x === 'string').slice(0, 40) : [],
     tr: Array.isArray(o.tr) ? trierTraits(o.tr.filter(x => typeof x === 'string'), r) : [],
-    p:txt(o.p), a2:{n:txt(a.n), t:elm || a.t === 'mag' ? 'mag' : 'phy', p:txt(a.p) || 'contact', e:txt(a.e), el:elm},
+    p:txt(o.p), a2:a2,
     mod:{pv:txt(m.pv), red:txt(m.red), deg:txt(m.deg), cartes:txt(m.cartes)}, renf:txt(o.renf), butin:txt(o.butin)};
 }
 function normTableMaison(o, k){
@@ -4147,7 +4206,7 @@ function normTableMaison(o, k){
 function normFamMaison(o, k){
   const txt = v => (v == null ? '' : String(v));
   return {k:k, l:txt(o.l).trim().slice(0, 60) || 'Sans nom', d:txt(o.d).trim().slice(0, 300), maj:+o.maj || 0,
-    livre: Array.isArray(o.livre) ? o.livre.filter(id => typeof id === 'string' && /^livre-[1-5]-\d{1,2}$/.test(id)) : []};
+    livre: Array.isArray(o.livre) ? o.livre.filter(id => typeof id === 'string' && /^livre-[A-Za-z0-9-]{1,110}$/.test(id)) : []};
 }
 /* ce que le Registre des Rencontres garde ici : {items, supprimes}, ou une simple liste avant */
 function bestiaireIci(cle, champ){
@@ -4176,9 +4235,10 @@ function fondreBestiaire(ici, depot, norm){
   return Object.keys(m).filter(id => !m[id].supprime && !ici.supprimes[id]).map(id => norm(m[id], id));
 }
 function poserBestiaire(){
-  /* tes créatures, et tes retouches des entrées du livre, qui prennent leur place */
+  /* tes créatures, et tes retouches des entrées du livre, qui prennent leur place. Celles de l'ancien bestiaire
+     ne remplacent plus rien : le Registre des Rencontres propose d'en faire des créatures à toi */
   const tout = fondreBestiaire(bestiaireIci('faelorenn.bestiaire', 'id'), TIR.depotC, normMaison).filter(c => c.n);
-  MAISON = tout.filter(c => !estRetouche(c));
+  MAISON = tout.filter(c => !estRetouche(c) && !estAncienne(c));
   RETOUCHES = tout.filter(estRetouche);
   appliquerRetouches();
   TABLES_BUTIN = fondreBestiaire(bestiaireIci('faelorenn.butins', 'k'), TIR.depotB, normTableMaison);
@@ -4249,7 +4309,7 @@ function formTirage(enCours){
   const l2 = el('div','tsel');
   const sf = el('select'); sf.id = 'tirFam'; sf.setAttribute('aria-label', 'Quelle famille');
   sf.add(new Option('Toutes les familles', ''));
-  familles().forEach(f => sf.add(new Option(f.l + (estMaisonFam(f.k) ? ' (à toi)' : ''), f.k)));
+  remplirFamilles(sf, true);
   if(S.fam[0] && !famille(S.fam[0])) sf.add(new Option('Une famille à toi, en lecture…', S.fam[0]));
   sf.value = S.fam[0] || '';
   sf.onchange = () => { S.fam = sf.value ? [sf.value] : []; garderTirage(); dessinerCombat(true); };
@@ -4517,7 +4577,8 @@ function frapper(a, propre){
   choisirQui({k:'mj', id:'', nom:''});
   COMPO.genre = 'narration';
   COMPO.panneau = 'jet';
-  COMPO.formule = propre && a.a2 ? formuleDe(a.a2.e) || a.deg : a.deg;
+  /* une attaque qui ne blesse pas (des renforts, un ordre) ne prépare pas de dégâts */
+  COMPO.formule = propre && a.a2 ? (/^\s*aucun dégât/i.test(a.a2.e || '') ? '' : formuleDe(a.a2.e) || a.deg) : a.deg;
   COMPO.sorte = sorteAttaque(a, propre);
   COMPO.degats = null; COMPO.perte = null;
   COMPO.cible = MOI.perso && perso(MOI.perso) ? MOI.perso : (persos()[0] || {}).id || '';
@@ -4620,10 +4681,11 @@ function ligneAdversaire(a){
   pv.append(cmd);
   w.append(pv);
   const at = el('div','aatq');
-  const attaque = (mag, nom, detail, propre) => {
+  /* le type de l'attaque propre : celui du bestiaire (distance, spécial…), ou « magique » ; rien pour l'attaque de rang */
+  const attaque = (ty, nom, detail, propre) => {
     const l = el('div','aat');
     const txt = el('div','aattxt');
-    if(mag) txt.append(el('span','aty tmag', 'magique'));
+    if(ty) txt.append(el('span','aty t' + ty.cls, ty.l));
     txt.append(el('b', null, nom), document.createTextNode(detail ? ' · ' + detail : ''));
     l.append(txt);
     const f = el('button','btn ghost xs','Frapper'); f.type = 'button';
@@ -4633,8 +4695,8 @@ function ligneAdversaire(a){
     l.append(f);
     at.append(l);
   };
-  attaque(false, 'Attaque de rang', a.deg, false);
-  if(a.a2) attaque(a.a2.t === 'mag', a.a2.n, [a.a2.p, a.a2.e].filter(Boolean).join(' · '), true);
+  attaque(null, 'Attaque de rang', a.deg, false);
+  if(a.a2) attaque(a.a2.ty || a.a2.t === 'mag' ? typeAttaque(a.a2) : null, a.a2.n, [a.a2.p, a.a2.e].filter(Boolean).join(' · '), true);
   w.append(at);
   if(a.traits || a.p) w.append(el('p','mini apart', [a.traits, a.p].filter(Boolean).join(' · ')));
   if(aTerre(a)) fouilleSurLigne(a, w);
@@ -4729,10 +4791,10 @@ const FOU = {id:'', endroit:'officier', lu:'', texte:'', qui:'', d1:'', d2:'', s
 const BTN = {ouvert:null};   /* le bloc « Le butin » : ouvert tant qu'il reste quelqu'un à fouiller, sauf si on l'a replié */
 const SAC_MAX = 80;
 
-/* l'endroit, deviné : un soldat ou un praticien vaut un officier, un Marchefleur ou une ruine de l'Avant vaut le +5 */
+/* l'endroit, deviné : un soldat ou un praticien vaut un officier, un Marchefleur ou une relique de l'Avant vaut le +5 */
 function endroitPar(a){
   const nom = [a.base, a.nom].join(' ');
-  if(/marchefleur|l.avant\b/i.test(nom)) return 'avant';
+  if(/marchefleur|l.avant\b/i.test(nom) || (a.fam || []).indexOf('relique') >= 0) return 'avant';
   if((a.fam || []).some(k => k === 'soldat' || k === 'pratique' || k === 'golem')) return 'officier';
   return 'pauvre';
 }
@@ -7325,7 +7387,7 @@ function dessinerEditeurMission(){
   });
   const fs = el('select'); fs.id = 'me-fam'; fs.setAttribute('aria-label', 'Qui peut se présenter');
   fs.add(new Option('Toutes les familles', ''));
-  familles().forEach(f => fs.add(new Option(f.l, f.k)));
+  remplirFamilles(fs, false);
   if(d.rencontre.fam && !famille(d.rencontre.fam)) fs.add(new Option(TIR.complet ? 'Une famille retirée du bestiaire' : 'Une famille maison', d.rencontre.fam));
   fs.value = d.rencontre.fam;
   fs.onchange = () => { d.rencontre.fam = fs.value; };

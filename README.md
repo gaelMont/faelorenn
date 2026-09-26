@@ -11,6 +11,14 @@ Six outils pour jouer à Faelorenn, dans un navigateur :
 
 `index.html` est la page d'accueil qui mène aux six, et où l'on relie la sauvegarde en ligne.
 
+## Mettre le site en ligne
+
+1. Sur GitHub, crée un dépôt **public**, `faelorenn` par exemple. Avec un compte gratuit, GitHub Pages ne publie que les dépôts publics.
+2. Dans le dépôt, « Add file », puis « Upload files ». Glisse les huit fichiers : `index.html`, `missions.html`, `table.html`, `pnj.html`, `progression.html`, `createur.html`, `rencontres.html`, `README.md`. Valide avec « Commit changes ».
+3. Dans « Settings », rubrique « Code and automation », ouvre « Pages ». Sous « Build and deployment », choisis « Deploy from a branch », puis la branche `main` et le dossier `/ (root)`. « Save ».
+4. Attends quelques minutes (jusqu'à dix, selon GitHub). L'adresse apparaît en haut de la page « Pages », avec « Visit site » : `https://ton-nom.github.io/faelorenn/`.
+
+Pour mettre un registre à jour, refais l'étape 2 avec le nouveau fichier : il remplace l'ancien.
 
 ## Tout garder en ligne
 

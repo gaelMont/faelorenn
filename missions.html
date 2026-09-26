@@ -545,13 +545,51 @@ svg.reseau:active{cursor:grabbing}
 .pt .v{font-family:Spectral,serif;font-size:24px;font-weight:700;color:var(--forest)}
 .pt .t{font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
 
+/* l'oracle, sous la main : une question, sa plausibilité, un d20 */
+.cote.oracle{display:flex;flex-direction:column;gap:7px}
+.cote.oracle .ctete{margin-bottom:0}
+.cote.oracle input[type=text]{width:100%;font-size:13.5px;padding:6px 8px}
+.oplaus{gap:4px}
+.oplaus button{font-size:12.5px;padding:4px 8px;background:var(--surface)}
+.oacts{gap:6px}
+.oacts input[type=number]{width:54px;padding:4px 6px;font-size:13.5px}
+.oacts .ou{margin-left:2px}
+.ores{display:flex;flex-direction:column;gap:1px;padding:7px 10px;border:1px solid var(--rule);border-left:4px solid var(--sage);border-radius:2px;background:var(--paper)}
+.ores.onon{border-left-color:var(--rust)}
+.ores b{font-family:Spectral,Georgia,serif;font-size:18px;line-height:1.25;color:var(--forest)}
+.ores.onon b{color:var(--rust)}
+.ores .acts{margin-top:5px;gap:8px}
+.ores a{color:var(--sage)}
+.ovisage{display:flex;flex-direction:column;gap:6px}
+.ovisage .lab{margin:0}
+.ovisage>.mini{margin:0}
+.oseuils summary{cursor:pointer;font-size:13px;color:var(--forest)}
+.oseuils>.mini{margin:6px 0}
+.oligne{display:flex;flex-direction:column;gap:3px;margin-top:8px}
+.oligne .lab{margin:0}
+.oligne input.faux{border-color:var(--rust)}
+.obar{display:flex;height:8px;border-radius:2px;overflow:hidden;gap:1px;background:var(--rule)}
+.obar.vide{background:repeating-linear-gradient(90deg,var(--rule) 0 6px,transparent 6px 10px)}
+.obar span{display:block;min-width:2px}
+.obar .o-nonEt{background:var(--plum)} .obar .o-non{background:var(--rust)} .obar .o-nonMais{background:var(--gold);opacity:.6}
+.obar .o-ouiMais{background:var(--gold)} .obar .o-oui{background:var(--sage)} .obar .o-ouiEt{background:var(--forest)}
+.odetail{margin:0;font-variant-numeric:tabular-nums}
+/* une réponse de l'oracle, dans le récit */
+.boracle{font-family:"IBM Plex Sans",sans-serif;font-size:14px;line-height:1.45;border-left:3px solid var(--sage);padding:1px 0 1px 10px}
+.boracle.onon{border-left-color:var(--rust)}
+.feuille .boracle p{margin:0;white-space:normal}
+.boracle .olab{font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+.boracle .oq{font-style:italic}
+.boracle .orep{color:var(--forest)}
+.boracle.onon .orep{color:var(--rust)}
+
 /* la tête de séance */
 .ligne4{display:grid;grid-template-columns:90px 160px 1fr;gap:8px}
 .ligne4 input{width:100%}
 @media (max-width:1080px){
   .jeu{display:flex;flex-direction:column;gap:12px}
   .jeu-main,.jeu-cote{display:contents}
-  #seEtat{order:1} #seRecit{order:2} #seCombat{order:3} #seCompo{order:4;margin-top:0} #seMission{order:5} #seGens{order:6} #seAide{order:7}
+  #seEtat{order:1} #seRecit{order:2} #seCombat{order:3} #seCompo{order:4;margin-top:0} #seOracle{order:5} #seMission{order:6} #seGens{order:7} #seAide{order:8}
   .cnom{flex:1 1 150px}
   .cj{flex:1 1 170px}
 }
@@ -1045,6 +1083,39 @@ const MARCHE = {
   ]
 };
 
+/* ---------- l'oracle : une question fermée, sa plausibilité, un d20 ----------
+   Six réponses, du pire au meilleur, comme l'oracle de la SoloTaisie. Les seuils du site sont les nôtres (85, 70,
+   50, 30 et 15 % de oui) : ceux de votre kit se règlent sur la page et vivent dans la table, dans votre dépôt privé.
+   Chaque ligne donne le dernier nombre des cinq premières réponses ; « Oui, et en plus » va jusqu'à 20. */
+const REPONSES_ORACLE = [
+  {k:'nonEt', l:'Non, et en plus', oui:false},
+  {k:'non', l:'Non', oui:false},
+  {k:'nonMais', l:'Non, mais par contre', oui:false},
+  {k:'ouiMais', l:'Oui, mais par contre', oui:true},
+  {k:'oui', l:'Oui', oui:true},
+  {k:'ouiEt', l:'Oui, et en plus', oui:true}
+];
+const PLAUSIBLES = [
+  {k:'tres', l:'Très plausible'},
+  {k:'plaus', l:'Plausible'},
+  {k:'neutre', l:'Neutre'},
+  {k:'peu', l:'Peu plausible'},
+  {k:'trespeu', l:'Très peu plausible'}
+];
+const SEUILS_SITE = {tres:[1,2,3,5,16], plaus:[1,4,6,8,17], neutre:[2,8,10,12,18], peu:[3,12,14,16,19], trespeu:[4,15,17,18,19]};
+/* cinq bornes, de 0 à 20, qui ne redescendent jamais ; sinon rien */
+function bornesOk(b){
+  if(!Array.isArray(b) || b.length !== 5) return null;
+  const x = b.map(v => Math.round(+v));
+  if(x.some(v => !isFinite(v) || v < 0 || v > 20)) return null;
+  for(let i = 1; i < 5; i++) if(x[i] < x[i - 1]) return null;
+  return x;
+}
+function reponseDe(bornes, d){
+  const i = bornes.findIndex(x => d <= x);
+  return REPONSES_ORACLE[i < 0 ? 5 : i];
+}
+
 /* ============ la table : un document partagé, fusionné pièce par pièce ============
    Chaque personnage, chaque séance et chaque paragraphe du compte rendu porte sa date
    de modification : la plus récente gagne. Les jets s'ajoutent sans jamais s'écraser. */
@@ -1057,7 +1128,7 @@ let T = videTable();
 const MOI = {joueur:'', perso:'', seance:'', seanceFixee:false, mode:'d100', vuePnj:'fiches', des:'site'};
 const SYNC = {poignee:null, nom:'', vu:0, dernier:0, etat:'local', erreur:'', ecrit:null, boucle:null};
 
-function videTable(){ return {format:'faelorenn-table', version:1, nom:'', maj:0, personnages:{}, journal:{}, blocs:{}, pnj:{}, liens:{}, positions:{}, rencontres:{}, adversaires:{}, missions:{}, objets:{}, argent:{}, jets:[], viderAvant:0}; }
+function videTable(){ return {format:'faelorenn-table', version:1, nom:'', maj:0, personnages:{}, journal:{}, blocs:{}, pnj:{}, liens:{}, positions:{}, rencontres:{}, adversaires:{}, missions:{}, objets:{}, argent:{}, oracle:null, jets:[], viderAvant:0}; }
 /* objets : ce que chacun porte dans son sac, pièce par pièce. argent : chaque pièce qui entre ou sort de sa bourse.
    Chacun sa ligne, datée : deux joueurs qui achètent en même temps, les deux achats comptent */
 const CLES_FUSION = ['personnages','journal','blocs','pnj','liens','positions','rencontres','adversaires','missions','objets','argent'];
@@ -1255,7 +1326,7 @@ function depuisFiche(o){
 }
 
 /* ---------- un paragraphe du compte rendu ---------- */
-const TYPES_BLOC = ['narration','scene','dit','fait','encadre','achat','note','rencontre'];
+const TYPES_BLOC = ['narration','scene','dit','fait','encadre','achat','note','rencontre','oracle'];
 const txtOu = v => (v == null ? '' : String(v));
 function normJetBloc(j){
   if(!j || typeof j !== 'object') return null;
@@ -1280,6 +1351,8 @@ function normBloc(o){
     type: TYPES_BLOC.indexOf(o.type) >= 0 ? o.type : 'narration',
     qui: {k: ['perso','pnj','mj'].indexOf(q.k) >= 0 ? q.k : 'mj', id:txtOu(q.id), nom:txtOu(q.nom)},
     texte: txtOu(o.texte), auteur: txtOu(o.auteur), rencontre: txtOu(o.rencontre),
+    /* une réponse de l'oracle : sa plausibilité, le d20, la réponse, et si c'est le site qui a lancé */
+    oracle: normOracleBloc(o.oracle),
     jet: normJetBloc(o.jet),
     degats: o.degats && typeof o.degats === 'object'
       ? {txt:txtOu(o.degats.txt), total:+o.degats.total || 0, des:txtOu(o.degats.des), double:!!o.degats.double} : null,
@@ -1387,6 +1460,21 @@ function fondreMission(garde, autre){
   CHAMPS_ETAT_MISSION.forEach(c => { x[c] = autre[c]; });
   return x;
 }
+/* l'oracle : ce qu'un paragraphe en garde, et les seuils de la table */
+function normOracleBloc(o){
+  if(!o || typeof o !== 'object') return null;
+  const p = PLAUSIBLES.some(x => x.k === o.p) ? o.p : 'neutre';
+  const r = REPONSES_ORACLE.some(x => x.k === o.r) ? o.r : '';
+  if(!r) return null;
+  const d = Math.round(+o.d);
+  return {p:p, r:r, d:isFinite(d) && d >= 1 && d <= 20 ? d : null, site:!!o.site, lieu:txtOu(o.lieu).slice(0, 160)};
+}
+function normReglagesOracle(o){
+  if(!o || typeof o !== 'object' || !o.lignes || typeof o.lignes !== 'object') return null;
+  const lignes = {};
+  for(const x of PLAUSIBLES){ const b = bornesOk(o.lignes[x.k]); if(!b) return null; lignes[x.k] = b; }
+  return {lignes:lignes, maj:+o.maj || 0};
+}
 /* un objet du sac : une pile (douze flèches), avec ce qu'il fait. armure et bouclier se portent */
 const SORTES_OBJET = ['objet','conso','armure','bouclier'];
 function normObjet(o){
@@ -1457,11 +1545,15 @@ function fusionner(a, b){
       if(k === 'personnages' || k === 'pnj' || k === 'adversaires') garde = fondreVie(garde, autre);
       /* entrer dans le monde, et en revenir, a sa propre date : une retouche de sa fiche faite ailleurs ne le ramène pas à la table */
       if(k === 'personnages' && (autre.mondeT || 0) > (garde.mondeT || 0)) garde = Object.assign({}, garde, {monde:autre.monde || '', mondeT:autre.mondeT});
+      /* le lieu d'une séance a sa propre date : un titre changé ailleurs au même moment ne l'efface pas */
+      if(k === 'journal' && (autre.majLieu || 0) > (garde.majLieu || 0)) garde = Object.assign({}, garde, {lieu:autre.lieu || '', majLieu:autre.majLieu});
       if(k === 'missions') garde = fondreMission(garde, autre);
       m[id] = garde;
     });
     out[k] = m;
   });
+  /* les seuils de l'oracle : les plus récents */
+  out.oracle = a.oracle && b.oracle ? ((b.oracle.maj || 0) > (a.oracle.maj || 0) ? b.oracle : a.oracle) : (a.oracle || b.oracle || null);
   /* un historique vidé l'est chez tout le monde : ce qui est plus vieux que le coup de balai ne revient pas */
   out.viderAvant = Math.max(a.viderAvant || 0, b.viderAvant || 0);
   const vus = {}, jets = [];
@@ -1484,7 +1576,9 @@ function normTable(o){
   Object.keys(o.journal || {}).forEach(id => {
     const e = o.journal[id] || {};
     t.journal[id] = {id:id, maj:+e.maj || 0, supprime:!!e.supprime, seance:String(e.seance == null ? '' : e.seance),
-      date:String(e.date || ''), titre:String(e.titre || ''), texte:String(e.texte || ''), auteur:String(e.auteur || '')};
+      date:String(e.date || ''), titre:String(e.titre || ''), texte:String(e.texte || ''), auteur:String(e.auteur || ''),
+      /* où l'on est, pour l'oracle : « Un visage connu ? ». Il a sa propre date */
+      lieu:String(e.lieu || '').slice(0, 160), majLieu:+e.majLieu || 0};
   });
   Object.keys(o.blocs || {}).forEach(id => { const b = normBloc(o.blocs[id]); b.id = id; t.blocs[id] = b; });
   Object.keys(o.pnj || {}).forEach(id => { const p = normPnj(o.pnj[id]); p.id = id; t.pnj[id] = p; });
@@ -1492,6 +1586,7 @@ function normTable(o){
   Object.keys(o.rencontres || {}).forEach(id => { const r = normRencontre(o.rencontres[id]); r.id = id; t.rencontres[id] = r; });
   Object.keys(o.adversaires || {}).forEach(id => { const a = normAdversaire(o.adversaires[id]); a.id = id; t.adversaires[id] = a; });
   Object.keys(o.missions || {}).forEach(id => { const m = normMission(o.missions[id]); m.id = id; t.missions[id] = m; });
+  t.oracle = normReglagesOracle(o.oracle);
   Object.keys(o.objets || {}).forEach(id => { const x = normObjet(o.objets[id]); x.id = id; t.objets[id] = x; });
   Object.keys(o.argent || {}).forEach(id => { const x = normArgent(o.argent[id]); x.id = id; t.argent[id] = x; });
   Object.keys(o.positions || {}).forEach(r => {
@@ -2981,6 +3076,7 @@ const deOu = q => (/^[aeiouyàâäéèêëîïôöûü]/i.test(q) ? 'd’' : 'de
 
 /* un « fait » qui commence par un verbe reçoit le nom devant ; sinon il reste tel quel */
 function phrase(b){
+  if(b.type === 'oracle') return phraseOracle(b);
   const nom = nomDe(b.qui), t = b.type === 'dit' ? sansNomDevant(b.texte.trim(), nom) : b.texte.trim();
   if(b.type === 'dit') return t ? (nom ? nom + ' : ' : '') + citer(t) : nom;
   if(b.type === 'fait') return !t ? nom : (nom && debutMinuscule(t) ? nom + ' ' + t : majuscule(t));
@@ -3042,6 +3138,7 @@ function rendreBloc(b){
   if(BED && BED.id === b.id && b.type !== 'rencontre') return retoucheBloc(b, w);
   if(b.type === 'encadre') w.append(corpsEncadre(b));
   else if(b.type === 'rencontre') w.append(corpsRencontre(b));
+  else if(b.type === 'oracle') w.append(corpsOracle(b));
   else {
     const p = el('p');
     const ph = phrase(b), j = joints(b);
@@ -3850,6 +3947,7 @@ function dessinerSeance(force){
   dessinerRecit(force);
   dessinerCombat();
   dessinerCompositeur(force);
+  dessinerOracle(force);
 }
 /* les PNJ croisés dans cette séance : ceux qui y parlent ou agissent, ceux que le récit nomme */
 function gensDeLaSeance(sid){
@@ -3859,7 +3957,8 @@ function gensDeLaSeance(sid){
     const nom = cleNom(p.nom);
     let re = null;
     try{ re = nom.length >= 3 ? new RegExp('(^|[^\\p{L}])' + nom.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '($|[^\\p{L}])', 'iu') : null; }catch(e){ re = null; }
-    return blocs.some(b => (b.qui.k === 'pnj' && (b.qui.id === p.id || (!b.qui.id && cleNom(b.qui.nom) === nom))) || !!(re && re.test(b.texte)));
+    /* une question posée à l'oracle qui le nomme ne le fait pas venir : seule sa réponse, quand elle l'amène */
+    return blocs.some(b => (b.qui.k === 'pnj' && (b.qui.id === p.id || (!b.qui.id && cleNom(b.qui.nom) === nom))) || (b.type !== 'oracle' && !!(re && re.test(b.texte))));
   });
 }
 function dessinerGensSeance(){
@@ -8676,6 +8775,9 @@ const GH = ghcDoc({
 function tableEnAvance(r){
   if((T.maj || 0) > (r.maj || 0) || (T.viderAvant || 0) > (r.viderAvant || 0)) return true;
   if(CLES_FUSION.some(k => ghcEnAvance(T[k], r[k]))) return true;
+  /* les seuils de l'oracle, et le lieu d'une séance, qui ont leur propre date */
+  if(((T.oracle || {}).maj || 0) > ((r.oracle || {}).maj || 0)) return true;
+  if(Object.keys(T.journal || {}).some(id => (T.journal[id].majLieu || 0) > (((r.journal || {})[id] || {}).majLieu || 0))) return true;
   /* un coup ici que le dépôt n'a pas encore, ou qu'on a défait ici */
   const coups = k => Object.keys(T[k] || {}).some(id => {
     const a = T[k][id], b = (r[k] || {})[id];
@@ -9745,6 +9847,357 @@ function ficheImprimee(c){
   }
   box.append(tam);
   return box;
+}
+
+/* ============ l'oracle, à la table ============
+   Une question fermée, sa plausibilité, un d20 : de « Non, et en plus » à « Oui, et en plus ». Le site lance, ou
+   l'on écrit son propre dé. La réponse s'écrit dans la séance, comme un paragraphe.
+   « Un visage connu ? » : l'oracle dit si quelqu'un du Registre des Visages arrive, plus volontiers quand on est là
+   où on le trouve d'habitude, puis le tire au sort, en donnant plus de chances à ceux d'ici. */
+
+const ORA = {q:'', p:'neutre', d:'', vd:'', lieu:null, res:null, visage:null, reglage:null, ouvert:false, armeSite:false, presse:false, apres:false};
+
+function seuilsOracle(){ return (T.oracle && T.oracle.lignes) || SEUILS_SITE; }
+const seuilsDuSite = () => PLAUSIBLES.every(x => seuilsOracle()[x.k].join() === SEUILS_SITE[x.k].join());
+const plausibilite = k => PLAUSIBLES.find(x => x.k === k) || PLAUSIBLES[2];
+const reponseOracle = k => REPONSES_ORACLE.find(x => x.k === k) || null;
+/* combien de oui sur vingt, pour une ligne */
+const ouiSur20 = b => 20 - b[2];
+
+/* ---------- où l'on est ---------- */
+/* le lieu écrit pour cette séance, sinon celui de la mission en cours (elle peut durer plusieurs séances) */
+function lieuActuel(){
+  const e = seanceCourante(); if(!e) return '';
+  if(e.lieu && e.lieu.trim()) return e.lieu.trim();
+  const m = missionEnCours();
+  return m && m.ou ? m.ou.trim() : '';
+}
+/* le lieu se garde sans redessiner la carte : le bouton sur lequel on clique en quittant le champ ne doit pas
+   disparaître sous la souris. Il a sa propre date : un titre changé ailleurs au même moment ne l'efface pas */
+function garderLieu(val){
+  const e = seanceCourante(), x = e && T.journal[e.id];
+  if(!x) return false;
+  val = String(val || '').replace(/\s+/g, ' ').trim();
+  if(val === (x.lieu || '').trim()) return false;
+  T.journal[e.id] = Object.assign({}, x, {lieu:val, majLieu:maintenant()});
+  T.maj = maintenant(); sauverLocal(); planifierEcriture();
+  return true;
+}
+/* deux noms de lieu qui parlent du même endroit : l'un contient l'autre, ou ils partagent un nom propre.
+   « Hameau de Ronceval » et « Ronceval » oui ; « Havre de Vaurenne » et « Havre de Sans-Havre » non */
+const MOTS_DE_LIEU = new Set(['havre','hameau','village','ville','cite','bourg','route','chemin','foret','bois','riviere','fleuve',
+  'pont','mine','camp','ruine','ruines','grotte','tour','porte','place','marche','auberge','taverne','plaine','montagne','vallee',
+  'port','quartier','temple','chateau','champ','champs','ferme','moulin','sous','dans','pres','entre','vers','avec']);
+const motsDuLieu = s => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[’']/g, ' ').replace(/[^a-z0-9 -]+/g, ' ').replace(/\s+/g, ' ').trim();
+function memeLieu(a, b){
+  const x = motsDuLieu(a), y = motsDuLieu(b);
+  if(!x || !y) return false;
+  if(x === y) return true;
+  const court = x.length < y.length ? x : y, long = court === x ? y : x;
+  if(court.length >= 4 && (' ' + long + ' ').indexOf(' ' + court + ' ') >= 0) return true;
+  const propres = s => s.split(/[\s-]+/).filter(w => w.length >= 4 && !MOTS_DE_LIEU.has(w));
+  const ey = new Set(propres(y));
+  return propres(x).some(w => ey.has(w));
+}
+function lieuxConnus(){
+  const vus = {}, out = [];
+  pnjs().map(p => p.lieu).concat(Object.keys(T.missions).map(k => T.missions[k]).filter(m => m && !m.supprime).map(m => m.ou))
+    .forEach(l => { const s = String(l || '').trim(); if(s && !vus[s.toLowerCase()]){ vus[s.toLowerCase()] = 1; out.push(s); } });
+  return out.sort((a, b) => a.localeCompare(b, 'fr'));
+}
+
+/* ---------- qui peut venir ---------- */
+/* les vivants et les disparus du Registre des Visages, sauf ceux qui sont déjà dans la séance */
+function visagesPossibles(){
+  const e = seanceCourante(), ici = lieuActuel();
+  const la = new Set(e ? gensDeLaSeance(e.id).map(p => p.id) : []);
+  return pnjs().filter(p => p.statut !== 'mort' && !la.has(p.id) && (p.nom || '').trim() && !nomAnonyme(p.nom))
+    .map(p => ({p:p, ici:!!ici && memeLieu(p.lieu, ici)}));
+}
+/* ceux d'ici comptent quatre fois, ceux croisés ces dernières séances deux fois, un disparu moitié moins */
+function poidsVisages(l){
+  const recentes = new Set(seances().slice(0, 4).map(e => e.id));
+  return l.map(x => {
+    let w = 1;
+    const pourquoi = [];
+    if(x.ici){ w *= 4; pourquoi.push('on le trouve ici'); }
+    else if(textesDe('pnj:' + x.p.id).some(t => recentes.has(t.e.id) && (t.agit || t.b.type !== 'oracle'))){ w *= 2; pourquoi.push('croisé ces dernières séances'); }
+    if(x.p.statut === 'disparu'){ w *= 0.5; pourquoi.push('disparu'); }
+    return Object.assign({}, x, {w:w, pourquoi:pourquoi});
+  });
+}
+function tirerVisage(l){
+  const tot = l.reduce((a, x) => a + x.w, 0);
+  let r = Math.random() * tot;
+  for(const x of l){ r -= x.w; if(r < 0) return x; }
+  return l[l.length - 1] || null;
+}
+/* quelqu'un d'ici : plausible. Personne d'ici : peu plausible */
+const plausibiliteVisage = l => l.some(x => x.ici) ? 'plaus' : 'peu';
+
+/* ---------- demander ---------- */
+function ecrireOracle(texte, o, qui){
+  const e = seanceCourante(); if(!e) return '';
+  const b = normBloc({id:nouvelId('b'), maj:maintenant(), seance:e.id, ordre:maintenant(), type:'oracle', texte:texte,
+    auteur:MOI.joueur || '', qui:qui || {k:'mj'}, oracle:o});
+  T.blocs[b.id] = b;
+  return b.id;
+}
+function demanderOracle(d, site){
+  const p = ORA.p, q = String(ORA.q || '').replace(/\s+/g, ' ').trim();
+  const r = reponseDe(seuilsOracle()[p] || SEUILS_SITE.neutre, d);
+  ORA.res = {q:q, p:p, d:d, r:r.k, site:site};
+  ORA.q = ''; ORA.d = '';
+  /* la réponse se dit une fois, là où les lecteurs d'écran l'entendent */
+  const dit = r.l + ' · ' + plausibilite(p).l.toLowerCase() + ', d20 : ' + d;
+  if(seanceCourante()){ changer(() => { ecrireOracle(q, {p:p, r:r.k, d:d, site:site}); }); msgTable(dit, true); }
+  else msgTable(dit + '. Commence une séance : les réponses de l’oracle s’y écriront.', true);
+  dessinerOracle(true);
+  const x = $('oraQ'); if(x) x.focus({preventScroll:true});
+}
+function visageConnu(d, site){
+  /* le lieu qu'on vient d'écrire compte, même s'il n'a pas encore été gardé */
+  if(ORA.lieu != null){ garderLieu(ORA.lieu); ORA.lieu = null; }
+  const l = poidsVisages(visagesPossibles());
+  if(!l.length){ msgTable('Personne à faire venir : le Registre des Visages est vide, ou tous sont déjà dans la séance.', false); return; }
+  const ici = lieuActuel(), p = plausibiliteVisage(l);
+  const r = reponseDe(seuilsOracle()[p] || SEUILS_SITE.neutre, d);
+  const x = r.oui ? tirerVisage(l) : null;
+  ORA.visage = {p:p, d:d, r:r.k, site:site, id:x ? x.p.id : '', pourquoi:x ? x.pourquoi : []};
+  ORA.vd = '';
+  const q = 'Un visage connu apparaît ?';
+  const dit = r.l + (x ? ' : ' + x.p.nom : '') + ' · ' + plausibilite(p).l.toLowerCase() + ', d20 : ' + d;
+  if(seanceCourante()){ changer(() => { ecrireOracle(q, {p:p, r:r.k, d:d, site:site, lieu:ici}, x ? {k:'pnj', id:x.p.id, nom:x.p.nom} : null); }); msgTable(dit, true); }
+  else msgTable(dit + '. Commence une séance : les réponses de l’oracle s’y écriront.', true);
+  dessinerOracle(true);
+}
+const d20Ecrit = v => { const n = parseInt(v, 10); return n >= 1 && n <= 20 ? n : 0; };
+
+/* ---------- dans le récit, et dans les copies ---------- */
+function corpsOracle(b){
+  const o = b.oracle || {}, r = reponseOracle(o.r);
+  const d = el('div','boracle ' + (r && r.oui ? 'ooui' : 'onon'));
+  d.append(el('p','olab', 'Oracle · ' + plausibilite(o.p).l.toLowerCase() + (o.d ? ' · d20 : ' + o.d + (o.site ? '' : ', dé de la table') : '') + (o.lieu ? ' · ' + o.lieu : '')));
+  const p = el('p');
+  const q = b.texte.trim();
+  if(q){ const s = el('span','oq'); s.append(texteRiche(q)); p.append(s, document.createTextNode(' ')); }
+  p.append(el('b','orep', r ? r.l : 'Réponse perdue'));
+  if(b.qui.k === 'pnj'){
+    const nom = nomDe(b.qui);
+    const x = el('button','mention', nom); x.type = 'button'; x.title = 'La fiche de ' + nom;
+    x.onclick = ev => { ev.stopPropagation(); ouvrirFiche('pnj:' + b.qui.id); };
+    p.append(document.createTextNode(' : '), x, document.createTextNode('.'));
+  } else p.append(document.createTextNode('.'));
+  d.append(p);
+  return d;
+}
+function phraseOracle(b){
+  const o = b.oracle || {}, r = reponseOracle(o.r), q = b.texte.trim();
+  return 'Oracle, ' + plausibilite(o.p).l.toLowerCase() + (o.d ? ', d20 : ' + o.d : '') + (o.lieu ? ', lieu : ' + o.lieu : '') + ' · ' + (q ? q + ' ' : '') +
+    (r ? r.l : '?') + (b.qui.k === 'pnj' ? ' : ' + nomDe(b.qui) : '') + '.';
+}
+
+/* ce que la carte dit de « Un visage connu ? » : la plausibilité, et pourquoi */
+function aideVisage(){
+  const l = visagesPossibles(), ici = l.filter(x => x.ici).map(x => x.p.nom), pv = plausibiliteVisage(l);
+  if(!l.length) return 'Personne à faire venir : le Registre des Visages est vide, ou tous sont déjà dans la séance.';
+  if(ici.length) return plausibilite(pv).l + ' : ' + (ici.length > 3 ? ici.slice(0, 3).join(', ') + ' et ' + (ici.length - 3) + ' autre' + (ici.length > 4 ? 's' : '') : ici.join(', ').replace(/, ([^,]*)$/, ' et $1')) + ', qu’on trouve ici.';
+  return plausibilite(pv).l + ' : ' + (lieuActuel() ? 'personne du Registre des Visages n’est d’ici.' : 'dis où vous êtes, ceux qu’on y trouve viendront plus volontiers.');
+}
+/* un appui de souris ou de doigt sur la carte : rien ne se redessine avant qu'il soit relâché */
+let ORA_ECOUTE = false;
+function ecouterAppuis(box){
+  box.addEventListener('pointerdown', () => { ORA.presse = true; }, true);
+  if(ORA_ECOUTE) return;
+  ORA_ECOUTE = true;
+  const fin = () => { if(!ORA.presse) return; ORA.presse = false; if(ORA.apres){ ORA.apres = false; setTimeout(() => dessinerOracle(true), 0); } };
+  document.addEventListener('pointerup', fin, true);
+  document.addEventListener('pointercancel', fin, true);
+}
+
+/* ---------- la carte, sous la main ---------- */
+function dessinerOracle(force){
+  const box = $('seOracle'); if(!box) return;
+  if(!box._appuis){ box._appuis = true; ecouterAppuis(box); }
+  if(ORA.presse){ ORA.apres = true; return; }
+  if(!force && occupe(box)){ apresSaisie(box, () => dessinerOracle(true)); return; }
+  const focus = document.activeElement && box.contains(document.activeElement) ? document.activeElement.id : '';
+  box.innerHTML = '';
+  box.hidden = false;
+  const e = seanceCourante();
+  const t = el('div','ctete');
+  t.append(el('p','ctitre', 'L’oracle'), el('span','mini', 'oui ou non, au d20'));
+  box.append(t);
+
+  /* la question */
+  const q = el('input'); q.type = 'text'; q.id = 'oraQ'; q.value = ORA.q; q.maxLength = 300;
+  q.placeholder = 'La question, si tu veux l’écrire';
+  q.setAttribute('aria-label', 'La question posée à l’oracle');
+  q.oninput = () => { ORA.q = q.value; };
+  q.onkeydown = ev => { if(ev.key === 'Enter' && !ev.isComposing){ ev.preventDefault(); demanderOracle(de(20), true); } };
+  brancherMentions(q);
+  box.append(q);
+  const seg = el('div','seg oplaus'); seg.setAttribute('role', 'group'); seg.setAttribute('aria-label', 'Est-ce plausible ?');
+  PLAUSIBLES.forEach(x => {
+    const b = el('button', null, x.l); b.type = 'button'; b.id = 'oraP-' + x.k;
+    b.setAttribute('aria-pressed', ORA.p === x.k ? 'true' : 'false');
+    b.title = ouiSur20(seuilsOracle()[x.k]) * 5 + ' % de oui';
+    b.onclick = () => { ORA.p = x.k; dessinerOracle(true); const y = $('oraP-' + x.k); if(y) y.focus(); };
+    seg.append(b);
+  });
+  box.append(seg);
+  const a = el('div','acts oacts');
+  const go = el('button','btn sm','Demander'); go.type = 'button'; go.id = 'oraDemander';
+  go.onclick = () => demanderOracle(de(20), true);
+  const d = el('input'); d.type = 'number'; d.id = 'oraD'; d.min = '1'; d.max = '20'; d.inputMode = 'numeric'; d.value = ORA.d;
+  d.setAttribute('aria-label', 'Ton d20');
+  d.oninput = () => { ORA.d = d.value; };
+  const entrer = () => { const n = d20Ecrit(ORA.d); if(!n){ msgTable('Écris ton d20 : un nombre de 1 à 20.', false); d.focus(); return; } demanderOracle(n, false); };
+  d.onkeydown = ev => { if(ev.key === 'Enter'){ ev.preventDefault(); entrer(); } };
+  const ok = el('button','btn ghost sm','Entrer'); ok.type = 'button'; ok.id = 'oraEntrer'; ok.onclick = entrer;
+  ok.setAttribute('aria-label', 'Entrer ton d20 pour la question');
+  const sien = el('span','amain'); sien.append(el('span','mini ou', 'ou ton d20 :'), d, ok);
+  a.append(go, sien);
+  box.append(a);
+  if(ORA.res){
+    const r = reponseOracle(ORA.res.r);
+    const w = el('div','ores ' + (r.oui ? 'ooui' : 'onon'));
+    w.append(el('b', null, r.l));
+    w.append(el('span','mini', [ORA.res.q ? '« ' + sansMarques(ORA.res.q, gensCitables()) + ' »' : '', plausibilite(ORA.res.p).l.toLowerCase(), 'd20 : ' + ORA.res.d + (ORA.res.site ? '' : ', dé de la table')].filter(Boolean).join(' · ')));
+    box.append(w);
+  }
+  if(!e) box.append(el('p','mini', 'Pas encore de séance : l’oracle répond ici, sans rien écrire.'));
+
+  /* un visage connu */
+  const v = el('div','tbloc ovisage');
+  v.append(el('p','lab', 'Un visage connu ?'));
+  const lieu = el('input'); lieu.type = 'text'; lieu.id = 'oraLieu'; lieu.value = ORA.lieu != null ? ORA.lieu : lieuActuel(); lieu.maxLength = 160;
+  lieu.placeholder = e ? 'Où êtes-vous ? Ronceval, Vaurenne…' : 'Commence une séance d’abord';
+  lieu.disabled = !e;
+  lieu.setAttribute('aria-label', 'Où êtes-vous');
+  lieu.setAttribute('list', listeDonnees('dl-lieux', lieuxConnus()));
+  const aide = el('p','mini oaide');
+  lieu.oninput = () => { ORA.lieu = lieu.value; };
+  lieu.onchange = () => { garderLieu(lieu.value); ORA.lieu = null; aide.textContent = aideVisage(); };
+  v.append(lieu);
+  const l = visagesPossibles();
+  aide.textContent = aideVisage();
+  v.append(aide);
+  const av = el('div','acts oacts');
+  const gv = el('button','btn ghost sm','Un visage connu ?'); gv.type = 'button'; gv.id = 'oraVisage'; gv.disabled = !l.length;
+  gv.onclick = () => visageConnu(de(20), true);
+  const vd = el('input'); vd.type = 'number'; vd.id = 'oraVD'; vd.min = '1'; vd.max = '20'; vd.inputMode = 'numeric'; vd.value = ORA.vd;
+  vd.setAttribute('aria-label', 'Ton d20, pour un visage connu');
+  vd.oninput = () => { ORA.vd = vd.value; };
+  const entrerV = () => { const n = d20Ecrit(ORA.vd); if(!n){ msgTable('Écris ton d20 : un nombre de 1 à 20.', false); vd.focus(); return; } visageConnu(n, false); };
+  vd.onkeydown = ev => { if(ev.key === 'Enter'){ ev.preventDefault(); entrerV(); } };
+  const okv = el('button','btn ghost sm','Entrer'); okv.type = 'button'; okv.id = 'oraVEntrer'; okv.onclick = entrerV; okv.disabled = !l.length;
+  okv.setAttribute('aria-label', 'Entrer ton d20 pour un visage connu');
+  const sienv = el('span','amain'); sienv.append(el('span','mini ou', 'ou ton d20 :'), vd, okv);
+  av.append(gv, sienv);
+  v.append(av);
+  if(ORA.visage){
+    const r = reponseOracle(ORA.visage.r), p = ORA.visage.id ? unPnj(ORA.visage.id) : null;
+    const w = el('div','ores ' + (r.oui ? 'ooui' : 'onon'));
+    w.append(el('b', null, r.l + (p ? ' : ' + p.nom : '')));
+    w.append(el('span','mini', [plausibilite(ORA.visage.p).l.toLowerCase(), 'd20 : ' + ORA.visage.d + (ORA.visage.site ? '' : ', dé de la table'),
+      p ? [p.role, p.lieu].filter(Boolean).join(', ') : '', ORA.visage.pourquoi.join(', ')].filter(Boolean).join(' · ')));
+    if(p){
+      const acts = el('div','acts');
+      const fp = el('button','btn ghost xs','Faire parler'); fp.type = 'button'; fp.id = 'oraParler'; fp.onclick = () => composerPourPnj(p);
+      const fi = el('a','mini', 'sa fiche'); fi.href = 'pnj.html#grand=' + encodeURIComponent('pnj:' + p.id); fi.target = ONGLET_VISAGES;
+      acts.append(fp, fi);
+      w.append(acts);
+    }
+    v.append(w);
+  }
+  box.append(v);
+
+  /* les seuils */
+  box.append(reglagesOracle());
+  if(focus && $(focus)) $(focus).focus({preventScroll:true});
+}
+
+/* ---------- les seuils de la table ----------
+   Pour chaque ligne, le dernier nombre de « Non, et en plus », « Non », « Non, mais », « Oui, mais » et « Oui ».
+   Ils partent avec la table, dans votre dépôt privé : jamais sur le site public */
+const texteBornes = b => b.join(' ');
+/* n'importe quoi d'autre qu'un chiffre sépare : « 1 2 3 5 16 », « 1,2,3,5,16 », « 1-2-3-5-16 » */
+const lireBornes = s => bornesOk(String(s || '').split(/[^0-9]+/).filter(Boolean));
+function barreOracle(b){
+  const w = el('div','obar'); w.setAttribute('aria-hidden', 'true');
+  let avant = 0;
+  REPONSES_ORACLE.forEach((r, i) => {
+    const fin = i < 5 ? b[i] : 20, n = fin - avant;
+    if(n > 0){ const s = el('span','o-' + r.k); s.style.flexGrow = String(n); s.title = r.l + ' : ' + (n > 1 ? (avant + 1) + ' à ' + fin : String(fin)); w.append(s); }
+    avant = fin;
+  });
+  return w;
+}
+function detailBornes(b){
+  let avant = 0;
+  return REPONSES_ORACLE.map((r, i) => {
+    const fin = i < 5 ? b[i] : 20, n = fin - avant, de = avant + 1;
+    avant = fin;
+    return n <= 0 ? '' : r.l.replace(/, (et en plus|mais par contre)$/, (m, x) => x === 'et en plus' ? ' et' : ' mais') + ' ' + (n > 1 ? de + '-' + fin : fin);
+  }).filter(Boolean).join(' · ');
+}
+function reglagesOracle(){
+  const det = el('details','oseuils');
+  det.open = ORA.ouvert;
+  det.ontoggle = () => { ORA.ouvert = det.open; };
+  const sm = el('summary', null, seuilsDuSite() ? 'Les seuils · ceux du site' : 'Les seuils · les vôtres'); sm.id = 'oraSeuils';
+  det.append(sm);
+  det.append(el('p','mini', 'Pour chaque ligne, le dernier nombre de « Non, et en plus », « Non », « Non, mais par contre », « Oui, mais par contre » et « Oui » ; « Oui, et en plus » va jusqu’à 20. Les vôtres vivent dans la table, comme le reste : jamais sur le site public.'));
+  const brouillon = ORA.reglage || PLAUSIBLES.reduce((o, x) => { o[x.k] = texteBornes(seuilsOracle()[x.k]); return o; }, {});
+  PLAUSIBLES.forEach(x => {
+    const w = el('div','oligne');
+    const lab = el('label','lab', x.l); lab.htmlFor = 'oraS-' + x.k;
+    const i = el('input'); i.type = 'text'; i.id = 'oraS-' + x.k; i.value = brouillon[x.k]; i.inputMode = 'decimal'; i.spellcheck = false;
+    const b0 = lireBornes(brouillon[x.k]);
+    if(!b0) i.classList.add('faux');
+    const bar = b0 ? barreOracle(b0) : el('div','obar vide');
+    const txt = el('p','mini odetail', b0 ? ouiSur20(b0) * 5 + ' % de oui · ' + detailBornes(b0) : 'Cinq nombres de 0 à 20, qui ne redescendent pas.');
+    i.oninput = () => {
+      ORA.reglage = ORA.reglage || Object.assign({}, brouillon);
+      ORA.reglage[x.k] = i.value;
+      const b = lireBornes(i.value);
+      const nb = b ? barreOracle(b) : el('div','obar vide');
+      w.replaceChild(nb, w.querySelector('.obar'));
+      w.querySelector('.odetail').textContent = b ? ouiSur20(b) * 5 + ' % de oui · ' + detailBornes(b) : 'Cinq nombres de 0 à 20, qui ne redescendent pas.';
+      i.classList.toggle('faux', !b);
+    };
+    w.append(lab, i, bar, txt);
+    det.append(w);
+  });
+  const acts = el('div','acts'); acts.style.marginTop = '8px';
+  const ok = el('button','btn sm','Enregistrer'); ok.type = 'button'; ok.id = 'oraSOk';
+  ok.onclick = () => {
+    const src = ORA.reglage || brouillon, lignes = {};
+    for(const x of PLAUSIBLES){
+      const b = lireBornes(src[x.k]);
+      if(!b){ msgTable(x.l + ' : écris cinq nombres de 0 à 20, qui ne redescendent pas.', false); const y = $('oraS-' + x.k); if(y) y.focus(); return; }
+      lignes[x.k] = b;
+    }
+    ORA.reglage = null;
+    changer(() => { T.oracle = {lignes:lignes, maj:maintenant()}; });
+    msgTable('Seuils enregistrés : ils partent avec la table.', true);
+  };
+  /* en deux temps : les seuils sont ceux de toute la table */
+  const site = el('button','btn ghost sm' + (ORA.armeSite ? ' danger' : ''), ORA.armeSite ? 'Confirmer : ceux du site pour toute la table' : 'Revenir à ceux du site'); site.type = 'button'; site.id = 'oraSSite';
+  site.onclick = () => {
+    if(!ORA.armeSite){
+      ORA.armeSite = true; dessinerOracle(true);
+      setTimeout(() => { if(ORA.armeSite){ ORA.armeSite = false; dessinerOracle(false); } }, 5000);
+      return;
+    }
+    ORA.armeSite = false; ORA.reglage = null;
+    changer(() => { T.oracle = {lignes:JSON.parse(JSON.stringify(SEUILS_SITE)), maj:maintenant()}; });
+    msgTable('L’oracle reprend les seuils du site.', true);
+  };
+  acts.append(ok, site);
+  det.append(acts);
+  return det;
 }
 
 /* ============ la barre de table, les pages, et le démarrage ============

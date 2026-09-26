@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Registre des Visages</title>
+<title>Registre des Marchefleurs</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,600;0,700;1,400&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
 <style>
 :root{
@@ -775,8 +775,8 @@ svg.reseau:active{cursor:grabbing}
   <a class="fae-accueil" href="./">Faelorenn</a>
   <a href="missions.html">Registre des Missions</a>
   <a href="table.html">Registre de la Table</a>
-  <a href="pnj.html" aria-current="page">Registre des Visages</a>
-  <a href="marchefleurs.html">Registre des Marchefleurs</a>
+  <a href="pnj.html">Registre des Visages</a>
+  <a href="marchefleurs.html" aria-current="page">Registre des Marchefleurs</a>
   <a href="createur.html">Registre du Havre</a>
   <a href="rencontres.html">Registre des Rencontres</a>
 </nav>
@@ -791,50 +791,35 @@ svg.reseau:active{cursor:grabbing}
 
 <div class="wrap">
 <header>
-  <h1>Registre des Visages</h1>
-  <p class="sub">Faelorenn · ceux qu’on croise, et ce qui les lie</p>
+  <h1>Registre des Marchefleurs</h1>
+  <p class="sub">Faelorenn · la fiche, le sac et la bourse de chacun</p>
   <nav class="saut noprint" aria-label="Aller à">
-    <a href="#secPnj">Les PNJ</a>
-    <a href="#secPjV">Les personnages</a>
+    <a href="#secFiche">Les fiches</a>
+    <a href="#secMonde">Entrés dans le monde</a>
     <a href="#secSauve">La sauvegarde</a>
     <a href="table.html" target="faelorenn-table">La séance, dans le Registre de la Table</a>
+    <a href="pnj.html" target="faelorenn-visages">Les PNJ, dans le Registre des Visages</a>
   </nav>
   <div class="etatsync"><span class="pastille" id="tbPastille"></span><span id="tbEtat"></span></div>
 </header>
 
-<section id="secPnj">
-  <h2><span class="num">1</span> Les PNJ</h2>
-  <p class="hint">Une fiche pour chaque personne croisée, et ses liens : la famille, les amitiés, les dettes, les haines. Ceux qui parlent ou agissent dans une séance reçoivent leur fiche tout seuls, depuis le Registre de la Table.</p>
-  <div class="acts pnjbarre">
-    <div class="seg" role="group" aria-label="Voir">
-      <button type="button" id="pnjVueFiches" aria-pressed="true">Les fiches</button>
-      <button type="button" id="pnjVueReseau" aria-pressed="false">Le réseau</button>
-      <button type="button" id="pnjVueHistoire" aria-pressed="false">L’histoire des liens</button>
-    </div>
-    <span class="espace"></span>
-    <button class="btn sm" id="pnjNouveau" type="button">Nouvelle fiche</button>
-  </div>
-  <div class="acts" id="pnjOutilsListe" style="margin:10px 0 12px">
-    <input type="search" id="pnjCherche" placeholder="Chercher un nom, un rôle, un lieu" aria-label="Chercher un PNJ" style="flex:1 1 220px">
-    <select id="pnjGroupe" aria-label="Filtrer par groupe"></select>
-    <span class="mini" id="pnjCompte"></span>
-  </div>
-  <div id="pnjEditeur" class="card" hidden style="margin-bottom:12px"></div>
-  <div id="pnjGrand" class="card grand" role="region" hidden></div>
-  <div id="pnjListe" class="pgrille"></div>
-  <div id="pnjReseau" class="card" hidden></div>
-  <div id="pnjHistoire" class="card histoire" hidden></div>
+<section id="secFiche">
+  <h2><span class="num">1</span> Les fiches</h2>
+  <p class="hint">Chaque personnage de la table : ses PV et ses PC, ce qu’il sait faire, ce qu’il porte, son sac, sa bourse, le marché du Livre V, sa progression et son histoire. Tout part dans la table, comme le reste. « Imprimer sa fiche » rend la fiche du Word, avec ce qu’il a aujourd’hui.</p>
+  <div class="fportraits noprint" id="fQui" role="tablist" aria-label="Quel personnage"></div>
+  <div id="ficheBox"></div>
+  <div class="card noprint" id="pEditeur" hidden></div>
 </section>
 
-<section id="secPjV">
-  <h2><span class="num">2</span> Les personnages</h2>
-  <p class="hint">Ce qui lie les personnages entre eux, et aux PNJ. Leurs PV se suivent dans le Registre de la Table, leur fiche, leur sac et leur progression dans celui des Marchefleurs.</p>
-  <div id="vPjListe" class="pgrille"></div>
+<section id="secMonde" class="noprint">
+  <h2><span class="num">2</span> Entrés dans le monde</h2>
+  <p class="hint">Ceux qu’on ne joue plus : ils sont devenus des PNJ du Registre des Visages, avec tous leurs liens. On peut en reprendre un.</p>
+  <div class="card" id="fMonde"></div>
 </section>
 
-<section id="secSauve">
+<section id="secSauve" class="noprint">
   <h2><span class="num">3</span> La sauvegarde</h2>
-  <p class="hint">Les fiches et les liens vivent dans le même fichier que la table : relier la sauvegarde en ligne ici ou dans le Registre de la Table revient au même.</p>
+  <p class="hint">Les fiches vivent dans le même fichier que la table : relier la sauvegarde en ligne ici ou dans un autre registre revient au même.</p>
   <div class="card">
     <div class="table">
       <div>
@@ -853,6 +838,7 @@ svg.reseau:active{cursor:grabbing}
   </div>
 </section>
 </div>
+<div id="ficheImpr"></div>
 <p class="note toast" id="tbMsg" hidden role="status"></p>
 
 <script>

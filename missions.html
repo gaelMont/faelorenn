@@ -566,6 +566,173 @@ svg.reseau:active{cursor:grabbing}
   .feuille{padding:14px 14px 6px;font-size:15.5px}
   .qui input{width:100%}
 }
+/* ============ le Registre des Marchefleurs : la fiche de chacun, comme un écran de personnage ============ */
+/* les portraits, un par personnage de la table */
+.fportraits{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px}
+.fportrait{display:flex;align-items:center;gap:10px;flex:0 1 232px;min-width:0;padding:7px 12px 7px 8px;border:1px solid var(--rule);border-radius:3px;background:var(--surface);color:var(--ink);font:inherit;text-align:left;cursor:pointer;box-shadow:var(--shadow)}
+.fportrait:hover{border-color:var(--sage)}
+.fportrait[aria-selected=true]{border-color:var(--forest);background:var(--fill);box-shadow:inset 0 0 0 1px var(--forest)}
+.fpt{display:flex;flex-direction:column;min-width:0;flex:1 1 auto}
+.fpt b{font-family:Spectral,Georgia,serif;font-size:15px;font-weight:600;color:var(--forest);line-height:1.2;overflow-wrap:anywhere}
+.fpt small{font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+.fpbar{display:block;height:3px;background:var(--rule);border-radius:2px;margin-top:4px;overflow:hidden}
+.fpbar i{display:block;height:100%;background:var(--sage)}
+/* le médaillon : ses initiales, frappées comme un sceau */
+.fmed{flex:0 0 auto;width:78px;height:78px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--forest);color:var(--surface);font-family:Spectral,Georgia,serif;font-weight:700;font-size:29px;letter-spacing:.02em;box-shadow:0 0 0 3px var(--surface),0 0 0 4px var(--forest)}
+.fmed.petit{width:34px;height:34px;font-size:13.5px;box-shadow:0 0 0 2px var(--surface),0 0 0 3px var(--forest)}
+.fportrait[aria-selected=true] .fmed.petit{box-shadow:0 0 0 2px var(--fill),0 0 0 3px var(--forest)}
+/* sa tête : le médaillon, son nom, ses jauges, ce qu'on regarde d'un coup d'œil */
+.fheros{display:grid;grid-template-columns:auto minmax(0,1fr) auto;grid-template-areas:"med id tuiles" "med jauges tuiles" "act act act";gap:4px 20px;align-items:start;padding:16px 18px 14px}
+.fheros .fmed{grid-area:med;margin:4px 2px 0}
+.fid{grid-area:id;min-width:0}
+.fnom{margin:0;font-size:28px;line-height:1.15;color:var(--forest);overflow-wrap:anywhere;text-wrap:balance}
+.fqui{margin:2px 0 0;font-family:Spectral,Georgia,serif;font-style:italic;color:var(--sage);font-size:15px}
+.fjauges{grid-area:jauges;margin-top:6px;max-width:460px}
+.ftuiles{grid-area:tuiles;display:grid;grid-template-columns:repeat(3,minmax(96px,auto));gap:8px}
+.ftuile{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-width:0;padding:9px 12px;border:1px solid var(--rule);border-radius:2px;background:var(--fill);color:var(--forest);font:inherit;text-align:center;cursor:pointer}
+.ftuile:hover{border-color:var(--sage)}
+.ftuile b{font-family:Spectral,Georgia,serif;font-size:21px;font-weight:700;line-height:1.15;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.ftuile span{font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+.fact{grid-area:act;margin-top:10px;padding-top:10px;border-top:1px solid var(--rule)}
+.fact a.btn{text-decoration:none;display:inline-block}
+/* les onglets, et le panneau qu'ils ouvrent */
+.seg.fonglets{gap:2px;margin-top:16px;border-bottom:1px solid var(--rule)}
+.fonglets button{display:inline-flex;align-items:center;gap:6px;margin-bottom:-1px;padding:8px 13px;border:1px solid transparent;border-bottom:0;border-radius:3px 3px 0 0;background:transparent;color:var(--muted);font-size:14px}
+.fonglets button:hover{color:var(--forest)}
+.fonglets button[aria-pressed=true]{background:var(--surface);border-color:var(--rule);color:var(--forest);font-weight:600;box-shadow:0 1px 0 var(--surface)}
+.fcompte{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--fill);color:var(--forest);font-size:11px;font-weight:600;font-variant-numeric:tabular-nums}
+.fpanneau{border-top:0;border-radius:0 0 3px 3px;padding:6px 18px 18px}
+.fpanneau>h3:first-child,.fpanneau>div:first-child>h3:first-child{margin-top:10px}
+.fpanneau textarea{font-family:Spectral,Georgia,serif;font-size:15.5px}
+.fpanneau p.mini{margin:4px 0}
+/* ce qu'il porte */
+.picto{width:26px;height:26px;flex:0 0 auto;color:var(--sage)}
+.fslots{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(210px,100%),1fr));gap:10px}
+.fslot{display:flex;align-items:center;gap:10px;min-width:0;padding:10px 12px;border:1px dashed var(--rule);border-radius:3px;background:var(--paper)}
+.fslot.plein{border-style:solid;background:var(--fill)}
+.fslot>div{flex:1 1 auto;min-width:0}
+.fslot .lab{margin:0}
+.fslot b{display:block;font-family:Spectral,Georgia,serif;font-size:16px;font-weight:600;color:var(--forest);line-height:1.25;overflow-wrap:anywhere}
+.fslot:not(.plein) b{color:var(--muted);font-weight:400;font-style:italic}
+.fslot small{display:block;font-size:12px;color:var(--muted)}
+.fslot.plein .picto{color:var(--forest)}
+.fslotact{display:flex;flex-direction:column;gap:4px;flex:0 0 auto}
+.fred{margin:8px 0 0}
+/* le sac : une tuile par pile */
+.fgrille{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(270px,100%),1fr));gap:8px;margin-top:6px}
+.fobjet{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 10px;align-items:start;min-width:0;padding:9px 11px;border:1px solid var(--rule);border-radius:3px;background:var(--surface)}
+.fobjet .picto{margin-top:1px}
+.fobjet.arme .picto{color:var(--rust)}
+.fobjet.conso .picto{color:var(--plum)}
+.fobjet.armure .picto,.fobjet.bouclier .picto{color:var(--forest)}
+.fobjet.porte{border-color:var(--forest);background:var(--fill)}
+.fotxt{display:flex;flex-direction:column;min-width:0}
+.fotxt b{font-family:Spectral,Georgia,serif;font-size:15.5px;font-weight:600;color:var(--ink);line-height:1.25;overflow-wrap:anywhere}
+.fqte{font-family:"IBM Plex Sans",sans-serif;font-size:13px;font-weight:600;color:var(--forest);font-variant-numeric:tabular-nums;white-space:nowrap}
+.fomin{font-size:12.5px;color:var(--muted);line-height:1.35;overflow-wrap:anywhere}
+.foorig{font-size:11px;font-style:italic;color:var(--muted)}
+.foact{grid-column:1 / -1;display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
+.fobjet>.fform{grid-column:1 / -1}
+.fsous{margin:14px 0 0}
+.fform{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;margin-top:6px;padding:8px 10px;border:1px dashed var(--rule);border-radius:2px;background:var(--paper)}
+.fform.fcol{flex-direction:column;align-items:stretch}
+.fform .table>div{flex-basis:150px}
+.fajout{margin-top:16px;padding-top:10px;border-top:1px dashed var(--rule)}
+.fajout summary{cursor:pointer;font-weight:600;font-size:14px;color:var(--forest)}
+.fajout .seg{margin-top:10px}
+.fajout .seg button{font-size:13px;padding:5px 10px;background:var(--surface)}
+/* sa bourse */
+.fbourse{display:flex;align-items:center;gap:14px;margin-top:12px;padding:12px 16px;border:1px solid var(--rule);border-radius:3px;background:var(--fill)}
+.fbourse .picto{width:42px;height:42px;color:var(--gold)}
+.fbourse>div{display:flex;flex-direction:column;min-width:0}
+.fsomme{font-family:Spectral,Georgia,serif;font-size:28px;font-weight:700;line-height:1.1;color:var(--forest);font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.fpanneau .seg button{background:var(--surface)}
+.table.fbform>div:nth-child(-n+2){flex:0 0 auto}
+.fhist td{vertical-align:middle}
+.tab td.fneg{color:var(--rust);font-weight:600;white-space:nowrap}
+.tab td.fpos{color:var(--sage);font-weight:600;white-space:nowrap}
+/* le marché */
+.fmarche-tete{margin:12px 0 0;font-size:14px;color:var(--forest)}
+.fmarche td{vertical-align:middle}
+.tab td.fmact{text-align:right;white-space:nowrap}
+.fmact input{margin-right:6px;padding:4px 7px;font-size:13.5px;vertical-align:middle}
+.fmact .btn{vertical-align:middle}
+.fcoche{margin:8px 0 2px;align-items:flex-start;line-height:1.4}
+.fcoche input{margin-top:3px}
+/* ceux qui sont entrés dans le monde */
+.fancien{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;justify-content:space-between;padding:9px 2px;border-bottom:1px solid var(--rule)}
+.fancien>div{flex:1 1 240px;min-width:0}
+.fancien b{font-family:Spectral,Georgia,serif;font-size:16px;font-weight:600;color:var(--forest)}
+.fancien a,.fvide a,.nancien a{color:var(--forest)}
+.fvide p{margin:0 0 6px}
+#pEditeur{margin-top:14px}
+@media (max-width:860px){
+  .fheros{grid-template-columns:auto minmax(0,1fr);grid-template-areas:"med id" "jauges jauges" "tuiles tuiles" "act act"}
+  .fjauges{max-width:none;margin-top:10px}
+  .ftuiles{grid-template-columns:repeat(3,minmax(0,1fr));margin-top:8px}
+}
+@media (max-width:560px){
+  .fheros{padding:12px 14px;column-gap:14px}
+  .fmed{width:58px;height:58px;font-size:22px}
+  .fnom{font-size:23px}
+  .ftuile{padding:8px 6px}
+  .ftuile b{font-size:17px}
+  .fportrait{flex:1 1 100%}
+  .seg.fonglets{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;border-bottom:0}
+  .fonglets button{justify-content:center;margin:0;border:1px solid var(--rule);border-radius:2px}
+  .fonglets button[aria-pressed=true]{background:var(--fill);border-color:var(--forest);box-shadow:none}
+  .fpanneau{margin-top:8px;border-top:1px solid var(--rule);border-radius:3px;padding:4px 14px 16px}
+  /* le marché au téléphone : une ligne par article, l'achat en dessous, toute la largeur */
+  .tab.fmarche{display:block}
+  .fmarche tr{display:grid;grid-template-columns:minmax(0,1fr) auto auto;column-gap:10px;align-items:baseline;border-bottom:1px solid var(--rule);padding:5px 0}
+  .fmarche tr:last-child{border-bottom:0}
+  .fmarche th,.fmarche td{border:0;padding:1px 4px}
+  .fmarche th:last-child:empty{display:none}
+  .tab.fmarche td.fmact{grid-column:1 / -1;display:flex;gap:6px;text-align:left;white-space:normal;padding-top:4px}
+  .fmarche td.fmact input{flex:1 1 auto;min-width:0;margin:0}
+}
+/* la fiche du Word, à l'impression seulement : la même que celle du Registre du Havre */
+#ficheImpr{display:none}
+.fimp{--fp:#FFFFFF;--fi:#1A1A1A;--fl:#6B7469;--fh:#1F3D2B;--fh2:#2E5A3E;--fr:#C3D2C6;--ff:#F1F5F1;--fhd:#E6EDE7;
+  page:fiche;background:var(--fp);color:var(--fi);font-family:Spectral,Cambria,Georgia,serif;font-size:12.5px;line-height:1.3;
+  print-color-adjust:exact;-webkit-print-color-adjust:exact}
+.fimp .ft{font-size:25px;font-weight:700;color:var(--fh);line-height:1.1;margin-bottom:1px;text-wrap:balance}
+.fimp .fsub{font-style:italic;color:var(--fh2);font-size:12px;border-bottom:2px solid var(--fh);padding-bottom:6px;margin-bottom:4px}
+.fimp .fh{font-family:"IBM Plex Sans",sans-serif;font-size:10.5px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--fh);border-bottom:1px solid var(--fh);padding-bottom:2px;margin:13px 0 5px}
+.fimp .fnote{font-size:11.5px;color:var(--fl);margin:0 0 5px}
+.fimp .fnote b{color:var(--fh2)}
+.fimp .fsm{font-size:10.5px;font-style:italic;color:var(--fl);margin:4px 0 0}
+.fimp table.fx{width:100%;border-collapse:collapse;margin:0 0 5px;table-layout:fixed;font-variant-numeric:tabular-nums}
+.fimp table.fx + table.fx{margin-top:-1px}
+.fimp .fx th,.fimp .fx td{border:1px solid var(--fr);padding:3px 6px;vertical-align:top;text-align:left;font-weight:400;font-size:12px;overflow-wrap:break-word;font-family:inherit;font-style:normal;color:var(--fi)}
+.fimp .fx th{background:var(--fhd);font-family:"IBM Plex Sans",sans-serif;font-size:9px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--fh)}
+.fimp .fx th.c,.fimp .fx td.c{text-align:center}
+.fimp .fx th.c{white-space:nowrap;letter-spacing:.04em}
+.fimp .fx td.b,.fimp .fx th.b{font-weight:700}
+.fimp .lb{font-family:"IBM Plex Sans",sans-serif;font-size:8.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--fl);margin-bottom:2px}
+.fimp td.fd .vl{font-size:12.5px;min-height:15px}
+.fimp td.notes{height:62px}
+.fimp .car th{text-align:center;font-size:7.5px;letter-spacing:.02em}
+.fimp .big2,.fimp .fx td.big2{font-size:17px;font-weight:700;color:var(--fh);text-align:center;line-height:1.15}
+.fimp .car .sub2{text-align:center;font-size:9.5px;color:var(--fl)}
+.fimp .der td.dv{background:var(--ff);text-align:center}
+.fimp .der .lb{text-align:center}
+.fimp .der .dvs{font-size:9.5px;font-style:italic;color:var(--fl);margin-bottom:1px;line-height:1.2}
+.fimp .sk td.grp{background:var(--ff);color:var(--fh2);font-size:11.5px}
+.fimp .sk td.grp i{font-size:10px;color:var(--fl)}
+.fimp .sk td.nte{font-size:10px;font-style:italic;color:var(--fl)}
+.fimp .prt td.de,.fimp .arm td.de{font-size:11px;color:var(--fl)}
+.fimp td.vide{height:19px}
+.fimp .chg td{height:24px}
+.fimp ul.sac{margin:2px 0 0;padding-left:16px}
+.fimp ul.sac li{margin:0}
+.fimp .am td.amc{background:var(--ff);width:50%;padding:6px 8px}
+.fimp .am p{margin:0 0 1px;font-size:11px;line-height:1.28}
+.fimp .am p.amb{font-weight:700;font-size:11.5px}
+.fimp .am p.ami{font-style:italic;color:var(--fl);font-size:10px;margin-top:3px}
+.fimp .brk{height:0}
+@page fiche{size:A4;margin:11mm}
+
 @page{size:A4;margin:16mm}
 @media print{
   .noprint{display:none!important}
@@ -584,18 +751,32 @@ svg.reseau:active{cursor:grabbing}
   body.imprime-seance .feuille{max-height:none;overflow:visible;border:0;box-shadow:none;padding:0;margin:0;background:#fff;color:#000;font-size:12pt}
   body.imprime-seance .bloc{break-inside:avoid}
   body.imprime-seance .joints{color:#555}
+  /* la fiche du Word, seule sur la feuille */
+  body.imprime-fiche .wrap{display:none!important}
+  body.imprime-fiche #ficheImpr{display:block}
+  .fimp{font-size:8.9pt;line-height:1.26}
+  .fimp .ft{font-size:19pt}
+  .fimp .fx th,.fimp .fx td{font-size:8.4pt;padding:2px 5px}
+  .fimp .fx th{font-size:7.4pt;letter-spacing:.05em}
+  .fimp .big2,.fimp .fx td.big2{font-size:13pt}
+  .fimp .car th{font-size:6.8pt;letter-spacing:.01em}
+  .fimp .am p{font-size:7.8pt}
+  .fimp .brk{break-before:page;page-break-before:always}
+  .fimp tr,.fimp .fh,.fimp .ft{break-inside:avoid}
+  .fimp .fh{break-after:avoid}
+  .fimp table.fx{break-inside:auto}
 }
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
-<script>try{ if(/^faelorenn-(table|visages|progression|missions)$/.test(window.name)) window.name = ''; }catch(e){}</script>
+<script>try{ if(/^faelorenn-(table|visages|progression|missions|marchefleurs)$/.test(window.name)) window.name = ''; }catch(e){}</script>
 <nav class="fae-site" aria-label="Les registres de Faelorenn">
   <a class="fae-accueil" href="./">Faelorenn</a>
   <a href="missions.html" aria-current="page">Registre des Missions</a>
   <a href="table.html">Registre de la Table</a>
   <a href="pnj.html">Registre des Visages</a>
-  <a href="progression.html">Registre de la Progression</a>
+  <a href="marchefleurs.html">Registre des Marchefleurs</a>
   <a href="createur.html">Registre du Havre</a>
   <a href="rencontres.html">Registre des Rencontres</a>
 </nav>
@@ -623,7 +804,7 @@ svg.reseau:active{cursor:grabbing}
 
 <section id="secTableau">
   <h2><span class="num">1</span> Le tableau du Havre</h2>
-  <p class="hint">Le Havre annonce la paie et les points de progression avant le départ : c’est sur ça qu’on choisit. « Partir » lance la mission dans la table : une séance neuve qui s’ouvre sur son annonce, ses visages dans le Registre des Visages, sa rencontre prête à tirer. « La boucler » donne ses points à chaque personnage.</p>
+  <p class="hint">Le Havre annonce la paie et les points de progression avant le départ : c’est sur ça qu’on choisit. « Partir » lance la mission dans la table : une séance neuve qui s’ouvre sur son annonce, ses visages dans le Registre des Visages, sa rencontre prête à tirer. « La boucler » donne ses points à chaque personnage, et sa paie dans la bourse de chacun.</p>
   <div class="acts misbarre">
     <div class="seg" role="group" aria-label="Voir">
       <button type="button" id="misVueTableau" aria-pressed="true">Au tableau</button>
@@ -807,6 +988,63 @@ function domaineCle(s){
   return d ? d.k : '';
 }
 
+/* ---------- l'argent et le marché, Livre V ----------
+   1 or = 10 argents. Tout se compte en argents et s'écrit en ors et argents. Les prix sont ceux du livre,
+   recopiés tels quels ; la baguette d'école n'y est pas, elle ne se vend jamais. */
+const ARGENTS_PAR_OR = 10;
+function texteArgent(n){
+  n = Math.round(+n || 0);
+  const a = Math.abs(n), o = Math.floor(a / ARGENTS_PAR_OR), r = a % ARGENTS_PAR_OR;
+  if(!a) return '0 argent';
+  return (n < 0 ? '−' : '') + [o ? o + ' or' + (o > 1 ? 's' : '') : '', r ? r + ' argent' + (r > 1 ? 's' : '') : ''].filter(Boolean).join(' ');
+}
+/* « 12 argents », « 3 ors », « 1 or et 5 argents », « 1,5 or » ; null quand rien ne se lit, ou qu'on hésite
+   (« 20 à 40 argents ») : rien ne se verse tout seul sur une somme qui n'est pas dite */
+function argentsDe(t){
+  const s = String(t || '').toLowerCase();
+  if(/\d\s*(?:à|a|-|–|ou)\s*\d/.test(s)) return null;
+  let n = 0, vu = false;
+  s.replace(/(\d+(?:[.,]\d+)?)\s*ors?(?![\p{L}\p{N}])/gu, (m, x) => { n += parseFloat(x.replace(',', '.')) * ARGENTS_PAR_OR; vu = true; return m; });
+  s.replace(/(\d+)\s*argents?(?![\p{L}\p{N}])/gu, (m, x) => { n += +x; vu = true; return m; });
+  return vu ? Math.round(n) : null;
+}
+const MARCHE = {
+  armes: [
+    {nom:'Arme légère', ex:'dague, couteau de jet, bâton, gourdin, fronde', de:'d4', prix:5},
+    {nom:'Arme à une main', ex:'épée courte, hache de bûcheron, lance, masse légère, gaffe de batelier', de:'d6', prix:20},
+    {nom:'Arc court', ex:'tir monté, tir en mouvement', de:'d6', prix:20},
+    {nom:'Arc de chasse', ex:'l’arc du paquetage', de:'d6', prix:30},
+    {nom:'Arc long', ex:'12 en Force pour le bander', de:'d8', prix:60},
+    {nom:'Arme de guerre', ex:'épée longue, masse d’armes, hache de guerre, fléau', de:'d8', prix:40},
+    {nom:'Arbalète', ex:'arbalète de poing, arbalète de siège', de:'d8', notes:'dégâts au mod DEX', prix:80},
+    {nom:'Arme à deux mains', ex:'grande hache, marteau de forge, épieu, faux de guerre', de:'d10', prix:50},
+    {nom:'Lance ori’ican de première mue', ex:'', de:'d8', prix:40, lance:true},
+    {nom:'Lance ori’ican de tribu', ex:'', de:'d10', prix:60, lance:true},
+    {nom:'Lance ori’ican à contrepoids', ex:'deux mains', de:'d12', prix:120, lance:true}
+  ],
+  armures: [
+    {nom:'Cuir, matelassé', sorte:'armure', red:1, prix:20, alias:['cuir matelassé', 'matelassé']},
+    {nom:'Cuir clouté, écailles cousues', sorte:'armure', red:2, prix:50, alias:['cuir clouté', 'écailles cousues']},
+    {nom:'Maille', sorte:'armure', red:3, prix:120, alias:['maille', 'cotte de mailles']},
+    {nom:'Plates', sorte:'armure', red:4, prix:400, alias:['plates', 'armure de plates']},
+    {nom:'Bouclier', sorte:'bouclier', red:1, prix:30, alias:['bouclier']}
+  ],
+  consommables: [
+    {nom:'Fiole de Havre', effet:'Rends 1d6 PV', prix:8, soin:{q:'pv', f:'1d6'}},
+    {nom:'Pot de braises', effet:'Allume n’importe quoi, catalyseur de secours pour un Eshar', prix:4},
+    {nom:'Poudre d’écorce', effet:'Réduction 1 pendant un combat', prix:6},
+    {nom:'Sel d’Ysse', effet:'Retire une altération d’état', prix:15},
+    {nom:'Éclat de totem', effet:'Rend 1 PC, une seule fois, puis la pierre est morte', prix:60, soin:{q:'pc', f:'1'}},
+    {nom:'Huile d’onction', effet:'Un allié ne tombe pas sous 1 PV au prochain combat', prix:150}
+  ],
+  depenses: [
+    {nom:'Un repas', prix:1},
+    {nom:'Un lit en commun', prix:2},
+    {nom:'Une chambre', prix:5},
+    {nom:'Un péage de l’Or', prix:1, note:'par personne, 5 argents par charrette'}
+  ]
+};
+
 /* ============ la table : un document partagé, fusionné pièce par pièce ============
    Chaque personnage, chaque séance et chaque paragraphe du compte rendu porte sa date
    de modification : la plus récente gagne. Les jets s'ajoutent sans jamais s'écraser. */
@@ -819,15 +1057,17 @@ let T = videTable();
 const MOI = {joueur:'', perso:'', seance:'', seanceFixee:false, mode:'d100', vuePnj:'fiches', des:'site'};
 const SYNC = {poignee:null, nom:'', vu:0, dernier:0, etat:'local', erreur:'', ecrit:null, boucle:null};
 
-function videTable(){ return {format:'faelorenn-table', version:1, nom:'', maj:0, personnages:{}, journal:{}, blocs:{}, pnj:{}, liens:{}, positions:{}, rencontres:{}, adversaires:{}, missions:{}, jets:[], viderAvant:0}; }
-const CLES_FUSION = ['personnages','journal','blocs','pnj','liens','positions','rencontres','adversaires','missions'];
+function videTable(){ return {format:'faelorenn-table', version:1, nom:'', maj:0, personnages:{}, journal:{}, blocs:{}, pnj:{}, liens:{}, positions:{}, rencontres:{}, adversaires:{}, missions:{}, objets:{}, argent:{}, jets:[], viderAvant:0}; }
+/* objets : ce que chacun porte dans son sac, pièce par pièce. argent : chaque pièce qui entre ou sort de sa bourse.
+   Chacun sa ligne, datée : deux joueurs qui achètent en même temps, les deux achats comptent */
+const CLES_FUSION = ['personnages','journal','blocs','pnj','liens','positions','rencontres','adversaires','missions','objets','argent'];
 function nouvelId(p){ return (p || 'x') + '-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 6); }
 /* un nom donne son identifiant : deux joueurs qui créent « Nahya » chacun de leur côté créent la même fiche */
 function slug(s){ return String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'x'; }
 function idLibre(base, table){ return !table[base] || table[base].supprime ? base : base + '-' + Math.random().toString(36).slice(2, 6); }
 const maintenant = () => Date.now();
 /* le Registre de la Table et le Registre des Visages s'ouvrent chacun dans son onglet, toujours le même */
-const ONGLET_TABLE = 'faelorenn-table', ONGLET_VISAGES = 'faelorenn-visages', ONGLET_PROGRESSION = 'faelorenn-progression', ONGLET_MISSIONS = 'faelorenn-missions';
+const ONGLET_TABLE = 'faelorenn-table', ONGLET_VISAGES = 'faelorenn-visages', ONGLET_PROGRESSION = 'faelorenn-progression', ONGLET_MISSIONS = 'faelorenn-missions', ONGLET_FICHE = 'faelorenn-marchefleurs';
 function ouvrirPage(url, onglet){
   let w = null;
   try{ w = window.open(url, onglet); }catch(e){ w = null; }
@@ -959,6 +1199,9 @@ function normPerso(o){
   c.maj = num(o.maj, 0);
   c.majPv = num(o.majPv, 0);
   c.supprime = !!o.supprime;
+  /* entré dans le monde : il n'est plus à la table, sa fiche de PNJ le continue dans le Registre des Visages */
+  c.monde = txt(o.monde);
+  c.mondeT = num(o.mondeT, 0);
   ['joueur','nom','peuple','voie','domaine','bourse','texte','traits','contrainte','armure','peupleComp'].forEach(k => c[k] = txt(o[k]));
   c.sub = o.sub && typeof o.sub === 'object' ? o.sub : {};
   CARS.forEach(x => c.car[x] = num(o.car && o.car[x], 8));
@@ -1070,7 +1313,9 @@ function normPnj(o){
     statut: STATUTS.some(x => x.k === o.statut) ? o.statut : 'vivant',
     seance:txtOu(o.seance), texte:txtOu(o.texte), auteur:txtOu(o.auteur),
     valeurs: Array.isArray(o.valeurs) ? o.valeurs.filter(v => v && txtOu(v.n).trim()).slice(0, 20).map(v => ({n:txtOu(v.n).trim(), v:Math.max(0, Math.round(+v.v || 0))})) : [],
-    pvMax:num(o.pvMax), pv:num(o.pv)};
+    pvMax:num(o.pvMax), pv:num(o.pv),
+    /* un ancien personnage : le personnage d'où il vient */
+    pj:txtOu(o.pj)};
   p.pv0 = o.pv0 !== undefined ? num(o.pv0) : p.pv;
   p.vie = normEvts(o.vie, p);
   return recalculerVie(p);
@@ -1104,7 +1349,8 @@ function normAdversaire(o){
 /* ce qu'on a trouvé sur lui : pris par un personnage (fait), ou laissé là (laisse) */
 function normFouille(f){
   if(!f || typeof f !== 'object' || (f.etat !== 'fait' && f.etat !== 'laisse')) return null;
-  return {etat:f.etat, texte:txtOu(f.texte), qui:txtOu(f.qui), bloc:txtOu(f.bloc), t:+f.t || 0};
+  /* objet, argent : la pile du sac ou la ligne de bourse qu'elle a données, pour la défaire */
+  return {etat:f.etat, texte:txtOu(f.texte), qui:txtOu(f.qui), bloc:txtOu(f.bloc), t:+f.t || 0, objet:txtOu(f.objet), argent:txtOu(f.argent)};
 }
 const typeLienOk = k => TYPES_LIEN.some(t => t.k === k) ? k : 'autre';
 
@@ -1140,6 +1386,30 @@ function fondreMission(garde, autre){
   const x = Object.assign({}, garde);
   CHAMPS_ETAT_MISSION.forEach(c => { x[c] = autre[c]; });
   return x;
+}
+/* un objet du sac : une pile (douze flèches), avec ce qu'il fait. armure et bouclier se portent */
+const SORTES_OBJET = ['objet','conso','armure','bouclier'];
+function normObjet(o){
+  o = o && typeof o === 'object' ? o : {};
+  const t = (v, n) => txtOu(v).slice(0, n);
+  const sorte = SORTES_OBJET.indexOf(o.sorte) >= 0 ? o.sorte : 'objet';
+  const n = Math.round(+o.n);
+  return {id:txtOu(o.id) || nouvelId('o'), maj:+o.maj || 0, supprime:!!o.supprime, perso:t(o.perso, 120),
+    nom:t(o.nom, 160).trim() || 'Un objet', n:isFinite(n) && n >= 1 ? Math.min(n, 999) : 1, sorte:sorte,
+    red: sorte === 'armure' || sorte === 'bouclier' ? Math.max(0, Math.min(10, Math.round(+o.red || 0))) : 0,
+    porte: (sorte === 'armure' || sorte === 'bouclier') && !!o.porte,
+    effet:t(o.effet, 300), note:t(o.note, 400), origine:t(o.origine, 200),
+    prix: o.prix == null || o.prix === '' || isNaN(+o.prix) ? null : Math.max(0, Math.round(+o.prix)),
+    t:+o.t || 0};
+}
+/* une ligne de la bourse, en argents : positive quand elle entre, négative quand elle sort */
+function normArgent(o){
+  o = o && typeof o === 'object' ? o : {};
+  const n = Math.round(+o.n);
+  return {id:txtOu(o.id) || nouvelId('a'), maj:+o.maj || 0, supprime:!!o.supprime, perso:txtOu(o.perso).slice(0, 120),
+    n:isFinite(n) ? Math.max(-1e6, Math.min(1e6, n)) : 0, motif:txtOu(o.motif).slice(0, 240),
+    seance:txtOu(o.seance).slice(0, 80), bloc:txtOu(o.bloc).slice(0, 80), mission:txtOu(o.mission).slice(0, 80),
+    t:+o.t || 0};
 }
 function normLien(o){
   o = o && typeof o === 'object' ? o : {};
@@ -1180,9 +1450,13 @@ function fusionner(a, b){
       const x = b[k][id], y = m[id];
       if(!y){ m[id] = x; return; }
       let garde = (x.maj || 0) > (y.maj || 0) ? x : y;
+      /* le sac et la bourse : à égalité de date, une règle fixe, pour que chaque ordinateur garde la même ligne */
+      if((k === 'objets' || k === 'argent') && (x.maj || 0) === (y.maj || 0) && JSON.stringify(x) > JSON.stringify(y)) garde = x;
       const autre = garde === x ? y : x;
       /* les PV et les PC vivent leur propre vie pendant un combat : la base la plus récente, et tous les coups */
       if(k === 'personnages' || k === 'pnj' || k === 'adversaires') garde = fondreVie(garde, autre);
+      /* entrer dans le monde, et en revenir, a sa propre date : une retouche de sa fiche faite ailleurs ne le ramène pas à la table */
+      if(k === 'personnages' && (autre.mondeT || 0) > (garde.mondeT || 0)) garde = Object.assign({}, garde, {monde:autre.monde || '', mondeT:autre.mondeT});
       if(k === 'missions') garde = fondreMission(garde, autre);
       m[id] = garde;
     });
@@ -1218,6 +1492,8 @@ function normTable(o){
   Object.keys(o.rencontres || {}).forEach(id => { const r = normRencontre(o.rencontres[id]); r.id = id; t.rencontres[id] = r; });
   Object.keys(o.adversaires || {}).forEach(id => { const a = normAdversaire(o.adversaires[id]); a.id = id; t.adversaires[id] = a; });
   Object.keys(o.missions || {}).forEach(id => { const m = normMission(o.missions[id]); m.id = id; t.missions[id] = m; });
+  Object.keys(o.objets || {}).forEach(id => { const x = normObjet(o.objets[id]); x.id = id; t.objets[id] = x; });
+  Object.keys(o.argent || {}).forEach(id => { const x = normArgent(o.argent[id]); x.id = id; t.argent[id] = x; });
   Object.keys(o.positions || {}).forEach(r => {
     const p = o.positions[r];
     if(p && isFinite(+p.x) && isFinite(+p.y)) t.positions[r] = {x:+p.x, y:+p.y, maj:+p.maj || 0, supprime:!!p.supprime};
@@ -1437,12 +1713,13 @@ function importerTable(txt){
   }
   if(o.format !== 'faelorenn-table') return {ok:false, msg:'Ce fichier n’est ni une table ni une fiche Faelorenn.'};
   const vivants = m => Object.keys(m).filter(k => m[k] && !m[k].supprime).length;
-  const compte = () => ({p:vivants(T.personnages), b:vivants(T.blocs), n:vivants(T.pnj), l:vivants(T.liens), m:vivants(T.missions)});
+  const compte = () => ({p:vivants(T.personnages), b:vivants(T.blocs), n:vivants(T.pnj), l:vivants(T.liens), m:vivants(T.missions), o:vivants(T.objets)});
   const avant = compte();
   changer(() => { T = fusionner(T, normTable(o)); });
-  const apres = compte(), np = apres.p - avant.p, nb = apres.b - avant.b, nn = apres.n - avant.n, nl = apres.l - avant.l, nm = apres.m - avant.m;
+  const apres = compte(), np = apres.p - avant.p, nb = apres.b - avant.b, nn = apres.n - avant.n, nl = apres.l - avant.l, nm = apres.m - avant.m, no = apres.o - avant.o;
   const bouts = [];
   if(nm > 0) bouts.push(nm + ' mission' + (nm > 1 ? 's' : ''));
+  if(no > 0) bouts.push(no + ' objet' + (no > 1 ? 's' : '') + ' dans les sacs');
   if(np > 0) bouts.push(np + ' personnage' + (np > 1 ? 's' : ''));
   if(nb > 0) bouts.push(nb + ' paragraphe' + (nb > 1 ? 's' : '') + ' de séance');
   if(nn > 0) bouts.push(nn + ' fiche' + (nn > 1 ? 's' : '') + ' de PNJ');
@@ -1474,6 +1751,295 @@ function telecharger(nom, contenu, type, bouton){
   });
 }
 
+/* ============ le sac et la bourse ============
+   Ce que chacun porte vit à côté de sa fiche, une ligne par pile d'objets (T.objets) et une ligne par pièce qui
+   entre ou qui sort (T.argent) : deux joueurs qui touchent au même sac en même temps ne s'écrasent pas, et la
+   bourse garde son histoire. Les armes restent sur la fiche (c.armes) : le combat et la progression les y lisent.
+   Le sac et la bourse d'avant, du texte sur la fiche, passent une fois dans ces lignes sous un nom fixe :
+   deux ordinateurs qui le font en même temps font exactement la même chose. */
+
+const SAC_PLEIN = 120;   /* piles au plus dans un sac */
+
+function unObjet(id){ const o = id && T.objets[id]; return o && !o.supprime ? o : null; }
+function objetsDe(pid){
+  return Object.keys(T.objets).map(k => T.objets[k]).filter(o => o && !o.supprime && o.perso === pid)
+    .sort((a, b) => (a.t - b.t) || (a.id < b.id ? -1 : 1));
+}
+function mouvementsDe(pid){
+  return Object.keys(T.argent).map(k => T.argent[k]).filter(m => m && !m.supprime && m.perso === pid)
+    .sort((a, b) => (b.t - a.t) || (a.id < b.id ? 1 : -1));
+}
+function bourseDe(pid){ return mouvementsDe(pid).reduce((a, m) => a + m.n, 0); }
+function porteDe(pid, sorte){ return objetsDe(pid).find(o => o.sorte === sorte && o.porte) || null; }
+/* la réduction : son armure naturelle, plus la pièce qu'il porte, plus son bouclier */
+function redDe(c){
+  if(!c) return 0;
+  const a = porteDe(c.id, 'armure'), b = porteDe(c.id, 'bouclier');
+  return (c.red || 0) + (a ? a.red : 0) + (b ? b.red : 0);
+}
+
+/* ---------- ce qu'un texte dit d'un objet ----------
+   « Deux fioles de Havre », « Flèches, 4. Récupérables après le combat », « Un cuir matelassé » */
+const NOMBRES_OBJET = {un:1, une:1, deux:2, trois:3, quatre:4, cinq:5, six:6, sept:7, huit:8, neuf:9, dix:10, onze:11, douze:12, quinze:15, vingt:20};
+const cleObjet = s => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[’`´]/g, '\'')
+  .replace(/[^a-z0-9' ]+/g, ' ').split(/\s+/).filter(Boolean).map(w => w.length > 3 ? w.replace(/[sx]$/, '') : w).join(' ');
+/* l'entrée du marché dont il s'agit : le même nom, ou ce nom suivi d'un détail (« Fiole de Havre, à moitié vide ») */
+function duMarche(nom){
+  const k = cleObjet(nom);
+  const va = noms => noms.some(a => { const c = cleObjet(a); return c && (k === c || k.indexOf(c + ' ') === 0); });
+  let e = MARCHE.consommables.find(x => va([x.nom]));
+  if(e) return {e:e, sorte:'conso', effet:e.effet, prix:e.prix, exact:cleObjet(e.nom) === k};
+  e = MARCHE.armures.find(x => va([x.nom].concat(x.alias || [])));
+  /* une armure garde le nom qu'on lui donne : « Cuir matelassé » */
+  if(e) return {e:e, sorte:e.sorte, red:e.red, prix:e.prix, exact:false};
+  return null;
+}
+function objetDepuisTexte(t){
+  const brut = String(t || '').replace(/\s+/g, ' ').trim();
+  let s = brut.replace(/[.\s]+$/, ''), n = 1, note = '';
+  let m = /^([^,]+?),\s*(\d+)\s*(?:\.\s*(.*))?$/.exec(s);
+  if(m){ s = m[1].trim(); n = +m[2]; note = (m[3] || '').trim(); }
+  else if((m = /^(\d+)\s+(.+)$/.exec(s))){ n = +m[1]; s = m[2]; }
+  else {
+    m = /^(\S+)\s+(.+)$/.exec(s);
+    if(m && NOMBRES_OBJET[m[1].toLowerCase()]){ n = NOMBRES_OBJET[m[1].toLowerCase()]; s = m[2]; }
+    else s = s.replace(/^(?:des|du|de la|le|la|les)\s+|^(?:de l|l)['’]\s*/i, '');
+  }
+  s = s.charAt(0).toUpperCase() + s.slice(1);
+  const x = {nom:s || 'Un objet', n:Math.max(1, Math.min(999, n)), sorte:'objet', note:note, effet:'', red:0, prix:null};
+  const d = duMarche(x.nom);
+  if(d){
+    x.sorte = d.sorte; x.prix = d.prix;
+    if(d.effet) x.effet = d.effet;
+    if(d.red) x.red = d.red;
+    /* « Fioles de Havre » devient la Fiole de Havre du livre ; un détail en plus garde son nom */
+    if(d.exact) x.nom = d.e.nom;
+  } else {
+    const r = /r[ée]duction\s*(\d+)/i.exec(brut);
+    if(r){ x.sorte = 'armure'; x.red = +r[1]; }
+  }
+  return x;
+}
+
+/* de l'argent en tête d'un texte va dans la bourse : « 7 argents, dans une bourse qui porte un nom », et la bourse
+   du Livre VI, « Bourse de 7 argents. Elle porte un nom brodé. », une fois ses dés lancés. Le prix d'un objet,
+   plus loin dans le texte (« ou 8 ors à leur école »), n'en est pas */
+function argentEnTete(t){
+  const tete = String(t || '').split(/\.\s/)[0];
+  const m = /^\s*(?:(?:une|la|sa)\s+)?(?:bourse\s+(?:de\s+|d['’]\s*|avec\s+))?(\d+)\s*(ors?|argents?)(?![\p{L}\p{N}])/iu.exec(tete);
+  return m ? (+m[1]) * (/^or/i.test(m[2]) ? ARGENTS_PAR_OR : 1) : 0;
+}
+
+/* ---------- le sac et la bourse d'avant ---------- */
+function hashCourt(s){ let h = 2166136261; for(let i = 0; i < s.length; i++){ h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return (h >>> 0).toString(36); }
+/* le nom fixe d'une ligne du sac d'avant : son texte, et combien de fois le même texte vient plus haut. Une ligne
+   retirée ailleurs ne change pas le nom des autres */
+function cleLigne(pid, sac, i){
+  const s = String(sac[i]);
+  let k = 0;
+  for(let j = 0; j < i; j++) if(String(sac[j]) === s) k++;
+  return pid + '-' + hashCourt(s) + (k ? '-' + (k + 1) : '');
+}
+function aMigrer(){
+  const out = {objets:[], argent:[]};
+  Object.keys(T.personnages).forEach(pid => {
+    const c = T.personnages[pid];
+    if(!c || c.supprime) return;
+    (c.sac || []).forEach((s, i) => {
+      s = String(s);
+      const h = cleLigne(pid, c.sac, i), n = argentEnTete(s);
+      if(n){ if(!T.argent['arg-' + h]) out.argent.push({id:'arg-' + h, c:c, n:n, i:i, motif:'Son sac d’avant : ' + s}); }
+      else if(!T.objets['o-' + h]) out.objets.push({id:'o-' + h, c:c, s:s, i:i});
+    });
+    const n = argentsDe(c.bourse), id = 'arg-' + pid + '-bourse';
+    if(n && !T.argent[id]) out.argent.push({id:id, c:c, n:n});
+  });
+  return out;
+}
+function migrerInventaires(){
+  const a = aMigrer();
+  if(!a.objets.length && !a.argent.length) return 0;
+  /* datées du tout début, et pareilles sur chaque ordinateur : un navigateur resté en arrière qui refait le
+     passage avant d'avoir lu le dépôt n'écrase rien. Ce qu'un joueur en a fait depuis, jeté, donné, porté, l'emporte */
+  changer(() => {
+    const b = aMigrer();
+    b.objets.forEach(x => {
+      const o = objetDepuisTexte(x.s);
+      /* l'armure du paquetage se porte, si rien d'autre n'est déjà porté et si son corps la supporte */
+      const porte = (o.sorte === 'armure' || o.sorte === 'bouclier') && !porteDe(x.c.id, o.sorte) && !horsDuCorps(x.c, o);
+      T.objets[x.id] = normObjet(Object.assign(o, {id:x.id, perso:x.c.id, porte:porte, origine:'Son sac d’avant', t:1 + x.i, maj:1}));
+    });
+    b.argent.forEach(x => { T.argent[x.id] = normArgent({id:x.id, perso:x.c.id, n:x.n, motif:x.motif || 'Sa bourse d’avant', t:1 + (x.i || 0), maj:1}); });
+  });
+  return a.objets.length + a.argent.length;
+}
+/* la migration part après chaque lecture : ce qui arrive d'un autre ordinateur passe aussi. Jamais avant la
+   première lecture de la table partagée : ce navigateur a peut-être un sac d'avant qui n'est plus à jour */
+let MIGRATION_T = null, DEPART_FAIT = false;
+function pretAMigrer(){
+  if(!DEPART_FAIT) return false;
+  if(SYNC.etat === 'github') return !!GH.lu;
+  if(SYNC.etat === 'attente') return false;
+  if(SYNC.etat === 'fichier') return !!SYNC.dernier;
+  return true;
+}
+function planifierMigration(){
+  if(MIGRATION_T) return;
+  MIGRATION_T = setTimeout(() => {
+    MIGRATION_T = null;
+    if(pretAMigrer()) migrerInventaires();
+    else { const a = aMigrer(); if(a.objets.length || a.argent.length) planifierMigration(); }
+  }, 400);
+}
+
+/* ---------- ce qu'on fait du sac, à appeler dans un changer() ---------- */
+function majObjet(id, champs){
+  const o = T.objets[id];
+  if(!o) return null;
+  T.objets[id] = normObjet(Object.assign({}, o, champs, {id:id, maj:maintenant()}));
+  return T.objets[id];
+}
+function oterObjet(id){ const o = T.objets[id]; if(o && !o.supprime) T.objets[id] = Object.assign({}, o, {supprime:true, maj:maintenant()}); }
+function nouvelObjet(pid, champs){
+  const t = maintenant();
+  const o = normObjet(Object.assign({}, champs, {id:nouvelId('o'), perso:pid, t:t, maj:t}));
+  T.objets[o.id] = o;
+  return o;
+}
+/* un achat rejoint la pile du même objet, s'il en a déjà une sans rien de particulier */
+function ajouterAuSac(pid, champs){
+  const sorte = champs.sorte || 'objet';
+  if(sorte === 'conso' || sorte === 'objet'){
+    const k = cleObjet(champs.nom);
+    const pile = objetsDe(pid).find(o => o.sorte === sorte && cleObjet(o.nom) === k && (o.effet || '') === (champs.effet || '') && !o.note && !champs.note);
+    if(pile) return majObjet(pile.id, {n:pile.n + (champs.n || 1)});
+  }
+  return nouvelObjet(pid, champs);
+}
+function changerQte(id, d){
+  const o = unObjet(id); if(!o) return;
+  if(o.n + d <= 0) oterObjet(id); else majObjet(id, {n:o.n + d});
+}
+/* ce que son corps supporte, écrit dans le chapitre de son peuple : la réduction la plus haute d'une armure
+   qu'il peut porter. null : pas de limite écrite, ou il peut aller au-delà (le Vaellen, qui ne vole plus) */
+function armureMax(c){
+  const t = String((c && c.armure) || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+  if(!t.trim()) return null;
+  if(/^\s*aucune/.test(t)) return 0;
+  if(/au-?dela il peut/.test(t)) return null;
+  if(/toutes|plates/.test(t)) return 4;
+  if(/maille/.test(t)) return 3;
+  if(/cuir cloute|ecailles/.test(t)) return 2;
+  if(/cuir|matelasse/.test(t)) return 1;
+  return null;
+}
+/* une armure que son corps ne supporte pas ; un bouclier n'en est pas une */
+function horsDuCorps(c, o){ const m = armureMax(c); return !!o && o.sorte === 'armure' && m != null && o.red > m; }
+/* le Vaellen peut porter plus que le cuir, mais il ne vole plus */
+function neVolePlus(c, o){ return !!o && o.sorte === 'armure' && o.red > 1 && /au-?dela il peut/i.test(String((c && c.armure) || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '')); }
+/* une seule armure portée, un seul bouclier, et seulement ce que son corps supporte */
+function porterObjet(id, oui){
+  const o = unObjet(id); if(!o || (o.sorte !== 'armure' && o.sorte !== 'bouclier')) return;
+  if(oui && horsDuCorps(T.personnages[o.perso], o)) return;
+  if(oui) objetsDe(o.perso).forEach(x => { if(x.id !== id && x.sorte === o.sorte && x.porte) majObjet(x.id, {porte:false}); });
+  majObjet(id, {porte:!!oui});
+}
+/* donner : toute la pile change de sac, ou seulement combien on en donne */
+function donnerObjet(id, cible, combien){
+  const o = unObjet(id); if(!o || !perso(cible) || cible === o.perso) return null;
+  combien = Math.max(1, Math.min(o.n, Math.round(+combien || o.n)));
+  if(combien >= o.n) return majObjet(id, {perso:cible, porte:false, t:maintenant()});
+  majObjet(id, {n:o.n - combien});
+  return nouvelObjet(cible, Object.assign({}, o, {n:combien, porte:false, origine:'Donné par ' + (nomPj(o.perso) || 'quelqu’un')}));
+}
+const nomPj = id => { const c = T.personnages[id]; return c ? c.nom || 'Sans nom' : ''; };
+
+/* ce que rend un consommable : le soin du livre, ou celui que son effet écrit (« Rend 2 PV », « Rends 1d6 PV ») */
+function soinDe(o){
+  const e = MARCHE.consommables.find(x => x.soin && cleObjet(x.nom) === cleObjet(o.nom));
+  if(e) return e.soin;
+  const m = /\brends?\s+(\d*d\d+(?:\s*[+\-]\s*\d+)?|\d+)\s*(PV|PC)\b/i.exec(o.effet || '');
+  return m ? {q:m[2].toLowerCase(), f:m[1].replace(/\s+/g, '')} : null;
+}
+
+/* ---------- la bourse, à appeler dans un changer() ---------- */
+function mouvement(pid, n, motif, extra){
+  const t = maintenant();
+  const m = normArgent(Object.assign({id:nouvelId('arg'), perso:pid, n:n, motif:motif, t:t, maj:t}, extra || {}));
+  T.argent[m.id] = m;
+  return m;
+}
+function defaireMouvement(id){ const m = T.argent[id]; if(m && !m.supprime) T.argent[id] = Object.assign({}, m, {supprime:true, maj:maintenant()}); }
+/* la paie d'une mission : à chaque personnage de la table, une fois. Rouvrir la mission la reprend */
+function payerMission(m, qui, bloc, seance){
+  const n = argentsDe(m.paie);
+  if(!n) return 0;
+  let payes = 0;
+  qui.forEach(c => {
+    const id = 'arg-' + m.id + '-' + c.id, deja = T.argent[id];
+    if(deja && !deja.supprime) return;
+    const t = maintenant();
+    T.argent[id] = normArgent({id:id, perso:c.id, n:n, motif:'Paie : ' + (m.titre || 'la mission'), mission:m.id, bloc:bloc || '', seance:seance || '', t:t, maj:t});
+    payes++;
+  });
+  return payes;
+}
+const paieDonnee = m => Object.keys(T.argent).some(id => { const x = T.argent[id]; return !!x && !x.supprime && x.mission === m.id; });
+function reprendrePaie(m){
+  Object.keys(T.argent).forEach(id => { const x = T.argent[id]; if(x && !x.supprime && x.mission === m.id) defaireMouvement(id); });
+}
+
+/* ---------- entrer dans le monde ----------
+   Le personnage devient un PNJ du Registre des Visages : son nom, son histoire, ce qu'il sait faire, ses PV, et
+   tous ses liens, qui passent à sa fiche de PNJ. Il quitte la table sans rien perdre ; on peut le reprendre. */
+function versLeMonde(pid){
+  const c = perso(pid); if(!c) return null;
+  const t = maintenant();
+  const id = idLibre('n-' + slug(c.nom || 'ancien'), T.pnj);
+  const vals = ALLSKILLS.map(o => ({n:o.s, v:compTotal(c, o.s)})).sort((a, b) => b.v - a.v).slice(0, 8);
+  c.pratiques.forEach(p => { const v = pratValeur(c, p); if(v.val != null && vals.length < 20) vals.push({n:p.n, v:v.val}); });
+  const armes = c.armes.map(a => a.nom + (a.de ? ' (' + a.de + ')' : '')).join(', ');
+  const qui = 'Ancien personnage' + (c.joueur ? ', joué par ' + c.joueur : '') + '. ' + [c.peuple, c.voie].filter(Boolean).join(', ');
+  const texte = [c.texte.trim(), (qui.replace(/[.\s,]+$/, '') + '.') + (armes ? ' Ses armes : ' + armes + '.' : '')].filter(Boolean).join('\n\n');
+  const p = normPnj({id:id, maj:t, nom:c.nom, peuple:c.peuple, role:c.voie ? c.voie + ', ancien Marchefleur' : 'Ancien Marchefleur',
+    groupe:'Anciens personnages', attitude:'inconnu', statut:'vivant', texte:texte, auteur:MOI.joueur || '',
+    valeurs:vals, pvMax:c.pvMax, pv:c.pv, pv0:c.pv, pj:c.id});
+  baseVie(p, c.pv);   /* une fiche neuve : rien des coups d'une ancienne fiche supprimée du même nom */
+  T.pnj[id] = p;
+  refaireLiens('pj:' + c.id, 'pnj:' + id, t);
+  if(T.positions['pj:' + c.id]) T.positions['pnj:' + id] = Object.assign({}, T.positions['pj:' + c.id], {maj:t});
+  c.monde = id; c.mondeT = t;
+  majPerso(c);
+  if(MOI.perso === c.id) MOI.perso = '';
+  return p;
+}
+function refaireLiens(de, vers, t){
+  const r = x => x === de ? vers : x;
+  Object.keys(T.liens).forEach(k => {
+    const l = T.liens[k];
+    if(!l || l.supprime) return;
+    const touche = l.de === de || l.vers === de || (l.hist || []).some(h => h.de === de || h.vers === de);
+    if(!touche) return;
+    T.liens[k] = Object.assign({}, l, {de:r(l.de), vers:r(l.vers), hist:(l.hist || []).map(h => Object.assign({}, h, {de:r(h.de), vers:r(h.vers)})), maj:t});
+  });
+}
+/* le reprendre : ses liens reviennent au personnage, sa fiche de PNJ s'efface */
+function reprendrePersonnage(pid){
+  const c = T.personnages[pid];
+  if(!c || c.supprime || !c.monde) return null;
+  const t = maintenant(), nid = c.monde, p = T.pnj[nid];
+  refaireLiens('pnj:' + nid, 'pj:' + pid, t);
+  if(p && !p.supprime) T.pnj[nid] = Object.assign({}, p, {supprime:true, maj:t});
+  /* la date du retour : une fusion avec une fiche d'avant ne le renvoie pas dans le monde */
+  c.monde = ''; c.mondeT = t;
+  majPerso(c);
+  return c;
+}
+function entresDansLeMonde(){
+  return Object.keys(T.personnages).map(k => T.personnages[k]).filter(c => c && !c.supprime && c.monde)
+    .sort((a, b) => (b.mondeT - a.mondeT) || (a.nom || '').localeCompare(b.nom || '', 'fr'));
+}
+
 /* ============ les personnages ============ */
 
 const OUVERTS = {};          /* les fiches dépliées, dans ce navigateur */
@@ -1499,11 +2065,12 @@ function apresSaisie(box, fn){
   }, 150);
   box.addEventListener('focusout', f);
 }
+/* ceux qui sont à la table : pas ceux qui sont entrés dans le monde, dont la fiche de PNJ a pris le relais */
 function persos(){
-  return Object.keys(T.personnages).map(id => T.personnages[id]).filter(c => !c.supprime)
+  return Object.keys(T.personnages).map(id => T.personnages[id]).filter(c => !c.supprime && !c.monde)
     .sort((a, b) => (a.nom || '').localeCompare(b.nom || '', 'fr'));
 }
-function perso(id){ const c = T.personnages[id]; return c && !c.supprime ? c : null; }
+function perso(id){ const c = T.personnages[id]; return c && !c.supprime && !c.monde ? c : null; }
 
 function jauge(c, quelle){
   const cour = quelle === 'pv' ? 'pv' : 'pcc', max = quelle === 'pv' ? 'pvMax' : 'pcMax';
@@ -1599,11 +2166,19 @@ function detailPerso(c){
     c.armes.forEach(a => { const tr = el('tr'); tr.append(el('td', null, a.nom), el('td','n', a.de), el('td','mini', a.notes)); t.append(tr); });
     sc('Armes', t);
   }
+  /* ce qu'il porte : son sac et sa bourse vivent dans le Registre des Marchefleurs */
   const sac = [];
-  if(c.sac.length) sac.push(c.sac.join(' · '));
-  if(c.bourse) sac.push('Bourse : ' + c.bourse);
-  if(c.red) sac.push('Réduction ' + c.red);
-  if(sac.length){ d.append(el('h3', null, 'Ce qu’il porte')); d.append(el('p','mini', sac.join(' · '))); }
+  const porte = ['armure','bouclier'].map(s => porteDe(c.id, s)).filter(Boolean);
+  const objets = objetsDe(c.id).filter(o => !o.porte);
+  if(porte.length) sac.push('Porte : ' + porte.map(o => o.nom).join(', '));
+  if(objets.length) sac.push(objets.slice(0, 12).map(o => o.nom + (o.n > 1 ? ' ×' + o.n : '')).join(' · ') + (objets.length > 12 ? ' · et ' + (objets.length - 12) + ' de plus' : ''));
+  sac.push('Bourse : ' + texteArgent(bourseDe(c.id)));
+  sac.push('Réduction ' + redDe(c));
+  d.append(el('h3', null, 'Ce qu’il porte'));
+  d.append(el('p','mini', sac.join(' · ')));
+  const vf = el('a','mini', 'Son sac, sa bourse et le marché, dans le Registre des Marchefleurs');
+  vf.href = 'marchefleurs.html#pj=' + encodeURIComponent(c.id); vf.target = ONGLET_FICHE;
+  d.append(vf);
   [['traits','Traits'],['contrainte','Contrainte'],['armure','Armure'],['peupleComp','Compétence de peuple']].forEach(([k, l]) => {
     if(c[k]){ const p = el('p','mini'); p.append(el('b', null, l + ' : '), document.createTextNode(c[k])); d.append(p); }
   });
@@ -1658,8 +2233,9 @@ function carte(c){
     if(arme){ A_SUPPRIMER = null; surPerso(c.id, y => { y.supprime = true; }); }
     else { A_SUPPRIMER = c.id; dessinerPersos(); setTimeout(() => { if(A_SUPPRIMER === c.id){ A_SUPPRIMER = null; dessinerPersos(); } }, 5000); }
   };
-  const b6 = el('button','btn ghost sm','Sa progression'); b6.type = 'button';
-  b6.onclick = () => ouvrirPage('progression.html#pj=' + encodeURIComponent(c.id), ONGLET_PROGRESSION);
+  const b6 = el('button','btn ghost sm','Sa fiche'); b6.type = 'button';
+  b6.title = 'Sa fiche, son sac, sa bourse et sa progression, dans le Registre des Marchefleurs';
+  b6.onclick = () => ouvrirPage('marchefleurs.html#pj=' + encodeURIComponent(c.id), ONGLET_FICHE);
   act.append(b1, b2, b3, b4, b6, b5);
   w.append(act);
   if(ouvert) w.append(detailPerso(c));
@@ -1738,7 +2314,8 @@ function ouvrirEditeurPerso(c, nouveau){
   const gv = el('div','table');
   champ(gv, 'PV maximum', Object.assign(nombre(PED.pvMax, 1, 200), {oninput:e => { PED.pvMax = Math.max(1, +e.target.value || 1); PED.pv = Math.min(PED.pv, PED.pvMax); majApercuEditeur(); }}));
   champ(gv, 'PC maximum', Object.assign(nombre(PED.pcMax, 0, 100), {oninput:e => { PED.pcMax = Math.max(0, +e.target.value || 0); PED.pcc = Math.min(PED.pcc, PED.pcMax); }}));
-  champ(gv, 'Réduction', Object.assign(nombre(PED.red, 0, 20), {oninput:e => PED.red = Math.max(0, +e.target.value || 0)}));
+  champ(gv, 'Armure naturelle', Object.assign(nombre(PED.red, 0, 20), {oninput:e => PED.red = Math.max(0, +e.target.value || 0)}),
+    'Ce que son corps arrête. L’armure et le bouclier qu’il porte s’y ajoutent, dans le Registre des Marchefleurs.');
   const sb = el('select');
   [[40, 'Non humain : +20 de base, +20 de domaine'], [30, 'Humain : +20 de base, +10 d’école']].forEach(([v, l]) => sb.add(new Option(l, String(v))));
   sb.value = String(PED.bonusPratique);
@@ -1760,14 +2337,7 @@ function ouvrirEditeurPerso(c, nouveau){
   plusA.onclick = () => { PED.armes.push({nom:'', de:'d6', notes:''}); dessinerArmesEditeur(); };
   box.append(plusA);
 
-  box.append(el('h3', null, 'Le sac et la bourse'));
-  const gsac = el('div','table');
-  const sac = el('textarea'); sac.rows = 3; sac.value = PED.sac.join('\n');
-  sac.placeholder = 'Une ligne par objet';
-  sac.oninput = () => PED.sac = sac.value.split('\n').map(x => x.trim()).filter(Boolean);
-  champ(gsac, 'Le sac', sac);
-  champ(gsac, 'Bourse', Object.assign(el('input'), {type:'text', value:PED.bourse, oninput:e => PED.bourse = e.target.value, style:'width:100%'}));
-  box.append(gsac);
+  if(!nouveau) box.append(el('p','mini', $('ficheBox') ? 'Le sac, la bourse et l’armure portée se tiennent dans l’onglet « Son équipement ».' : 'Le sac, la bourse et l’armure portée se tiennent dans le Registre des Marchefleurs.'));
 
   const zone = el('textarea'); zone.rows = 4; zone.value = PED.texte;
   zone.placeholder = 'Son histoire, sa voix, ce qu’il cherche. « / » puis un nom cite quelqu’un.';
@@ -1780,6 +2350,9 @@ function ouvrirEditeurPerso(c, nouveau){
   const ok = el('button','btn', nouveau ? 'Ajouter à la table' : 'Enregistrer'); ok.type = 'button'; ok.id = 'ped-ok';
   ok.onclick = () => {
     if(!PED.nom.trim()){ msgTable('Il lui faut un nom.', false); return; }
+    /* entré dans le monde pendant qu'on le retouchait : sa fiche de PNJ a pris le relais, on ne le ramène pas en douce */
+    const parti = !nouveau && T.personnages[PED.id];
+    if(parti && !parti.supprime && parti.monde){ msgTable('« ' + (parti.nom || 'Sans nom') + ' » est entré dans le monde entre-temps. Reprends-le d’abord, dans le Registre des Marchefleurs.', false); return; }
     const autre = persos().find(x => x.id !== PED.id && (x.nom || '').trim().toLowerCase() === PED.nom.trim().toLowerCase());
     if(autre){ msgTable('« ' + autre.nom + ' » est déjà à la table.', false); return; }
     let c2 = normPerso(PED);
@@ -1791,7 +2364,7 @@ function ouvrirEditeurPerso(c, nouveau){
          ou une retouche ailleurs pendant qu'il était ouvert ne sont pas effacés */
       const x = normPerso(JSON.parse(JSON.stringify(cur)));
       const change = (a, b) => JSON.stringify(a) !== JSON.stringify(b);
-      ['nom','joueur','peuple','voie','red','bonusPratique','pratiques','armes','sac','bourse','texte'].forEach(k => { if(change(c2[k], PED0[k])) x[k] = c2[k]; });
+      ['nom','joueur','peuple','voie','red','bonusPratique','pratiques','armes','texte'].forEach(k => { if(change(c2[k], PED0[k])) x[k] = c2[k]; });
       CARS.forEach(k => { if(c2.car[k] !== PED0.car[k]) x.car[k] = c2.car[k]; });
       ALLSKILLS.forEach(o => { if(c2.comp[o.s] !== PED0.comp[o.s]) x.comp[o.s] = c2.comp[o.s]; });
       const dPv = c2.pvMax - PED0.pvMax, dPc = c2.pcMax - PED0.pcMax;
@@ -2079,13 +2652,16 @@ function dessinerProgDans(box){
   box.append(el('p','mini progou', e ? 'Les gains et les achats s’écrivent dans la séance ' + (e.seance || '?') + (e.titre ? ' · ' + e.titre : '') + ' du Registre de la Table.'
     : 'Aucune séance pour l’instant : les gains et les achats vont sur la fiche, sans s’écrire dans une séance.'));
 
-  const sel = el('select'); sel.id = 'prog-perso'; sel.setAttribute('aria-label', 'Quel personnage');
-  liste.forEach(x => sel.add(new Option(x.nom || 'Sans nom', x.id)));
-  sel.value = PROG_PERSO;
-  sel.onchange = () => { PROG_PERSO = sel.value; dessinerProg(true); };
-  const tete = el('div','acts'); tete.style.marginBottom = '12px';
-  tete.append(sel);
-  box.append(tete);
+  /* dans le Registre des Marchefleurs, le personnage se choisit par son portrait, en haut de la page */
+  if(!$('ficheBox')){
+    const sel = el('select'); sel.id = 'prog-perso'; sel.setAttribute('aria-label', 'Quel personnage');
+    liste.forEach(x => sel.add(new Option(x.nom || 'Sans nom', x.id)));
+    sel.value = PROG_PERSO;
+    sel.onchange = () => { PROG_PERSO = sel.value; dessinerProg(true); };
+    const tete = el('div','acts'); tete.style.marginBottom = '12px';
+    tete.append(sel);
+    box.append(tete);
+  }
 
   const g = el('div','progrid');
   [['Gagnés', pointsGagnes(c)], ['Dépensés', pointsDepenses(c)], ['Il reste', pointsRestants(c)]].forEach(([l, v]) => {
@@ -2786,7 +3362,7 @@ function jeterCompo(main){
 function formuleArme(c, a){
   const m = /(\d*)\s*d\s*(\d+)\s*(?:([+\-])\s*(\d+))?/i.exec(a.de || '');
   if(!m) return null;
-  const leger = +m[2] === 4 || /arbal/i.test(a.nom);
+  const leger = +m[2] === 4 || /arbal/i.test(a.nom + ' ' + (a.notes || ''));
   const car = leger ? 'Dextérité' : 'Force';
   const bonus = (m[3] ? (m[3] === '-' ? -1 : 1) * (+m[4]) : 0) + Math.floor((c.car[car] || 0) / 5);
   return (m[1] || '1') + 'd' + m[2] + (bonus ? (bonus > 0 ? '+' + bonus : String(bonus)) : '');
@@ -2842,7 +3418,8 @@ const SORTES = [
 function ciblesDegats(){
   const out = [];
   adversairesEnCombat().filter(a => !aTerre(a)).forEach(a => out.push({id:a.id, nom:a.nom, red:a.red, pv:a.pv, pvMax:a.pvMax, grp:'En face', a:a}));
-  persos().forEach(c => out.push({id:c.id, nom:c.nom || 'Sans nom', red:c.red || 0, pv:c.pv, pvMax:c.pvMax, grp:'Les personnages', c:c}));
+  /* sa réduction : son armure naturelle, plus ce qu'il porte (Registre des Marchefleurs) */
+  persos().forEach(c => out.push({id:c.id, nom:c.nom || 'Sans nom', red:redDe(c), pv:c.pv, pvMax:c.pvMax, grp:'Les personnages', c:c}));
   pnjs().filter(p => p.pvMax != null && p.statut !== 'mort').forEach(p => out.push({id:p.id, nom:p.nom, red:0, pv:p.pv == null ? p.pvMax : p.pv, pvMax:p.pvMax, grp:'Les PNJ qui se battent'}));
   return out;
 }
@@ -4777,7 +5354,6 @@ window.addEventListener('storage', e => { if(e.key === CLE_ENVOI && e.newValue &
 
 const FOU = {id:'', endroit:'officier', lu:'', texte:'', qui:'', d1:'', d2:'', site:true, des:{}};
 const BTN = {ouvert:null};   /* le bloc « Le butin » : ouvert tant qu'il reste quelqu'un à fouiller, sauf si on l'a replié */
-const SAC_MAX = 80;
 
 /* l'endroit, deviné : un soldat ou un praticien vaut un officier, un Marchefleur ou une relique de l'Avant vaut le +5 */
 function endroitPar(a){
@@ -4838,29 +5414,47 @@ function finirFouille(a, etat, txt, qui){
   const c = etat === 'fait' ? perso(qui) : null;
   if(etat === 'fait' && !c){ msgTable('Choisis qui le prend.', false); return; }
   if(etat === 'fait' && !texte){ msgTable('Rien à donner : tire le butin, ou écris ce qu’on trouve.', false); return; }
-  if(c && c.sac.length >= SAC_MAX){ msgTable('Le sac de ' + (c.nom || 'ce personnage') + ' est plein : ' + SAC_MAX + ' objets. Vide-le un peu dans sa fiche.', false); return; }
+  const argent = c ? argentEnTete(texte) : 0;
+  if(c && !argent && objetsDe(c.id).length >= SAC_PLEIN){ msgTable('Le sac de ' + (c.nom || 'ce personnage') + ' est plein : ' + SAC_PLEIN + ' objets. Vide-le un peu dans le Registre des Marchefleurs.', false); return; }
   if(FOU.id === a.id) FOU.id = '';
   changer(() => {
-    let bloc = '';
+    let bloc = '', objet = '', mvt = '';
     if(c){
       bloc = noterDansSeance((c.nom || 'Sans nom') + ' prend sur ' + x.nom + ' : ' + texte.replace(/[\s.]+$/, '') + '.', 'note');
-      const y = T.personnages[c.id];
-      y.sac = y.sac.concat([texte]);
-      majPerso(y);
+      /* de l'argent va dans sa bourse, le reste dans son sac, avec d'où il vient. Un nom tiré de l'adversaire :
+         deux joueurs qui le fouillent au même moment ne font qu'une ligne */
+      const t = maintenant();
+      if(argent){
+        mvt = 'arg-f-' + x.id;
+        T.argent[mvt] = normArgent({id:mvt, perso:c.id, n:argent, motif:'Sur ' + x.nom + ' : ' + texte.replace(/[\s.]+$/, ''), bloc:bloc, t:t, maj:t});
+      } else {
+        objet = 'o-f-' + x.id;
+        T.objets[objet] = normObjet(Object.assign(objetDepuisTexte(texte), {id:objet, perso:c.id, origine:'Sur ' + x.nom, t:t, maj:t}));
+      }
     } else if(texte) bloc = noterDansSeance('Sur ' + x.nom + ' : ' + texte.replace(/[\s.]+$/, '') + '. On le laisse là.', 'note');
-    T.adversaires[x.id] = Object.assign({}, T.adversaires[x.id], {fouille:{etat:etat, texte:texte, qui:c ? c.id : '', bloc:bloc, t:maintenant()}, maj:maintenant()});
+    T.adversaires[x.id] = Object.assign({}, T.adversaires[x.id], {fouille:{etat:etat, texte:texte, qui:c ? c.id : '', bloc:bloc, t:maintenant(), objet:objet, argent:mvt}, maj:maintenant()});
   });
-  msgTable(c ? 'Dans le sac de ' + (c.nom || 'Sans nom') + ' : ' + texte : texte ? 'Laissé là, et noté dans la séance.' : x.nom + ' : laissé sans le fouiller.', true);
+  msgTable(c ? (argent ? 'Dans la bourse de ' : 'Dans le sac de ') + (c.nom || 'Sans nom') + ' : ' + texte : texte ? 'Laissé là, et noté dans la séance.' : x.nom + ' : laissé sans le fouiller.', true);
 }
-/* défaire : l'objet sort du sac, la ligne de la séance s'en va, on peut fouiller de nouveau */
+/* défaire : l'objet sort du sac (l'argent de la bourse), la ligne de la séance s'en va, on peut fouiller de nouveau */
 function defaireFouille(a){
   const x = unAdversaire(a.id); if(!x || !x.fouille) return;
   const f = x.fouille;
   changer(() => {
     const y = f.qui && T.personnages[f.qui];
-    if(f.etat === 'fait' && y && !y.supprime){
+    if(f.etat === 'fait' && f.objet) oterObjet(f.objet);
+    else if(f.etat === 'fait' && f.argent) defaireMouvement(f.argent);
+    else if(f.etat === 'fait' && y && !y.supprime){
+      /* une fouille d'avant le sac en piles : l'objet est une ligne de texte sur la fiche, passée dans le sac
+         sous un nom fixe. On retire cette pile (ou on la marque, si elle n'est pas encore passée), sans toucher
+         au texte, dont l'ordre donne les noms des autres */
       const i = y.sac.lastIndexOf(f.texte);
-      if(i >= 0){ y.sac = y.sac.slice(0, i).concat(y.sac.slice(i + 1)); majPerso(y); }
+      if(i >= 0){
+        const h = cleLigne(y.id, y.sac, i);
+        if(argentEnTete(f.texte)){ if(T.argent['arg-' + h]) defaireMouvement('arg-' + h); else T.argent['arg-' + h] = normArgent({id:'arg-' + h, perso:y.id, supprime:true, maj:maintenant()}); }
+        else if(T.objets['o-' + h]) oterObjet('o-' + h);
+        else T.objets['o-' + h] = normObjet({id:'o-' + h, perso:y.id, nom:f.texte, supprime:true, maj:maintenant()});
+      }
     }
     oublierBloc(f.bloc);
     T.adversaires[x.id] = Object.assign({}, T.adversaires[x.id], {fouille:null, maj:maintenant()});
@@ -5291,6 +5885,14 @@ function cartePnj(p){
     p.statut === 'disparu' ? 'disparu' : '',
     p.pvMax ? p.pv + '/' + p.pvMax + ' PV' : ''].filter(Boolean);
   if(meta.length) w.append(el('div','mini nmeta', meta.join(' · ')));
+  /* un ancien personnage : sa fiche de personnage l'attend dans le Registre des Marchefleurs */
+  if(p.pj && T.personnages[p.pj] && T.personnages[p.pj].monde === p.id){
+    const n = el('p','mini nancien');
+    n.append(document.createTextNode('Ancien personnage. '));
+    const a = el('a', null, 'Sa fiche de personnage'); a.href = 'marchefleurs.html#monde'; a.target = ONGLET_FICHE;
+    n.append(a, document.createTextNode(' se reprend dans le Registre des Marchefleurs.'));
+    w.append(n);
+  }
   w.append(liensEnBref('pnj:' + p.id));
 
   const act = el('div','pact');
@@ -5416,7 +6018,7 @@ function dessinerGrand(force){
   });
   ti.setAttribute('aria-expanded', GRAND.tisse ? 'true' : 'false');
   b('Dans le réseau', () => { MOI.vuePnj = 'reseau'; RES.sel = ref; RES.focus = ''; sauverLocal(); dessinerPnj(true); $('pnjReseau').scrollIntoView({block:'start', behavior:'smooth'}); });
-  if(q.pj) b('Sa progression', () => ouvrirPage('progression.html#pj=' + encodeURIComponent(o.id), ONGLET_PROGRESSION));
+  if(q.pj) b('Sa fiche', () => ouvrirPage('marchefleurs.html#pj=' + encodeURIComponent(o.id), ONGLET_FICHE));
   box.append(act);
   if(GRAND.tisse) box.append(formLien(ref, '', () => { GRAND.tisse = false; dessinerGrand(true); }));
 
@@ -6714,8 +7316,9 @@ function textesDe(ref){
     if(!b || b.supprime || b.type === 'rencontre') return;
     const e = T.journal[b.seance];
     if(!e || e.supprime) return;
+    /* un ancien personnage : ce qu'il a fait quand il était à la table compte aussi */
     const agit = q.pj ? b.qui.k === 'perso' && b.qui.id === q.o.id
-      : b.qui.k === 'pnj' && (b.qui.id === q.o.id || (!b.qui.id && cleNom(b.qui.nom) === nom));
+      : (b.qui.k === 'pnj' && (b.qui.id === q.o.id || (!b.qui.id && cleNom(b.qui.nom) === nom))) || (!!q.o.pj && b.qui.k === 'perso' && b.qui.id === q.o.pj);
     const ms = trouverMentions(b.texte, gens);
     let cite = ms.some(m => m.ref === ref);
     if(!cite && ch.re){ ch.re.lastIndex = 0; cite = ch.re.test(ch.nettoye(b.texte, ms)); }
@@ -6986,7 +7589,10 @@ function actionsMission(m, redessiner, pre){
     const n = persos().length, e = derniereSeance();
     const ou = e ? ' ; la séance ' + (e.seance || '?') + ', la plus récente, le note.' : '.';
     deux('boucler', 'La boucler', 'Confirmer : ' + (m.points && n ? ptsTxt(m.points) + (n > 1 ? ' à chacun' : '') : 'bouclée'), () => bouclerMission(m.id, true), 'plein');
-    if(MIS.arme[cle('boucler')]) note = (m.points && n ? (n > 1 ? 'Chacun des ' + n + ' personnages de la table' : 'Le personnage de la table') + ' gagne ' + ptsTxt(m.points) + ' de progression' : 'Elle est bouclée') + ou;
+    /* la paie va dans la bourse de chacun, comme les points (Livre V : un Marchefleur est payé à la mission) */
+    const paie = argentsDe(m.paie);
+    const gains = [m.points ? ptsTxt(m.points) + ' de progression' : '', paie ? texteArgent(paie) + ' dans sa bourse' : ''].filter(Boolean).join(' et ');
+    if(MIS.arme[cle('boucler')]) note = (gains && n ? (n > 1 ? 'Chacun des ' + n + ' personnages de la table' : 'Le personnage de la table') + ' gagne ' + gains : 'Elle est bouclée') + ou;
     deux('ratee', 'Tombée à l’eau', 'Confirmer', () => bouclerMission(m.id, false));
     if(MIS.arme[cle('ratee')]) note = 'Elle est tombée à l’eau, sans points' + ou;
     b('Modifier', () => ouvrirEditeurMission(m, false), null, pre + 'modif-' + m.id);
@@ -6994,7 +7600,9 @@ function actionsMission(m, redessiner, pre){
     if(MIS.arme[cle('tableau')]) note = 'Elle revient au tableau ; la séance et ce qui s’y est écrit restent.';
   } else {
     deux('rouvrir', 'Rouvrir', 'Confirmer', () => rouvrirMission(m.id));
-    if(MIS.arme[cle('rouvrir')]) note = 'Elle repasse en cours' + (m.etat === 'bouclee' && m.gagnants ? ' ; les points qu’elle a donnés sont repris, même s’ils ont été dépensés' : '') + ', et sa ligne dans la séance s’efface.';
+    const paye = paieDonnee(m), pts = m.etat === 'bouclee' && m.gagnants;
+    if(MIS.arme[cle('rouvrir')]) note = 'Elle repasse en cours' + (pts && paye ? ' ; les points et la paie qu’elle a donnés sont repris, même s’ils ont été dépensés'
+      : pts ? ' ; les points qu’elle a donnés sont repris, même s’ils ont été dépensés' : paye ? ' ; la paie qu’elle a donnée est reprise, même dépensée' : '') + ', et sa ligne dans la séance s’efface.';
     deux('suppr', 'Retirer', 'Confirmer', () => retirerMission(m.id));
   }
   if(!note) return act;
@@ -7138,7 +7746,7 @@ function preparerRencontre(m){
 function bouclerMission(id, ok){
   let m = uneMission(id);
   if(!m || m.etat !== 'cours'){ msgTable('Cette mission n’est plus en cours : rien n’a bougé.', false); dessinerMissions(true); return; }
-  let n = 0;
+  let n = 0, payes = 0;
   changer(() => {
     m = uneMission(id);
     if(!m || m.etat !== 'cours') return;
@@ -7147,13 +7755,18 @@ function bouclerMission(id, ok){
     if(ok){
       const qui = m.points ? persos().filter(c => !c.prog.points.some(p => p.mission === m.id)) : [];
       const gain = qui.length ? (qui.length > 1 ? ' Toute la compagnie gagne ' : ' ' + (qui[0].nom || 'Sans nom') + ' gagne ') + ptsTxt(m.points) + ' de progression.' : '';
-      x.bloc = noterDans(e, 'Mission bouclée : ' + titre + '.' + gain + (m.paie ? ' Le Havre paie ' + m.paie + '.' : ''), 'achat');
+      const tous = persos().length, paie = argentsDe(m.paie);
+      x.bloc = noterDans(e, 'Mission bouclée : ' + titre + '.' + gain + (m.paie ? ' Le Havre paie ' + m.paie + (paie && tous > 1 ? ' à chacun' : '') + '.' : ''), 'achat');
       qui.forEach(c => { c.prog.points.push({id:nouvelId('g'), t:maintenant(), quoi:'Mission : ' + titre, n:m.points, bloc:x.bloc, mission:m.id}); majPerso(c); });
+      /* la paie, dans la bourse de chacun ; une seule fois, même bouclée deux fois ailleurs */
+      payes = payerMission(m, persos(), x.bloc, e ? e.id : '');
       x.gagnants = n = qui.length;
     } else x.bloc = noterDans(e, 'La mission est tombée à l’eau : ' + titre + '.', 'note');
     T.missions[m.id] = x;
   });
-  msgTable(ok ? 'Mission bouclée' + (n ? ' : ' + ptsTxt(m.points) + (n > 1 ? ' à chacun' : '') + '.' : '.') : 'La mission est tombée à l’eau.', true);
+  const argent = argentsDe(m.paie);
+  const dit = [n ? ptsTxt(m.points) : '', payes && argent ? texteArgent(argent) : ''].filter(Boolean).join(' et ');
+  msgTable(ok ? 'Mission bouclée' + (dit ? ' : ' + dit + (Math.max(n, payes) > 1 ? ' à chacun' : '') + '.' : '.') : 'La mission est tombée à l’eau.', true);
 }
 /* rouvrir : les points de cette mission sont repris à chacun, et sa ligne s'efface */
 function rouvrirMission(id){
@@ -7164,6 +7777,7 @@ function rouvrirMission(id){
       c.prog.points = c.prog.points.filter(p => p.mission !== m.id && !(m.bloc && p.bloc === m.bloc));
       if(c.prog.points.length !== avant) majPerso(c);
     });
+    reprendrePaie(m);
     if(m.bloc) oublierBloc(m.bloc);
     T.missions[m.id] = Object.assign(normMission(m), {id:m.id, etat:'cours', fin:'', finie:0, bloc:'', gagnants:0, maj:maintenant(), majEtat:maintenant()});
   });
@@ -8220,14 +8834,927 @@ function brancherHavre(){
   };
 }
 
-/* ============ la barre de table, les quatre pages, et le démarrage ============
-   Le Registre de la Table, celui des Visages, celui de la Progression et celui des Missions partagent ce code et
+/* ============ le Registre des Marchefleurs ============
+   La fiche vivante de chaque personnage de la table, comme un écran de personnage : ses PV et ses PC, ce qu'il
+   sait faire, ce qu'il porte, son sac, sa bourse, le marché du livre, sa progression, son histoire. Imprimer
+   rend la fiche telle que le Word la dessine, avec ce qu'il a aujourd'hui. Et quand la campagne s'arrête, il
+   entre dans le monde : il devient un PNJ du Registre des Visages, avec tous ses liens. */
+
+const VUES_FICHE = [
+  {k:'fiche', l:'Ce qu’il sait faire'},
+  {k:'equipement', l:'Son équipement'},
+  {k:'bourse', l:'Sa bourse'},
+  {k:'marche', l:'Le marché'},
+  {k:'progression', l:'Sa progression'},
+  {k:'histoire', l:'Son histoire'}
+];
+const FICHE = {perso:'', attendu:'', vue:'fiche', arme:{}, ed:'', edd:null, don:'', ajout:null, argent:{sens:'plus', ors:'', argents:'', motif:''}, lances:false, qte:{}, nomArme:{}};
+const CLE_FICHE = 'faelorenn.fiche';
+function garderChoixFiche(){ try{ localStorage.setItem(CLE_FICHE, JSON.stringify({perso:FICHE.perso, vue:FICHE.vue})); }catch(e){} }
+function lireChoixFiche(){
+  try{
+    const o = JSON.parse(localStorage.getItem(CLE_FICHE) || 'null');
+    if(o && typeof o.perso === 'string') FICHE.perso = o.perso;
+    if(o && VUES_FICHE.some(v => v.k === o.vue)) FICHE.vue = o.vue;
+  }catch(e){}
+}
+/* un bouton à deux temps, propre à cette page : le premier clic arme, le second agit */
+function deuxTemps(cle, txt, confirme, fn, cls){
+  const arme = !!FICHE.arme[cle];
+  const b = el('button', 'btn ' + (cls || 'ghost sm') + (arme ? ' danger' : ''), arme ? confirme : txt); b.type = 'button';
+  b.onclick = () => {
+    if(FICHE.arme[cle]){ FICHE.arme = {}; fn(); return; }
+    FICHE.arme = {}; FICHE.arme[cle] = true; dessinerFiche(true);
+    /* au bout de cinq secondes il se désarme, sans rien redessiner sous les doigts ni prendre la main : si l'on
+       tape ailleurs, seul son texte revient, la page attendra qu'on ait fini */
+    const id = b.id;
+    setTimeout(() => {
+      if(!FICHE.arme[cle]) return;
+      FICHE.arme = {};
+      const x = id && $(id);
+      if(x && x.textContent === confirme){ x.textContent = txt; x.classList.remove('danger'); }
+      dessinerFiche(false);
+    }, 5000);
+  };
+  return b;
+}
+
+/* écrire sans redessiner la page : le texte qu'on vient de quitter est déjà à l'écran, et le bouton sur lequel on
+   clique en le quittant ne doit pas disparaître entre l'appui et le relâché */
+function ecrireSansDessin(fn){ fn(); T.maj = maintenant(); sauverLocal(); planifierEcriture(); dessinerTable(); }
+
+/* ---------- de petits dessins, un par sorte d'objet ---------- */
+const PICTOS = {
+  objet:'M7 8a5 5 0 0 1 10 0M5 9h14l-1.5 11h-11z',
+  conso:'M9.5 3h5M10.5 3v5.5l-5 8.5a2 2 0 0 0 1.7 3h9.6a2 2 0 0 0 1.7-3l-5-8.5V3M8 15h8',
+  armure:'M8.5 4 4.5 7l2 4v9h11v-9l2-4-4-3-2 2h-3z',
+  bouclier:'M12 3.5l7 2.8v5.2c0 4.6-3.2 7.6-7 9.5-3.8-1.9-7-4.9-7-9.5V6.3z',
+  arme:'M5 19l3-3M6.5 13.5l4 4M8 16l9.5-9.5.5-2.5-2.5.5L6 14',
+  corps:'M12 4a2.6 2.6 0 1 1 0 5.2A2.6 2.6 0 0 1 12 4M6 20v-2.5a6 6 0 0 1 12 0V20',
+  bourse:'M9 5.5h6l-1.5 2.5a6.5 6.5 0 1 1-3 0z'
+};
+function picto(sorte){
+  const ns = 'http://www.w3.org/2000/svg';
+  const s = document.createElementNS(ns, 'svg');
+  s.setAttribute('viewBox', '0 0 24 24'); s.setAttribute('aria-hidden', 'true'); s.setAttribute('class', 'picto');
+  const p = document.createElementNS(ns, 'path');
+  p.setAttribute('d', PICTOS[sorte] || PICTOS.objet);
+  p.setAttribute('fill', 'none'); p.setAttribute('stroke', 'currentColor'); p.setAttribute('stroke-width', '1.6');
+  p.setAttribute('stroke-linecap', 'round'); p.setAttribute('stroke-linejoin', 'round');
+  s.append(p);
+  return s;
+}
+const SORTES_AJOUT = [{k:'objet', l:'Un objet'}, {k:'conso', l:'Un consommable'}, {k:'armure', l:'Une armure'}, {k:'bouclier', l:'Un bouclier'}, {k:'arme', l:'Une arme'}];
+const dateCourte = t => { try{ return new Date(t).toLocaleDateString('fr-BE', {day:'numeric', month:'short'}); }catch(e){ return ''; } };
+
+/* ---------- la page ---------- */
+function dessinerFiche(force){
+  const box = $('ficheBox'); if(!box) return;
+  if(!force && occupe(box)){ apresSaisie(box, () => dessinerFiche(true)); return; }
+  const focus = document.activeElement && document.body.contains(document.activeElement) ? document.activeElement.id : '';
+  box.innerHTML = '';
+  const liste = persos();
+  /* celui qu'un lien demandait, arrivé avec la table du dépôt */
+  if(FICHE.attendu && perso(FICHE.attendu)){ FICHE.perso = FICHE.attendu; FICHE.attendu = ''; garderChoixFiche(); }
+  if(!liste.some(c => c.id === FICHE.perso)) FICHE.perso = liste.length ? (MOI.perso && perso(MOI.perso) ? MOI.perso : liste[0].id) : '';
+  dessinerQui(liste);
+  if(!liste.length){
+    const v = el('div','card fvide');
+    v.append(el('p','vide', 'Personne à la table pour l’instant.'));
+    const p = el('p','mini');
+    const a1 = el('a', null, 'Crée un personnage dans le Registre du Havre'); a1.href = 'createur.html';
+    const a2 = el('a', null, 'fais-le entrer dans le Registre de la Table'); a2.href = 'table.html'; a2.target = ONGLET_TABLE;
+    p.append(a1, document.createTextNode(', puis '), a2, document.createTextNode(' : sa fiche vit ici.'));
+    v.append(p);
+    box.append(v);
+    dessinerMonde();
+    return;
+  }
+  const c = perso(FICHE.perso);
+  box.append(heros(c));
+  box.append(ongletsFiche(c));
+  const pan = el('div','fpanneau card'); pan.id = 'fPanneau'; pan.setAttribute('role', 'tabpanel');
+  pan.setAttribute('aria-labelledby', 'fv-' + FICHE.vue);
+  const vue = {fiche:vueFiche, equipement:vueEquipement, bourse:vueBourse, marche:vueMarche, progression:vueProgression, histoire:vueHistoire}[FICHE.vue] || vueFiche;
+  box.append(pan);
+  vue(c, pan);
+  dessinerMonde();
+  if(focus && $(focus)) $(focus).focus({preventScroll:true});
+}
+/* choisir un personnage : un portrait chacun */
+function dessinerQui(liste){
+  const q = $('fQui'); if(!q) return;
+  q.innerHTML = '';
+  q.hidden = liste.length < 2;
+  liste.forEach(c => {
+    const b = el('button','fportrait'); b.type = 'button'; b.id = 'fq-' + c.id;
+    b.setAttribute('role', 'tab');
+    b.setAttribute('aria-selected', c.id === FICHE.perso ? 'true' : 'false');
+    const m = el('span','fmed petit', initiales(c.nom)); m.setAttribute('aria-hidden', 'true');
+    const t = el('span','fpt');
+    t.append(el('b', null, c.nom || 'Sans nom'), el('small', null, c.pv + '/' + c.pvMax + ' PV' + (MOI.perso === c.id ? ' · le tien' : '')));
+    const barre = el('span','fpbar'); const i = el('i'); i.style.width = (c.pvMax ? Math.max(0, Math.min(1, c.pv / c.pvMax)) * 100 : 0) + '%'; barre.append(i);
+    t.append(barre);
+    b.append(m, t);
+    b.onclick = () => { FICHE.perso = c.id; FICHE.attendu = ''; FICHE.ed = ''; FICHE.don = ''; FICHE.arme = {}; garderChoixFiche(); dessinerFiche(true); };
+    q.append(b);
+  });
+}
+function heros(c){
+  const w = el('div','card fheros');
+  const med = el('div','fmed', initiales(c.nom)); med.setAttribute('aria-hidden', 'true');
+  const id = el('div','fid');
+  id.append(el('h2','fnom', c.nom || 'Sans nom'));
+  id.append(el('p','fqui', [c.peuple, c.voie, c.joueur ? 'joué par ' + c.joueur : ''].filter(Boolean).join(' · ') || 'personne ne le tient'));
+  const tu = el('div','ftuiles');
+  const tuile = (v, l, aide, cle) => {
+    const d = el('button','ftuile'); d.type = 'button';
+    d.append(el('b', null, v), el('span', null, l));
+    if(aide) d.title = aide;
+    d.onclick = () => { FICHE.vue = cle; garderChoixFiche(); dessinerFiche(true); };
+    return d;
+  };
+  const a = porteDe(c.id, 'armure'), b = porteDe(c.id, 'bouclier');
+  tu.append(tuile(String(redDe(c)), 'Réduction', 'Armure naturelle ' + (c.red || 0) + (a ? ', ' + a.nom + ' ' + a.red : '') + (b ? ', ' + b.nom + ' +' + b.red : ''), 'equipement'));
+  tu.append(tuile(texteArgent(bourseDe(c.id)), 'Dans sa bourse', '', 'bourse'));
+  tu.append(tuile(String(pointsRestants(c)), 'Points à dépenser', '', 'progression'));
+  const j = el('div','jauges fjauges');
+  j.append(jauge(c, 'pv'), jauge(c, 'pc'));
+  const act = el('div','acts fact noprint');
+  const imp = el('button','btn sm','Imprimer sa fiche'); imp.type = 'button'; imp.id = 'fImprimer';
+  imp.onclick = () => imprimerFiche(c.id);
+  const mod = el('button','btn ghost sm','Modifier la fiche'); mod.type = 'button'; mod.id = 'fModifier';
+  mod.onclick = () => ouvrirEditeurPerso(c, false);
+  const mien = el('button','btn ghost sm', MOI.perso === c.id ? 'C’est le mien' : 'C’est le mien ?'); mien.type = 'button';
+  mien.setAttribute('aria-pressed', MOI.perso === c.id ? 'true' : 'false');
+  mien.onclick = () => { MOI.perso = MOI.perso === c.id ? '' : c.id; sauverLocal(); dessinerFiche(true); };
+  const table = el('a','btn ghost sm','À la table'); table.href = 'table.html'; table.target = ONGLET_TABLE;
+  act.append(imp, mod, mien, table);
+  w.append(med, id, tu, j, act);
+  return w;
+}
+function ongletsFiche(c){
+  const nav = el('div','seg fonglets'); nav.setAttribute('role', 'tablist'); nav.setAttribute('aria-label', 'La fiche de ' + (c.nom || 'ce personnage'));
+  const n = objetsDe(c.id).filter(o => !o.porte).length;
+  VUES_FICHE.forEach(v => {
+    const b = el('button', null, v.l); b.type = 'button'; b.id = 'fv-' + v.k;
+    b.setAttribute('role', 'tab');
+    b.setAttribute('aria-selected', FICHE.vue === v.k ? 'true' : 'false');
+    b.setAttribute('aria-pressed', FICHE.vue === v.k ? 'true' : 'false');
+    if(v.k === 'equipement' && n) b.append(el('span','fcompte', String(n)));
+    if(v.k === 'progression' && pointsRestants(c) > 0) b.append(el('span','fcompte', String(pointsRestants(c))));
+    b.onclick = () => { FICHE.vue = v.k; FICHE.ed = ''; FICHE.don = ''; FICHE.arme = {}; garderChoixFiche(); dessinerFiche(true); };
+    nav.append(b);
+  });
+  return nav;
+}
+
+/* ---------- ce qu'il sait faire ---------- */
+function vueFiche(c, box){
+  const sc = (titre, noeud) => { box.append(el('h3', null, titre)); const s = el('div','scroll'); s.append(noeud); box.append(s); };
+  sc('Caractéristiques', tableauCarac(c));
+  sc('Compétences', tableauComp(c));
+  if(c.pratiques.length) sc('Pratiques', tableauPrat(c));
+  const plus = [['traits','Traits'],['contrainte','Contrainte'],['armure','Armure que son corps supporte'],['peupleComp','Compétence de peuple'],['domaine','Domaine']].filter(([k]) => c[k]);
+  if(plus.length){
+    box.append(el('h3', null, 'Ce que son peuple lui donne'));
+    plus.forEach(([k, l]) => { const p = el('p','mini'); p.append(el('b', null, l + ' : '), document.createTextNode(c[k])); box.append(p); });
+  }
+}
+
+/* ---------- son équipement ---------- */
+function vueEquipement(c, box){
+  /* ce qu'il porte : une armure, un bouclier, son armure naturelle */
+  box.append(el('h3', null, 'Ce qu’il porte'));
+  const slots = el('div','fslots');
+  const slot = (titre, o, vide, sorte) => {
+    const s = el('div','fslot' + (o ? ' plein' : ''));
+    s.append(picto(sorte));
+    const t = el('div');
+    t.append(el('span','lab', titre));
+    t.append(el('b', null, o ? o.nom : vide));
+    if(o) t.append(el('small', null, sorte === 'bouclier' ? 'réduction +' + o.red + ', occupe une main' : 'réduction ' + o.red + (neVolePlus(c, o) ? ' · chargé ainsi, il ne vole plus' : '')));
+    s.append(t);
+    if(o){
+      const ac = el('div','fslotact');
+      const x = el('button','btn ghost xs','Ôter'); x.type = 'button'; x.id = 'fote-' + o.id; x.onclick = () => changer(() => porterObjet(o.id, false));
+      const m = el('button','btn ghost xs','Modifier'); m.type = 'button'; m.id = 'fed-' + o.id;
+      m.onclick = () => { FICHE.ed = FICHE.ed === o.id ? '' : o.id; FICHE.edd = null; FICHE.don = ''; dessinerFiche(true); };
+      ac.append(x, m);
+      s.append(ac);
+    }
+    return s;
+  };
+  const portes = [porteDe(c.id, 'armure'), porteDe(c.id, 'bouclier')];
+  slots.append(slot('Armure', portes[0], 'Rien', 'armure'), slot('Bouclier', portes[1], 'Rien', 'bouclier'));
+  const nat = el('div','fslot' + (c.red ? ' plein' : ''));
+  nat.append(picto('corps'));
+  const tn = el('div'); tn.append(el('span','lab', 'Armure naturelle'), el('b', null, c.red ? String(c.red) : 'Aucune'), el('small', null, c.red ? 'ce que son corps arrête' : 'son corps n’arrête rien'));
+  nat.append(tn);
+  slots.append(nat);
+  box.append(slots);
+  /* ce qu'il porte se retouche ici ; pour le donner ou le jeter, on l'ôte d'abord */
+  const edite = portes.find(o => o && FICHE.ed === o.id);
+  if(edite) box.append(formObjet(c, edite));
+  box.append(el('p','mini fred', 'Réduction totale : ' + redDe(c) + '. Les réductions s’additionnent : sa pièce, son bouclier, son armure naturelle.' + (c.armure ? ' Son corps supporte : ' + c.armure.charAt(0).toLowerCase() + c.armure.slice(1).replace(/\.$/, '') + '.' : '')));
+
+  /* ses armes : elles vivent sur sa fiche, le combat les y lit */
+  box.append(el('h3', null, 'Ses armes'));
+  if(!c.armes.length) box.append(el('p','mini', 'Aucune arme. Le marché en vend, ou ajoute la sienne plus bas.'));
+  const ga = el('div','fgrille');
+  c.armes.forEach((a, i) => {
+    const k = cleArme(a, i);
+    const t = el('div','fobjet arme');
+    t.append(picto('arme'));
+    const tx = el('div','fotxt');
+    const f = formuleArme(c, a);
+    tx.append(el('b', null, a.nom), el('span','fomin', [a.de, f && f !== a.de ? 'dégâts ' + f : '', a.notes].filter(Boolean).join(' · ')));
+    t.append(tx);
+    const ac = el('div','foact');
+    if(persos().length > 1){
+      const d = el('button','btn ghost xs','Donner'); d.type = 'button'; d.id = 'farme-don-' + i;
+      d.onclick = () => { FICHE.don = FICHE.don === k ? '' : k; FICHE.ed = ''; dessinerFiche(true); };
+      ac.append(d);
+    }
+    const x = deuxTemps(k, 'Retirer', 'Confirmer', () => surPerso(c.id, y => { const j = indexArme(y, a, i); if(j >= 0) y.armes.splice(j, 1); }), 'ghost xs');
+    x.id = 'farme-x-' + i;
+    ac.append(x);
+    t.append(ac);
+    if(FICHE.don === k) t.append(formDonArme(c, a, i));
+    ga.append(t);
+  });
+  box.append(ga);
+
+  /* son sac : tout ce qui n'est pas dans un emplacement (deux armures portées à la fois, après une fusion, s'y voient) */
+  const objets = objetsDe(c.id).filter(o => portes.indexOf(o) < 0);
+  box.append(el('h3', null, 'Son sac' + (objets.length ? ' · ' + objets.length + ' pile' + (objets.length > 1 ? 's' : '') : '')));
+  const attend = aMigrer(), avant = attend.objets.concat(attend.argent).filter(x => x.c.id === c.id).length;
+  if(avant) box.append(el('p','note', 'Son sac d’avant, ' + avant + ' ligne' + (avant > 1 ? 's' : '') + ', y passe dès que la table partagée a été lue.'));
+  if(!objets.length) box.append(el('p','mini', 'Rien dans le sac. Le marché, la fouille d’un adversaire à la table, ou « Ajouter au sac », plus bas.'));
+  const g = el('div','fgrille');
+  objets.forEach(o => g.append(tuileObjet(c, o)));
+  box.append(g);
+  box.append(formAjout(c));
+}
+function tuileObjet(c, o){
+  const t = el('div','fobjet ' + o.sorte + (o.porte ? ' porte' : ''));
+  t.setAttribute('data-objet', o.id);
+  t.append(picto(o.sorte));
+  const tx = el('div','fotxt');
+  const nom = el('b', null, o.nom);
+  if(o.n > 1) nom.append(el('span','fqte', ' ×' + o.n));
+  tx.append(nom);
+  const lourd = !o.porte && horsDuCorps(c, o);
+  const sous = [o.sorte === 'armure' ? 'réduction ' + o.red : o.sorte === 'bouclier' ? 'réduction +' + o.red : '', lourd ? 'son corps ne la supporte pas' : '', o.effet, o.note].filter(Boolean).join(' · ');
+  if(sous) tx.append(el('span','fomin', sous));
+  if(o.origine) tx.append(el('span','foorig', o.origine));
+  t.append(tx);
+  const ac = el('div','foact');
+  const b = (txt, id, fn, cls) => { const x = el('button','btn ' + (cls || 'ghost') + ' xs', txt); x.type = 'button'; x.id = id; x.onclick = fn; ac.append(x); return x; };
+  const moins = b('−', 'fmoins-' + o.id, () => changer(() => changerQte(o.id, -1)));
+  moins.setAttribute('aria-label', 'Un ' + o.nom + ' de moins');
+  const plus = b('+', 'fplus-' + o.id, () => changer(() => changerQte(o.id, 1)));
+  plus.setAttribute('aria-label', 'Un ' + o.nom + ' de plus');
+  if(o.sorte === 'conso') b('Utiliser', 'futil-' + o.id, () => utiliserDepuisFiche(o.id), 'ghost');
+  if(o.sorte === 'armure' || o.sorte === 'bouclier'){
+    const pt = b(o.porte ? 'Ôter' : 'Porter', 'fporte-' + o.id, () => changer(() => porterObjet(o.id, !o.porte)));
+    if(lourd){ pt.disabled = true; pt.title = 'Son corps supporte : ' + c.armure.charAt(0).toLowerCase() + c.armure.slice(1).replace(/\.$/, ''); }
+  }
+  if(persos().length > 1) b('Donner', 'fdon-' + o.id, () => { FICHE.don = FICHE.don === o.id ? '' : o.id; FICHE.ed = ''; dessinerFiche(true); });
+  b('Modifier', 'fed-' + o.id, () => { FICHE.ed = FICHE.ed === o.id ? '' : o.id; FICHE.edd = null; FICHE.don = ''; dessinerFiche(true); });
+  const x = deuxTemps('objet-' + o.id, 'Jeter', 'Confirmer', () => changer(() => oterObjet(o.id)), 'ghost xs');
+  x.id = 'fjeter-' + o.id;
+  ac.append(x);
+  t.append(ac);
+  if(FICHE.don === o.id) t.append(formDon(c, o));
+  if(FICHE.ed === o.id) t.append(formObjet(c, o));
+  return t;
+}
+function formDon(c, o){
+  const f = el('div','fform');
+  const s = el('select'); s.id = 'fdon-qui'; s.setAttribute('aria-label', 'À qui');
+  persos().filter(x => x.id !== c.id).forEach(x => s.add(new Option(x.nom || 'Sans nom', x.id)));
+  const n = el('input'); n.type = 'number'; n.id = 'fdon-n'; n.min = '1'; n.max = String(o.n); n.value = '1'; n.style.width = '70px';
+  n.setAttribute('aria-label', 'Combien');
+  const ok = el('button','btn sm','Donner'); ok.type = 'button'; ok.id = 'fdon-ok';
+  ok.onclick = () => {
+    const cible = perso(s.value); if(!cible) return;
+    const k = Math.max(1, Math.min(o.n, parseInt(n.value, 10) || 1));
+    changer(() => {
+      donnerObjet(o.id, cible.id, k);
+      noterDansSeance((c.nom || 'Sans nom') + ' donne ' + (k > 1 ? k + ' × ' : '') + o.nom + ' à ' + (cible.nom || 'Sans nom') + '.', 'note');
+    });
+    FICHE.don = '';
+    msgTable(o.nom + (k > 1 ? ' ×' + k : '') + ' passe dans le sac de ' + (cible.nom || 'Sans nom') + '.', true);
+  };
+  const non = el('button','btn ghost sm','Annuler'); non.type = 'button';
+  non.onclick = () => { FICHE.don = ''; dessinerFiche(true); };
+  if(o.n > 1) f.append(el('span','mini', 'Combien'), n);
+  f.append(el('span','mini', 'à'), s, ok, non);
+  return f;
+}
+/* une arme se reconnaît à ce qu'elle est, pas seulement à sa place : une arme retirée ailleurs décale les autres,
+   et le « Confirmer » d'un bouton armé ne doit pas tomber sur la voisine */
+const cleArme = (a, i) => 'arme-' + hashCourt([a.nom, a.de, a.notes || ''].join('|')) + '-' + i;
+function indexArme(y, a, i){
+  const meme = x => !!x && x.nom === a.nom && x.de === a.de && (x.notes || '') === (a.notes || '');
+  return meme(y.armes[i]) ? i : y.armes.findIndex(meme);
+}
+/* donner une arme : elle passe sur la fiche de l'autre, où le combat la lit */
+function formDonArme(c, a, i){
+  const f = el('div','fform');
+  const s = el('select'); s.id = 'fdon-qui'; s.setAttribute('aria-label', 'À qui');
+  persos().filter(x => x.id !== c.id).forEach(x => s.add(new Option(x.nom || 'Sans nom', x.id)));
+  const ok = el('button','btn sm','Donner'); ok.type = 'button'; ok.id = 'fdon-ok';
+  ok.onclick = () => {
+    const cible = perso(s.value); if(!cible) return;
+    let fait = false;
+    changer(() => {
+      const y = T.personnages[c.id], z = T.personnages[cible.id];
+      const j = y ? indexArme(y, a, i) : -1;
+      if(!z || j < 0) return;
+      const arme = y.armes[j];
+      y.armes = y.armes.filter((_, k) => k !== j);
+      z.armes = z.armes.concat([arme]);
+      majPerso(y); majPerso(z);
+      noterDansSeance((c.nom || 'Sans nom') + ' donne ' + a.nom + ' à ' + (cible.nom || 'Sans nom') + '.', 'note');
+      fait = true;
+    });
+    FICHE.don = '';
+    if(fait) msgTable(a.nom + ' passe dans les armes de ' + (cible.nom || 'Sans nom') + '.', true);
+    else dessinerFiche(true);
+  };
+  const non = el('button','btn ghost sm','Annuler'); non.type = 'button';
+  non.onclick = () => { FICHE.don = ''; dessinerFiche(true); };
+  f.append(el('span','mini', 'à'), s, ok, non);
+  return f;
+}
+/* modifier une pile : son nom, sa sorte, ce qu'elle fait */
+function formObjet(c, o){
+  const f = el('div','fform fcol');
+  /* ce qu'on a tapé survit à un dessin venu d'ailleurs */
+  const d = FICHE.edd && FICHE.edd.id === o.id ? FICHE.edd : (FICHE.edd = {id:o.id, nom:o.nom, n:o.n, sorte:o.sorte, red:o.red, effet:o.effet, note:o.note, de:'d6'});
+  const ligne = el('div','table');
+  const champ2 = (lab, noeud) => { const w = el('div'); const l = el('label','lab', lab); l.htmlFor = noeud.id; w.append(l, noeud); ligne.append(w); return noeud; };
+  const nom = champ2('Nom', Object.assign(el('input'), {type:'text', id:'fo-nom', value:d.nom, maxLength:160, oninput:e => d.nom = e.target.value}));
+  nom.style.width = '100%';
+  champ2('Combien', Object.assign(el('input'), {type:'number', id:'fo-n', value:String(d.n), min:'1', max:'999', oninput:e => d.n = e.target.value, style:'width:80px'}));
+  const s = el('select'); s.id = 'fo-sorte';
+  SORTES_AJOUT.forEach(x => s.add(new Option(x.l.replace(/^(Un|Une) /, ''), x.k)));
+  s.value = d.sorte;
+  champ2('Sorte', s);
+  f.append(ligne);
+  const extra = el('div','table');
+  const dessinerExtra = () => {
+    extra.innerHTML = '';
+    const ch = (lab, noeud) => { const w = el('div'); const l = el('label','lab', lab); l.htmlFor = noeud.id; w.append(l, noeud); extra.append(w); };
+    if(d.sorte === 'armure' || d.sorte === 'bouclier') ch('Réduction', Object.assign(el('input'), {type:'number', id:'fo-red', value:String(d.red || (d.sorte === 'bouclier' ? 1 : 1)), min:'0', max:'10', oninput:e => d.red = e.target.value, style:'width:80px'}));
+    if(d.sorte === 'conso') ch('Ce qu’il fait', Object.assign(el('input'), {type:'text', id:'fo-effet', value:d.effet, placeholder:'Rend 1d6 PV', oninput:e => d.effet = e.target.value, style:'width:100%'}));
+    if(d.sorte === 'arme') ch('Dé', Object.assign(el('input'), {type:'text', id:'fo-de', value:d.de, placeholder:'d6', oninput:e => d.de = e.target.value, style:'width:80px'}));
+    ch('Note', Object.assign(el('input'), {type:'text', id:'fo-note', value:d.note, oninput:e => d.note = e.target.value, style:'width:100%'}));
+  };
+  s.onchange = () => { d.sorte = s.value; if((d.sorte === 'armure' || d.sorte === 'bouclier') && !+d.red) d.red = 1; dessinerExtra(); };
+  dessinerExtra();
+  f.append(extra);
+  const act = el('div','acts');
+  const ok = el('button','btn sm','Enregistrer'); ok.type = 'button'; ok.id = 'fo-ok';
+  ok.onclick = () => {
+    if(!String(d.nom).trim()){ msgTable('Il lui faut un nom.', false); return; }
+    changer(() => {
+      if(d.sorte === 'arme'){
+        /* une arme passe sur sa fiche, où le combat la lit : une seule, le reste de la pile reste dans le sac */
+        const y = T.personnages[c.id];
+        y.armes = y.armes.concat([{nom:String(d.nom).trim(), de:String(d.de || 'd6').trim(), notes:String(d.note || '').trim()}]);
+        majPerso(y);
+        changerQte(o.id, -1);
+        return;
+      }
+      const x = majObjet(o.id, {nom:String(d.nom).trim(), n:d.n, sorte:d.sorte, red:d.red, effet:d.effet, note:d.note, porte:d.sorte === o.sorte ? o.porte : false});
+      /* une armure devenue trop lourde pour son corps s'ôte */
+      if(x && x.porte && horsDuCorps(T.personnages[c.id], x)) majObjet(o.id, {porte:false});
+    });
+    FICHE.ed = ''; FICHE.edd = null;
+  };
+  const non = el('button','btn ghost sm','Annuler'); non.type = 'button';
+  non.onclick = () => { FICHE.ed = ''; FICHE.edd = null; dessinerFiche(true); };
+  act.append(ok, non);
+  f.append(act);
+  return f;
+}
+/* ajouter au sac, à la main : un objet, un consommable, une armure, un bouclier, ou une arme pour sa fiche */
+function formAjout(c){
+  const d = FICHE.ajout = FICHE.ajout && FICHE.ajout.perso === c.id ? FICHE.ajout : {perso:c.id, nom:'', n:'1', sorte:'objet', red:'1', effet:'', de:'d6', note:''};
+  const det = el('details','fajout'); det.id = 'fAjout';
+  det.open = !!d.ouvert;
+  det.ontoggle = () => { d.ouvert = det.open; };
+  det.append(el('summary', null, 'Ajouter au sac'));
+  const seg = el('div','seg'); seg.setAttribute('role', 'group'); seg.setAttribute('aria-label', 'Quelle sorte');
+  SORTES_AJOUT.forEach(x => {
+    const b = el('button', null, x.l); b.type = 'button'; b.id = 'faj-sorte-' + x.k;
+    b.setAttribute('aria-pressed', d.sorte === x.k ? 'true' : 'false');
+    b.onclick = () => { d.sorte = x.k; dessinerFiche(true); const y = $('faj-sorte-' + x.k); if(y) y.focus(); };
+    seg.append(b);
+  });
+  det.append(seg);
+  const l = el('div','table'); l.style.marginTop = '8px';
+  const ch = (lab, noeud) => { const w = el('div'); const lb = el('label','lab', lab); lb.htmlFor = noeud.id; w.append(lb, noeud); l.append(w); return noeud; };
+  ch('Nom', Object.assign(el('input'), {type:'text', id:'faj-nom', value:d.nom, maxLength:160, placeholder:d.sorte === 'arme' ? 'Épée courte' : d.sorte === 'conso' ? 'Fiole de Havre' : 'Une corde de dix pas', oninput:e => d.nom = e.target.value, style:'width:100%'}));
+  if(d.sorte !== 'arme') ch('Combien', Object.assign(el('input'), {type:'number', id:'faj-n', value:d.n, min:'1', max:'999', oninput:e => d.n = e.target.value, style:'width:80px'}));
+  if(d.sorte === 'armure' || d.sorte === 'bouclier') ch('Réduction', Object.assign(el('input'), {type:'number', id:'faj-red', value:d.red, min:'0', max:'10', oninput:e => d.red = e.target.value, style:'width:80px'}));
+  if(d.sorte === 'conso') ch('Ce qu’il fait', Object.assign(el('input'), {type:'text', id:'faj-effet', value:d.effet, placeholder:'Rend 1d6 PV', oninput:e => d.effet = e.target.value, style:'width:100%'}));
+  if(d.sorte === 'arme') ch('Dé', Object.assign(el('input'), {type:'text', id:'faj-de', value:d.de, placeholder:'d6', oninput:e => d.de = e.target.value, style:'width:80px'}));
+  ch('Note', Object.assign(el('input'), {type:'text', id:'faj-note', value:d.note, oninput:e => d.note = e.target.value, style:'width:100%'}));
+  det.append(l);
+  const ok = el('button','btn sm','Ajouter'); ok.type = 'button'; ok.id = 'faj-ok'; ok.style.marginTop = '8px';
+  ok.onclick = () => {
+    const nom = String(d.nom || '').trim();
+    if(!nom){ msgTable('Il lui faut un nom.', false); $('faj-nom').focus(); return; }
+    if(d.sorte !== 'arme' && objetsDe(c.id).length >= SAC_PLEIN){ msgTable('Le sac est plein : ' + SAC_PLEIN + ' piles. Jette ou donne quelque chose d’abord.', false); return; }
+    changer(() => {
+      if(d.sorte === 'arme'){
+        const y = T.personnages[c.id];
+        y.armes = y.armes.concat([{nom:nom, de:String(d.de || 'd6').trim() || 'd6', notes:String(d.note || '').trim()}]);
+        majPerso(y);
+      } else {
+        /* un objet du livre qu'on nomme retrouve ce qu'il fait : « Fiole de Havre » */
+        const lu = objetDepuisTexte(nom);
+        const champs = {nom:nom, n:parseInt(d.n, 10) || 1, sorte:d.sorte, red:+d.red || 0, effet:String(d.effet || '').trim(), note:String(d.note || '').trim(), origine:'Ajouté à la main'};
+        if(d.sorte === 'conso' && !champs.effet && lu.sorte === 'conso') champs.effet = lu.effet;
+        const o = nouvelObjet(c.id, champs);
+        if((o.sorte === 'armure' || o.sorte === 'bouclier') && !porteDe(c.id, o.sorte)) porterObjet(o.id, true);
+      }
+    });
+    FICHE.ajout = {perso:c.id, nom:'', n:'1', sorte:d.sorte, red:'1', effet:'', de:'d6', note:'', ouvert:true};
+    msgTable(nom + (d.sorte === 'arme' ? ' rejoint ses armes.' : ' rejoint son sac.'), true);
+    dessinerFiche(true);
+    const n = $('faj-nom'); if(n) n.focus();
+  };
+  det.append(ok);
+  return det;
+}
+/* utiliser un consommable : ce qu'il rend se lance, la pile baisse, la séance le note */
+function utiliserDepuisFiche(id){
+  const o = unObjet(id); if(!o) return;
+  const c = perso(o.perso); if(!c) return;
+  const s = soinDe(o);
+  let dit = '';
+  changer(() => {
+    const y = T.personnages[c.id];
+    if(s){
+      const r = /d/i.test(s.f) ? lancerFormule(s.f) : {total:Math.max(0, parseInt(s.f, 10) || 0), txt:s.f};
+      const n = r ? r.total : 0;
+      /* un coup, comme les boutons des jauges : un coup reçu ailleurs au même moment compte aussi */
+      if(n) coup(y, s.q, n);
+      dit = (c.nom || 'Sans nom') + ' utilise ' + o.nom + ' : ' + (r && /d/i.test(s.f) ? r.txt + ' = ' : '') + '+' + n + ' ' + (s.q === 'pc' ? 'PC' : 'PV') + '.';
+    } else dit = (c.nom || 'Sans nom') + ' utilise ' + o.nom + (o.effet ? ' : ' + o.effet.replace(/[\s.]+$/, '') : '') + '.';
+    changerQte(o.id, -1);
+    noterDansSeance(dit, 'note');
+  });
+  msgTable(dit, true);
+}
+
+/* ---------- sa bourse ---------- */
+function vueBourse(c, box){
+  const total = bourseDe(c.id);
+  const tete = el('div','fbourse');
+  tete.append(picto('bourse'));
+  const t = el('div');
+  t.append(el('b','fsomme', total ? texteArgent(total) : 'Vide'), el('span','mini', total ? total + (Math.abs(total) > 1 ? ' argents' : ' argent') + ' en tout · 1 or = 10 argents' : '1 or = 10 argents'));
+  tete.append(t);
+  box.append(tete);
+  const vieux = c.bourse && argentsDe(c.bourse) == null && c.bourse.trim() && c.bourse.trim() !== '–' ? c.bourse.trim() : '';
+  if(vieux){
+    const p = el('p','note', 'Sa bourse d’avant disait « ' + vieux + ' » : le site n’y lit pas de somme. Écris-la ci-dessous si elle compte.');
+    box.append(p);
+  }
+  /* recevoir ou dépenser, à la main */
+  const a = FICHE.argent;
+  box.append(el('h3', null, 'Recevoir ou dépenser'));
+  const seg = el('div','seg'); seg.setAttribute('role', 'group'); seg.setAttribute('aria-label', 'Dans quel sens');
+  [['plus','Recevoir'],['moins','Dépenser']].forEach(([k, l]) => {
+    const b = el('button', null, l); b.type = 'button'; b.id = 'fb-' + k;
+    b.setAttribute('aria-pressed', a.sens === k ? 'true' : 'false');
+    b.onclick = () => { a.sens = k; dessinerFiche(true); const y = $('fb-' + k); if(y) y.focus(); };
+    seg.append(b);
+  });
+  box.append(seg);
+  const l = el('div','table fbform'); l.style.marginTop = '8px';
+  const ch = (lab, noeud) => { const w = el('div'); const lb = el('label','lab', lab); lb.htmlFor = noeud.id; w.append(lb, noeud); l.append(w); return noeud; };
+  ch('Ors', Object.assign(el('input'), {type:'number', id:'fb-ors', value:a.ors, min:'0', inputMode:'numeric', oninput:e => a.ors = e.target.value, style:'width:90px'}));
+  ch('Argents', Object.assign(el('input'), {type:'number', id:'fb-argents', value:a.argents, min:'0', inputMode:'numeric', oninput:e => a.argents = e.target.value, style:'width:90px'}));
+  ch('Pourquoi', Object.assign(el('input'), {type:'text', id:'fb-motif', value:a.motif, maxLength:200, placeholder:a.sens === 'plus' ? 'Vendu la hache du bandit' : 'Une nuit à l’auberge du col', oninput:e => a.motif = e.target.value, style:'width:100%'}));
+  box.append(l);
+  const ok = el('button','btn sm', a.sens === 'plus' ? 'Dans sa bourse' : 'Hors de sa bourse'); ok.type = 'button'; ok.id = 'fb-ok'; ok.style.marginTop = '8px';
+  ok.onclick = () => {
+    const n = (Math.max(0, parseInt(a.ors, 10) || 0)) * ARGENTS_PAR_OR + Math.max(0, parseInt(a.argents, 10) || 0);
+    if(!n){ msgTable('Écris combien, en ors, en argents, ou les deux.', false); $('fb-ors').focus(); return; }
+    if(a.sens === 'moins' && n > bourseDe(c.id)){ msgTable('Il n’a que ' + texteArgent(bourseDe(c.id)) + ' dans sa bourse.', false); return; }
+    const motif = String(a.motif || '').trim() || (a.sens === 'plus' ? 'Reçu' : 'Dépensé'), sens = a.sens;
+    a.ors = ''; a.argents = ''; a.motif = '';
+    changer(() => { const e = seanceCourante(); mouvement(c.id, sens === 'plus' ? n : -n, motif, {seance:e ? e.id : ''}); });
+    msgTable((sens === 'plus' ? '+ ' : '− ') + texteArgent(n) + ' · ' + motif, true);
+  };
+  box.append(ok);
+  /* son histoire, du plus récent au plus ancien */
+  const ms = mouvementsDe(c.id);
+  box.append(el('h3', null, 'Ce qui est entré et sorti'));
+  if(!ms.length){ box.append(el('p','mini', 'Rien encore. La paie des missions bouclées y arrive toute seule.')); return; }
+  const t2 = el('table','tab fhist');
+  const h = el('tr'); ['Quand','Pourquoi','Combien',''].forEach((x, i) => h.append(el('th', i === 2 ? 'n' : null, x))); t2.append(h);
+  ms.forEach(m => {
+    const tr = el('tr');
+    const e = m.seance && T.journal[m.seance] && !T.journal[m.seance].supprime ? T.journal[m.seance] : null;
+    tr.append(el('td','mini', (e ? 'Séance ' + (e.seance || '?') + ' · ' : '') + (m.t > 1e11 ? dateCourte(m.t) : 'avant')));
+    tr.append(el('td', null, m.motif));
+    tr.append(el('td','n ' + (m.n < 0 ? 'fneg' : 'fpos'), (m.n > 0 ? '+' : '') + texteArgent(m.n)));
+    const td = el('td','n');
+    const x = deuxTemps('mvt-' + m.id, 'Défaire', 'Confirmer', () => changer(() => defaireMouvement(m.id)), 'ghost xs');
+    x.id = 'fb-x-' + m.id;
+    td.append(x);
+    tr.append(td);
+    t2.append(tr);
+  });
+  const s = el('div','scroll'); s.append(t2); box.append(s);
+}
+
+/* ---------- le marché du Livre V ---------- */
+function prixMarche(e){ return e.lance && FICHE.lances ? e.prix * 2 : e.prix; }
+function vueMarche(c, box){
+  const bourse = bourseDe(c.id);
+  box.append(el('p','fmarche-tete', 'Dans sa bourse : ' + (bourse ? texteArgent(bourse) : 'rien') + '. Les prix sont ceux du Livre V.'));
+  const manque = p => p > bourse ? 'Il manque ' + texteArgent(p - bourse) : '';
+  const bouton = (id, p, fn, txt) => {
+    const b = el('button','btn sm', txt || 'Acheter'); b.type = 'button'; b.id = id;
+    b.disabled = p > bourse;
+    if(p > bourse) b.title = manque(p);
+    b.onclick = fn;
+    return b;
+  };
+  const acheter = (quoi, prix, fait) => {
+    if(prix > bourseDe(c.id)){ msgTable(manque(prix) + ' pour ' + quoi + '.', false); return; }
+    changer(() => {
+      const e = seanceCourante();
+      mouvement(c.id, -prix, 'Achat : ' + quoi, {seance:e ? e.id : ''});
+      fait();
+      noterDansSeance((c.nom || 'Sans nom') + ' achète ' + quoi + ' (' + texteArgent(prix) + ').', 'note');
+    });
+    msgTable(quoi + ' : ' + texteArgent(prix) + '.', true);
+  };
+  const tableau = (titre, entetes, lignes) => {
+    box.append(el('h3', null, titre));
+    const t = el('table','tab fmarche');
+    const h = el('tr'); entetes.forEach((x, i) => h.append(el('th', x.n ? 'n' : null, x.l))); t.append(h);
+    lignes.forEach(tr => t.append(tr));
+    const s = el('div','scroll'); s.append(t); box.append(s);
+  };
+
+  /* les armes : elles vont sur sa fiche, sous le nom qu'on leur donne */
+  const la = MARCHE.armes.map((e, i) => {
+    const tr = el('tr');
+    const td = el('td'); td.append(el('b', null, e.nom));
+    if(e.ex || e.notes) td.append(el('div','mini', [e.ex, e.notes].filter(Boolean).join(' · ')));
+    const p = prixMarche(e);
+    const nom = el('input'); nom.type = 'text'; nom.id = 'fm-nom-' + i; nom.placeholder = 'Son nom'; nom.maxLength = 80; nom.style.width = '130px';
+    nom.value = FICHE.nomArme[i] || ''; nom.oninput = () => { FICHE.nomArme[i] = nom.value; };
+    nom.setAttribute('aria-label', 'Le nom de l’arme, ' + e.nom);
+    const tdb = el('td','fmact'); tdb.append(nom, bouton('fm-arme-' + i, p, () => {
+      const propre = String(FICHE.nomArme[i] || '').trim();
+      FICHE.nomArme[i] = '';
+      acheter(propre || e.nom, p, () => {
+        const y = T.personnages[c.id];
+        y.armes = y.armes.concat([{nom:propre || e.nom, de:e.de, notes:[propre ? e.nom : e.ex, e.notes].filter(Boolean).join(' · ')}]);
+        majPerso(y);
+      });
+    }));
+    tr.append(td, el('td','n', e.de), el('td','n', texteArgent(p)), tdb);
+    return tr;
+  });
+  tableau('Les armes', [{l:'Arme'}, {l:'Dé', n:true}, {l:'Prix', n:true}, {l:''}], la);
+  const lances = el('label','coche fcoche');
+  const cb = el('input'); cb.type = 'checkbox'; cb.id = 'fm-lances'; cb.checked = FICHE.lances;
+  cb.onchange = () => { FICHE.lances = cb.checked; dessinerFiche(true); const y = $('fm-lances'); if(y) y.focus(); };
+  lances.append(cb, document.createTextNode(' Hors d’un camp ori’ican : les lances coûtent le double. Seuls les Ori’Ican les forgent, et la pique de totem ne se vend jamais.'));
+  box.append(lances);
+
+  const lr = MARCHE.armures.map((e, i) => {
+    const tr = el('tr');
+    tr.append(el('td', null, e.nom), el('td','n', (e.sorte === 'bouclier' ? '+' : '') + e.red), el('td','n', texteArgent(e.prix)));
+    const tdb = el('td','fmact');
+    tdb.append(bouton('fm-armure-' + i, e.prix, () => acheter(e.nom, e.prix, () => {
+      const o = nouvelObjet(c.id, {nom:e.nom, sorte:e.sorte, red:e.red, prix:e.prix, origine:'Acheté au marché'});
+      if(!porteDe(c.id, e.sorte)) porterObjet(o.id, true);
+    })));
+    tr.append(tdb);
+    return tr;
+  });
+  tableau('Les armures', [{l:'Pièce'}, {l:'Réduction', n:true}, {l:'Prix', n:true}, {l:''}], lr);
+  box.append(el('p','mini', 'Une armure achetée se porte tout de suite si rien d’autre n’est porté ; un bouclier occupe une main.' + (c.armure ? ' Son corps supporte : ' + c.armure.charAt(0).toLowerCase() + c.armure.slice(1).replace(/\.$/, '') + '.' : '')));
+
+  const lc = MARCHE.consommables.map((e, i) => {
+    const tr = el('tr');
+    const td = el('td'); td.append(el('b', null, e.nom), el('div','mini', e.effet));
+    const combien = () => Math.max(1, Math.min(20, parseInt(FICHE.qte[i], 10) || 1));
+    const n = el('input'); n.type = 'number'; n.id = 'fm-qte-' + i; n.min = '1'; n.max = '20'; n.value = String(combien()); n.style.width = '64px';
+    n.setAttribute('aria-label', 'Combien de ' + e.nom);
+    const tdb = el('td','fmact');
+    const bt = bouton('fm-conso-' + i, e.prix * combien(), () => {
+      const q = combien();
+      FICHE.qte[i] = '';
+      acheter((q > 1 ? q + ' × ' : '') + e.nom, e.prix * q, () => {
+        ajouterAuSac(c.id, {nom:e.nom, n:q, sorte:'conso', effet:e.effet, prix:e.prix, origine:'Acheté au marché'});
+      });
+    });
+    /* le bouton suit la quantité, sans redessiner la page sous la souris */
+    n.oninput = () => {
+      FICHE.qte[i] = n.value;
+      const p = e.prix * combien();
+      bt.disabled = p > bourse;
+      bt.title = p > bourse ? manque(p) : '';
+    };
+    tdb.append(n, bt);
+    tr.append(td, el('td','n', texteArgent(e.prix)), tdb);
+    return tr;
+  });
+  tableau('Les consommables', [{l:'Objet'}, {l:'Prix', n:true}, {l:''}], lc);
+  box.append(el('p','mini', 'Un consommable fait toujours moins qu’une Pratique, ou coûte beaucoup plus cher.'));
+
+  const ld = MARCHE.depenses.map((e, i) => {
+    const tr = el('tr');
+    const td = el('td'); td.append(document.createTextNode(e.nom)); if(e.note) td.append(el('span','mini', ' · ' + e.note));
+    const tdb = el('td','fmact');
+    tdb.append(bouton('fm-dep-' + i, e.prix, () => acheter(e.nom.charAt(0).toLowerCase() + e.nom.slice(1), e.prix, () => {}), 'Payer'));
+    tr.append(td, el('td','n', texteArgent(e.prix)), tdb);
+    return tr;
+  });
+  tableau('Le gîte et le péage', [{l:'Dépense'}, {l:'Prix', n:true}, {l:''}], ld);
+  box.append(el('p','mini', 'La faim n’est pas une jauge : on mange dans la fiction, les vivres ne se comptent pas.'));
+}
+
+/* ---------- sa progression : le registre du livre, pour lui ---------- */
+function vueProgression(c, box){
+  PROG_PERSO = c.id;
+  const p = el('div'); p.id = 'progBox';
+  box.append(p);
+  dessinerProgDans(p);
+}
+
+/* ---------- son histoire, ses liens, et le jour où il entre dans le monde ---------- */
+function vueHistoire(c, box){
+  box.append(el('h3', null, 'Ce qu’il est'));
+  const zone = el('textarea'); zone.id = 'fh-texte'; zone.rows = 5; zone.value = c.texte;
+  zone.placeholder = 'Son histoire, sa voix, ce qu’il cherche. « / » puis un nom cite quelqu’un.';
+  zone.setAttribute('aria-label', 'Ce qu’il est');
+  zone.onchange = () => ecrireSansDessin(() => { const y = T.personnages[c.id]; if(y && !y.supprime){ y.texte = zone.value; majPerso(y); } });
+  box.append(zone);
+  brancherMentions(zone);
+  const ref = 'pj:' + c.id;
+  box.append(el('h3', null, 'Ses liens'));
+  const ls = liensDe(ref);
+  if(ls.length) box.append(liensEnBref(ref));
+  const vers = el('a','mini', ls.length ? 'Les voir et en tisser d’autres, dans le Registre des Visages' : 'Aucun pour l’instant. En tisser, dans le Registre des Visages');
+  vers.href = 'pnj.html#pj-' + encodeURIComponent(c.id); vers.target = ONGLET_VISAGES;
+  box.append(vers);
+  box.append(el('h3', null, 'Dans les comptes rendus'));
+  box.append(blocTextes(ref, () => dessinerFiche(true)));
+
+  box.append(el('h3', null, 'Entrer dans le monde'));
+  box.append(el('p','mini', 'Quand vous arrêtez de le jouer, il devient un PNJ du Registre des Visages : son nom, son histoire, ce qu’il sait faire, ses PV, et tous ses liens passent à sa fiche de PNJ. Ce que les comptes rendus disent de lui y reste attaché. Il quitte la table, et on peut le reprendre plus tard.'));
+  const b = deuxTemps('monde-' + c.id, 'Le faire entrer dans le monde', 'Confirmer : ' + (c.nom || 'il') + ' quitte la table', () => {
+    let p = null;
+    changer(() => { p = versLeMonde(c.id); });
+    if(PED && PED.id === c.id) fermerEditeurPerso();
+    if(p) msgTable((c.nom || 'Il') + ' est entré dans le monde : sa fiche de PNJ l’attend dans le Registre des Visages.', true);
+  }, 'ghost sm');
+  b.id = 'fMonde-go';
+  box.append(b);
+}
+
+/* ---------- ceux qui sont entrés dans le monde ---------- */
+function dessinerMonde(){
+  const box = $('fMonde'); if(!box) return;
+  box.innerHTML = '';
+  const l = entresDansLeMonde();
+  if(!l.length) box.append(el('p','vide', 'Personne pour l’instant. Un personnage qu’on arrête de jouer y entre depuis « Son histoire ».'));
+  l.forEach(c => {
+    const w = el('div','fancien');
+    const p = c.monde && T.pnj[c.monde] && !T.pnj[c.monde].supprime ? T.pnj[c.monde] : null;
+    const t = el('div');
+    t.append(el('b', null, c.nom || 'Sans nom'));
+    t.append(el('span','mini', ' · ' + [c.peuple, c.voie].filter(Boolean).join(', ') + (c.mondeT ? ' · entré dans le monde le ' + dateCourte(c.mondeT) : '')));
+    if(p){ const a = el('a','mini', 'Sa fiche de PNJ'); a.href = 'pnj.html#' + encodeURIComponent(p.id); a.target = ONGLET_VISAGES; t.append(el('br'), a); }
+    else t.append(el('br'), el('span','mini', 'Sa fiche de PNJ a été retirée du Registre des Visages.'));
+    w.append(t);
+    const b = deuxTemps('reprendre-' + c.id, 'Le reprendre', 'Confirmer : il revient à la table', () => {
+      FICHE.perso = c.id; garderChoixFiche();
+      changer(() => { reprendrePersonnage(c.id); });
+      msgTable((c.nom || 'Il') + ' revient à la table, avec ses liens. Sa fiche de PNJ s’efface.', true);
+    }, 'ghost sm');
+    b.id = 'fReprendre-' + c.id;
+    w.append(b);
+    box.append(w);
+  });
+  const n = persos().length;
+  if(n){
+    const b = deuxTemps('clore', 'Clore la campagne', 'Confirmer : les ' + (n > 1 ? n + ' personnages' : 'le personnage') + ' de la table entrent dans le monde', () => {
+      let k = 0;
+      changer(() => { persos().forEach(c => { if(versLeMonde(c.id)) k++; }); });
+      if(PED) fermerEditeurPerso();
+      msgTable(k + (k > 1 ? ' personnages sont entrés' : ' personnage est entré') + ' dans le monde.', true);
+    }, 'ghost sm');
+    b.id = 'fClore';
+    const w = el('div','acts'); w.style.marginTop = '10px';
+    w.append(b, el('span','mini', 'Toute la compagnie d’un coup, quand la campagne s’arrête.'));
+    box.append(w);
+  }
+}
+
+/* ---------- l'impression : la fiche du Word, avec ce qu'il a aujourd'hui ---------- */
+/* la fiche du Word remplace la page, à l'impression seulement : Ctrl+P la donne aussi, pour le personnage affiché */
+function preparerImpression(pid){
+  const c = perso(pid), z = $('ficheImpr');
+  if(!c || !z){ document.body.classList.remove('imprime-fiche'); return false; }
+  z.innerHTML = '';
+  z.append(ficheImprimee(c));
+  document.body.classList.add('imprime-fiche');
+  return true;
+}
+function imprimerFiche(pid){ if(preparerImpression(pid)) window.print(); }
+if($('ficheBox')){
+  window.addEventListener('beforeprint', () => { preparerImpression(FICHE.perso); });
+  window.addEventListener('afterprint', () => { document.body.classList.remove('imprime-fiche'); });
+}
+function ficheImprimee(c){
+  const box = el('div','fimp');
+  const fh = t => el('h3','fh', t);
+  const fnote = (gras, reste) => { const p = el('p','fnote'); if(gras) p.append(el('b', null, gras + ' ')); if(reste) p.append(document.createTextNode(reste)); return p; };
+  const fsm = t => el('p','fsm', t);
+  const fld = (label, valeur, w) => {
+    const td = el('td','fd'); if(w) td.style.width = w;
+    if(label) td.append(el('div','lb', label));
+    const v = el('div','vl');
+    String(valeur == null || valeur === '' ? '–' : valeur).split('\n').forEach((l, i) => { if(i) v.append(el('br')); v.append(document.createTextNode(l)); });
+    td.append(v); return td;
+  };
+  const cols = (t, ws) => { const cg = el('colgroup'); ws.forEach(w => { const x = el('col'); x.style.width = w; cg.append(x); }); t.append(cg); return t; };
+  const frow = cells => { const t = el('table','fx'), tr = el('tr'); cells.forEach(x => tr.append(x)); t.append(tr); return t; };
+  const humain = /humain/i.test(c.peuple) || c.bonusPratique === 30;
+  const s = c.sub || {};
+
+  box.append(el('div','ft', c.nom ? 'Fiche de ' + c.nom : 'Fiche de personnage'));
+  box.append(el('div','fsub', 'Faelorenn · le jeu des Marchefleurs' + (c.joueur ? ' · joué par ' + c.joueur : '')));
+
+  box.append(fh('Identité'));
+  box.append(frow([fld('Nom', c.nom, '40%'), fld('Peuple', c.peuple, '30%'), fld('Voie', c.voie, '30%')]));
+  box.append(frow([fld('Bannière · humains', humain ? s.ban : null, '25%'), fld('École ou Église · humains', humain ? s.ecole : null, '25%'),
+    fld('Type · Ori’Ican', /ori.?ican/i.test(c.peuple) ? s.type : null, '25%'), fld('Branche · Nyréens', /nyr/i.test(c.peuple) ? s.branche : null, '25%')]));
+
+  box.append(fh('Ce que ton peuple apporte'));
+  box.append(frow([fld('Traits chiffrés', c.traits, '46%'), fld('Domaine et bonus', c.domaine ? 'Pratiques ' + c.domaine.replace(/\s*\([^)]*\)\s*$/, '') + (humain ? ' · +10 par son école' : ' · +20') : null, '27%'), fld('Contrainte', c.contrainte, '27%')]));
+  box.append(frow([fld('Compétence de peuple', c.peupleComp, '50%'), fld('Armure que ton corps supporte', c.armure, '50%')]));
+
+  box.append(fh('Caractéristiques'));
+  const tc = el('table','fx car'), r1 = el('tr'), r2 = el('tr'), r3 = el('tr');
+  CARS.forEach(x => {
+    r1.append(el('th', null, x));
+    const v = c.car[x];
+    r2.append(el('td','big2', String(v)));
+    r3.append(el('td','sub2', '×2 ' + (v * 2) + ' · mod ' + (near(v / 5) >= 0 ? '+' : '') + near(v / 5)));
+  });
+  tc.append(r1, r2, r3); box.append(tc);
+  const td2 = el('table','fx der'), rd = el('tr');
+  const bouclier = porteDe(c.id, 'bouclier');
+  [['Points de vie', 'au maximum', c.pvMax], ['Points de Contenance', 'au maximum', c.pcMax], ['Réduction d’armure', bouclier ? 'ta pièce, ton bouclier, ton armure naturelle' : 'ta pièce, plus ton armure naturelle', redDe(c)]].forEach(x => {
+    const td = el('td','dv'); td.append(el('div','lb', x[0]), el('div','dvs', x[1]), el('div','big2', String(x[2]))); rd.append(td);
+  });
+  td2.append(rd); box.append(td2);
+  box.append(fsm('Ton mod, c’est ta caractéristique divisée par cinq. La même division que pour le d20, et un seul arrondi dans tout le jeu : vers le bas.'));
+
+  box.append(fh('Les vingt compétences'));
+  box.append(fnote('Total = caractéristique fois deux, plus le bonus.', 'Le d20 est ce total divisé par cinq. Les chiffres sont ceux d’aujourd’hui, progression comprise.'));
+  const groupe = cs => { const o = []; cs.forEach(x => { o.push({head:x}); SKILLS[x].forEach(k => o.push({skill:k})); }); return o; };
+  const L = groupe(['Force','Dextérité','Intelligence']), R = groupe(['Sagesse','Charisme']);
+  R.push({note:'Constitution et Contenance n’ont aucune compétence.'}, {note:'La Contenance sert à lancer les Pratiques.'});
+  const ts = el('table','fx sk');
+  cols(ts, ['23%','9%','9%','9%','23%','9%','9%','9%']);
+  const hr = el('tr');
+  ['Compétence','Bonus','Total','d20','Compétence','Bonus','Total','d20'].forEach((h, i) => hr.append(el('th', i % 4 ? 'c' : null, h)));
+  ts.append(hr);
+  const cote = (e, tr) => {
+    if(!e){ for(let i = 0; i < 4; i++) tr.append(el('td')); return; }
+    if(e.head){ const td = el('td','grp'); td.colSpan = 4; td.append(el('b', null, e.head), el('i', null, '  base ×2 ' + (c.car[e.head] * 2))); tr.append(td); return; }
+    if(e.note){ const td = el('td','nte', e.note); td.colSpan = 4; tr.append(td); return; }
+    const tot = compTotal(c, e.skill), bonus = tot - c.car[CAR_DE[e.skill]] * 2;
+    tr.append(el('td', null, e.skill), el('td','c', bonus ? (bonus > 0 ? '+' : '') + bonus : ''), el('td','c b', String(tot)), el('td','c', String(d20v(tot))));
+  };
+  for(let i = 0; i < Math.max(L.length, R.length); i++){ const tr = el('tr'); cote(L[i], tr); cote(R[i], tr); ts.append(tr); }
+  box.append(ts);
+
+  box.append(el('div','brk'));
+  box.append(fh('Pratiques'));
+  box.append(fnote('Elles se lancent sous la caractéristique de leur geste, fois deux, plus leur bonus, ou sous ta compétence du même geste si elle est plus haute.', 'Ce qui n’a pas de cible hostile ne se lance pas, et une zone fait tester ceux qui sont dedans. Un échec consomme le PC, sauf l’attaque de base.'));
+  box.append(fsm('La Sève, l’eau, la pierre, le vent et la Mue envoient de la matière : la réduction d’armure s’applique. Le feu, l’onde, l’ombre et le sacré traversent les armures.'));
+  const tp = el('table','fx prt'); cols(tp, ['21%','12%','8%','7%','52%']);
+  const hp = el('tr'); ['Pratique','Se lance','Valeur','d20','Ce qu’elle fait'].forEach((h, i) => hp.append(el('th', i > 0 && i < 4 ? 'c' : null, h))); tp.append(hp);
+  c.pratiques.forEach(p => {
+    const v = pratValeur(c, p), tr = el('tr'), td = el('td');
+    td.append(el('b', null, p.n), el('i', null, ' (' + (p.base ? 'de base' : p.banniere ? 'Bannière' : p.pct ? p.pct : p.pc ? p.pc + ' PC' : 'gratuit') + ')'));
+    tr.append(td);
+    if(v.val == null) tr.append(el('td','c', p.j), el('td','c', '–'), el('td','c', '–'));
+    else tr.append(el('td','c', (ABR_JET[v.jet] || v.jet) + (v.par ? ' · ' + v.par : '')), el('td','c b', String(v.val)), el('td','c', String(d20v(v.val))));
+    tr.append(el('td','de', p.d || ''));
+    tp.append(tr);
+  });
+  for(let i = c.pratiques.length; i < 5; i++){ const tr = el('tr'); for(let j = 0; j < 5; j++) tr.append(el('td','vide')); tp.append(tr); }
+  box.append(tp);
+
+  box.append(fh('Armes'));
+  box.append(fnote('', 'Dégâts = dé de l’arme + mod FOR, ou mod DEX pour une arme légère et l’arbalète, moins la réduction d’armure de la cible. Minimum 0. On retire la réduction, puis la contrainte du corps, et on arrondit vers le bas.'));
+  const ta = el('table','fx arm'); cols(ta, ['32%','8%','60%']);
+  const ha = el('tr'); ['Arme','Dé','Notes'].forEach((h, i) => ha.append(el('th', i === 1 ? 'c' : null, h))); ta.append(ha);
+  c.armes.forEach(a => { const tr = el('tr'); tr.append(el('td', null, a.nom), el('td','c b', a.de), el('td','de', a.notes)); ta.append(tr); });
+  for(let i = c.armes.length; i < 4; i++){ const tr = el('tr'); for(let j = 0; j < 3; j++) tr.append(el('td','vide')); ta.append(tr); }
+  box.append(ta);
+  box.append(fsm('Légère d4 · à une main d6 · de guerre d8 · à deux mains d10 · arc court et arc de chasse d6 · arc long d8, et 12 en Force pour le bander · arbalète d8, une action pour recharger · lance ori’ican d8, d10 ou d12 selon les mues. On vise à la Dextérité, on blesse à la Force, sauf l’arme légère et l’arbalète qui blessent à la Dextérité.'));
+
+  box.append(fh('Armure et équipement'));
+  box.append(fnote('Chaque pièce a ses propres chiffres.', 'Les réductions s’additionnent : ta pièce' + (bouclier ? ', ton bouclier' : '') + ' plus ton armure naturelle.' + (c.armure ? ' Ton corps supporte ' + c.armure.charAt(0).toLowerCase() + c.armure.slice(1).replace(/\.$/, '') + '.' : '')));
+  const tq = el('table','fx arm'); cols(tq, ['30%','14%','56%']);
+  const hq = el('tr'); ['Pièce','Réduction','Ce qu’elle coûte, ce qu’elle apporte'].forEach((h, i) => hq.append(el('th', i === 1 ? 'c' : null, h))); tq.append(hq);
+  const pieces = [];
+  if(c.red) pieces.push(['Ton armure naturelle', String(c.red), (c.traits || '').split('·')[0].trim()]);
+  objetsDe(c.id).filter(o => o.porte).forEach(o => pieces.push([o.nom, (o.sorte === 'bouclier' ? '+' : '') + o.red, o.sorte === 'bouclier' ? 'Occupe une main' : o.note]));
+  pieces.forEach(p => { const tr = el('tr'); tr.append(el('td', null, p[0]), el('td','c b', p[1]), el('td','de', p[2] || '')); tq.append(tr); });
+  for(let i = pieces.length; i < 4; i++){ const tr = el('tr'); for(let j = 0; j < 3; j++) tr.append(el('td','vide')); tq.append(tr); }
+  box.append(tq);
+  box.append(fsm('Cuir ou matelassé 1 · cuir clouté ou écailles 2, −10 Discrétion · maille 3, −10 Discrétion et Acrobatie · plates 4, −10 Discrétion et −20 Acrobatie · bouclier +1, occupe une main.'));
+
+  const reste = objetsDe(c.id).filter(o => !o.porte);
+  const ul = el('ul','sac');
+  reste.forEach(o => ul.append(el('li', null, o.nom + (o.n > 1 ? ' ×' + o.n : '') + (o.sorte === 'conso' && o.effet ? ' (' + o.effet.replace(/[\s.]+$/, '') + ')' : ''))));
+  const tsac = el('table','fx'), trs = el('tr');
+  const tdS = el('td','fd'); tdS.style.width = '75%';
+  tdS.append(el('div','lb', 'Le sac'));
+  if(reste.length) tdS.append(ul); else tdS.append(el('div','vl', '–'));
+  const tdB = el('td','fd'); tdB.style.width = '25%';
+  const b = bourseDe(c.id);
+  tdB.append(el('div','lb', 'Bourse · ors et argents'), el('div','big2', b ? texteArgent(b) : '–'));
+  trs.append(tdS, tdB); tsac.append(trs); box.append(tsac);
+
+  if(/cim[ée]ran/i.test(c.peuple)){
+    box.append(el('div','brk'));
+    box.append(fh('La Charge'));
+    box.append(fnote('Une piste à part, à côté de tes PV.', 'Capacité : tes PV maximum, soit ' + c.pvMax + '. Tu portes automatiquement la moitié des dégâts d’un allié à dix pas, réduction déduite. Les soins n’y touchent pas. Au-delà de ta capacité tu passes en morne, et le surplus te rentre dedans en dégâts réels.'));
+    const tch = el('table','fx chg'), rch = el('tr');
+    for(let i = 0; i < 10; i++) rch.append(el('td','vide'));
+    tch.append(rch); box.append(tch);
+    box.append(fsm('Se vider : Darguer, ou la dargue du festin, hors combat, trois convives au minimum. Un Ciméran seul ne se vide pas.'));
+  }
+
+  if(!/cim[ée]ran/i.test(c.peuple)) box.append(el('div','brk'));
+  box.append(fh('Notes'));
+  const tn = el('table','fx'), rn = el('tr'), tdn = el('td','fd notes');
+  const texte = sansMarques(c.texte || '', gensCitables()).trim();
+  const pr = [texte, 'Progression : ' + pointsGagnes(c) + ' points gagnés, ' + pointsDepenses(c) + ' dépensés, ' + pointsRestants(c) + ' à dépenser.'].filter(Boolean).join('\n\n');
+  pr.split('\n').forEach((l, i) => { if(i) tdn.append(el('br')); tdn.append(document.createTextNode(l)); });
+  rn.append(tdn); tn.append(rn); box.append(tn);
+
+  box.append(fh('Aide-mémoire'));
+  const AM = [
+    ['La règle unique', ['**Tu lances sous une valeur.**','Ta valeur, c’est ta caractéristique fois deux, plus ton bonus.','Hors combat d100, en combat d20 sous la même valeur divisée par cinq.','//01 à 05 réussite critique, 96 à 100 échec critique. Au d20 : 1 et 20 naturels.']],
+    ['Ce qui compte, c’est de combien tu rates', ['Marge de 1 à 10, au d20 de 1 à 2 : ça ne marche pas, rien de mauvais.','Marge de 11 à 30, au d20 de 3 à 6 : ça ne marche pas, et ça coûte.','Marge de 31 et plus, au d20 de 7 et plus : la situation empire.','//Rater le jet ne veut pas dire échouer.']],
+    ['Quand l’ennemi attaque', ['Il touche d’office. C’est toi qui lances, une seule réaction par round.','d20 sous Acrobatie divisée par cinq pour esquiver, sous Combat pour parer.','//Réussite : aucun dégât. Échec de moins de 4 : aucun dégât, mais tu n’attaques pas au prochain round. Échec de 4 ou plus : tu prends les dégâts.']],
+    ['Tomber à zéro', ['À 0 PV tu tombes, inconscient, tu ne joues plus.','Un allié peut te stabiliser pendant le combat : un soin, une fiole, un jet de Médecine.','//En groupe, personne ne l’a fait avant la fin du combat : tu meurs. En solo, on tire ce qui t’est arrivé pendant que tu n’étais pas là.']],
+    ['Ce que rend le repos', ['Court, une heure : 1d6 PV et 1d4 PC.','Long, une nuit complète : tous tes PV et tous tes PC.','//Le repos ne rend rien d’autre : ce qu’une Floraison t’a fait ne part pas en dormant.']],
+    ['Progression', ['Les points se gagnent en bouclant des missions. Le Havre annonce combien avant le départ.','Une compétence jusqu’à +40 : 1 point par +1. De +41 à +60 : 2 points. Au-delà : 3 points.','Une Pratique de plus : 10 points, et quelqu’un pour te l’enseigner. Une caractéristique de +1 : 20 points, une fois chacune, plafond 18. +5 PV : 20 points.','//Il n’y a pas de niveaux.']]
+  ];
+  const tam = el('table','fx am');
+  for(let i = 0; i < AM.length; i += 2){
+    const tr = el('tr');
+    [AM[i], AM[i + 1]].forEach(x => {
+      const td = el('td','amc');
+      if(!x){ tr.append(td); return; }
+      td.append(el('div','lb', x[0]));
+      x[1].forEach(l => {
+        if(l.slice(0, 2) === '**') td.append(el('p','amb', l.replace(/\*\*/g, '')));
+        else if(l.slice(0, 2) === '//') td.append(el('p','ami', l.slice(2)));
+        else td.append(el('p', null, l));
+      });
+      tr.append(td);
+    });
+    tam.append(tr);
+  }
+  box.append(tam);
+  return box;
+}
+
+/* ============ la barre de table, les pages, et le démarrage ============
+   Le Registre de la Table, celui des Visages, celui des Marchefleurs et celui des Missions partagent ce code et
    le même fichier : la page ouverte se reconnaît à ce qu'elle contient. */
 
-const PAGE = $('secSeance') ? 'table' : $('progBox') ? 'progression' : $('misBox') ? 'missions' : 'visages';
+const PAGE = $('ficheBox') ? 'fiche' : $('secSeance') ? 'table' : $('progBox') ? 'progression' : $('misBox') ? 'missions' : 'visages';
 let PANNEAU = null;   /* le panneau de la sauvegarde en ligne */
 /* l'onglet se nomme : « Faire parler » ou une fiche ouverte depuis l'autre page viennent ici, sans ouvrir d'onglet de plus */
-try{ window.name = PAGE === 'table' ? ONGLET_TABLE : PAGE === 'progression' ? ONGLET_PROGRESSION : PAGE === 'missions' ? ONGLET_MISSIONS : ONGLET_VISAGES; }catch(e){}
+try{ window.name = PAGE === 'table' ? ONGLET_TABLE : PAGE === 'fiche' ? ONGLET_FICHE : PAGE === 'progression' ? ONGLET_PROGRESSION : PAGE === 'missions' ? ONGLET_MISSIONS : ONGLET_VISAGES; }catch(e){}
 
 function msgTable(txt, ok){
   const m = $('tbMsg'); if(!m) return;
@@ -8281,7 +9808,11 @@ function dessinerTable(){
 
 function dessiner(){
   dessinerTable();
-  if(PAGE === 'table'){
+  /* le sac et la bourse d'avant passent dans le sac en piles, sur toutes les pages : la table en a besoin aussi */
+  planifierMigration();
+  if(PAGE === 'fiche'){
+    dessinerFiche(false);
+  } else if(PAGE === 'table'){
     dessinerSeance(false);
     dessinerPersos();
     if(HAVRE.ouvert) dessinerHavre();
@@ -8415,13 +9946,13 @@ sur('tbEnLigne', () => {
   b.disabled = true; b.textContent = 'Sauvegarde…';
   GH.maintenant().then(r => {
     b.disabled = false; b.textContent = 'Sauvegarder en ligne';
-    msgTable(ghcPhraseSauvegarde(r, PAGE === 'table' ? 'La table' : PAGE === 'progression' ? 'La progression' : PAGE === 'missions' ? 'Les missions' : 'Les fiches et les liens'), r.ok);
+    msgTable(ghcPhraseSauvegarde(r, PAGE === 'table' ? 'La table' : PAGE === 'fiche' ? 'Les fiches, les sacs et les bourses' : PAGE === 'progression' ? 'La progression' : PAGE === 'missions' ? 'Les missions' : 'Les fiches et les liens'), r.ok);
     dessinerTable();
   });
 });
 function etatGithub(){
   if(!GH.actif && !GH.erreur) return null;
-  return {nom:PAGE === 'table' ? 'La table' : PAGE === 'progression' ? 'La table et la progression' : PAGE === 'missions' ? 'La table et ses missions' : 'La table et ses PNJ', texte: GH.actif ? 'dernier échange ' + ilYA(GH.dernier) : 'à l’arrêt', erreur:GH.erreur};
+  return {nom:PAGE === 'table' ? 'La table' : PAGE === 'fiche' ? 'La table et ses fiches' : PAGE === 'progression' ? 'La table et la progression' : PAGE === 'missions' ? 'La table et ses missions' : 'La table et ses PNJ', texte: GH.actif ? 'dernier échange ' + ilYA(GH.dernier) : 'à l’arrêt', erreur:GH.erreur};
 }
 PANNEAU = ghcPanneau($('ghPlace'), {
   table:true,
@@ -8475,6 +10006,20 @@ function suivreAncre(){
       $('secSeance').scrollIntoView({block:'start'});
       fait = true;
     }
+  } else if(PAGE === 'fiche'){
+    /* « Sa fiche », depuis la carte d'un personnage : pj=ID, et parfois l'onglet (vue=progression) */
+    if(h === 'monde'){ $('secMonde').scrollIntoView({block:'start'}); fait = true; }
+    else {
+      const q = {};
+      h.split('&').forEach(x => { const i = x.indexOf('='); if(i > 0) q[x.slice(0, i)] = x.slice(i + 1); });
+      if(q.vue && VUES_FICHE.some(v => v.k === q.vue)){ FICHE.vue = q.vue; fait = true; }
+      if(q.pj){
+        /* pas encore là : la table du dépôt n'est peut-être pas encore lue, il sera choisi à son arrivée */
+        if(perso(q.pj)) FICHE.perso = q.pj; else FICHE.attendu = q.pj;
+        fait = true;
+      }
+      if(fait){ FICHE.ed = ''; FICHE.don = ''; FICHE.arme = {}; garderChoixFiche(); dessinerFiche(true); $('secFiche').scrollIntoView({block:'start'}); }
+    }
   } else if(PAGE === 'progression'){
     /* « Sa progression », depuis la carte d'un personnage */
     if(h.indexOf('pj=') === 0 && perso(h.slice(3))){ PROG_PERSO = h.slice(3); dessinerProg(true); fait = true; }
@@ -8509,9 +10054,12 @@ window.addEventListener('hashchange', suivreAncre);
 
 /* ---------- démarrage ---------- */
 chargerLocal();
+if(PAGE === 'fiche') lireChoixFiche();   /* le personnage et l'onglet de la dernière fois, dans ce navigateur */
 const parGithub = ghReprendre();
 dessiner();
-if(!parGithub) reprendreFichier();
+/* le sac et la bourse d'avant attendent la première lecture de la table partagée (inventaire.js) */
+if(!parGithub){ const fait = () => { DEPART_FAIT = true; planifierMigration(); }; reprendreFichier().then(fait, fait); }
+else DEPART_FAIT = true;
 /* une rencontre qui attend : on la pose après la première lecture du dépôt, dans la séance la plus récente */
 if(PAGE === 'missions') chargerBestiaire();   /* les familles maison du dépôt, pour la rencontre prévue */
 if(PAGE === 'table'){

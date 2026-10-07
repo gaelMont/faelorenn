@@ -1351,7 +1351,7 @@ function regEntreeBanniere(s){ return {n:s.n, d:s.d, j:'aucun jet', pc:0, pct:''
 function regVuePratiques(){
   const L = regLivre(), out = [], index = {};
   Object.keys(L.pratiques).forEach(dom => Object.keys(L.pratiques[dom]).forEach(grp => {
-    const liste = {dom:dom, grp:grp, banniere:regEstBanniere(dom), entrees:[], retirees:[], caster:''};
+    const liste = {dom:dom, grp:grp, banniere:regEstBanniere(dom), entrees:[], retirees:[], caster:'', melange:false};
     out.push(liste); index[dom + '|' + grp] = liste;
     L.pratiques[dom][grp].forEach(e => {
       const livre = regSnap(e), id = regIdPrat(dom, grp, e.n), rec = regDe(REG.pratiques, id);
@@ -1385,9 +1385,10 @@ function regVuePratiques(){
         if(e.livre) e.retouche = regCanon(regSnap(e)) !== regCanon(e.du);
       });
     }
+    /* la caractéristique de la liste : celle du livre, ou celle que porte la plupart de ses Pratiques. Chacune garde
+       pourtant la sienne, et une retouche peut les mêler : la liste le dit alors, et chaque Pratique se lance sous la sienne */
     l.caster = regCaster(l.entrees);
-    /* une liste, une caractéristique : tout ce qui s'y lance se lance sous elle */
-    l.entrees.forEach(e => { if(REG_JETS_CAR.indexOf(e.j) >= 0) e.j = l.caster; });
+    l.melange = l.entrees.some(e => REG_JETS_CAR.indexOf(e.j) >= 0 && e.j !== l.caster);
   });
   return out;
 }
@@ -10837,7 +10838,7 @@ function ficheImprimee(c){
 
   box.append(el('div','brk'));
   box.append(fh('Pratiques'));
-  box.append(fnote('Elles se lancent sous la caractéristique de leur liste, fois deux, plus leur bonus, ou sous ta compétence de la même caractéristique si elle est plus haute.', 'Ce qui n’a pas de cible hostile ne se lance pas, et une zone fait tester ceux qui sont dedans. Un échec consomme le PC, sauf l’attaque de base.'));
+  box.append(fnote('Elles se lancent chacune sous sa caractéristique, celle qui est écrite à côté d’elle, fois deux, plus leur bonus, ou sous ta compétence de la même caractéristique si elle est plus haute.', 'Ce qui n’a pas de cible hostile ne se lance pas, et une zone fait tester ceux qui sont dedans. Un échec consomme le PC, sauf l’attaque de base.'));
   box.append(fsm('La Sève, l’eau, la pierre, le vent et la Mue envoient de la matière : la réduction d’armure s’applique. Le feu, l’onde, l’ombre et le sacré traversent les armures.'));
   const tp = el('table','fx prt'); cols(tp, ['21%','12%','8%','7%','52%']);
   const hp = el('tr'); ['Pratique','Se lance','Valeur','d20','Ce qu’elle fait'].forEach((h, i) => hp.append(el('th', i > 0 && i < 4 ? 'c' : null, h))); tp.append(hp);

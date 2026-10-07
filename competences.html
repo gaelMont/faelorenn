@@ -437,7 +437,7 @@ function regEntreeBanniere(s){ return {n:s.n, d:s.d, j:'aucun jet', pc:0, pct:''
 function regVuePratiques(){
   const L = regLivre(), out = [], index = {};
   Object.keys(L.pratiques).forEach(dom => Object.keys(L.pratiques[dom]).forEach(grp => {
-    const liste = {dom:dom, grp:grp, banniere:regEstBanniere(dom), entrees:[], retirees:[], caster:''};
+    const liste = {dom:dom, grp:grp, banniere:regEstBanniere(dom), entrees:[], retirees:[], caster:'', melange:false};
     out.push(liste); index[dom + '|' + grp] = liste;
     L.pratiques[dom][grp].forEach(e => {
       const livre = regSnap(e), id = regIdPrat(dom, grp, e.n), rec = regDe(REG.pratiques, id);
@@ -471,9 +471,10 @@ function regVuePratiques(){
         if(e.livre) e.retouche = regCanon(regSnap(e)) !== regCanon(e.du);
       });
     }
+    /* la caractéristique de la liste : celle du livre, ou celle que porte la plupart de ses Pratiques. Chacune garde
+       pourtant la sienne, et une retouche peut les mêler : la liste le dit alors, et chaque Pratique se lance sous la sienne */
     l.caster = regCaster(l.entrees);
-    /* une liste, une caractéristique : tout ce qui s'y lance se lance sous elle */
-    l.entrees.forEach(e => { if(REG_JETS_CAR.indexOf(e.j) >= 0) e.j = l.caster; });
+    l.melange = l.entrees.some(e => REG_JETS_CAR.indexOf(e.j) >= 0 && e.j !== l.caster);
   });
   return out;
 }
@@ -877,12 +878,15 @@ function selectCaster(l){
   if(l.banniere) return w;
   if(!l.caster){ w.append(el('span', 'aucun', 'Aucune ne se lance : ceux qu’elles touchent testent.')); return w; }
   const id = 'car-' + idListe(l);
-  const lab = el('label', null, 'Se lance sous la'); lab.htmlFor = id;
+  /* mêlées : ce choix les remet toutes sous la même, et chaque Pratique garde sinon la sienne */
+  const lab = el('label', null, l.melange ? 'Tout mettre sous la' : 'Se lance sous la'); lab.htmlFor = id;
   const s = el('select'); s.id = id; s.dataset.dom = l.dom; s.dataset.grp = l.grp;
+  if(l.melange) s.add(new Option('chacune la sienne', ''));
   REG_JETS_CAR.forEach(c => s.add(new Option(c, c)));
-  s.value = l.caster;
-  s.onchange = () => { if(regChangerCaster(l.dom, l.grp, s.value)){ UI.ouvert = null; dessiner(); sauverBientot(); } };
+  s.value = l.melange ? '' : l.caster;
+  s.onchange = () => { if(s.value && regChangerCaster(l.dom, l.grp, s.value)){ UI.ouvert = null; dessiner(); sauverBientot(); } };
   w.append(lab, s);
+  if(l.melange) w.append(el('span', 'aucun', 'Chaque Pratique se lance sous la sienne, écrite sur sa ligne.'));
   return w;
 }
 function ligneEntree(l, e){
@@ -926,13 +930,13 @@ function editeurEntree(l, e, nouveau){
     champ(l2, 'ed-pct', 'Coût particulier, facultatif', pct, 'S’il est écrit, il remplace le chiffre sur les fiches.');
     w.append(l2);
     j = el('select');
-    /* une liste a une seule caractéristique de lanceur : seule celle-là est proposée. Une liste où rien ne se lançait en choisit une */
-    (l.caster ? [l.caster] : REG_JETS_CAR).forEach(c => j.add(new Option('Se lance sous la ' + c, c)));
+    /* chaque Pratique se lance sous la caractéristique qu'on lui donne ; le choix en tête de la liste les met toutes sous la même */
+    REG_JETS_CAR.forEach(c => j.add(new Option('Se lance sous la ' + c, c)));
     REG_JETS_SANS.forEach(c => j.add(new Option(c.charAt(0).toUpperCase() + c.slice(1), c)));
     j.value = init.j;
     champ(w, 'ed-j', 'Comment elle se lance', j, l.caster
-      ? 'La liste se lance sous la ' + l.caster + ' : pour la changer, c’est le choix en tête de la liste.'
-      : 'Aucune Pratique de cette liste ne se lançait. Si celle-ci se lance, sa caractéristique devient celle de la liste.');
+      ? 'Le reste de la liste se lance sous la ' + l.caster + '. En donner une autre à celle-ci est permis : le choix en tête de la liste les remet toutes sous la même.'
+      : 'Aucune Pratique de cette liste ne se lançait. Si celle-ci se lance, la liste prend sa caractéristique.');
   }
   const d = zone(init.d, 4); d.maxLength = 1200;
   champ(w, 'ed-d', ban ? 'Ce qu’elle permet' : 'Ce qu’elle fait', d);

@@ -510,7 +510,7 @@ function regEntreeBanniere(s){ return {n:s.n, d:s.d, j:'aucun jet', pc:0, pct:''
 function regVuePratiques(){
   const L = regLivre(), out = [], index = {};
   Object.keys(L.pratiques).forEach(dom => Object.keys(L.pratiques[dom]).forEach(grp => {
-    const liste = {dom:dom, grp:grp, banniere:regEstBanniere(dom), entrees:[], retirees:[], caster:''};
+    const liste = {dom:dom, grp:grp, banniere:regEstBanniere(dom), entrees:[], retirees:[], caster:'', melange:false};
     out.push(liste); index[dom + '|' + grp] = liste;
     L.pratiques[dom][grp].forEach(e => {
       const livre = regSnap(e), id = regIdPrat(dom, grp, e.n), rec = regDe(REG.pratiques, id);
@@ -544,9 +544,10 @@ function regVuePratiques(){
         if(e.livre) e.retouche = regCanon(regSnap(e)) !== regCanon(e.du);
       });
     }
+    /* la caractéristique de la liste : celle du livre, ou celle que porte la plupart de ses Pratiques. Chacune garde
+       pourtant la sienne, et une retouche peut les mêler : la liste le dit alors, et chaque Pratique se lance sous la sienne */
     l.caster = regCaster(l.entrees);
-    /* une liste, une caractéristique : tout ce qui s'y lance se lance sous elle */
-    l.entrees.forEach(e => { if(REG_JETS_CAR.indexOf(e.j) >= 0) e.j = l.caster; });
+    l.melange = l.entrees.some(e => REG_JETS_CAR.indexOf(e.j) >= 0 && e.j !== l.caster);
   });
   return out;
 }
@@ -1020,10 +1021,19 @@ function drawPrat(){
     box.append(Object.assign(el('h3', null, 'Tes trois Pratiques'),
       {style:'font-family:Spectral,serif;font-style:italic;color:var(--sage);margin:14px 0 2px;font-size:14px'}));
   }
+  /* une liste dont les Pratiques ne se lancent pas toutes sous la même (une retouche du Registre) le dit ainsi */
+  const jets = [];
+  const noterJet = it => { if(it && ['Force', 'Dextérité', 'Contenance'].indexOf(it.j) >= 0 && jets.indexOf(it.j) < 0) jets.push(it.j); };
+  noterJet(base);
+  groups.forEach(g => g.items.forEach(it => noterJet(it)));
   $('pratHint').textContent = 'Trois à la création, plus l’attaque de base de ta liste, donnée et gratuite. Bonus +' + bonus +
     (S.peuple === 'Humains' ? ' (+20 de base, +10 par ton école).' : ' (+20 de base, +20 par ton domaine).') +
-    (base && ['Force', 'Dextérité', 'Contenance'].indexOf(base.j) >= 0
+    (jets.length > 1
+      ? ' Ici, chaque Pratique se lance sous la sienne, ou sous ta compétence de la même caractéristique si elle est plus haute.'
+      : base && ['Force', 'Dextérité', 'Contenance'].indexOf(base.j) >= 0
       ? ' Ta liste se lance sous la ' + base.j + (GESTE[base.j] ? ', ou sous ta compétence ' + GESTE[base.j] + ' si elle est plus haute' : '') + '.'
+      : jets.length === 1
+      ? ' Ta liste se lance sous la ' + jets[0] + (GESTE[jets[0]] ? ', ou sous ta compétence ' + GESTE[jets[0]] + ' si elle est plus haute' : '') + '.'
       : ' Chaque liste se lance sous sa caractéristique.') +
     ' La valeur et le d20 sont écrits à côté.';
   groups.forEach(g => {
@@ -1378,7 +1388,7 @@ function drawFiche(){
   box.append(el('div','brk'));
   box.append(fh('Pratiques'));
   box.append(fnote('L\u2019attaque de base d\u2019office, plus trois Pratiques choisies dans la liste de ton domaine.',
-    'Une Pratique démarre à +20, ton peuple ajoute +20 sur son domaine, l\u2019école d\u2019un humain +10. Elle se lance sous la caractéristique de sa liste, fois deux, plus ce bonus, ou sous ta compétence de la même caractéristique si elle est plus haute. Ce qui n\u2019a pas de cible hostile ne se lance pas, et une zone fait tester ceux qui sont dedans. Un échec consomme le PC, sauf l\u2019attaque de base, qui ne coûte rien et se contente de rater.'));
+    'Une Pratique démarre à +20, ton peuple ajoute +20 sur son domaine, l\u2019école d\u2019un humain +10. Elle se lance sous sa caractéristique, celle qui est écrite à côté d’elle, fois deux, plus ce bonus, ou sous ta compétence de la même caractéristique si elle est plus haute. Ce qui n\u2019a pas de cible hostile ne se lance pas, et une zone fait tester ceux qui sont dedans. Un échec consomme le PC, sauf l\u2019attaque de base, qui ne coûte rien et se contente de rater.'));
   box.append(fsm('La Sève, l\u2019eau, la pierre, le vent et la Mue envoient de la matière : la réduction d\u2019armure s\u2019applique.', 'Le feu, l\u2019onde, l\u2019ombre et le sacré traversent les armures.'));
   const tp = el('table','fx prt'); cols(tp, ['21%','12%','8%','7%','52%']);
   const hp = el('tr');
@@ -1764,7 +1774,7 @@ function docxCorps(){
   B.push(wh2('Pratiques'));
   B.push(wnote([
     wr('L’attaque de base d’office, plus trois Pratiques choisies dans la liste de ton domaine. ', {sz:16, b:true, c:WC.h2}),
-    wr('Une Pratique démarre à +20, ton peuple ajoute +20 sur son domaine, l’école d’un humain +10. Elle se lance sous la caractéristique de sa liste, fois deux, plus ce bonus, ou sous ta compétence de la même caractéristique si elle est plus haute. Ce qui n’a pas de cible hostile ne se lance pas, et une zone fait tester ceux qui sont dedans. Un échec consomme le PC, sauf l’attaque de base, qui ne coûte rien et se contente de rater.', {sz:16, c:WC.lbl})
+    wr('Une Pratique démarre à +20, ton peuple ajoute +20 sur son domaine, l’école d’un humain +10. Elle se lance sous sa caractéristique, celle qui est écrite à côté d’elle, fois deux, plus ce bonus, ou sous ta compétence de la même caractéristique si elle est plus haute. Ce qui n’a pas de cible hostile ne se lance pas, et une zone fait tester ceux qui sont dedans. Un échec consomme le PC, sauf l’attaque de base, qui ne coûte rien et se contente de rater.', {sz:16, c:WC.lbl})
   ]));
   B.push(wp([
     wr('La Sève, l’eau, la pierre, le vent et la Mue envoient de la matière : la réduction d’armure s’applique. ', {sz:14, c:WC.lbl}),

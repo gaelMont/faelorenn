@@ -3,7 +3,7 @@
 Six outils pour jouer à Faelorenn, dans un navigateur :
 
 - `missions.html` : le Registre des Missions. Le tableau du Havre : les missions, leur paie et leurs points, un clic pour lancer la mission dans la table, un éditeur pour écrire les siennes, le générateur de mission du livre.
-- `table.html` : le Registre de la Table. La partie en cours : compte rendu des séances avec les jets et les dégâts, l'oracle (oui ou non, un visage connu), combat et butin suivis à côté du récit, personnages. À plusieurs.
+- `table.html` : le Registre de la Table. La partie en cours : compte rendu des séances avec les jets et les dégâts, l'oracle (oui ou non, un visage connu), combat et butin suivis à côté du récit, personnages. À plusieurs, et en plusieurs campagnes à la fois dans le même monde : une liste déroulante choisit celle qu'on joue, une table jouée à part s'y ajoute comme une campagne de plus.
 - `pnj.html` : le Registre des Visages. Fiches de PNJ, leurs liens entre eux et avec les personnages, réseau, histoire des liens.
 - `marchefleurs.html` : le Registre des Marchefleurs. La fiche de chaque personnage : ce qu'il porte, son sac, sa bourse, le marché du livre, sa progression, son histoire. L'impression au format du Word. Un personnage qu'on arrête de jouer y entre dans le monde comme PNJ.
 - `createur.html` : le Registre du Havre. Création de personnage, liste de tes personnages, impression, export Word, export .json pour la Table.

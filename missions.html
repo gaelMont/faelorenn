@@ -62,6 +62,15 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-vis
 .table{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:flex-end}
 .table>div{flex:1 1 200px;min-width:0}
 .etatsync{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);margin-top:10px;flex-wrap:wrap}
+/* les campagnes : la liste dans la barre de table, ses boutons dessous ; dans les autres pages, une ligne sous l'en-tête */
+.campagnes .acts{margin-top:8px}
+.campagnes .cresume{margin:8px 0 0}
+.cform{margin-top:10px;max-width:520px}
+.cform .acts{margin-top:8px}
+.cbarre{display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap}
+.cbarre[hidden]{display:none}
+.cbarre .lab{margin:0}
+.cbarre select{min-width:180px;font-size:13.5px;padding:5px 7px}
 .pastille{width:8px;height:8px;border-radius:50%;background:var(--muted);flex:0 0 auto}
 .pastille.on{background:var(--sage)}
 .pastille.off{background:var(--rust)}
@@ -563,6 +572,8 @@ svg.reseau:active{cursor:grabbing}
 .ovisage{display:flex;flex-direction:column;gap:6px}
 .ovisage .lab{margin:0}
 .ovisage>.mini{margin:0}
+/* l'aide change de longueur quand on quitte le champ du lieu : deux lignes de place, pour que le bouton ne glisse pas sous le clic */
+.ovisage>.oaide{min-height:3em}
 .oseuils summary{cursor:pointer;font-size:13px;color:var(--forest)}
 .oseuils>.mini{margin:6px 0}
 .oligne{display:flex;flex-direction:column;gap:3px;margin-top:8px}
@@ -838,6 +849,7 @@ svg.reseau:active{cursor:grabbing}
     <a href="pnj.html" target="faelorenn-visages">Les PNJ, dans le Registre des Visages</a>
   </nav>
   <div class="etatsync"><span class="pastille" id="tbPastille"></span><span id="tbEtat"></span></div>
+  <div class="cbarre noprint" id="cbarre" hidden><label class="lab" for="tbCampagne">Campagne</label><select id="tbCampagne"></select></div>
 </header>
 
 <section id="secTableau">
@@ -1125,13 +1137,15 @@ const CLE_MOI = 'faelorenn.table.moi';
 const MAX_JETS = 400;
 
 let T = videTable();
-const MOI = {joueur:'', perso:'', seance:'', seanceFixee:false, mode:'d100', vuePnj:'fiches', des:'site'};
+/* campagne : celle que ce navigateur suit. Chacun la sienne : l'un joue la première, l'autre la deuxième */
+const MOI = {joueur:'', perso:'', seance:'', seanceFixee:false, campagne:'', mode:'d100', vuePnj:'fiches', des:'site'};
 const SYNC = {poignee:null, nom:'', vu:0, dernier:0, etat:'local', erreur:'', ecrit:null, boucle:null};
 
-function videTable(){ return {format:'faelorenn-table', version:1, nom:'', maj:0, personnages:{}, journal:{}, blocs:{}, pnj:{}, liens:{}, positions:{}, rencontres:{}, adversaires:{}, missions:{}, objets:{}, argent:{}, oracle:null, jets:[], viderAvant:0}; }
+function videTable(){ return {format:'faelorenn-table', version:1, nom:'', maj:0, campagnes:{}, personnages:{}, journal:{}, blocs:{}, pnj:{}, liens:{}, positions:{}, rencontres:{}, adversaires:{}, missions:{}, objets:{}, argent:{}, oracle:null, jets:[], viderAvant:0}; }
 /* objets : ce que chacun porte dans son sac, pièce par pièce. argent : chaque pièce qui entre ou sort de sa bourse.
-   Chacun sa ligne, datée : deux joueurs qui achètent en même temps, les deux achats comptent */
-const CLES_FUSION = ['personnages','journal','blocs','pnj','liens','positions','rencontres','adversaires','missions','objets','argent'];
+   Chacun sa ligne, datée : deux joueurs qui achètent en même temps, les deux achats comptent.
+   campagnes : plusieurs parties dans le même monde, chacune avec sa compagnie et ses séances */
+const CLES_FUSION = ['campagnes','personnages','journal','blocs','pnj','liens','positions','rencontres','adversaires','missions','objets','argent'];
 function nouvelId(p){ return (p || 'x') + '-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 6); }
 /* un nom donne son identifiant : deux joueurs qui créent « Nahya » chacun de leur côté créent la même fiche */
 function slug(s){ return String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'x'; }
@@ -1255,7 +1269,7 @@ function videPerso(){
   const car = {}, comp = {};
   CARS.forEach(c => car[c] = 8);
   ALLSKILLS.forEach(o => comp[o.s] = 16);
-  return {id:nouvelId('p'), maj:0, joueur:'', nom:'', peuple:'', voie:'', sub:{},
+  return {id:nouvelId('p'), maj:0, joueur:'', nom:'', peuple:'', voie:'', sub:{}, campagne:'', campagneT:0,
     car:car, comp:comp, bonusPratique:40, domaine:'', pratiques:[],
     pvMax:8, pv:8, pcMax:4, pcc:4, red:0, armes:[], sac:[], bourse:'', texte:'',
     traits:'', contrainte:'', armure:'', peupleComp:'',
@@ -1273,6 +1287,9 @@ function normPerso(o){
   /* entré dans le monde : il n'est plus à la table, sa fiche de PNJ le continue dans le Registre des Visages */
   c.monde = txt(o.monde);
   c.mondeT = num(o.mondeT, 0);
+  /* la campagne où il joue, avec sa propre date : sans elle (une fiche d'avant les campagnes), il est de la première */
+  c.campagne = txt(o.campagne);
+  c.campagneT = num(o.campagneT, 0);
   ['joueur','nom','peuple','voie','domaine','bourse','texte','traits','contrainte','armure','peupleComp'].forEach(k => c[k] = txt(o[k]));
   c.sub = o.sub && typeof o.sub === 'object' ? o.sub : {};
   CARS.forEach(x => c.car[x] = num(o.car && o.car[x], 8));
@@ -1513,6 +1530,58 @@ function normLien(o){
       depuis:txtOu(h.depuis), jusqua:txtOu(h.jusqua || h.seance), raison:txtOu(h.raison), t:+h.t || 0})) : []};
 }
 
+/* ---------- les campagnes ----------
+   Plusieurs parties dans le même monde, sans en arrêter une pour en lancer une autre. Chacune a sa compagnie, ses séances
+   et ses missions en cours ; le monde est commun : les PNJ et leurs liens, le tableau du Havre, le bestiaire.
+   Un personnage et une séance portent la campagne où ils sont, avec une date à eux. Sans campagne (la table d'avant, ou
+   une version qui ne les connaît pas), ils sont de la première. */
+const ID_DEFAUT = 'c-principale';
+function normCampagne(o){
+  o = o && typeof o === 'object' ? o : {};
+  return {id:txtOu(o.id) || nouvelId('c'), maj:+o.maj || 0, supprime:!!o.supprime,
+    nom:txtOu(o.nom).replace(/\s+/g, ' ').trim().slice(0, 80) || 'Sans nom', majNom:+o.majNom || 0,
+    creee:+o.creee || 0, auteur:txtOu(o.auteur).slice(0, 80),
+    /* en cours, ou terminée : ses personnages sont alors entrés dans le monde */
+    etat: o.etat === 'finie' ? 'finie' : 'cours', majEtat:+o.majEtat || 0, finie:+o.finie || 0,
+    /* les jets d'avant cette date sont vidés, dans cette campagne seulement */
+    jetsAvant:+o.jetsAvant || 0};
+}
+const parCreation = (a, b) => ((+a.creee || 0) - (+b.creee || 0)) || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
+/* la première campagne : celle d'avant, sinon la plus ancienne. C'est là que va tout ce qui n'a pas de campagne */
+function campagneDefautDans(t){
+  const l = Object.keys((t && t.campagnes) || {}).map(k => t.campagnes[k]).filter(c => c && !c.supprime);
+  return l.find(c => c.id === ID_DEFAUT) || l.sort(parCreation)[0] || null;
+}
+/* la campagne d'une fiche ou d'une séance : la sienne si elle existe encore, la première sinon ; '' s'il n'y en a aucune */
+function campagneEffDans(t, id, def){
+  const c = id && t.campagnes && t.campagnes[id];
+  if(c && !c.supprime) return id;
+  const d = def === undefined ? campagneDefautDans(t) : def;
+  return d ? d.id : '';
+}
+/* la campagne d'un personnage ou d'une séance a sa propre date : la plus récente gagne, et « aucune » (une version
+   d'avant qui a retouché la fiche sans la connaître) ne défait pas une campagne */
+function fondreCampagneChamp(garde, autre){
+  const a = +garde.campagneT || 0, b = +autre.campagneT || 0, ca = garde.campagne || '', cb = autre.campagne || '';
+  let c = ca, t = a;
+  if(b > a){ c = cb; t = b; }
+  else if(b === a && ca !== cb && (!ca || (cb && cb < ca))){ c = cb; t = b; }
+  if(c === ca && t === a) return garde;
+  return Object.assign({}, garde, {campagne:c, campagneT:t});
+}
+/* le nom, l'état et la purge des jets d'une campagne ont chacun leur date : un nom changé ici ne défait pas
+   une campagne close ailleurs */
+function fondreCampagneRec(garde, autre){
+  const x = Object.assign({}, garde);
+  const tn = +garde.majNom || 0, un = +autre.majNom || 0;
+  if(un > tn || (un === tn && autre.nom < garde.nom)){ x.nom = autre.nom; x.majNom = un; }
+  const te = +garde.majEtat || 0, ue = +autre.majEtat || 0;
+  if(ue > te || (ue === te && autre.etat < garde.etat)){ x.etat = autre.etat; x.majEtat = ue; x.finie = autre.finie; }
+  x.jetsAvant = Math.max(+garde.jetsAvant || 0, +autre.jetsAvant || 0);
+  x.creee = Math.min(+garde.creee || 0, +autre.creee || 0);
+  return x;
+}
+
 /* ---------- ce que la fiche donne ---------- */
 function carD20(c, car){ return d20v(c.car[car] * 2); }
 function compTotal(c, s){ return c.comp[s] != null ? c.comp[s] : c.car[CAR_DE[s]] * 2; }
@@ -1548,18 +1617,29 @@ function fusionner(a, b){
       /* le lieu d'une séance a sa propre date : un titre changé ailleurs au même moment ne l'efface pas */
       if(k === 'journal' && (autre.majLieu || 0) > (garde.majLieu || 0)) garde = Object.assign({}, garde, {lieu:autre.lieu || '', majLieu:autre.majLieu});
       if(k === 'missions') garde = fondreMission(garde, autre);
+      if(k === 'campagnes') garde = fondreCampagneRec(garde, autre);
+      /* la campagne d'un personnage ou d'une séance a sa propre date : une retouche faite ailleurs ne la change pas */
+      if(k === 'personnages' || k === 'journal') garde = fondreCampagneChamp(garde, autre);
       m[id] = garde;
     });
     out[k] = m;
   });
   /* les seuils de l'oracle : les plus récents */
   out.oracle = a.oracle && b.oracle ? ((b.oracle.maj || 0) > (a.oracle.maj || 0) ? b.oracle : a.oracle) : (a.oracle || b.oracle || null);
-  /* un historique vidé l'est chez tout le monde : ce qui est plus vieux que le coup de balai ne revient pas */
+  /* un historique vidé l'est chez tout le monde : ce qui est plus vieux que le coup de balai ne revient pas.
+     Chaque campagne a le sien : vider les jets de l'une ne touche pas ceux de l'autre */
   out.viderAvant = Math.max(a.viderAvant || 0, b.viderAvant || 0);
-  const vus = {}, jets = [];
-  (a.jets || []).concat(b.jets || []).forEach(j => { if(j && j.id && !vus[j.id] && (j.t || 0) > out.viderAvant){ vus[j.id] = 1; jets.push(j); } });
+  const def = campagneDefautDans(out);
+  const camp = j => campagneEffDans(out, j.campagne, def);
+  const avantDe = j => { const c = out.campagnes[camp(j)]; return c ? +c.jetsAvant || 0 : 0; };
+  /* le même jet des deux côtés : celui qui dit sa campagne l'emporte (une version d'avant les campagnes recopie les jets sans elle) */
+  const pris = {};
+  (a.jets || []).concat(b.jets || []).forEach(j => { if(!j || !j.id) return; const p = pris[j.id]; if(!p || (!p.campagne && j.campagne)) pris[j.id] = j; });
+  const jets = Object.keys(pris).map(k => pris[k]).filter(j => (j.t || 0) > out.viderAvant && (j.t || 0) > avantDe(j));
   jets.sort((x, y) => (x.t || 0) - (y.t || 0));
-  out.jets = jets.slice(-MAX_JETS);
+  /* quatre cents par campagne : une partie bavarde ne chasse pas l'historique d'une autre */
+  const compte = {};
+  out.jets = jets.reverse().filter(j => { const c = camp(j); compte[c] = (compte[c] || 0) + 1; return compte[c] <= MAX_JETS; }).reverse();
   return out;
 }
 function normTable(o){
@@ -1568,6 +1648,7 @@ function normTable(o){
   t.nom = typeof o.nom === 'string' ? o.nom : '';
   t.maj = +o.maj || 0;
   t.viderAvant = +o.viderAvant || 0;
+  Object.keys(o.campagnes || {}).forEach(id => { const c = normCampagne(o.campagnes[id]); c.id = id; t.campagnes[id] = c; });
   Object.keys(o.personnages || {}).forEach(id => {
     const c = normPerso(o.personnages[id]);
     c.id = id;
@@ -1578,7 +1659,9 @@ function normTable(o){
     t.journal[id] = {id:id, maj:+e.maj || 0, supprime:!!e.supprime, seance:String(e.seance == null ? '' : e.seance),
       date:String(e.date || ''), titre:String(e.titre || ''), texte:String(e.texte || ''), auteur:String(e.auteur || ''),
       /* où l'on est, pour l'oracle : « Un visage connu ? ». Il a sa propre date */
-      lieu:String(e.lieu || '').slice(0, 160), majLieu:+e.majLieu || 0};
+      lieu:String(e.lieu || '').slice(0, 160), majLieu:+e.majLieu || 0,
+      /* la campagne dont c'est la séance, avec sa propre date */
+      campagne:String(e.campagne || ''), campagneT:+e.campagneT || 0};
   });
   Object.keys(o.blocs || {}).forEach(id => { const b = normBloc(o.blocs[id]); b.id = id; t.blocs[id] = b; });
   Object.keys(o.pnj || {}).forEach(id => { const p = normPnj(o.pnj[id]); p.id = id; t.pnj[id] = p; });
@@ -1603,8 +1686,12 @@ function normTable(o){
   t.jets = (Array.isArray(o.jets) ? o.jets : []).filter(j => j && j.id).map(j => ({
     id:String(j.id), t:+j.t || 0, auteur:String(j.auteur || ''), perso:String(j.perso || ''),
     quoi:String(j.quoi || ''), formule:String(j.formule || ''), jet:+j.jet || 0, seuil:j.seuil == null ? null : +j.seuil,
-    mode:String(j.mode || 'd20'), reussite:!!j.reussite, note:String(j.note || ''), main:!!j.main
-  })).slice(-MAX_JETS);
+    mode:String(j.mode || 'd20'), reussite:!!j.reussite, note:String(j.note || ''), main:!!j.main,
+    campagne:String(j.campagne || '')
+  }));
+  /* quatre cents par campagne, comme à la fusion : le fichier lu n'est pas tronqué plus court que la table d'ici */
+  const defJ = campagneDefautDans(t), compteJ = {};
+  t.jets = t.jets.reverse().filter(j => { const c = campagneEffDans(t, j.campagne, defJ); compteJ[c] = (compteJ[c] || 0) + 1; return compteJ[c] <= MAX_JETS; }).reverse();
   return t;
 }
 
@@ -1800,13 +1887,17 @@ function importerTable(txt){
   if(!o || typeof o !== 'object') return {ok:false, msg:'Ce fichier n’est pas lisible.'};
   if(o.format === 'faelorenn-personnage'){
     const c = depuisFiche(o);
-    const deja = persos().find(x => (x.nom || '').trim().toLowerCase() === (c.nom || '').trim().toLowerCase());
-    if(deja) return {ok:false, msg:'« ' + (c.nom || 'Sans nom') + ' » est déjà à la table. Pour le remplacer, retire d’abord l’ancien.'};
+    const deja = persoALaTable(c.nom);
+    if(deja) return {ok:false, msg:'« ' + (c.nom || 'Sans nom') + ' » est déjà ' + dejaALaTable(deja) + '. Pour le remplacer, retire d’abord l’ancien.'};
     c.id = idLibre('p-' + slug(c.nom), T.personnages);
+    rattacher(c);
     changer(() => majPerso(c));
-    return {ok:true, msg:'« ' + (c.nom || 'Sans nom') + ' » est entré dans la table.'};
+    return {ok:true, msg:'« ' + (c.nom || 'Sans nom') + ' » est entré dans la table' + (plusieursCampagnes() ? ' de « ' + nomCampagne(idCourante()) + ' »' : '') + '.'};
   }
   if(o.format !== 'faelorenn-table') return {ok:false, msg:'Ce fichier n’est ni une table ni une fiche Faelorenn.'};
+  /* une table jouée à part a ses propres « séance 1 » : les fondre telles quelles mélangerait deux parties */
+  const homonymes = seancesHomonymes(normTable(o));
+  if(homonymes.length) return {ok:false, msg:'Ce fichier a ses propres séances : sa « séance ' + (T.journal[homonymes[0]].seance || '?') + ' » n’est pas celle d’ici, elle n’a aucun paragraphe en commun. Pour l’ajouter comme une campagne de plus, c’est « Ajouter une table comme campagne », sous la liste des campagnes.'};
   const vivants = m => Object.keys(m).filter(k => m[k] && !m[k].supprime).length;
   const compte = () => ({p:vivants(T.personnages), b:vivants(T.blocs), n:vivants(T.pnj), l:vivants(T.liens), m:vivants(T.missions), o:vivants(T.objets)});
   const avant = compte();
@@ -1844,6 +1935,487 @@ function telecharger(nom, contenu, type, bouton){
     setTimeout(() => { a.remove(); URL.revokeObjectURL(url); }, 4000);
     dire('Fichier envoyé');
   });
+}
+
+/* ============ les campagnes ============
+   Plusieurs parties dans le même monde, sans en arrêter une pour en lancer une autre. Chaque campagne a sa compagnie,
+   ses séances (numérotées chez elle) et ses missions en cours. Le monde est commun : les PNJ et leurs liens, les
+   visages, le tableau du Havre, le bestiaire. Une campagne qu'on arrête fait entrer sa compagnie dans le monde : ses
+   personnages deviennent des PNJ, qu'une autre campagne peut croiser.
+   Ce navigateur suit une campagne à la fois (MOI.campagne), celle que la liste de la table montre. */
+
+/* le formulaire ouvert sous la liste : '' | 'nouvelle' | 'renommer' | 'importer' (une table .json, lue et pas encore ajoutée) */
+const CAMP = {mode:'', nom:'', arme:'', fichier:'', fichierNom:'', apercu:null};
+
+/* ---------- laquelle ---------- */
+function campagnes(){
+  return Object.keys(T.campagnes).map(k => T.campagnes[k]).filter(c => c && !c.supprime).sort(parCreation);
+}
+function uneCampagne(id){ const c = id && T.campagnes[id]; return c && !c.supprime ? c : null; }
+const campagnesEnCours = () => campagnes().filter(c => c.etat !== 'finie');
+const campagneParDefaut = () => campagneDefautDans(T);
+/* celle que ce navigateur suit : la sienne, même close (on relit une campagne finie), sinon la première en cours */
+function campagneCourante(){
+  return uneCampagne(MOI.campagne) || campagnesEnCours()[0] || campagneParDefaut();
+}
+const idCourante = () => { const c = campagneCourante(); return c ? c.id : ''; };
+/* la campagne d'un personnage ou d'une séance : la sienne, ou la première pour ce qui n'en a pas */
+const idCampagneDe = x => campagneEffDans(T, x && x.campagne);
+const dansCampagne = (x, cid) => idCampagneDe(x) === (cid === undefined ? idCourante() : cid);
+const plusieursCampagnes = () => campagnes().length > 1;
+const nomCampagne = id => { const c = uneCampagne(id); return c ? c.nom : ''; };
+/* la campagne d'une mission : celle de la séance où elle a été lancée. Au tableau, elle n'est à personne */
+function idCampagneMission(m){
+  if(!m || m.etat === 'tableau') return '';
+  return idCampagneDe((m.seance && T.journal[m.seance]) || null);
+}
+
+/* celui qui est déjà à une table, dans n'importe quelle campagne : un même nom ne se joue pas deux fois */
+const memeNomPerso = (a, b) => String(a || '').trim().toLowerCase() === String(b || '').trim().toLowerCase();
+const persoALaTable = (nom, sauf) => Object.keys(T.personnages).map(k => T.personnages[k]).find(x => x && x.id !== sauf && !x.supprime && !x.monde && memeNomPerso(x.nom, nom)) || null;
+const dejaALaTable = x => 'à la table' + (plusieursCampagnes() ? ' de « ' + nomCampagne(idCampagneDe(x)) + ' »' : '');
+
+/* ceux qui sont à la table d'une campagne : pas ceux qui sont entrés dans le monde */
+function persosDe(cid){
+  const def = campagneParDefaut();
+  return Object.keys(T.personnages).map(id => T.personnages[id])
+    .filter(c => c && !c.supprime && !c.monde && campagneEffDans(T, c.campagne, def) === cid)
+    .sort((a, b) => (a.nom || '').localeCompare(b.nom || '', 'fr'));
+}
+function toutesSeances(){ return Object.keys(T.journal).map(id => T.journal[id]).filter(e => e && !e.supprime); }
+/* les séances d'une campagne, la plus récente en tête */
+function seancesDe(cid){
+  const def = campagneParDefaut();
+  return toutesSeances().filter(e => campagneEffDans(T, e.campagne, def) === cid)
+    .sort((a, b) => (parseFloat(b.seance) || 0) - (parseFloat(a.seance) || 0) || (a.id < b.id ? -1 : 1));
+}
+/* on rattache ce qui naît à la campagne qu'on suit, avec sa date */
+function rattacher(x, cid){
+  const id = cid === undefined ? idCourante() : cid;
+  x.campagne = id; x.campagneT = id ? maintenant() : 0;
+  return x;
+}
+/* le nom d'une séance : s-n dans la première campagne, s-<campagne>-n dans les autres. Le même numéro, au même endroit,
+   donne le même nom : deux joueurs qui ouvrent la séance en même temps n'en ouvrent qu'une */
+function idSeance(n, cid){
+  cid = cid === undefined ? idCourante() : cid;
+  const def = campagneParDefaut();
+  let id = 's-' + (def && cid && cid !== def.id ? cid.replace(/^c-/, '') + '-' : '') + n;
+  if(T.journal[id]) id += '-' + Math.random().toString(36).slice(2, 6);
+  return id;
+}
+/* le dernier endroit connu d'une campagne : le lieu de sa séance la plus récente qui en a un, sinon celui de sa mission */
+function lieuDeCampagne(cid){
+  const e = seancesDe(cid).find(x => (x.lieu || '').trim());
+  if(e) return e.lieu.trim();
+  const ms = toutesMissions().filter(m => m.etat !== 'tableau' && m.seance && idCampagneMission(m) === cid && (m.ou || '').trim())
+    .sort((a, b) => (b.lancee || 0) - (a.lancee || 0));
+  return ms.length ? ms[0].ou.trim() : '';
+}
+/* ce qu'une campagne contient : sans personnage ni séance, on peut la retirer */
+function campagneVide(id){
+  const def = campagneParDefaut();
+  const perso = Object.keys(T.personnages).some(k => { const c = T.personnages[k]; return c && !c.supprime && campagneEffDans(T, c.campagne, def) === id; });
+  return !perso && !seancesDe(id).length;
+}
+function resumeCampagne(c){
+  const k = persosDe(c.id).length, ss = seancesDe(c.id);
+  return [k ? k + ' personnage' + (k > 1 ? 's' : '') : 'personne à la table', ss.length ? 'séance ' + (ss[0].seance || '?') : 'pas encore de séance',
+    c.etat === 'finie' ? 'terminée' : ''].filter(Boolean).join(' · ');
+}
+
+/* ---------- un numéro de séance ne dit pas de quelle campagne il est ----------
+   Avec plusieurs campagnes, là où le monde se lit (les visages, le tableau), on nomme la campagne */
+function etiquetteSeance(e){
+  if(!e) return '';
+  const n = e.seance || '?';
+  return plusieursCampagnes() ? n + ' (' + nomCampagne(idCampagneDe(e)) + ')' : n;
+}
+/* « 1, 2, 3 » ; avec plusieurs campagnes, « 1, 2, 3 (La Tournée) · 1 (Océane) » */
+function listeNumerosSeances(es){
+  if(!plusieursCampagnes()){
+    const vus = [];
+    es.forEach(e => { const n = e.seance || '?'; if(vus.indexOf(n) < 0) vus.push(n); });
+    return vus.join(', ');
+  }
+  const par = {}, ordre = [];
+  es.forEach(e => {
+    const c = idCampagneDe(e), n = e.seance || '?';
+    if(!par[c]){ par[c] = []; ordre.push(c); }
+    if(par[c].indexOf(n) < 0) par[c].push(n);
+  });
+  return ordre.map(c => par[c].join(', ') + ' (' + nomCampagne(c) + ')').join(' · ');
+}
+
+/* ---------- passer d'une campagne à l'autre ---------- */
+/* sans redessiner : ce qui s'écrivait ou se choisissait dans l'autre campagne ne suit pas */
+function passerACampagne(cid){
+  if(!uneCampagne(cid) || MOI.campagne === cid) return false;
+  MOI.campagne = cid;
+  /* « le mien » : mon personnage de cette campagne, s'il y en a un */
+  const l = persos();
+  if(!l.some(x => x.id === MOI.perso)){ const m = l.find(x => MOI.joueur && x.joueur === MOI.joueur); MOI.perso = m ? m.id : ''; }
+  BED = null; BLOC_SUPPR = null; SEANCE_SUPPR = false; A_SUPPRIMER = null;
+  if(PED && $('pEditeur')) fermerEditeurPerso();
+  COMPO.pret = false; COMPO.qui = {k:'mj', id:'', nom:''}; COMPO.genre = 'narration'; COMPO.quoi = '';
+  COMPO.jet = null; COMPO.degats = null; COMPO.vies = []; COMPO.perte = null; COMPO.cible = ''; COMPO.pvId = '';
+  CAMP.mode = ''; CAMP.arme = ''; CAMP.fichier = ''; CAMP.fichierNom = ''; CAMP.apercu = null;
+  return true;
+}
+function choisirCampagne(id){
+  if(!passerACampagne(id)) return;
+  sauverLocal();
+  dessiner();
+}
+
+/* ---------- la première campagne : celle d'avant ----------
+   La table d'avant n'en avait qu'une, sans le dire : ses personnages et ses séances n'ont pas de campagne, et vont à la
+   première. Elle prend le nom que la table portait. Datée du tout début, et pareille sur chaque ordinateur : un
+   navigateur qui la crée avant d'avoir lu le dépôt n'écrase rien, et un vrai nom l'emporte sur « Notre campagne » */
+function migrerCampagnes(){
+  if(campagnes().length) return false;
+  const nom = String(T.nom || '').replace(/\s+/g, ' ').trim();
+  changer(() => {
+    if(campagnes().length) return;
+    T.campagnes[ID_DEFAUT] = normCampagne({id:ID_DEFAUT, nom:nom || 'Notre campagne', majNom:nom ? 1 : 0, creee:0, maj:1});
+  });
+  return true;
+}
+
+/* ---------- ouvrir, nommer, clore, rouvrir, retirer ---------- */
+const nomPropre = s => String(s || '').replace(/\s+/g, ' ').trim().slice(0, 80);
+const memeCampagne = (a, b) => nomPropre(a).toLowerCase() === nomPropre(b).toLowerCase();
+function nouvelleCampagne(nom){
+  nom = nomPropre(nom);
+  if(!nom) return {ok:false, msg:'Donne un nom à la campagne.'};
+  if(campagnes().some(c => memeCampagne(c.nom, nom))) return {ok:false, msg:'Une campagne s’appelle déjà « ' + nom + ' ».'};
+  if(!campagnes().length) migrerCampagnes();
+  let id = 'c-' + slug(nom);
+  if(T.campagnes[id]) id += '-' + Math.random().toString(36).slice(2, 6);
+  const t = maintenant();
+  changer(() => { T.campagnes[id] = normCampagne({id:id, nom:nom, majNom:t, maj:t, creee:t, auteur:MOI.joueur || ''}); });
+  passerACampagne(id);
+  sauverLocal(); dessiner();
+  return {ok:true, id:id, msg:'« ' + nom + ' » est ouverte : sa compagnie et ses séances sont à elle, le monde reste commun.'};
+}
+function renommerCampagne(id, nom){
+  const c = uneCampagne(id); if(!c) return {ok:false, msg:'Cette campagne n’existe plus.'};
+  nom = nomPropre(nom);
+  if(!nom) return {ok:false, msg:'Donne un nom à la campagne.'};
+  if(nom === c.nom) return {ok:true, msg:''};
+  if(campagnes().some(x => x.id !== id && memeCampagne(x.nom, nom))) return {ok:false, msg:'Une campagne s’appelle déjà « ' + nom + ' ».'};
+  const t = maintenant();
+  changer(() => { T.campagnes[id] = Object.assign({}, T.campagnes[id], {nom:nom, majNom:t, maj:t}); });
+  return {ok:true, msg:'La campagne s’appelle maintenant « ' + nom + ' ».'};
+}
+/* clore : toute sa compagnie entre dans le monde, à l'endroit où elle en était, et la campagne passe aux terminées */
+function cloreCampagne(id){
+  const c = uneCampagne(id); if(!c || c.etat === 'finie') return {ok:false, msg:'Cette campagne est déjà terminée.'};
+  let k = 0;
+  const reste = toutesMissions().filter(m => m.etat === 'cours' && idCampagneMission(m) === id).length;
+  changer(() => {
+    persosDe(id).forEach(x => { if(versLeMonde(x.id)) k++; });
+    const t = maintenant();
+    T.campagnes[id] = Object.assign({}, T.campagnes[id], {etat:'finie', majEtat:t, finie:t, maj:t});
+  });
+  if(PED && $('pEditeur')) fermerEditeurPerso();
+  /* on suit une autre campagne en cours, s'il y en a une */
+  const autre = campagnesEnCours().find(x => x.id !== id);
+  if(MOI.campagne === id || !MOI.campagne){ if(autre) passerACampagne(autre.id); }
+  sauverLocal(); dessiner();
+  const lieuFin = lieuDeCampagne(id);
+  return {ok:true, k:k, msg:'« ' + c.nom + ' » est terminée' + (k ? ' : ' + (k > 1 ? k + ' personnages sont entrés' : 'un personnage est entré') + ' dans le monde, ' + (lieuFin ? 'à ' + lieuFin : 'là où la campagne s’était arrêtée') + '.' : '.')
+    + (reste ? ' ' + (reste > 1 ? reste + ' missions restent en cours : le Registre des Missions les boucle' : 'Une mission reste en cours : le Registre des Missions la boucle') + ' encore.' : '')};
+}
+function rouvrirCampagne(id){
+  const c = uneCampagne(id); if(!c || c.etat !== 'finie') return {ok:false, msg:'Cette campagne n’est pas terminée.'};
+  const t = maintenant();
+  changer(() => { T.campagnes[id] = Object.assign({}, T.campagnes[id], {etat:'cours', majEtat:t, finie:0, maj:t}); });
+  return {ok:true, msg:'« ' + c.nom + ' » reprend. Ses personnages restent dans le monde : on les reprend un par un, dans le Registre des Marchefleurs.'};
+}
+function supprimerCampagne(id){
+  const c = uneCampagne(id); if(!c) return {ok:false, msg:'Cette campagne n’existe plus.'};
+  if(campagnes().length < 2) return {ok:false, msg:'C’est la seule campagne : une table en garde toujours une.'};
+  if(!campagneVide(id)) return {ok:false, msg:'« ' + c.nom + ' » a des personnages ou des séances : on la clôt, on ne la retire pas.'};
+  const autre = campagnes().find(x => x.id !== id && x.etat !== 'finie') || campagnes().find(x => x.id !== id);
+  changer(() => { T.campagnes[id] = Object.assign({}, T.campagnes[id], {supprime:true, maj:maintenant()}); });
+  if(MOI.campagne === id && autre) passerACampagne(autre.id);
+  sauverLocal(); dessiner();
+  return {ok:true, msg:'« ' + c.nom + ' » est retirée.'};
+}
+
+/* ---------- une table jouée à part, qui devient une campagne ----------
+   Le .json d'une autre table (un autre navigateur, un autre dépôt) a ses propres séances : sa « séance 1 » n'est pas celle
+   d'ici, et les fondre telles quelles les mélangerait. On les renomme donc : sa compagnie, ses séances, ses missions jouées
+   et ses jets forment une campagne de plus ; ses PNJ et leurs liens rejoignent le monde commun, où un nom reste une personne. */
+const vivantsDe = m => Object.keys(m || {}).filter(k => m[k] && !m[k].supprime);
+/* ce que les deux tables ont déjà en commun : un paragraphe, un lien ou un jet qui porte le même nom partout vient de la même table */
+function enCommun(o){
+  const ids = (a, b) => vivantsDe(a).filter(k => b && b[k]).length;
+  const jets = {}; T.jets.forEach(j => { jets[j.id] = 1; });
+  return ids(o.blocs, T.blocs) + ids(o.liens, T.liens) + ids(o.rencontres, T.rencontres) + ids(o.adversaires, T.adversaires) + (o.jets || []).filter(j => jets[j.id]).length;
+}
+/* une même séance (même nom) dans les deux tables, avec des paragraphes qui n'ont rien en commun : deux parties différentes */
+function seancesHomonymes(o){
+  return vivantsDe(o.journal).filter(id => {
+    if(!T.journal[id] || T.journal[id].supprime) return false;
+    const de = (blocs, sid) => vivantsDe(blocs).filter(k => blocs[k].seance === sid && blocs[k].type !== 'rencontre');
+    const a = de(o.blocs, id), b = de(T.blocs, id);
+    return a.length && b.length && !a.some(k => T.blocs[k]);
+  });
+}
+function lireTable(txt){
+  let o = null;
+  try{ o = JSON.parse(txt); }catch(e){ return {ok:false, msg:'Ce fichier n’est pas lisible.'}; }
+  if(!o || typeof o !== 'object') return {ok:false, msg:'Ce fichier n’est pas lisible.'};
+  if(o.format === 'faelorenn-personnage') return {ok:false, msg:'C’est la fiche d’un personnage, pas une table : « Importer un .json », dans « Les personnages », la fait entrer.'};
+  if(o.format !== 'faelorenn-table') return {ok:false, msg:'Ce fichier n’est pas une table Faelorenn.'};
+  return {ok:true, o:normTable(o)};
+}
+/* ce que l'import ferait : ce qu'il y a dedans, et ce qui l'empêcherait */
+function apercuTable(txt){
+  const r = lireTable(txt); if(!r.ok) return r;
+  const o = r.o, pj = vivantsDe(o.personnages).map(k => o.personnages[k]);
+  const k = (n, un, plus) => n + ' ' + (n > 1 ? plus : un);
+  const bouts = [k(pj.length, 'personnage', 'personnages') + (pj.length ? ' (' + pj.map(c => c.nom || 'Sans nom').join(', ') + ')' : ''),
+    k(vivantsDe(o.journal).length, 'séance', 'séances'), k(vivantsDe(o.blocs).length, 'paragraphe', 'paragraphes'), k(vivantsDe(o.pnj).length, 'fiche de PNJ', 'fiches de PNJ')];
+  const pris = pj.filter(c => !c.monde && persoALaTable(c.nom));
+  const autres = Object.keys(o.campagnes).filter(i => !o.campagnes[i].supprime).length;
+  let bloque = '';
+  if(enCommun(o)) bloque = 'Ce fichier vient de cette table, ou en a déjà des paragraphes : « Importer un .json » le fusionne, il n’a rien à devenir comme campagne.';
+  else if(pris.length) bloque = (pris.length > 1 ? pris.map(c => '« ' + c.nom + ' »').join(', ') + ' sont déjà à une table' : '« ' + pris[0].nom + ' » est déjà ' + dejaALaTable(persoALaTable(pris[0].nom))) + ' : renomme-' + (pris.length > 1 ? 'les' : 'le') + ' d’un côté ou de l’autre avant d’importer.';
+  return {ok:true, o:o, nom:String(o.nom || '').trim(), msg:bouts.join(', ') + '.' + (autres > 1 ? ' Ce fichier a ' + autres + ' campagnes : elles n’en feront qu’une.' : ''), bloque:bloque};
+}
+/* la table du fichier, renumérotée pour devenir la campagne cid : rien n'est touché ici, on rend la table à fondre */
+function renumeroterTable(o, cid, nom, t){
+  const x = videTable();
+  const rand = () => Math.random().toString(36).slice(2, 6);
+  const mp = {}, ms = {}, mm = {};
+  /* ses personnages : leur identifiant, s'il est déjà pris, est remplacé */
+  vivantsDe(o.personnages).forEach(id => { mp[id] = T.personnages[id] || x.personnages[id] ? id + '-' + rand() : id; x.personnages[mp[id]] = null; });
+  /* ses séances : le nom de la campagne, puis le numéro */
+  const pris = {};
+  vivantsDe(o.journal).sort((a, b) => (parseFloat(o.journal[a].seance) || 0) - (parseFloat(o.journal[b].seance) || 0) || (a < b ? -1 : 1)).forEach(id => {
+    let n = 's-' + cid.replace(/^c-/, '') + '-' + slug(o.journal[id].seance);
+    while(T.journal[n] || pris[n]) n += '-' + rand();
+    pris[n] = 1; ms[id] = n;
+  });
+  /* ses missions : celles du tableau restent les mêmes ; celles qui ont été jouées gardent leur histoire sous un nom neuf, pour ne pas se heurter à la même, jouée ici */
+  vivantsDe(o.missions).forEach(id => { const m = o.missions[id]; if(m.etat === 'tableau') mm[id] = id; else if(ms[m.seance]) mm[id] = nouvelId('m'); });
+  let ecartees = 0;
+  vivantsDe(o.missions).forEach(id => { if(!mm[id]){ ecartees++; return; } const m = o.missions[id]; x.missions[mm[id]] = Object.assign({}, m, {id:mm[id], seance:ms[m.seance] || '', fin:ms[m.fin] || ''}); });
+  const pj = r => r && r.indexOf('pj:') === 0 && mp[r.slice(3)] ? 'pj:' + mp[r.slice(3)] : r;
+  /* ceux de la table */
+  vivantsDe(o.personnages).forEach(id => {
+    const y = JSON.parse(JSON.stringify(o.personnages[id]));
+    y.id = mp[id]; y.campagne = cid; y.campagneT = t;
+    (y.prog.points || []).forEach(p => { if(p.mission && mm[p.mission]) p.mission = mm[p.mission]; });
+    x.personnages[y.id] = y;
+  });
+  vivantsDe(o.journal).forEach(id => { x.journal[ms[id]] = Object.assign({}, o.journal[id], {id:ms[id], campagne:cid, campagneT:t}); });
+  vivantsDe(o.blocs).forEach(id => {
+    const b = o.blocs[id]; if(!ms[b.seance]) return;
+    const nid = id.indexOf('b-ancien-') === 0 && ms[id.slice(9)] ? 'b-ancien-' + ms[id.slice(9)] : id;
+    const q = Object.assign({}, b.qui); if(q.k === 'perso' && mp[q.id]) q.id = mp[q.id];
+    x.blocs[nid] = Object.assign({}, b, {id:nid, seance:ms[b.seance], qui:q, vies:b.vies.map(v => mp[v.id] ? Object.assign({}, v, {id:mp[v.id]}) : v)});
+  });
+  vivantsDe(o.rencontres).forEach(id => { const r = o.rencontres[id]; if(ms[r.seance]) x.rencontres[id] = Object.assign({}, r, {seance:ms[r.seance]}); });
+  vivantsDe(o.adversaires).forEach(id => { if(x.rencontres[o.adversaires[id].rencontre]) x.adversaires[id] = o.adversaires[id]; });
+  /* le sac et la bourse, tombes comprises : l'objet jeté ou la ligne défaite empêchent le sac et la bourse d'avant, restés écrits sur la fiche, de repasser */
+  Object.keys(o.objets || {}).forEach(id => {
+    const ob = o.objets[id]; if(!ob || !mp[ob.perso]) return;
+    const nid = mp[ob.perso] !== ob.perso && id.indexOf('o-' + ob.perso + '-') === 0 ? 'o-' + mp[ob.perso] + '-' + id.slice(('o-' + ob.perso + '-').length) : id;
+    x.objets[nid] = Object.assign({}, ob, {id:nid, perso:mp[ob.perso]});
+  });
+  Object.keys(o.argent || {}).forEach(id => {
+    const a = o.argent[id]; if(!a || !mp[a.perso]) return;
+    const nm = a.mission ? (mm[a.mission] || a.mission) : '';
+    let nid = id;
+    if(a.mission && id === 'arg-' + a.mission + '-' + a.perso) nid = 'arg-' + nm + '-' + mp[a.perso];
+    else if(mp[a.perso] !== a.perso && id.indexOf('arg-' + a.perso + '-') === 0) nid = 'arg-' + mp[a.perso] + '-' + id.slice(('arg-' + a.perso + '-').length);
+    x.argent[nid] = Object.assign({}, a, {id:nid, perso:mp[a.perso], mission:nm, seance:ms[a.seance] || ''});
+  });
+  /* le monde : ses PNJ, et les liens entre ceux qui ont un visage ici */
+  vivantsDe(o.pnj).forEach(id => { const p = o.pnj[id]; x.pnj[id] = Object.assign({}, p, {seance:ms[p.seance] || '', pj:mp[p.pj] || ''}); });
+  const visage = r => !!r && (r.indexOf('pj:') === 0 ? !!x.personnages[mp[r.slice(3)]] : r.indexOf('pnj:') === 0 ? !!x.pnj[r.slice(4)] : false);
+  vivantsDe(o.liens).forEach(id => {
+    const l = o.liens[id]; if(!visage(l.de) || !visage(l.vers)) return;
+    x.liens[id] = Object.assign({}, l, {de:pj(l.de), vers:pj(l.vers), depuis:ms[l.depuis] || '',
+      hist:(l.hist || []).map(h => Object.assign({}, h, {de:pj(h.de), vers:pj(h.vers), depuis:ms[h.depuis] || '', jusqua:ms[h.jusqua] || ''}))});
+  });
+  Object.keys(o.positions || {}).forEach(r => { const p = o.positions[r]; if(p && !p.supprime && visage(r)) x.positions[pj(r)] = p; });
+  x.jets = (o.jets || []).map(j => Object.assign({}, j, {campagne:cid}));
+  x.campagnes[cid] = normCampagne({id:cid, nom:nom, majNom:t, maj:t, creee:t, auteur:MOI.joueur || ''});
+  Object.keys(x.personnages).forEach(k => { if(!x.personnages[k]) delete x.personnages[k]; });
+  return {x:x, ecartees:ecartees};
+}
+function importerCampagne(txt, nom){
+  const a = apercuTable(txt); if(!a.ok) return a;
+  nom = nomPropre(nom);
+  if(!nom) return {ok:false, msg:'Donne un nom à la campagne.'};
+  if(campagnes().some(c => memeCampagne(c.nom, nom))) return {ok:false, msg:'Une campagne s’appelle déjà « ' + nom + ' ».'};
+  if(a.bloque) return {ok:false, msg:a.bloque};
+  if(!campagnes().length) migrerCampagnes();   /* d'abord la première, pour que ce qui n'a pas de campagne lui reste */
+  let id = 'c-' + slug(nom);
+  if(T.campagnes[id]) id += '-' + Math.random().toString(36).slice(2, 6);
+  const t = maintenant(), r = renumeroterTable(a.o, id, nom, t);
+  const avant = {pnj:vivantsDe(T.pnj).length};
+  changer(() => { T = fusionner(T, r.x); });
+  passerACampagne(id);
+  sauverLocal(); dessiner();
+  const k = (n, un, plus) => n + ' ' + (n > 1 ? plus : un);
+  const nPnj = vivantsDe(r.x.pnj).length, neufs = vivantsDe(T.pnj).length - avant.pnj;
+  return {ok:true, id:id, msg:'« ' + nom + ' » est ajoutée : ' + [k(vivantsDe(r.x.personnages).length, 'personnage', 'personnages'), k(vivantsDe(r.x.journal).length, 'séance', 'séances'),
+    k(nPnj, 'fiche de PNJ', 'fiches de PNJ') + (nPnj - neufs > 0 ? ' dont ' + (nPnj - neufs) + ' que le monde connaissait déjà' : '')].join(', ') + '.'
+    + (r.ecartees ? ' ' + k(r.ecartees, 'mission', 'missions') + ' sans séance ' + (r.ecartees > 1 ? 'ont été laissées' : 'a été laissée') + ' de côté.' : '')};
+}
+
+/* ---------- les jets d'une campagne ---------- */
+const jetsDe = cid => { const def = campagneParDefaut(); return T.jets.filter(j => campagneEffDans(T, j.campagne, def) === cid); };
+/* un jet de plus, dans la campagne qu'on suit ; quatre cents par campagne */
+function ajouterJet(j){
+  j.campagne = idCourante();
+  const def = campagneParDefaut(), compte = {};
+  T.jets = T.jets.concat([j]).reverse().filter(x => { const c = campagneEffDans(T, x.campagne, def); compte[c] = (compte[c] || 0) + 1; return compte[c] <= MAX_JETS; }).reverse();
+}
+/* vider l'historique d'une campagne seulement */
+function viderJets(){
+  const c = campagneCourante(), t = maintenant();
+  if(!c){ T.viderAvant = t; T.jets = []; return; }
+  T.campagnes[c.id] = Object.assign({}, c, {jetsAvant:t, maj:t});
+  const def = campagneParDefaut();
+  T.jets = T.jets.filter(j => campagneEffDans(T, j.campagne, def) !== c.id);
+}
+
+/* ---------- la liste, et ce qu'on fait des campagnes ---------- */
+function dessinerCampagnes(){
+  const s = $('tbCampagne');
+  /* dans les autres pages, la liste ne se montre que s'il y a de quoi choisir */
+  const barre = $('cbarre'); if(barre) barre.hidden = !plusieursCampagnes();
+  if(s){
+    const l = campagnes(), cur = campagneCourante();
+    /* la liste ne se refait que si elle a changé : une liste ouverte ne se ferme pas sous les doigts */
+    const sig = JSON.stringify([l.map(c => [c.id, c.nom, c.etat]), cur ? cur.id : '']);
+    if(s._sig !== sig){
+      s._sig = sig;
+      s.innerHTML = '';
+      if(!l.length || !cur){ s.add(new Option('Pas encore de campagne', '')); s.disabled = true; }
+      else {
+        s.disabled = false;
+        l.filter(c => c.etat !== 'finie').forEach(c => s.add(new Option(c.nom, c.id)));
+        const fin = l.filter(c => c.etat === 'finie');
+        if(fin.length){ const g = el('optgroup'); g.label = 'Terminées'; fin.forEach(c => g.append(new Option(c.nom, c.id))); s.append(g); }
+        s.value = cur.id;
+      }
+    } else if(cur && s.value !== cur.id && document.activeElement !== s) s.value = cur.id;
+  }
+  dessinerGestionCampagnes(false);
+}
+/* un bouton à deux temps : le premier clic arme, le second agit. Cinq secondes, sans rien redessiner sous les doigts */
+function deuxTempsCampagne(cle, txt, confirme, fn){
+  const arme = CAMP.arme === cle;
+  const b = el('button', 'btn ghost sm' + (arme ? ' danger' : ''), arme ? confirme : txt); b.type = 'button'; b.id = 'camp-' + cle;
+  b.onclick = () => {
+    if(CAMP.arme === cle){ CAMP.arme = ''; fn(); return; }
+    CAMP.arme = cle; dessinerGestionCampagnes(true);
+    const y = $('camp-' + cle); if(y) y.focus();
+    setTimeout(() => {
+      if(CAMP.arme !== cle) return;
+      CAMP.arme = '';
+      const x = $('camp-' + cle);
+      if(x && x.textContent === confirme){ x.textContent = txt; x.classList.remove('danger'); }
+    }, 5000);
+  };
+  return b;
+}
+function dessinerGestionCampagnes(force){
+  const box = $('tbCampagnes'); if(!box) return;
+  if(!force && occupe(box)){ apresSaisie(box, () => dessinerGestionCampagnes(true)); return; }
+  const focus = document.activeElement && box.contains(document.activeElement) ? document.activeElement.id : '';
+  box.innerHTML = '';
+  const c = campagneCourante();
+  if(c) box.append(el('p','mini cresume', resumeCampagne(c)));
+  const dit = r => { if(r.msg) msgTable(r.msg, r.ok); };
+  if(CAMP.mode){
+    const nouveau = CAMP.mode === 'nouvelle', importer = CAMP.mode === 'importer';
+    const f = el('div','cform');
+    if(importer){
+      f.append(el('p','mini', 'Une table jouée à part, un autre navigateur, un autre dépôt : ses personnages, ses séances et ses missions deviennent une campagne de plus, avec leurs propres numéros. Ses PNJ et leurs liens rejoignent le monde commun, où un nom reste une personne.'));
+      const l1 = el('label','lab','La table à ajouter, un fichier .json'); l1.htmlFor = 'campFichier';
+      const fi = el('input'); fi.type = 'file'; fi.id = 'campFichier'; fi.accept = '.json,application/json';
+      fi.onchange = () => {
+        const fh = fi.files && fi.files[0]; if(!fh) return;
+        const lec = new FileReader();
+        lec.onload = () => {
+          const txt = String(lec.result), a = apercuTable(txt);
+          CAMP.fichier = a.ok ? txt : ''; CAMP.apercu = a; CAMP.fichierNom = fh.name;
+          if(a.ok && !CAMP.nom) CAMP.nom = a.nom;
+          dessinerGestionCampagnes(true);
+          const y = $('campNom'); if(y) y.focus();
+        };
+        lec.readAsText(fh);
+      };
+      f.append(l1, fi);
+      const ap = CAMP.apercu;
+      if(ap){
+        const p = el('p', 'note ' + (!ap.ok || ap.bloque ? 'err' : 'ok'), !ap.ok ? ap.msg : (CAMP.fichierNom ? '« ' + CAMP.fichierNom + ' » : ' : '') + ap.msg + (ap.bloque ? ' ' + ap.bloque : ''));
+        p.id = 'campApercu';
+        f.append(p);
+      }
+    }
+    const lab = el('label','lab', nouveau ? 'Nom de la nouvelle campagne' : importer ? 'Nom de la campagne ajoutée' : 'Nouveau nom de « ' + (c ? c.nom : '') + ' »'); lab.htmlFor = 'campNom';
+    const i = el('input'); i.type = 'text'; i.id = 'campNom'; i.value = CAMP.nom; i.maxLength = 80; i.style.width = '100%';
+    i.placeholder = nouveau || importer ? 'La campagne d’Océane' : '';
+    i.oninput = () => { CAMP.nom = i.value; };
+    const ok = el('button','btn sm', nouveau ? 'Créer la campagne' : importer ? 'Ajouter la campagne' : 'Enregistrer'); ok.type = 'button'; ok.id = 'campOk';
+    ok.disabled = importer && (!CAMP.fichier || !!(CAMP.apercu && CAMP.apercu.bloque));
+    const non = el('button','btn ghost sm','Annuler'); non.type = 'button'; non.id = 'campAnnuler';
+    const valider = () => {
+      if(ok.disabled) return;
+      const r = nouveau ? nouvelleCampagne(CAMP.nom) : importer ? importerCampagne(CAMP.fichier, CAMP.nom) : renommerCampagne(c.id, CAMP.nom);
+      if(!r.ok){ msgTable(r.msg, false); const y = $('campNom'); if(y) y.focus(); return; }
+      CAMP.mode = ''; CAMP.nom = ''; CAMP.fichier = ''; CAMP.fichierNom = ''; CAMP.apercu = null;
+      dessinerGestionCampagnes(true);
+      dit(r);
+      const y = $('tbCampagne'); if(y) y.focus({preventScroll:true});
+    };
+    ok.onclick = valider;
+    non.onclick = () => { CAMP.mode = ''; CAMP.nom = ''; CAMP.fichier = ''; CAMP.fichierNom = ''; CAMP.apercu = null; dessinerGestionCampagnes(true); const y = $(nouveau ? 'campNouvelle' : importer ? 'campImporter' : 'campRenommer'); if(y) y.focus(); };
+    i.onkeydown = ev => {
+      if(ev.key === 'Enter' && !ev.isComposing){ ev.preventDefault(); valider(); }
+      if(ev.key === 'Escape'){ ev.preventDefault(); non.click(); }
+    };
+    const a = el('div','acts'); a.append(ok, non);
+    f.append(lab, i, a);
+    box.append(f);
+    if(focus && $(focus)) $(focus).focus({preventScroll:true});
+    return;
+  }
+  const a = el('div','acts');
+  const nv = el('button','btn ghost sm','Nouvelle campagne'); nv.type = 'button'; nv.id = 'campNouvelle';
+  nv.onclick = () => { CAMP.mode = 'nouvelle'; CAMP.nom = ''; CAMP.arme = ''; dessinerGestionCampagnes(true); const y = $('campNom'); if(y) y.focus(); };
+  a.append(nv);
+  const im = el('button','btn ghost sm','Ajouter une table comme campagne'); im.type = 'button'; im.id = 'campImporter';
+  im.title = 'Le .json d’une table jouée à part devient une campagne de plus';
+  im.onclick = () => { CAMP.mode = 'importer'; CAMP.nom = ''; CAMP.arme = ''; CAMP.fichier = ''; CAMP.fichierNom = ''; CAMP.apercu = null; dessinerGestionCampagnes(true); const y = $('campFichier'); if(y) y.focus(); };
+  a.append(im);
+  if(c){
+    const rn = el('button','btn ghost sm','Renommer'); rn.type = 'button'; rn.id = 'campRenommer';
+    rn.onclick = () => { CAMP.mode = 'renommer'; CAMP.nom = c.nom; CAMP.arme = ''; dessinerGestionCampagnes(true); const y = $('campNom'); if(y){ y.focus(); y.select(); } };
+    a.append(rn);
+    if(c.etat === 'finie'){
+      const ro = el('button','btn ghost sm','Rouvrir la campagne'); ro.type = 'button'; ro.id = 'campRouvrir';
+      ro.onclick = () => dit(rouvrirCampagne(c.id));
+      a.append(ro);
+    } else {
+      const n = persosDe(c.id).length;
+      a.append(deuxTempsCampagne('clore', 'Clore la campagne', n ? 'Confirmer : ' + (n > 1 ? 'les ' + n + ' personnages entrent' : 'le personnage entre') + ' dans le monde' : 'Confirmer : la campagne est terminée',
+        () => dit(cloreCampagne(c.id))));
+    }
+    if(campagnes().length > 1 && campagneVide(c.id)) a.append(deuxTempsCampagne('supprimer', 'Retirer cette campagne', 'Confirmer : elle est retirée', () => dit(supprimerCampagne(c.id))));
+  }
+  box.append(a);
+  if(focus && $(focus)) $(focus).focus({preventScroll:true});
 }
 
 /* ============ le sac et la bourse ============
@@ -1982,8 +2554,12 @@ function planifierMigration(){
   if(MIGRATION_T) return;
   MIGRATION_T = setTimeout(() => {
     MIGRATION_T = null;
-    if(pretAMigrer()) migrerInventaires();
-    else { const a = aMigrer(); if(a.objets.length || a.argent.length) planifierMigration(); }
+    const pret = pretAMigrer();
+    /* la première campagne ne risque rien, elle est pareille sur chaque ordinateur : elle attend la lecture du dépôt,
+       ou son échec (hors ligne, on joue quand même) */
+    if(pret || (DEPART_FAIT && SYNC.etat === 'github' && GH.erreur)) migrerCampagnes();
+    if(pret) migrerInventaires();
+    else { const a = aMigrer(); if(a.objets.length || a.argent.length || !campagnes().length) planifierMigration(); }
   }, 400);
 }
 
@@ -2088,8 +2664,8 @@ function reprendrePaie(m){
    Le personnage devient un PNJ du Registre des Visages : son nom, son histoire, ce qu'il sait faire, ses PV, et
    tous ses liens, qui passent à sa fiche de PNJ. Il quitte la table sans rien perdre ; on peut le reprendre. */
 function versLeMonde(pid){
-  const c = perso(pid); if(!c) return null;
-  const t = maintenant();
+  const c = persoActif(pid); if(!c) return null;
+  const t = maintenant(), lieu = lieuDeCampagne(idCampagneDe(c));
   const id = idLibre('n-' + slug(c.nom || 'ancien'), T.pnj);
   const vals = ALLSKILLS.map(o => ({n:o.s, v:compTotal(c, o.s)})).sort((a, b) => b.v - a.v).slice(0, 8);
   c.pratiques.forEach(p => { const v = pratValeur(c, p); if(v.val != null && vals.length < 20) vals.push({n:p.n, v:v.val}); });
@@ -2097,7 +2673,7 @@ function versLeMonde(pid){
   const qui = 'Ancien personnage' + (c.joueur ? ', joué par ' + c.joueur : '') + '. ' + [c.peuple, c.voie].filter(Boolean).join(', ');
   const texte = [c.texte.trim(), (qui.replace(/[.\s,]+$/, '') + '.') + (armes ? ' Ses armes : ' + armes + '.' : '')].filter(Boolean).join('\n\n');
   const p = normPnj({id:id, maj:t, nom:c.nom, peuple:c.peuple, role:c.voie ? c.voie + ', ancien Marchefleur' : 'Ancien Marchefleur',
-    groupe:'Anciens personnages', attitude:'inconnu', statut:'vivant', texte:texte, auteur:MOI.joueur || '',
+    groupe:'Anciens personnages', attitude:'inconnu', statut:'vivant', texte:texte, auteur:MOI.joueur || '', lieu:lieu,
     valeurs:vals, pvMax:c.pvMax, pv:c.pv, pv0:c.pv, pj:c.id});
   baseVie(p, c.pv);   /* une fiche neuve : rien des coups d'une ancienne fiche supprimée du même nom */
   T.pnj[id] = p;
@@ -2127,6 +2703,8 @@ function reprendrePersonnage(pid){
   if(p && !p.supprime) T.pnj[nid] = Object.assign({}, p, {supprime:true, maj:t});
   /* la date du retour : une fusion avec une fiche d'avant ne le renvoie pas dans le monde */
   c.monde = ''; c.mondeT = t;
+  /* il revient à la table qu'on suit : c'est là qu'on le reprend, quelle que soit la campagne qu'il a quittée */
+  rattacher(c);
   majPerso(c);
   return c;
 }
@@ -2160,12 +2738,12 @@ function apresSaisie(box, fn){
   }, 150);
   box.addEventListener('focusout', f);
 }
-/* ceux qui sont à la table : pas ceux qui sont entrés dans le monde, dont la fiche de PNJ a pris le relais */
-function persos(){
-  return Object.keys(T.personnages).map(id => T.personnages[id]).filter(c => !c.supprime && !c.monde)
-    .sort((a, b) => (a.nom || '').localeCompare(b.nom || '', 'fr'));
-}
-function perso(id){ const c = T.personnages[id]; return c && !c.supprime && !c.monde ? c : null; }
+/* ceux qui sont à la table de la campagne qu'on suit : pas ceux qui sont entrés dans le monde, dont la fiche de PNJ a pris
+   le relais, ni ceux d'une autre campagne */
+function persos(){ return persosDe(idCourante()); }
+function perso(id){ const c = T.personnages[id]; return c && !c.supprime && !c.monde && dansCampagne(c) ? c : null; }
+/* un personnage à la table, de n'importe quelle campagne */
+function persoActif(id){ const c = T.personnages[id]; return c && !c.supprime && !c.monde ? c : null; }
 
 function jauge(c, quelle){
   const cour = quelle === 'pv' ? 'pv' : 'pcc', max = quelle === 'pv' ? 'pvMax' : 'pcMax';
@@ -2369,7 +2947,7 @@ let PED0 = null;             /* la fiche telle qu'elle était à l'ouverture de 
 function ouvrirEditeurPerso(c, nouveau){
   PED = normPerso(JSON.parse(JSON.stringify(c)));
   PED0 = JSON.parse(JSON.stringify(PED));
-  if(nouveau) PED.id = nouvelId('p');
+  if(nouveau){ PED.id = nouvelId('p'); PED.campagne = idCourante(); }
   const box = $('pEditeur'); box.innerHTML = ''; box.hidden = false;
   box.append(el('h3', null, nouveau ? 'Un personnage de plus' : 'Modifier ' + (PED.nom || 'la fiche')));
 
@@ -2378,6 +2956,14 @@ function ouvrirEditeurPerso(c, nouveau){
   champ(id, 'Joué par', Object.assign(el('input'), {type:'text', value:PED.joueur || MOI.joueur, oninput:e => PED.joueur = e.target.value, style:'width:100%'}));
   champ(id, 'Peuple', Object.assign(el('input'), {type:'text', value:PED.peuple, oninput:e => PED.peuple = e.target.value, style:'width:100%'}));
   champ(id, 'Voie', Object.assign(el('input'), {type:'text', value:PED.voie, oninput:e => PED.voie = e.target.value, style:'width:100%'}));
+  /* avec plusieurs campagnes, dans laquelle il joue : on peut le faire passer de l'une à l'autre */
+  if(plusieursCampagnes()){
+    const sc = el('select'); sc.id = 'ped-campagne';
+    campagnes().forEach(x => sc.add(new Option(x.nom + (x.etat === 'finie' ? ' (terminée)' : ''), x.id)));
+    sc.value = idCampagneDe(PED);
+    sc.onchange = () => { PED.campagne = sc.value; };
+    champ(id, 'Campagne', sc);
+  }
   box.append(id);
 
   box.append(el('h3', null, 'Caractéristiques'));
@@ -2448,11 +3034,14 @@ function ouvrirEditeurPerso(c, nouveau){
     /* entré dans le monde pendant qu'on le retouchait : sa fiche de PNJ a pris le relais, on ne le ramène pas en douce */
     const parti = !nouveau && T.personnages[PED.id];
     if(parti && !parti.supprime && parti.monde){ msgTable('« ' + (parti.nom || 'Sans nom') + ' » est entré dans le monde entre-temps. Reprends-le d’abord, dans le Registre des Marchefleurs.', false); return; }
-    const autre = persos().find(x => x.id !== PED.id && (x.nom || '').trim().toLowerCase() === PED.nom.trim().toLowerCase());
-    if(autre){ msgTable('« ' + autre.nom + ' » est déjà à la table.', false); return; }
+    const cible = idCampagneDe(PED);
+    /* un même nom ne se joue pas deux fois, d'une campagne à l'autre : les mentions, les liens et les fiches le prennent pour une seule personne */
+    const autre = persoALaTable(PED.nom, PED.id);
+    if(autre){ msgTable('« ' + autre.nom + ' » est déjà ' + dejaALaTable(autre) + '.', false); return; }
     let c2 = normPerso(PED);
-    if(nouveau) c2.id = idLibre('p-' + slug(c2.nom), T.personnages);
-    const cur = !nouveau && perso(c2.id);
+    if(nouveau){ c2.id = idLibre('p-' + slug(c2.nom), T.personnages); rattacher(c2, cible); }
+    /* la fiche telle qu'elle est aujourd'hui, de n'importe quelle campagne : on a pu en changer pendant que l'éditeur était ouvert */
+    const cur = !nouveau && persoActif(c2.id);
     changer(() => {
       if(!cur){ baseVie(c2, c2.pvMax, c2.pcMax); majPerso(c2); return; }
       /* la fiche d'aujourd'hui, et seulement ce qu'on a changé dans l'éditeur : une progression, un combat
@@ -2460,6 +3049,8 @@ function ouvrirEditeurPerso(c, nouveau){
       const x = normPerso(JSON.parse(JSON.stringify(cur)));
       const change = (a, b) => JSON.stringify(a) !== JSON.stringify(b);
       ['nom','joueur','peuple','voie','red','bonusPratique','pratiques','armes','texte'].forEach(k => { if(change(c2[k], PED0[k])) x[k] = c2[k]; });
+      /* passé dans une autre campagne : sa date à lui, pour que la fusion le suive */
+      if(idCampagneDe(c2) !== idCampagneDe(PED0)) rattacher(x, idCampagneDe(c2));
       CARS.forEach(k => { if(c2.car[k] !== PED0.car[k]) x.car[k] = c2.car[k]; });
       ALLSKILLS.forEach(o => { if(c2.comp[o.s] !== PED0.comp[o.s]) x.comp[o.s] = c2.comp[o.s]; });
       const dPv = c2.pvMax - PED0.pvMax, dPc = c2.pcMax - PED0.pcMax;
@@ -2554,14 +3145,14 @@ function dessinerJets(){
   const f = $('jFiltre'), avant = f.value;
   f.innerHTML = '';
   f.add(new Option('Tout le monde', ''));
-  const noms = {};
-  T.jets.forEach(j => { if(j.perso) noms[j.perso] = 1; });
+  const noms = {}, jets = jetsDe(idCourante());   /* l'historique de la campagne qu'on suit */
+  jets.forEach(j => { if(j.perso) noms[j.perso] = 1; });
   persos().forEach(c => { if(c.nom) noms[c.nom] = 1; });
   Object.keys(noms).sort((a, b) => a.localeCompare(b, 'fr')).forEach(n => f.add(new Option(n, n)));
   f.value = avant && [].slice.call(f.options).some(o => o.value === avant) ? avant : '';
 
   const box = $('jHisto'); box.innerHTML = '';
-  const liste = T.jets.filter(j => !f.value || j.perso === f.value).slice().reverse();
+  const liste = jets.filter(j => !f.value || j.perso === f.value).slice().reverse();
   if(!liste.length){ box.append(el('p','vide','Rien de lancé pour l’instant. Les jets se font dans la séance, et atterrissent ici.')); return; }
   let jour = '';
   liste.slice(0, 150).forEach(j => {
@@ -2993,21 +3584,23 @@ const GENRES_PERSO = [{k:'fait', l:'Fait'}, {k:'dit', l:'Dit'}];
 const SEPARATEUR = '--------------------';
 
 /* ---------- les séances ---------- */
-function seances(){
-  return Object.keys(T.journal).map(id => T.journal[id]).filter(e => e && !e.supprime)
-    .sort((a, b) => (parseFloat(b.seance) || 0) - (parseFloat(a.seance) || 0) || (a.id < b.id ? -1 : 1));
-}
+/* celles de la campagne qu'on suit */
+function seances(){ return seancesDe(idCourante()); }
 /* on suit la dernière séance, sauf si on en a choisi une plus ancienne */
 function seanceCourante(){
   const l = seances();
   if(MOI.seanceFixee){ const e = l.find(x => x.id === MOI.seance); if(e) return e; }
   return l[0] || null;
 }
+/* une séance d'une autre campagne fait passer à cette campagne : le lien d'un PNJ ou d'une mission mène où il faut */
 function choisirSeance(id){
+  const x = id && T.journal[id];
+  const change = !!(x && !x.supprime && !dansCampagne(x) && passerACampagne(idCampagneDe(x)));
   const l = seances();
   MOI.seance = id;
   MOI.seanceFixee = !!(l.length && l[0].id !== id);
   sauverLocal();
+  if(change) dessiner();
 }
 function blocsDe(sid){
   return Object.keys(T.blocs).map(id => T.blocs[id]).filter(b => b && !b.supprime && b.seance === sid)
@@ -3017,14 +3610,13 @@ function aujourdhui(){
   const d = new Date(), n = x => (x < 10 ? '0' : '') + x;
   return d.getFullYear() + '-' + n(d.getMonth() + 1) + '-' + n(d.getDate());
 }
-/* la séance n porte le nom s-n : deux joueurs qui l'ouvrent en même temps ouvrent la même */
+/* la séance n d'une campagne porte le nom s-n (s-oceane-n dans une autre) : deux joueurs qui l'ouvrent en même temps ouvrent la même */
 function nouvelleSeance(){
   const faire = () => {
     const l = seances();
     const n = l.length ? Math.floor(Math.max.apply(null, l.map(e => parseFloat(e.seance) || 0))) + 1 : 1;
-    let id = 's-' + n;
-    if(T.journal[id]) id += '-' + Math.random().toString(36).slice(2, 6);
-    const e = {id:id, maj:maintenant(), supprime:false, seance:String(n), date:aujourdhui(), titre:'', texte:'', auteur:MOI.joueur || ''};
+    const id = idSeance(n);
+    const e = rattacher({id:id, maj:maintenant(), supprime:false, seance:String(n), date:aujourdhui(), titre:'', texte:'', auteur:MOI.joueur || ''});
     MOI.seance = id; MOI.seanceFixee = false;
     BED = null; SEANCE_SUPPR = false;
     changer(() => { T.journal[id] = e; });
@@ -3449,9 +4041,9 @@ function jeterCompo(main){
   payerPratique(c, s.prat);
   const j = COMPO.jet, qui = nomDe(COMPO.qui) || MOI.joueur || 'MJ';
   changer(() => {
-    T.jets = T.jets.concat([{id:j.id, t:maintenant(), auteur:MOI.joueur || 'quelqu’un', perso:qui,
+    ajouterJet({id:j.id, t:maintenant(), auteur:MOI.joueur || 'quelqu’un', perso:qui,
       quoi:(j.rea ? (j.rea === 'esquive' ? 'esquive, ' : 'parade, ') : '') + (j.quoi || 'jet'), formule:'', jet:j.jet, seuil:j.seuil,
-      mode:j.mode, reussite:j.reussite, note:j.note, main:j.main}]).slice(-MAX_JETS);
+      mode:j.mode, reussite:j.reussite, note:j.note, main:j.main});
   });
   dessinerCompositeur(true);
 }
@@ -3482,9 +4074,9 @@ function degatsCompo(f, main){
   COMPO.formule = f; COMPO.pvN = COMPO.degats.total; COMPO.perte = null;
   const qui = nomDe(COMPO.qui) || MOI.joueur || 'MJ';
   changer(() => {
-    T.jets = T.jets.concat([{id:nouvelId('j'), t:maintenant(), auteur:MOI.joueur || 'quelqu’un', perso:qui,
+    ajouterJet({id:nouvelId('j'), t:maintenant(), auteur:MOI.joueur || 'quelqu’un', perso:qui,
       quoi:'dégâts' + (r.txt ? ' ' + r.txt : '') + (double ? ', doublés' : ''), formule:r.txt, jet:COMPO.degats.total, seuil:null,
-      mode:'des', reussite:false, note:des, main:main != null}]).slice(-MAX_JETS);
+      mode:'des', reussite:false, note:des, main:main != null});
   });
   dessinerCompositeur(true);
 }
@@ -5172,10 +5764,19 @@ function nommer(adv, pris){
 }
 /* la rencontre entre dans une séance ; ses identifiants viennent d'elle et de la séance : deux onglets ne la posent
    pas deux fois, et la même composition renvoyée à la séance suivante y entre bien */
+/* l'identifiant d'une séance tel qu'il entre dans ceux d'une rencontre : court, et jamais le même pour deux séances
+   (le nom d'une campagne peut être long : « s-campagne-solo-d-oceane-1 » et « …-2 » ne se distinguent qu'au bout) */
+function courtDeSeance(id){
+  const s = String(id).replace(/[^\w-]/g, '');
+  if(s.length <= 20) return s;
+  let h = 0;
+  for(let i = 0; i < s.length; i++) h = (Math.imul(h, 31) + s.charCodeAt(i)) | 0;
+  return s.slice(0, 12) + '-' + (h >>> 0).toString(36);
+}
 function poserRencontre(o, e){
   e = e || seanceCourante();
   if(!e) return '';
-  const base = String(o.id || nouvelId('x')).replace(/[^\w-]/g, '').slice(0, 40) + '-' + String(e.id).replace(/[^\w-]/g, '').slice(0, 20);
+  const base = String(o.id || nouvelId('x')).replace(/[^\w-]/g, '').slice(0, 40) + '-' + courtDeSeance(e.id);
   const rid = 'r-' + base;
   if(T.rencontres[rid] && !T.rencontres[rid].supprime) return 'deja';
   const t = maintenant(), noms = nommer(o.adversaires, enJeu(e.id));
@@ -5770,6 +6371,8 @@ function phraseLien(l, marque){
 }
 /* ---------- l'histoire d'un lien : ce qu'il a été, de quelle séance à quelle séance, et pourquoi ---------- */
 function numeroSeance(sid){ const e = sid && T.journal[sid] && !T.journal[sid].supprime ? T.journal[sid] : null; return e ? (e.seance || '?') : ''; }
+/* la même, pour la lire : avec plusieurs campagnes, son numéro dit aussi de laquelle elle est */
+function etiqSeance(sid){ const e = sid && T.journal[sid] && !T.journal[sid].supprime ? T.journal[sid] : null; return e ? etiquetteSeance(e) : ''; }
 /* les états d'un lien, du plus ancien à celui d'aujourd'hui */
 function etatsDuLien(l){
   const h = l.hist || [];
@@ -5778,7 +6381,7 @@ function etatsDuLien(l){
 }
 const etatEnLien = (l, s) => Object.assign({}, l, {type:s.type, texte:s.texte, mutuel:s.mutuel, de:s.de || l.de, vers:s.vers || l.vers});
 function quandEtat(e){
-  const a = numeroSeance(e.debut), b = numeroSeance(e.fin);
+  const a = etiqSeance(e.debut), b = etiqSeance(e.fin);
   if(e.actuel) return a ? 'depuis la séance ' + a : 'aujourd’hui';
   if(a && b) return a === b ? 'à la séance ' + a : 'séances ' + a + ' à ' + b;
   return b ? 'jusqu’à la séance ' + b : a ? 'depuis la séance ' + a : 'avant';
@@ -5910,7 +6513,10 @@ function evenementsLiens(){
     });
   });
   const rang = sid => { const n = parseFloat(numeroSeance(sid)); return isNaN(n) ? -1 : n; };
-  return ev.sort((a, b) => (rang(a.seance) - rang(b.seance)) || (a.t - b.t));
+  /* une campagne après l'autre, puis ses séances dans l'ordre ; sans séance, en tête */
+  const ordre = {}; campagnes().forEach((c, i) => { ordre[c.id] = i; });
+  const camp = sid => { const e = sid && T.journal[sid]; return e && !e.supprime ? ordre[idCampagneDe(e)] || 0 : -1; };
+  return ev.sort((a, b) => (camp(a.seance) - camp(b.seance)) || (rang(a.seance) - rang(b.seance)) || (a.t - b.t));
 }
 function dessinerHistoire(force){
   const box = $('pnjHistoire'); if(!box) return;
@@ -5932,7 +6538,7 @@ function dessinerHistoire(force){
     if(k !== cle || !u){
       cle = k;
       const e = k ? T.journal[k] : null;
-      box.append(el('h3','hseance', e ? 'Séance ' + (e.seance || '?') + (e.titre ? ' · ' + e.titre : '') : 'Sans séance notée'));
+      box.append(el('h3','hseance', e ? 'Séance ' + (e.seance || '?') + (e.titre ? ' · ' + e.titre : '') + (plusieursCampagnes() ? ' · ' + nomCampagne(idCampagneDe(e)) : '') : 'Sans séance notée'));
       u = el('ul','hliens');
       box.append(u);
     }
@@ -5977,9 +6583,9 @@ function cartePnj(p){
   const qui = [p.role, p.peuple, p.groupe].filter(Boolean).join(' · ');
   w.append(el('div','pqui', qui || 'rien de noté pour l’instant'));
   const ap = apparitions(p), nl = liensDe('pnj:' + p.id).length;
-  const premiere = p.seance && T.journal[p.seance] && !T.journal[p.seance].supprime ? T.journal[p.seance].seance : '';
+  const premiere = p.seance && T.journal[p.seance] && !T.journal[p.seance].supprime ? etiquetteSeance(T.journal[p.seance]) : '';
   const meta = [p.lieu,
-    ap.length ? 'vu en séance ' + ap.map(a => a.e.seance).join(', ') : premiere ? 'rencontré en séance ' + premiere : '',
+    ap.length ? 'vu en séance ' + listeNumerosSeances(ap.map(a => a.e)) : premiere ? 'rencontré en séance ' + premiere : '',
     nl ? nl + ' lien' + (nl > 1 ? 's' : '') : '',
     p.statut === 'disparu' ? 'disparu' : '',
     p.pvMax ? p.pv + '/' + p.pvMax + ' PV' : ''].filter(Boolean);
@@ -6099,10 +6705,9 @@ function dessinerGrand(force){
   box.append(t);
   const qui = q.pj ? [o.joueur ? 'joué par ' + o.joueur : '', o.peuple, o.voie] : [o.role, o.peuple, o.groupe];
   box.append(el('p','pqui gsous', qui.filter(Boolean).join(' · ') || 'rien de noté pour l’instant'));
-  const vu = [];
-  l.forEach(x => { const n = x.e.seance || '?'; if(vu.indexOf(n) < 0) vu.push(n); });
+  const vu = listeNumerosSeances(l.map(x => x.e));
   const nl = liensDe(ref).length;
-  const meta = [q.pj ? '' : o.lieu, vu.length ? 'vu en séance ' + vu.join(', ') : '', nl ? nl + ' lien' + (nl > 1 ? 's' : '') : '',
+  const meta = [q.pj ? '' : o.lieu, vu ? 'vu en séance ' + vu : '', nl ? nl + ' lien' + (nl > 1 ? 's' : '') : '',
     !q.pj && o.statut === 'disparu' ? 'disparu' : '', !q.pj && o.pvMax ? o.pv + '/' + o.pvMax + ' PV' : ''].filter(Boolean);
   if(meta.length) box.append(el('p','mini gmeta', meta.join(' · ')));
   const act = el('div','pact');
@@ -6183,7 +6788,7 @@ function grandTextes(q, l, gens){
   if(groupes.length > 1){
     const saut = el('div','gsauts'); saut.setAttribute('role', 'group'); saut.setAttribute('aria-label', 'Aller à une séance');
     groupes.forEach(g => {
-      const x = el('button', null, 'Séance ' + (g.e.seance || '?')); x.type = 'button';
+      const x = el('button', null, 'Séance ' + etiquetteSeance(g.e)); x.type = 'button';
       x.title = g.l.length + ' paragraphe' + (g.l.length > 1 ? 's' : '') + (g.e.titre ? ', ' + g.e.titre : '');
       x.onclick = () => { const c = w.querySelector('[data-gseance="' + g.e.id + '"]'); if(c) c.scrollIntoView({block:'start', behavior:'smooth'}); };
       saut.append(x);
@@ -6192,7 +6797,7 @@ function grandTextes(q, l, gens){
   } else w.append(barre);
   groupes.forEach(g => {
     const s = el('section','ggroupe'); s.setAttribute('data-gseance', g.e.id);
-    const h = el('h5','gseance', 'Séance ' + (g.e.seance || '?') + (g.e.titre ? ' · ' + g.e.titre : ''));
+    const h = el('h5','gseance', 'Séance ' + etiquetteSeance(g.e) + (g.e.titre ? ' · ' + g.e.titre : ''));
     h.append(el('span','gnb', ' · ' + g.l.length + ' paragraphe' + (g.l.length > 1 ? 's' : '')));
     s.append(h);
     g.l.forEach(x => {
@@ -6207,7 +6812,7 @@ function grandTextes(q, l, gens){
       p.append(tx);
       const aller = el('button','ax', '↗'); aller.type = 'button';
       aller.title = 'Le retrouver dans la séance';
-      aller.setAttribute('aria-label', 'Retrouver ce paragraphe dans la séance ' + (g.e.seance || ''));
+      aller.setAttribute('aria-label', 'Retrouver ce paragraphe dans la séance ' + etiquetteSeance(g.e));
       aller.onclick = () => allerAuBloc(g.e.id, x.b.id);
       p.append(aller);
       s.append(p);
@@ -6421,6 +7026,9 @@ function ouvrirEditeurPnj(p, nouveau){
   const ss = el('select'); ss.id = 'ped-seance';
   ss.add(new Option('pas encore rencontré', ''));
   seances().slice().reverse().forEach(e => ss.add(new Option('Séance ' + (e.seance || '?') + (e.titre ? ' · ' + e.titre : ''), e.id)));
+  /* rencontré dans une autre campagne : sa séance reste choisie, avec le nom de sa campagne */
+  const ex = PNJ_ED.seance && T.journal[PNJ_ED.seance] && !T.journal[PNJ_ED.seance].supprime ? T.journal[PNJ_ED.seance] : null;
+  if(ex && !dansCampagne(ex)) ss.add(new Option('Séance ' + etiquetteSeance(ex) + (ex.titre ? ' · ' + ex.titre : ''), ex.id));
   ss.value = PNJ_ED.seance && T.journal[PNJ_ED.seance] ? PNJ_ED.seance : '';
   ss.onchange = () => { PNJ_ED.seance = ss.value; };
   champ(id, 'Première rencontre', ss);
@@ -7424,7 +8032,10 @@ function textesDe(ref){
     if(agit || cite) out.push({b:b, e:e, agit:agit});
   });
   const num = e => parseFloat(e.seance) || 0;
-  return out.sort((x, y) => (num(x.e) - num(y.e)) || (x.b.ordre - y.b.ordre) || (x.b.id < y.b.id ? -1 : 1));
+  /* une campagne après l'autre : le numéro d'une séance ne vaut que chez elle */
+  const ordre = {}; campagnes().forEach((c, i) => { ordre[c.id] = i; });
+  const camp = e => ordre[idCampagneDe(e)] || 0;
+  return out.sort((x, y) => (camp(x.e) - camp(y.e)) || (num(x.e) - num(y.e)) || (x.b.ordre - y.b.ordre) || (x.b.id < y.b.id ? -1 : 1));
 }
 /* les autres fiches qui le citent dans ce qu'on sait d'elles */
 function fichesQuiCitent(ref){
@@ -7454,14 +8065,14 @@ function blocTextes(ref, redessiner){
   vus.forEach(x => {
     if(x.e.id !== cle){
       cle = x.e.id;
-      w.append(el('p','tseance', 'Séance ' + (x.e.seance || '?') + (x.e.titre ? ' · ' + x.e.titre : '')));
+      w.append(el('p','tseance', 'Séance ' + etiquetteSeance(x.e) + (x.e.titre ? ' · ' + x.e.titre : '')));
     }
     const p = el('div','textrait' + (x.agit ? ' agit' : ''));
     const t = el('p');
     t.append(texteRiche(extrait(phrase(x.b), 320), gens));
     p.append(t);
     const aller = el('button','ax', '↗'); aller.type = 'button';
-    aller.title = 'Le retrouver dans la séance'; aller.setAttribute('aria-label', 'Retrouver ce paragraphe dans la séance ' + (x.e.seance || ''));
+    aller.title = 'Le retrouver dans la séance'; aller.setAttribute('aria-label', 'Retrouver ce paragraphe dans la séance ' + etiquetteSeance(x.e));
     aller.onclick = () => allerAuBloc(x.e.id, x.b.id);
     p.append(aller);
     w.append(p);
@@ -7544,6 +8155,11 @@ const EXEMPLES_MISSIONS = [
     notes:'Personne ne l’a prise, et la paie le dit. Cinquième Mot : jamais seul devant le seuil. Rouve est parti seul.'}
 ];
 
+/* le tableau est à tout le monde ; les missions en cours et les finies sont celles de la campagne qu'on suit */
+function missionsDeLaVue(){
+  const cid = idCourante();
+  return toutesMissions().filter(m => m.etat === 'tableau' || idCampagneMission(m) === cid);
+}
 /* vue : le tableau, les missions en cours, celles qui sont finies. Les boutons à deux temps : partir, retirer,
    boucler, tomber à l'eau, rouvrir */
 const MIS = {vue:'tableau', lire:'', ed:null, edAvant:'', nouvelle:false, exemple:false, arme:{}, minuteur:null, mjOuvert:{}};
@@ -7561,9 +8177,10 @@ const PEUPLES_UN = ['Humain','Élytris','Nyréen',"Ori'Ican",'Ciméran','Ilvès'
 const ptsTxt = n => n + ' point' + (n > 1 ? 's' : '');
 const paieTxt = m => [m.paie, ptsTxt(m.points)].filter(Boolean).join(' · ');
 const numSeance = sid => { const e = sid && T.journal[sid]; return e && !e.supprime ? (e.seance || '?') : ''; };
-/* la mission qui se joue à la table : celle de la séance qu'on regarde, sinon la dernière lancée */
+/* la mission qui se joue à la table : celle de la séance qu'on regarde, sinon la dernière lancée, dans la campagne qu'on suit */
 function missionEnCours(){
-  const l = toutesMissions().filter(m => m.etat === 'cours').sort((a, b) => b.lancee - a.lancee);
+  const cid = idCourante();
+  const l = toutesMissions().filter(m => m.etat === 'cours' && idCampagneMission(m) === cid).sort((a, b) => b.lancee - a.lancee);
   const e = seanceCourante();
   return (e && l.find(m => m.seance === e.id)) || l[0] || null;
 }
@@ -7597,7 +8214,7 @@ function dessinerMissions(force){
   dessinerLireMission(force);
   if(!force && occupe(box)){ apresSaisie(box, () => dessinerMissions(true)); return; }
   box.innerHTML = '';
-  const tous = toutesMissions();
+  const tous = missionsDeLaVue();
   const garde = {tableau: m => m.etat === 'tableau', cours: m => m.etat === 'cours', finies: m => m.etat === 'bouclee' || m.etat === 'ratee'};
   const l = tous.filter(garde[MIS.vue] || garde.tableau);
   const rang = m => MISSIONS.findIndex(g => g.k === m.genre);
@@ -7605,15 +8222,16 @@ function dessinerMissions(force){
   else if(MIS.vue === 'finies') l.sort((a, b) => b.finie - a.finie);
   else l.sort((a, b) => (rang(a) - rang(b)) || (a.titre || '').localeCompare(b.titre || '', 'fr'));
   if(!l.length){
-    box.append(el('p','vide', MIS.vue === 'cours' ? 'Aucune mission en cours. « Partir » sur une mission du tableau la lance dans la table.'
-      : MIS.vue === 'finies' ? 'Aucune mission finie pour l’instant, ni bouclée, ni tombée à l’eau.'
+    const chez = plusieursCampagnes() && MIS.vue !== 'tableau' ? ' dans « ' + nomCampagne(idCourante()) + ' »' : '';
+    box.append(el('p','vide', MIS.vue === 'cours' ? 'Aucune mission en cours' + chez + '. « Partir » sur une mission du tableau la lance dans la table.'
+      : MIS.vue === 'finies' ? 'Aucune mission finie' + chez + ' pour l’instant, ni bouclée, ni tombée à l’eau.'
       : 'Le tableau est vide. « Nouvelle mission » pour en écrire une, « Tirer une mission » pour le générateur du livre.'));
     return;
   }
   l.forEach(m => box.append(carteMission(m)));
 }
 function majOutilsMissions(){
-  const tous = toutesMissions();
+  const tous = missionsDeLaVue();
   const n = {tableau: tous.filter(m => m.etat === 'tableau').length, cours: tous.filter(m => m.etat === 'cours').length,
     finies: tous.filter(m => m.etat === 'bouclee' || m.etat === 'ratee').length};
   [['misVueTableau','tableau','Au tableau'], ['misVueCours','cours','En cours'], ['misVueFinies','finies','Finies']].forEach(([id, v, lab]) => {
@@ -7676,16 +8294,16 @@ function actionsMission(m, redessiner, pre){
     const l = $('misLire'); if(l){ l.scrollIntoView({block:'start', behavior:'smooth'}); const h = l.querySelector('.gnom'); if(h) h.focus({preventScroll:true}); }
   }, null, pre + 'lire-' + m.id);
   if(m.etat === 'tableau'){
-    const d = seanceDeDepart();
-    deux('partir', 'Partir', 'Confirmer : séance ' + d.e.seance + ' dans la table', () => lancerMission(m.id), 'plein');
-    if(MIS.arme[cle('partir')]) note = (d.neuve ? 'Une séance neuve (' + d.e.seance + ') s’ouvre dans la table' : 'La séance ' + d.e.seance + ', encore vide, reçoit la mission')
+    const d = seanceDeDepart(), chez = plusieursCampagnes() ? ' de « ' + nomCampagne(idCourante()) + ' »' : '';
+    deux('partir', 'Partir', 'Confirmer : séance ' + d.e.seance + ' dans la table' + chez, () => lancerMission(m.id), 'plein');
+    if(MIS.arme[cle('partir')]) note = (d.neuve ? 'Une séance neuve (' + d.e.seance + ') s’ouvre dans la table' + chez : 'La séance ' + d.e.seance + ', encore vide' + chez + ', reçoit la mission')
       + ' : le matin au Havre, l’annonce, la mission encadrée' + (m.pnj.length ? ' ; ses visages arrivent dans le Registre des Visages' : '')
       + (m.rencontre.inten || m.rencontre.fam ? ' ; sa rencontre est prête à tirer dans « En face »' : '') + '.';
     b('Modifier', () => ouvrirEditeurMission(m, false), null, pre + 'modif-' + m.id);
     deux('suppr', 'Retirer', 'Confirmer', () => retirerMission(m.id));
   } else if(m.etat === 'cours'){
     b('À la table', () => ouvrirPage('table.html#mission=' + encodeURIComponent(m.id), ONGLET_TABLE), null, pre + 'table-' + m.id);
-    const n = persos().length, e = derniereSeance();
+    const cid = idCampagneMission(m), n = persosDe(cid).length, e = seancesDe(cid)[0] || null;
     const ou = e ? ' ; la séance ' + (e.seance || '?') + ', la plus récente, le note.' : '.';
     deux('boucler', 'La boucler', 'Confirmer : ' + (m.points && n ? ptsTxt(m.points) + (n > 1 ? ' à chacun' : '') : 'bouclée'), () => bouclerMission(m.id, true), 'plein');
     /* la paie va dans la bourse de chacun, comme les points (Livre V : un Marchefleur est payé à la mission) */
@@ -7780,9 +8398,7 @@ function seanceDeDepart(){
   const l = seances(), d = l[0];
   if(d && !(d.titre || '').trim() && !blocsDe(d.id).length) return {e:d, neuve:false};
   const n = l.length ? Math.floor(Math.max.apply(null, l.map(e => parseFloat(e.seance) || 0))) + 1 : 1;
-  let id = 's-' + n;
-  if(T.journal[id]) id += '-' + Math.random().toString(36).slice(2, 6);
-  return {e:{id:id, maj:maintenant(), supprime:false, seance:String(n), date:aujourdhui(), titre:'', texte:'', auteur:MOI.joueur || ''}, neuve:true};
+  return {e:rattacher({id:idSeance(n), maj:maintenant(), supprime:false, seance:String(n), date:aujourdhui(), titre:'', texte:'', auteur:MOI.joueur || ''}), neuve:true};
 }
 function encadreMission(m){
   return [m.titre || 'La mission', m.qui ? 'Qui demande : ' + m.qui : '', m.demande ? 'Ce qu’on demande : ' + m.demande : '',
@@ -7826,7 +8442,7 @@ function lancerMission(id){
   preparerRencontre(m);
   MIS.lire = '';
   dessinerMissions(true);
-  msgTable('« ' + (m.titre || 'La mission') + ' » est lancée : séance ' + num + ' dans la table.', true);
+  msgTable('« ' + (m.titre || 'La mission') + ' » est lancée : séance ' + num + ' dans la table' + (plusieursCampagnes() ? ' de « ' + nomCampagne(idCourante()) + ' »' : '') + '.', true);
   ouvrirPage('table.html#mission=' + encodeURIComponent(m.id), ONGLET_TABLE);
 }
 /* la rencontre prévue : le tirage de la table la prend, dans ce navigateur. Ce qui était déjà tiré reste */
@@ -7846,19 +8462,21 @@ function bouclerMission(id, ok){
   let m = uneMission(id);
   if(!m || m.etat !== 'cours'){ msgTable('Cette mission n’est plus en cours : rien n’a bougé.', false); dessinerMissions(true); return; }
   let n = 0, payes = 0;
+  /* la compagnie et la séance de la campagne où la mission a été lancée, pas de celle qu'on regarde */
+  const cid = idCampagneMission(m);
   changer(() => {
     m = uneMission(id);
     if(!m || m.etat !== 'cours') return;
-    const e = derniereSeance(), titre = m.titre || 'la mission';
+    const e = seancesDe(cid)[0] || null, pjs = persosDe(cid), titre = m.titre || 'la mission';
     const x = Object.assign(normMission(m), {id:m.id, etat:ok ? 'bouclee' : 'ratee', fin:e ? e.id : '', finie:maintenant(), gagnants:0, maj:maintenant(), majEtat:maintenant()});
     if(ok){
-      const qui = m.points ? persos().filter(c => !c.prog.points.some(p => p.mission === m.id)) : [];
+      const qui = m.points ? pjs.filter(c => !c.prog.points.some(p => p.mission === m.id)) : [];
       const gain = qui.length ? (qui.length > 1 ? ' Toute la compagnie gagne ' : ' ' + (qui[0].nom || 'Sans nom') + ' gagne ') + ptsTxt(m.points) + ' de progression.' : '';
-      const tous = persos().length, paie = argentsDe(m.paie);
+      const tous = pjs.length, paie = argentsDe(m.paie);
       x.bloc = noterDans(e, 'Mission bouclée : ' + titre + '.' + gain + (m.paie ? ' Le Havre paie ' + m.paie + (paie && tous > 1 ? ' à chacun' : '') + '.' : ''), 'achat');
       qui.forEach(c => { c.prog.points.push({id:nouvelId('g'), t:maintenant(), quoi:'Mission : ' + titre, n:m.points, bloc:x.bloc, mission:m.id}); majPerso(c); });
       /* la paie, dans la bourse de chacun ; une seule fois, même bouclée deux fois ailleurs */
-      payes = payerMission(m, persos(), x.bloc, e ? e.id : '');
+      payes = payerMission(m, pjs, x.bloc, e ? e.id : '');
       x.gagnants = n = qui.length;
     } else x.bloc = noterDans(e, 'La mission est tombée à l’eau : ' + titre + '.', 'note');
     T.missions[m.id] = x;
@@ -7870,8 +8488,9 @@ function bouclerMission(id, ok){
 /* rouvrir : les points de cette mission sont repris à chacun, et sa ligne s'efface */
 function rouvrirMission(id){
   const m = uneMission(id); if(!m || (m.etat !== 'bouclee' && m.etat !== 'ratee')) return;
+  const cid = idCampagneMission(m);
   changer(() => {
-    persos().forEach(c => {
+    persosDe(cid).forEach(c => {
       const avant = c.prog.points.length;
       c.prog.points = c.prog.points.filter(p => p.mission !== m.id && !(m.bloc && p.bloc === m.bloc));
       if(c.prog.points.length !== avant) majPerso(c);
@@ -8887,16 +9506,17 @@ function direHavre(t, ok){
   m.textContent = t; m.className = 'note ' + (ok ? 'ok' : 'err'); m.hidden = false;
   clearTimeout(HAVRE.msgT); HAVRE.msgT = setTimeout(() => { m.hidden = true; }, 8000);
 }
-const memeNom = (a, b) => String(a || '').trim().toLowerCase() === String(b || '').trim().toLowerCase();
 function entrerHavre(r){
   if(!r.fiche){ direHavre('La fiche de « ' + (r.nom || 'Sans nom') + ' » est incomplète : ouvre-le une fois dans le Registre du Havre, puis réessaie.', false); return; }
   const c = depuisFiche(r.fiche);
-  if(persos().some(x => memeNom(x.nom, c.nom))){ direHavre('« ' + (c.nom || 'Sans nom') + ' » est déjà à la table.', false); return; }
+  const deja = persoALaTable(c.nom);
+  if(deja){ direHavre('« ' + (c.nom || 'Sans nom') + ' » est déjà ' + dejaALaTable(deja) + '.', false); return; }
   /* le personnage est à celui qui l'a créé, pas forcément à celui qui le fait entrer */
   c.joueur = r.auteur || MOI.joueur;
   c.id = idLibre('p-' + slug(c.nom), T.personnages);
+  rattacher(c);
   changer(() => majPerso(c));
-  direHavre('« ' + (c.nom || 'Sans nom') + ' » est entré dans la table.', true);
+  direHavre('« ' + (c.nom || 'Sans nom') + ' » est entré dans la table' + (plusieursCampagnes() ? ' de « ' + nomCampagne(idCourante()) + ' »' : '') + '.', true);
 }
 function dessinerHavre(){
   const b = $('pHavreOuvrir');
@@ -8920,10 +9540,10 @@ function dessinerHavre(){
     let quand = '';
     try{ quand = r.maj ? 'le ' + new Date(r.maj).toLocaleDateString('fr-BE', {day:'numeric', month:'long'}) : ''; }catch(e){}
     t.append(el('span', 'hmeta', [[r.peuple, r.voie].filter(Boolean).join(', '), r.auteur ? 'par ' + r.auteur : '', quand].filter(Boolean).join(' · ')));
-    const la = persos().some(x => memeNom(x.nom, r.nom));
-    const bt = el('button', la ? 'btn ghost sm' : 'btn sm', la ? 'Déjà à la table' : 'Faire entrer à la table');
+    const ici = persoALaTable(r.nom), la = !!ici;
+    const bt = el('button', la ? 'btn ghost sm' : 'btn sm', la ? 'Déjà ' + dejaALaTable(ici) : 'Faire entrer à la table');
     bt.type = 'button'; bt.disabled = la;
-    bt.setAttribute('aria-label', la ? (r.nom || 'Sans nom') + ' est déjà à la table' : 'Faire entrer ' + (r.nom || 'ce personnage') + ' à la table');
+    bt.setAttribute('aria-label', la ? (r.nom || 'Sans nom') + ' est déjà ' + dejaALaTable(ici) : 'Faire entrer ' + (r.nom || 'ce personnage') + ' à la table');
     bt.onclick = () => entrerHavre(r);
     row.append(t, bt);
     liste.append(row);
@@ -9466,7 +10086,7 @@ function vueBourse(c, box){
   ms.forEach(m => {
     const tr = el('tr');
     const e = m.seance && T.journal[m.seance] && !T.journal[m.seance].supprime ? T.journal[m.seance] : null;
-    tr.append(el('td','mini', (e ? 'Séance ' + (e.seance || '?') + ' · ' : '') + (m.t > 1e11 ? dateCourte(m.t) : 'avant')));
+    tr.append(el('td','mini', (e ? 'Séance ' + etiquetteSeance(e) + ' · ' : '') + (m.t > 1e11 ? dateCourte(m.t) : 'avant')));
     tr.append(el('td', null, m.motif));
     tr.append(el('td','n ' + (m.n < 0 ? 'fneg' : 'fpos'), (m.n > 0 ? '+' : '') + texteArgent(m.n)));
     const td = el('td','n');
@@ -9642,22 +10262,26 @@ function dessinerMonde(){
     const p = c.monde && T.pnj[c.monde] && !T.pnj[c.monde].supprime ? T.pnj[c.monde] : null;
     const t = el('div');
     t.append(el('b', null, c.nom || 'Sans nom'));
-    t.append(el('span','mini', ' · ' + [c.peuple, c.voie].filter(Boolean).join(', ') + (c.mondeT ? ' · entré dans le monde le ' + dateCourte(c.mondeT) : '')));
+    t.append(el('span','mini', ' · ' + [c.peuple, c.voie].filter(Boolean).join(', ') + (c.mondeT ? ' · entré dans le monde le ' + dateCourte(c.mondeT) : '')
+      + (plusieursCampagnes() ? ' · venu de « ' + nomCampagne(idCampagneDe(c)) + ' »' : '')));
     if(p){ const a = el('a','mini', 'Sa fiche de PNJ'); a.href = 'pnj.html#' + encodeURIComponent(p.id); a.target = ONGLET_VISAGES; t.append(el('br'), a); }
     else t.append(el('br'), el('span','mini', 'Sa fiche de PNJ a été retirée du Registre des Visages.'));
     w.append(t);
-    const b = deuxTemps('reprendre-' + c.id, 'Le reprendre', 'Confirmer : il revient à la table', () => {
+    const chez = plusieursCampagnes() ? ' de « ' + nomCampagne(idCourante()) + ' »' : '';
+    const b = deuxTemps('reprendre-' + c.id, 'Le reprendre', 'Confirmer : il revient à la table' + chez, () => {
       FICHE.perso = c.id; garderChoixFiche();
       changer(() => { reprendrePersonnage(c.id); });
-      msgTable((c.nom || 'Il') + ' revient à la table, avec ses liens. Sa fiche de PNJ s’efface.', true);
+      msgTable((c.nom || 'Il') + ' revient à la table' + chez + ', avec ses liens. Sa fiche de PNJ s’efface.', true);
     }, 'ghost sm');
     b.id = 'fReprendre-' + c.id;
     w.append(b);
     box.append(w);
   });
-  const n = persos().length;
+  const n = persos().length, camp = campagneCourante();
   if(n){
     const b = deuxTemps('clore', 'Clore la campagne', 'Confirmer : les ' + (n > 1 ? n + ' personnages' : 'le personnage') + ' de la table entrent dans le monde', () => {
+      /* la campagne se termine, et sa compagnie entre dans le monde ; une campagne déjà terminée ne fait que renvoyer ses personnages */
+      if(camp && camp.etat !== 'finie'){ const r = cloreCampagne(camp.id); msgTable(r.msg, r.ok); return; }
       let k = 0;
       changer(() => { persos().forEach(c => { if(versLeMonde(c.id)) k++; }); });
       if(PED) fermerEditeurPerso();
@@ -10227,7 +10851,7 @@ function ilYA(t){
 }
 function dessinerTable(){
   const j = $('tbJoueur'); if(j && document.activeElement !== j) j.value = MOI.joueur;
-  const n = $('tbNom'); if(n && document.activeElement !== n) n.value = T.nom;
+  dessinerCampagnes();
 
   const p = $('tbPastille'), e = $('tbEtat');
   const attache = !!SYNC.poignee && SYNC.etat === 'fichier';
@@ -10284,7 +10908,7 @@ function dessiner(){
 /* ---------- les boutons ---------- */
 const sur = (id, fn) => { const x = $(id); if(x) x.onclick = fn; };
 if($('tbJoueur')) $('tbJoueur').oninput = e => { MOI.joueur = e.target.value; sauverLocal(); };
-if($('tbNom')) $('tbNom').oninput = e => { const v = e.target.value; changer(() => { T.nom = v; }); };
+if($('tbCampagne')) $('tbCampagne').onchange = e => { choisirCampagne(e.target.value); e.target.blur(); };
 sur('tbOuvrir', () => {
   if(SYNC.etat === 'attente'){ redemander(); return; }
   if(!FSA()){ msgTable('Ce navigateur ne propose pas le fichier partagé.', false); return; }
@@ -10299,7 +10923,7 @@ sur('tbCreer', () => {
     .catch(err => { if(err && err.name !== 'AbortError') msgTable('Le fichier n’a pas pu être créé.', false); });
 });
 sur('tbDetacher', detacher);
-sur('tbJson', e => telecharger((T.nom ? T.nom.replace(/[\\/:*?"<>|]/g, ' ') : 'table-faelorenn') + '.json', tableJson(), 'application/json', e.currentTarget));
+sur('tbJson', e => telecharger('table-faelorenn.json', tableJson(), 'application/json', e.currentTarget));
 sur('tbImport', () => $('tbFichier').click());
 if($('tbFichier')) $('tbFichier').onchange = e => {
   const f = e.target.files && e.target.files[0];
@@ -10348,12 +10972,12 @@ if(PAGE === 'table'){
   $('jVider').onclick = e => {
     const b = e.currentTarget;
     if(!VIDER_ARME){
-      VIDER_ARME = true; b.textContent = 'Confirmer : tout l’historique part'; b.classList.add('danger');
+      VIDER_ARME = true; b.textContent = 'Confirmer : ' + (plusieursCampagnes() ? 'l’historique de « ' + nomCampagne(idCourante()) + ' » part' : 'tout l’historique part'); b.classList.add('danger');
       setTimeout(() => { VIDER_ARME = false; b.textContent = 'Vider l’historique'; b.classList.remove('danger'); }, 5000);
       return;
     }
     VIDER_ARME = false; b.textContent = 'Vider l’historique'; b.classList.remove('danger');
-    changer(() => { T.viderAvant = maintenant(); T.jets = []; });
+    changer(() => viderJets());
   };
 } else if(PAGE === 'visages'){
   /* les PNJ */
@@ -10455,7 +11079,7 @@ function suivreAncre(){
       /* une mission lancée depuis le tableau du Havre : sa séance, et son récit */
       const m = uneMission(h.slice(8)), e = seanceCourante(), a = document.activeElement;
       const occupee = !!BED || !!(a && $('secSeance').contains(a) && /^(TEXTAREA|INPUT|SELECT)$/.test(a.tagName));
-      if(m && m.seance && T.journal[m.seance] && !T.journal[m.seance].supprime && (!e || e.id !== m.seance) && !occupee){ choisirSeance(m.seance); dessinerSeance(true); }
+      if(m && m.seance && T.journal[m.seance] && !T.journal[m.seance].supprime && (!e || e.id !== m.seance) && !occupee){ choisirSeance(m.seance); dessinerSeance(true); }   /* une autre campagne : choisirSeance la suit et redessine tout */
       $('secSeance').scrollIntoView({block:'start'});
       fait = true;
     }
@@ -10468,6 +11092,9 @@ function suivreAncre(){
       if(q.vue && VUES_FICHE.some(v => v.k === q.vue)){ FICHE.vue = q.vue; fait = true; }
       if(q.pj){
         /* pas encore là : la table du dépôt n'est peut-être pas encore lue, il sera choisi à son arrivée */
+        const x = persoActif(q.pj);
+        /* à la table d'une autre campagne : on la suit */
+        if(x && !dansCampagne(x)){ passerACampagne(idCampagneDe(x)); sauverLocal(); dessiner(); }
         if(perso(q.pj)) FICHE.perso = q.pj; else FICHE.attendu = q.pj;
         fait = true;
       }

@@ -1,0 +1,1899 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Registre des Compétences</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,600;0,700;1,400&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root{
+  --paper:#F4F2EA; --surface:#FFFFFF; --fill:#E9EFE8; --ink:#1B1C18; --muted:#646D62;
+  --forest:#1F3D2B; --sage:#4A6B52; --rule:#CBD6C9; --rust:#9A4A28; --gold:#7E6226;
+  --shadow:0 1px 2px rgba(31,61,43,.07);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#131713; --surface:#1B211C; --fill:#212A22; --ink:#E6E7DF; --muted:#94A08F;
+    --forest:#9DC2A6; --sage:#7FA88A; --rule:#2E3A30; --rust:#D98A63; --gold:#C9A758;
+    --shadow:0 1px 2px rgba(0,0,0,.4);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#131713; --surface:#1B211C; --fill:#212A22; --ink:#E6E7DF; --muted:#94A08F;
+  --forest:#9DC2A6; --sage:#7FA88A; --rule:#2E3A30; --rust:#D98A63; --gold:#C9A758;
+  --shadow:0 1px 2px rgba(0,0,0,.4);
+}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:15px;line-height:1.5}
+.wrap{max-width:900px;margin:0 auto;padding-inline:18px;padding-block:28px 40px}
+h1{font-family:Spectral,Georgia,serif;font-weight:700;font-size:clamp(27px,5vw,38px);color:var(--forest);margin:0;letter-spacing:-.01em;text-wrap:balance}
+.sub{font-family:Spectral,Georgia,serif;font-style:italic;color:var(--sage);margin:2px 0 0}
+header{border-bottom:2px solid var(--forest);padding-bottom:12px;margin-bottom:22px}
+section{margin-bottom:22px}
+h2{font-family:Spectral,Georgia,serif;font-size:19px;color:var(--forest);margin:0 0 2px;display:flex;align-items:baseline;gap:10px;text-wrap:balance}
+h2 .num{font-size:12px;font-weight:600;letter-spacing:.14em;color:var(--sage);font-family:"IBM Plex Sans",sans-serif;border:1px solid var(--rule);border-radius:2px;padding:1px 6px}
+.hint{color:var(--muted);font-size:13px;margin:0 0 12px;max-width:68ch}
+.card{background:var(--surface);border:1px solid var(--rule);border-radius:3px;padding:14px 16px;box-shadow:var(--shadow)}
+label.f{display:block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+button{font:inherit}
+select:focus-visible,input:focus-visible,textarea:focus-visible,button:focus-visible,summary:focus-visible{outline:2px solid var(--sage);outline-offset:1px}
+.note{font-size:12.5px;color:var(--muted);margin:8px 0 0;line-height:1.45;max-width:68ch}
+.note.ok{color:var(--forest)}
+.note.err{color:var(--rust)}
+.lab{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:0 0 6px;display:block}
+.acts{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+
+.btn{font-size:15px;padding:10px 16px;border:1px solid var(--forest);background:var(--forest);color:var(--paper);border-radius:2px;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--forest)}
+.btn.sm{font-size:13px;padding:6px 11px}
+.btn.xs{font-size:12px;padding:3px 8px}
+.btn.danger{border-color:var(--rust);color:var(--rust);background:transparent}
+.btn.danger.sur{background:var(--rust);color:var(--paper)}
+.btn:disabled{opacity:.4;cursor:default}
+
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button{padding:6px 11px;border:1px solid var(--rule);background:transparent;color:var(--muted);border-radius:2px;cursor:pointer;font-size:14px}
+.seg button:hover{border-color:var(--sage);color:var(--forest)}
+.seg button[aria-pressed=true]{border-color:var(--forest);background:var(--fill);color:var(--forest);font-weight:600}
+.seg button .nb{font-size:11.5px;color:var(--muted);margin-left:4px;font-variant-numeric:tabular-nums}
+
+.btete{display:flex;flex-wrap:wrap;gap:4px 16px;align-items:baseline;justify-content:space-between;margin-bottom:12px}
+.bcompte{font-family:Spectral,Georgia,serif;font-size:17px;font-weight:600;color:var(--forest);margin:0}
+.etat{font-size:12.5px;color:var(--muted);margin:0}
+.etat .pt{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--muted);margin-right:6px;vertical-align:1px}
+.etat .pt.on{background:var(--sage)}
+.etat .pt.off{background:var(--rust)}
+
+/* une liste de Pratiques */
+.pliste{border-top:1px solid var(--rule);margin-top:16px;padding-top:12px}
+.pltete{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:baseline;justify-content:space-between;margin-bottom:4px}
+.pltete h3{font-family:Spectral,Georgia,serif;font-size:18px;color:var(--forest);margin:0;text-wrap:balance}
+.pltete h3 small{font-family:"IBM Plex Sans",sans-serif;font-size:12.5px;font-weight:400;color:var(--muted);margin-left:8px}
+.plcaster{display:flex;flex-wrap:wrap;gap:4px 8px;align-items:center;font-size:13.5px;color:var(--ink)}
+.plcaster select,.fld select{font:inherit;font-size:14px;padding:5px 8px;border:1px solid var(--rule);border-radius:2px;background:var(--surface);color:var(--ink);max-width:100%}
+.plcaster .aucun{color:var(--muted);font-style:italic}
+.prrow,.cprow{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:flex-start;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--rule)}
+.prrow:last-of-type,.cprow:last-of-type{border-bottom:0}
+.prrow.flash,.cprow.flash{animation:flash 1.6s ease-out}
+@keyframes flash{from{background:var(--fill)}to{background:transparent}}
+.prtxt,.cptxt{flex:1 1 300px;min-width:0}
+.prnm,.cpnm{font-family:Spectral,Georgia,serif;font-size:16.5px;font-weight:600;color:var(--ink);line-height:1.25;overflow-wrap:anywhere}
+.prmeta,.cpmeta{font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums;margin-top:1px}
+.prd{font-size:13.5px;color:var(--muted);font-style:italic;margin-top:3px;line-height:1.4;max-width:70ch}
+.badge{display:inline-block;margin-left:6px;font-family:"IBM Plex Sans",sans-serif;font-size:10.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+  border:1px solid var(--rule);color:var(--sage);border-radius:2px;padding:0 5px;vertical-align:2px}
+.badge.or{color:var(--gold);border-color:var(--gold)}
+.badge.rouille{color:var(--rust);border-color:var(--rust)}
+.bact{display:flex;flex-wrap:wrap;gap:6px;flex:0 0 auto}
+.vide{color:var(--muted);font-style:italic;font-family:Spectral,Georgia,serif;margin:8px 0}
+.retirees{border-top:1px solid var(--rule);margin-top:8px;padding-top:8px}
+.retirees summary{font-size:13px;color:var(--sage);cursor:pointer}
+.retirees .prrow{opacity:.85}
+
+/* les compétences */
+.cpgrp{margin-top:14px}
+.cpgrp:first-of-type{margin-top:0}
+.cpgrp h3{font-family:Spectral,Georgia,serif;font-size:16px;color:var(--sage);font-style:italic;margin:0 0 2px;border-bottom:1px solid var(--rule);padding-bottom:3px;display:flex;gap:10px;align-items:baseline}
+.cpgrp h3 small{font-family:"IBM Plex Sans",sans-serif;font-style:normal;font-size:12px;color:var(--muted)}
+.cpusage{font-size:12px;color:var(--muted);margin-top:1px}
+.cpcle{font-size:12px;color:var(--muted);margin-left:6px;font-family:"IBM Plex Sans",sans-serif;font-weight:400}
+
+/* l'éditeur, en ligne */
+.editeur{border:1px solid var(--forest);border-radius:3px;padding:14px 16px;margin:10px 0 14px;background:var(--paper);flex:1 1 100%}
+.edtete h3{font-family:Spectral,Georgia,serif;font-size:18px;color:var(--forest);margin:0 0 10px}
+.fld{margin-bottom:10px;min-width:0}
+.fld label,.fld .lab{display:block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.fld input[type=text],.fld input[type=number],.fld textarea,.fld select{width:100%;font:inherit;font-size:14.5px;padding:7px 9px;border:1px solid var(--rule);border-radius:2px;background:var(--surface);color:var(--ink);resize:vertical}
+.fld textarea{line-height:1.4}
+.fld [aria-invalid=true]{border-color:var(--rust)}
+.fld input:disabled,.fld select:disabled{opacity:.6}
+.aide{font-size:12px;color:var(--muted);margin:4px 0 0;line-height:1.4}
+.err{font-size:12.5px;color:var(--rust);margin:4px 0 0}
+.ligne2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.6fr);gap:10px}
+.coche{display:flex;gap:8px;align-items:flex-start;font-size:14px;margin:0 0 10px;cursor:pointer;line-height:1.35}
+.coche input{accent-color:var(--sage);margin-top:3px}
+.edact{margin-top:8px}
+.usage-liste{font-size:12.5px;color:var(--ink);background:var(--surface);border:1px solid var(--rule);border-radius:2px;padding:7px 10px;margin:0 0 10px;line-height:1.45}
+
+.bexport{border-top:1px solid var(--rule);margin-top:16px;padding-top:12px}
+.bexport:first-child{border-top:0;margin-top:0;padding-top:0}
+.scroll{overflow-x:auto}
+@media (max-width:560px){
+  .ligne2{grid-template-columns:1fr}
+  .bact{margin-left:0}
+  /* 16 px au moins : en dessous, un téléphone zoome la page dès qu'on touche un champ */
+  .fld input[type=text],.fld input[type=number],.fld textarea,.fld select,.plcaster select{font-size:16px}
+}
+@media print{
+  .noprint,.bact,.seg{display:none!important}
+  html,body{background:#fff;color:#000}
+}
+</style>
+</head>
+<body>
+<script>try{ if(/^faelorenn-(table|visages|progression|missions|marchefleurs)$/.test(window.name)) window.name = ''; }catch(e){}</script>
+<nav class="fae-site" aria-label="Les registres de Faelorenn">
+  <a class="fae-accueil" href="./">Faelorenn</a>
+  <a href="missions.html">Registre des Missions</a>
+  <a href="table.html">Registre de la Table</a>
+  <a href="pnj.html">Registre des Visages</a>
+  <a href="marchefleurs.html">Registre des Marchefleurs</a>
+  <a href="createur.html">Registre du Havre</a>
+  <a href="rencontres.html">Registre des Rencontres</a>
+  <a href="competences.html" aria-current="page">Registre des Compétences</a>
+</nav>
+<style>
+.fae-site{display:flex;flex-wrap:wrap;gap:4px 18px;align-items:baseline;max-width:980px;margin:0 auto;padding:12px 18px 0;font:13px/1.4 "IBM Plex Sans",system-ui,sans-serif}
+.fae-site a{color:var(--sage,#4A6B52);text-decoration:none;border-bottom:1px solid transparent;padding-bottom:1px}
+.fae-site a:hover,.fae-site a:focus-visible{border-bottom-color:currentColor}
+.fae-site a[aria-current]{color:var(--forest,#1F3D2B);font-weight:600}
+.fae-site .fae-accueil{font-family:Spectral,Georgia,serif;font-weight:700;font-size:15px;color:var(--forest,#1F3D2B);margin-right:4px}
+@media print{.fae-site{display:none!important}}
+</style>
+
+<div class="wrap">
+<header class="noprint">
+  <h1>Registre des Compétences</h1>
+  <p class="sub">Faelorenn · ce que les personnages savent faire, et comment ils le lancent</p>
+</header>
+
+<section id="secPratiques">
+  <h2><span class="num">1</span> Les Pratiques</h2>
+  <p class="hint">Chaque liste se lance sous une seule caractéristique, écrite en tête : tout ce qui s’y lance se teste sous elle. Retouche une Pratique, ajoutes-en une, retires-en une : le créateur et la table s’en servent au prochain chargement. Le livre ne bouge pas, et « Revenir au livre » défait une retouche.</p>
+  <div class="card">
+    <div class="btete">
+      <p class="bcompte" id="prCompte"></p>
+      <p class="etat" id="etat" role="status"></p>
+    </div>
+    <label class="f" id="lblDom">Quelle école</label>
+    <div class="seg" id="domSeg" role="group" aria-labelledby="lblDom"></div>
+    <div id="prListes"></div>
+  </div>
+</section>
+
+<section id="secCompetences">
+  <h2><span class="num">2</span> Les compétences</h2>
+  <p class="hint">Le nom que tu donnes se lit partout, mais la compétence garde dessous celui du livre : aucune fiche n’en est changée. Une compétence peut changer de caractéristique ou se retirer, et une nouvelle s’ajoute en bas. Combat, Tir et Acrobatie sont nommées par les règles : elles ne changent pas de nom et ne se retirent pas.</p>
+  <div class="card">
+    <div class="btete">
+      <p class="bcompte" id="cpCompte"></p>
+      <button class="btn ghost sm" id="cpNouvelle" type="button">Nouvelle compétence</button>
+    </div>
+    <div id="cpNeuve"></div>
+    <div id="cpListe"></div>
+    <details class="retirees" id="cpRetireesBloc" hidden>
+      <summary id="cpRetireesTitre"></summary>
+      <div id="cpRetirees"></div>
+    </details>
+    <p class="note">Constitution et Contenance n’ont pas de compétence : les fiches n’ont pas de place pour en ajouter. Les bonus des Voies et des peuples, eux, restent attachés aux compétences du livre.</p>
+  </div>
+</section>
+
+<section id="secBanniere">
+  <h2><span class="num">3</span> Les compétences de Bannière</h2>
+  <p class="hint">Un humain n’en a qu’une, choisie dans sa Bannière : elle ne coûte rien et ne se lance pas.</p>
+  <div class="card">
+    <div class="btete"><p class="bcompte" id="banCompte"></p></div>
+    <div id="banListes"></div>
+  </div>
+</section>
+
+<section id="secSauve" class="noprint">
+  <h2><span class="num">4</span> Sauvegarder ou partager</h2>
+  <p class="hint">Tes retouches sont gardées dans ce navigateur. Reliées à ton dépôt GitHub, elles passent aussi chez Océane, dans le créateur comme à la table.</p>
+  <div class="card">
+    <div class="acts">
+      <button class="btn sm" id="cmpEnLigne" type="button">Sauvegarder en ligne</button>
+      <button class="btn ghost sm" id="cmpJson" type="button">Sauvegarde .json</button>
+      <button class="btn ghost sm" id="cmpImport" type="button">Importer un .json</button>
+      <input type="file" id="cmpFichier" accept=".json,application/json" hidden>
+    </div>
+    <p class="note" id="cmpMsg" role="status" hidden></p>
+    <p class="note">La sauvegarde .json garde toutes tes retouches ; elle se réimporte ici, sur un autre appareil ou chez Océane, et le plus récent l’emporte, pièce par pièce. Le créateur et la table relisent le dépôt à l’ouverture, puis toutes les deux minutes : s’il y a du neuf, ils proposent de recharger.</p>
+    <div id="ghcPlace"></div>
+  </div>
+</section>
+</div>
+
+<script>
+const PRATIQUES = {"de la Sève (Écorciens et Élytris)":{"_":[{"n":"Ortie","d":"des orties poussent sur ta cible à vue. La sensation la fait se gratter, et elle s'ouvre la peau : 1d4. L'armure n'y change rien.","j":"Contenance","pc":0,"base":true},{"n":"Le dard","d":"2d6 à vue. Une épine part de ton avant-bras.","j":"Contenance","pc":1},{"n":"Greffer","d":"contact, rends 1d6+2 PV à un allié. Tu ne perds aucun PV, ça passe par toi.","j":"aucun jet","pc":1},{"n":"Les Racines","d":"à vue, 2 rounds. Des racines saisissent une cible ou un objet : elle ne se déplace plus, une porte ne s'ouvre plus, une roue ne tourne plus. Un jet de FOR par round pour se libérer.","j":"la cible teste","pc":1},{"n":"La Ronce","d":"zone de 3 pas à vue, 2 rounds. Qui y entre subit 1d6.","j":"les cibles testent","pc":2},{"n":"Écorcer","d":"contact, 3 rounds. La cible perd 2 de réduction, tu en gagnes 2.","j":"Contenance","pc":2},{"n":"Sève noire","d":"contact, 3 rounds. La cible perd 1d4 par round et ne récupère aucun PV tant que ça dure.","j":"Contenance","pc":2}]},"de l'eau (Nyréens)":{"Commune au 3 variant de Nyréen":[{"n":"La Prise du Courant","d":"zone de 3 pas, 3 rounds. Qui s'y déplace fait un jet de DEX ou tombe : à terre, action perdue.","j":"les cibles testent","pc":2},{"n":"Brume","d":"un épais brouillard pendant 1 tour. Les personnages dans la zone ne peuvent pas attaquer.","j":"les cibles testent","pc":2},{"n":"Gouttelettes perçantes","d":"zone de 3 pas. Tu fais pleuvoir une petite quantité d'eau à très haute vitesse, qui en devient tranchante : 1d6 à chacun dans la zone.","j":"les cibles testent","pc":2},{"n":"Givrer","d":"à vue. Une flaque, une surface, une gourde gèle. Une créature mouillée tente un jet de FOR. Échec, elle perd son déplacement au round suivant.","j":"la cible teste","pc":1}],"Les Larges, la mer":[{"n":"Saumure","d":"tu projettes de l'eau lourdement salée dans les yeux de ta cible à vue. Elle se plie de douleur : 1d4. L'armure n'y change rien.","j":"Force","pc":0,"base":true},{"n":"Écumeur","d":"tu ignores un point de réduction d'armure sur toutes tes attaques.","j":"aucun jet","pc":0},{"n":"Prendre l'eau","d":"une cible que tu as touchée ce round ne récupère aucun PV jusqu'à la fin du combat.","j":"aucun jet","pc":0},{"n":"Le Grand Large","d":"une fois par combat, relance tous les dés de dégâts d'une attaque et garde le meilleur total.","j":"aucun jet","pc":0},{"n":"Marée montante","d":"ce round, tu n'attaques pas. Au round suivant, ton attaque fait +1d6.","j":"aucun jet","pc":0},{"n":"Ressac","d":"la première fois qu'on te touche au contact dans un combat, ta prochaine attaque fait +1d6.","j":"aucun jet","pc":0},{"n":"Amarre","d":"tu accroches une cible à dix pas et tu la tires de cinq pas vers toi.","j":"Force","pc":1},{"n":"Inondation","d":"ta prochaine attaque fait +1d6.","j":"aucun jet","pc":1},{"n":"Déferlement","d":"ta prochaine attaque fait le double de dégâts, et tu ne te déplaces pas au round suivant.","j":"aucun jet","pc":2},{"n":"Raz-de-marée","d":"tout ce qui est devant toi tente un jet de FOR. Échec, 2d6 et repoussé de 5 pas.","j":"les cibles testent","pc":2},{"n":"Maelstrom","d":"2d6 sur chaque adversaire autour de toi, l'un après l'autre.","j":"les cibles testent","pc":2}],"Les Vifs, la rivière":[{"n":"Galet","d":"tu lances un galet d'eau qui rebondit sur jusqu'à trois ennemis à vue, 1d4 chacun. La réduction s'applique.","j":"Dextérité","pc":0,"base":true},{"n":"Rupture de courant","d":"si tu t'es déplacé avant d'attaquer, ton attaque fait 2d4.","j":"aucun jet","pc":0},{"n":"Flux critique","d":"pendant 2 rounds, chaque attaque réussie élargit ton critique d'une face. Une attaque ratée remet à zéro.","j":"aucun jet","pc":0},{"n":"Cascade","d":"attaque 2d4. Si la cible tombe, tu te déplaces jusqu'à une seconde cible et ton critique gagne une face.","j":"aucun jet","pc":0},{"n":"Courant meurtrier","d":"attaque 1d4. Si tu changes de cible par rapport au round précédent, +1d4 et ton critique gagne deux faces.","j":"aucun jet","pc":0},{"n":"Contre-courant","d":"une fois par combat, tu prends une deuxième réaction dans le même round.","j":"aucun jet","pc":0},{"n":"Ricochet","d":"quand tu touches, tu te déplaces de trois pas sans que personne ne puisse réagir.","j":"aucun jet","pc":0},{"n":"Crue soudaine","d":"au premier round d'un combat, tu attaques deux fois.","j":"aucun jet","pc":0},{"n":"Saignée","d":"sur un critique, la cible perd 1d4 par round jusqu'à ce qu'on la soigne.","j":"aucun jet","pc":0},{"n":"Remous","d":"si tu t'es déplacé ce round, ton esquive réussit aussi sur un échec de moins de 4.","j":"aucun jet","pc":0},{"n":"Tourbillon","d":"1d6 sur chaque adversaire autour de toi, l'un après l'autre.","j":"les cibles testent","pc":1}],"Les Dormants, le lac":[{"n":"Eau dormante","d":"l'eau que ta cible à vue porte sur elle et en elle s'alourdit d'un coup. Elle tousse et perd son souffle : 1d4. L'armure n'y change rien.","j":"Contenance","pc":0,"base":true},{"n":"Délier","d":"contact. Tu retires une altération d'état d'un allié et tu prends 1d4.","j":"aucun jet","pc":0},{"n":"Le Regard sous l'eau","d":"tu vois à travers l'eau et la brume sans jet, et tu repères ce qui s'y cache.","j":"aucun jet","pc":0},{"n":"Eau lourde","d":"la cible perd 1d4 à ses dégâts pendant 2 rounds.","j":"Contenance","pc":1},{"n":"Sommeil du lac","d":"la cible n'a pas de réaction au round suivant.","j":"Contenance","pc":1},{"n":"Noyade sèche","d":"la cible suffoque sans raison. −4 au d20 sur tout pendant 1 round.","j":"Contenance","pc":1},{"n":"Immobilité","d":"la cible tente un jet de FOR. Échec, elle ne se déplace pas au round suivant.","j":"la cible teste","pc":1},{"n":"Miroir noyé","d":"pendant 2 rounds, la cible ne peut pas viser deux rounds de suite le même adversaire.","j":"Contenance","pc":1},{"n":"Marque d'eau","d":"tu poses une marque sur quelqu'un que tu as touché. Tant qu'elle tient, tu sais où il est.","j":"aucun jet","pc":1},{"n":"Veillée","d":"un rituel de dix minutes. Un allié présent gagne +10 à une compétence jusqu'à la fin de la scène.","j":"aucun jet","pc":1},{"n":"Reflet perdu","d":"la cible ne distingue plus les siens et attaque son allié le plus proche pendant 1 round. Elle résiste sur Contenance fois deux.","j":"la cible teste","pc":3}]},"de la Mue (Ori'Ican)":{"Cornu":[{"n":"Phalange","d":"tu te fais pousser une nouvelle phalange et tu la propulses sur une cible à vue, 1d4. La réduction s'applique.","j":"Force","pc":0,"base":true},{"n":"Muer","d":"une fois par scénario, jusqu'à la mue suivante : +2 dégâts · Réduction 2 · +10 Acrobatie · Voir dans le noir. Sur un échec, la mue se fait quand même : le MJ choisit, et tu subis 1d6.","j":"Force","pc":1},{"n":"Charger","d":"tu traverses 10 pas en ligne droite. La première créature subit 1d6+2 et tombe.","j":"Force","pc":1},{"n":"Broyer","d":"contact, 1d6+2. L'arme ou l'armure de la cible perd un dé ou un point de réduction jusqu'à réparation.","j":"Force","pc":1},{"n":"Fendre","d":"contact, 1d6+2 sur deux cibles côte à côte.","j":"Force","pc":1},{"n":"Encorner","d":"contact, 2d6. Tes cornes poussent temporairement. Si tu as chargé ce round, la cible tombe.","j":"Force","pc":1},{"n":"Peau qui repousse","d":"3 rounds. Tu récupères 1d4 PV par round.","j":"aucun jet","pc":1}],"Ritualiste":[{"n":"Verrue","d":"une verrue pousse sur ta cible à vue, elle gonfle et elle éclate : 1d4. L'armure n'y change rien.","j":"Contenance","pc":0,"base":true},{"n":"Que la Mue soit","d":"à vue. La cible résiste sur Contenance fois deux. Si elle rate, elle mue 3 rounds selon un d4 : 1 : +2 dégâts subis · 2 : demi-vitesse · 3 : −2 dégâts infligés · 4 : son arme ou son armure se déforme","j":"la cible teste","pc":1},{"n":"Hâter la Mue","d":"contact, 3 rounds. Un allié gagne +2 dégâts, ou réduction 2, ou +10 Acrobatie.","j":"aucun jet","pc":1},{"n":"Déformer","d":"la matière mue. Tu changes la forme d'un objet sans changer sa matière, une barre devient une clé ; ou tu la fais céder, et une porte, un mur, une arme ou un mécanisme lâche.","j":"aucun jet","pc":1,"pct":"1 PC au contact, 2 PC à vue"},{"n":"Emprunter la forme","d":"dix minutes. Tu prends l'apparence de quelqu'un que tu as vu. Ta voix ne change pas.","j":"aucun jet","pc":1},{"n":"Refaire","d":"contact, dix minutes. Une blessure se referme, 1d6+2 PV. Une fois par personne et par jour.","j":"aucun jet","pc":1},{"n":"Défaire la Forme","d":"à vue, 3 rounds. Un membre de la cible se déforme : −4 au d20 sur tout ce qui l'utilise.","j":"Contenance","pc":2}],"Figé":[{"n":"Le défaut","d":"tu vois le point où un corps ne tient pas, celui que ta propre mue t'a appris, et tu frappes là, au contact : 1d4. La réduction s'applique.","j":"Dextérité","pc":0,"base":true},{"n":"Anticipé","d":"quand un combat s'engage, tu agis une fois avant la distribution des cartes.","j":"aucun jet","pc":1},{"n":"Emprunt","d":"3 rounds. Ton corps tente la forme d'un autre type sans y parvenir tout à fait : tu gagnes soit les cornes, contact 1d6+2, soit la peau, réduction 2. Puis ça retombe.","j":"aucun jet","pc":1},{"n":"Se faufiler","d":"réaction. Tu ne prends que la moitié des dégâts et tu te déplaces de 5 pas.","j":"Dextérité","pc":1},{"n":"Insensible","d":"3 rounds, réduction 2. Tu ne peux être ni mis à terre, ni ralenti, ni repoussé.","j":"aucun jet","pc":2},{"n":"Résilience","d":"réaction. Quand tu tombes à 0 PV, tu restes debout à 1 PV jusqu'à la fin du round.","j":"aucun jet","pc":2},{"n":"Deux lames","d":"3 rounds. Avec une arme légère, tu frappes deux fois par round.","j":"aucun jet","pc":2}]},"du feu (Ilvès et Eshar)":{"_":[{"n":"Escarbille","d":"une braise saute de ta main sur ta cible à vue, 1d4, et ce qu'elle porte prend feu si ça peut brûler. Le feu traverse l'armure.","j":"Contenance","pc":0,"base":true},{"n":"La Braise Jetée","d":"2d6 de feu à vue.","j":"Contenance","pc":1},{"n":"Chauffer","d":"contact. L'objet devient brûlant : qui le tient le lâche, ou prend 1d6+2 par round. Maintiens trois rounds et le métal coule : une arme, une grille, une serrure ou une armure perd un point de réduction, définitivement.","j":"Contenance","pc":1},{"n":"Brûlant","d":"3 rounds. Qui te touche ou t'attaque au contact prend 1d4.","j":"aucun jet","pc":1},{"n":"Le Mur de feu","d":"mur de 6 pas, 3 rounds. Le traverser coûte 2d6.","j":"les cibles testent","pc":2},{"n":"La Fièvre","d":"à vue, 3 rounds. 1d4 par round et −4 au d20 sur tout.","j":"Contenance","pc":2},{"n":"Embrasement","d":"zone de 3 pas à vue. 1d6+2 à tout le monde dedans.","j":"les cibles testent","pc":2}]},"du vent (Vaellen et Velh)":{"_":[{"n":"Fil d'air","d":"une lame d'air fine passe sur ta cible à vue, une coupure nette qu'on ne voit qu'après : 1d4. La réduction s'applique.","j":"Dextérité","pc":0,"base":true},{"n":"Lame de Vent","d":"2d6 à vue.","j":"Dextérité","pc":1},{"n":"Suivre le Vent","d":"2 rounds, vitesse doublée, pour toi et ceux qui te suivent.","j":"aucun jet","pc":1},{"n":"Effacer l'odeur","d":"une heure. Rien ne te suit à l'odeur.","j":"aucun jet","pc":1},{"n":"La Spirale","d":"zone de 3 pas, 1 round. Tout ce qui est léger s'envole, et personne n'y voit plus rien.","j":"les cibles testent","pc":1},{"n":"Bourrasque","d":"1d6+2 à vue. La cible est repoussée de 5 pas et tombe. Elle perd son déplacement au round suivant.","j":"Dextérité","pc":2},{"n":"Le Mur d'air","d":"3 rounds. Les flèches et tout ce qui vole s'arrêtent devant toi.","j":"aucun jet","pc":2}]},"de l'onde (Zhern)":{"_":[{"n":"Arc sec","d":"un arc part de ta main et trouve le métal le plus proche de ta cible à vue, 1d4. L'onde traverse l'armure.","j":"Dextérité","pc":0,"base":true},{"n":"L'Arc","d":"2d6 à vue. 2d6+2 si la cible porte du métal ou a les pieds dans l'eau.","j":"Dextérité","pc":1},{"n":"Le Choc","d":"contact, 1d6+2. La cible perd sa réaction du round.","j":"Dextérité","pc":1},{"n":"Onde de choc","d":"une onde part de toi et repousse l'adversaire qui vient au contact. 1 tour.","j":"Dextérité","pc":1},{"n":"Le Fil","d":"dix minutes. Tu parles à un allié que tu as touché avant de partir, où qu'il soit.","j":"aucun jet","pc":1},{"n":"Coup de jus","d":"contact. La cible tente un jet de Constitution fois deux. Si elle rate, elle tombe inconsciente pendant 3 rounds.","j":"la cible teste","pc":2},{"n":"Rappeler","d":"contact. Un allié tombé à 0 depuis moins d'une minute revient à 1 PV. Une seule fois par personne et par jour.","j":"aucun jet","pc":2}]},"de la pierre (Cimérans et Khaor)":{"_":[{"n":"Éclat de roche","d":"un éclat part du sol ou du mur le plus proche de ta cible à vue, 1d4. La réduction s'applique.","j":"Force","pc":0,"base":true},{"n":"Peau de pierre","d":"3 rounds, réduction 3. Tu te déplaces à demi-vitesse.","j":"aucun jet","pc":1},{"n":"L'Éclat","d":"2d6+1 jusqu'à 10 pas. Il te faut de la pierre à portée : sur un plancher ou un pont de bois, la Pratique ne part pas.","j":"Force","pc":1},{"n":"Percer","d":"dix minutes par pas d'épaisseur. Un tunnel d'homme à travers la roche.","j":"aucun jet","pc":1},{"n":"Le Rempart","d":"3 rounds. Tout le reste du groupe a réduction 2, tant que tu ne te déplaces pas.","j":"aucun jet","pc":2},{"n":"Ancrer","d":"3 rounds. Tes alliés à 5 pas de la pierre récupèrent 1 PV par round. Elle ne bouge pas.","j":"aucun jet","pc":2},{"n":"Impulsion","d":"le sol bouge, et personne ne tient debout dans la zone. 1 tour.","j":"les cibles testent","pc":2}]},"du sacré (Église d'Ysse)":{"_":[{"n":"Châtiment","d":"une lumière brève tombe sur ta cible à vue et ne brûle qu'elle, 1d4. Le sacré traverse l'armure.","j":"Contenance","pc":0,"base":true},{"n":"Soin","d":"rends 1d6+2 PV à un allié.","j":"aucun jet","pc":1},{"n":"Protection sacrée","d":"protège un allié de la prochaine attaque.","j":"aucun jet","pc":1},{"n":"Relever","d":"contact. Un allié à terre se relève et récupère sa réaction du round.","j":"aucun jet","pc":1},{"n":"Le Sursis","d":"réaction. Les dégâts qu'un allié vient de subir ne s'appliquent qu'à la fin du round suivant. S'il a été soigné d'ici là, il teste sous Constitution fois deux : réussite, les dégâts ne tombent jamais. Échec, ils tombent quand même.","j":"aucun jet","pc":1},{"n":"La Bénédiction","d":"3 rounds. Un allié à vue a +4 au d20 sur tout. Jamais sur toi-même.","j":"aucun jet","pc":2},{"n":"L'Onction","d":"dix minutes. Un allié ne peut pas tomber sous 1 PV pendant le prochain combat.","j":"aucun jet","pc":3}]},"de l'ombre (Nïhr)":{"_":[{"n":"Morsure d'ombre","d":"l'ombre de ta cible à vue se referme une seconde sur celle qui la porte, 1d4. L'ombre traverse l'armure.","j":"Contenance","pc":0,"base":true},{"n":"Éteindre","d":"à vue. Une source de lumière s'éteint, et rien ne la rallume pendant 3 rounds.","j":"aucun jet","pc":1},{"n":"Se fondre","d":"tant que tu avances sans attaquer, on ne te voit pas. Ta première attaque en sortant fait +1d6.","j":"aucun jet","pc":1},{"n":"La Chose derrière toi","d":"à vue, 1 round. La cible voit ce qui n'existe pas et perd son action. Elle résiste sur Contenance fois deux.","j":"la cible teste","pc":2},{"n":"Doubler","d":"3 rounds. Une silhouette de toi se tient à cinq pas. La première attaque qui te vise chaque round frappe la silhouette et ne te fait rien.","j":"aucun jet","pc":2},{"n":"Le Voile","d":"zone de 3 pas, 3 rounds. Personne n'y voit rien, sauf toi.","j":"les cibles testent","pc":2},{"n":"Le Passager","d":"3 rounds. Une ombre se lève et frappe une cible à vue, 1d6+2 par round. Elle n'a pas de carte, elle agit sur ton tour, et rien ne l'atteint.","j":"Contenance","pc":3}]},"de la Bannière de l'Or":{"_":[{"n":"Scelleur","d":"tu scelles un accord avec une partie consentante, et tu choisis en le posant ce qui arrive à celui qui le rompt.","j":"aucun jet","pc":0},{"n":"Dompteur","d":"tu apposes un sceau sur un être vivant dépourvu de conscience et non altéré, qui t'obéit tant que le sceau tient. Une seule bête à la fois.","j":"aucun jet","pc":0},{"n":"Serrurier","d":"tu rends un objet impossible à ouvrir, ou tu en forces l'ouverture.","j":"aucun jet","pc":0},{"n":"Péager","d":"tu poses un sceau sur le sol ou un mur, et un passage se ferme d'un bord à l'autre, de la largeur d'une porte charretière. Rien de solide ne traverse, ni corps ni objet ; la lumière, le son et la chaleur passent. Le barrage tient sans toi jusqu'à ce que tu le lèves. Un seul à la fois.","j":"aucun jet","pc":0},{"n":"Passeur","d":"tu apposes un sceau sur un objet et tu peux le faire venir à toi, où que tu sois. Il reste ensuite là où tu l'as appelé. Un seul objet à la fois, et il ne vient pas si quelqu'un le tient.","j":"aucun jet","pc":0}]},"de la Bannière du Sang":{"_":[{"n":"Second","d":"tu dépenses ta réaction du round pour qu'un allié en ait une deuxième.","j":"aucun jet","pc":0},{"n":"Vétéran","d":"sur un échec de défense de moins de 4, tu attaques quand même au round suivant. Et rien ne te met en fuite.","j":"aucun jet","pc":0},{"n":"Affûteur","d":"tu passes la main sur une lame et elle mord. +1d4 aux dégâts, jusqu'à la fin du combat.","j":"aucun jet","pc":0},{"n":"Armurier","d":"tu renforces une pièce d'équipement. +1 de réduction, jusqu'à la fin du combat.","j":"aucun jet","pc":0},{"n":"Bretteur","d":"une fois par combat, tu attaques deux fois dans le même tour.","j":"aucun jet","pc":0},{"n":"Avant-garde","d":"au premier round d'un combat, tu agis avant tout le monde, quelle que soit ta carte.","j":"aucun jet","pc":0},{"n":"Duelliste","d":"réussite critique en combat sur 1 et 2 plutôt que sur 1 seulement.","j":"aucun jet","pc":0}]}};
+
+/* ============ ce que dit le livre : les compétences, et leur caractéristique ============
+   La même liste que dans le créateur et dans la table : un test les compare, pour qu'aucune ne dérive. */
+const CARS = ['Force','Dextérité','Constitution','Intelligence','Sagesse','Charisme','Contenance'];
+const ABBR = {Force:'FOR','Dextérité':'DEX',Constitution:'CON',Intelligence:'INT',Sagesse:'SAG',Charisme:'CHA',Contenance:'CNT'};
+const SKILLS = {
+  Force:['Athlétisme','Combat'],
+  'Dextérité':['Acrobatie','Discrétion','Artisanat','Tir'],
+  Constitution:[],
+  Intelligence:['Savoir','Investigation','Nature','Récits','Connaissance des Floraisons'],
+  Sagesse:['Perception','Empathie','Médecine','Survie',"Sentir l'Énergie"],
+  Charisme:['Persuasion','Tromperie','Intimidation','Représentation'],
+  Contenance:[]
+};
+const SOCIAL = ['Persuasion','Tromperie','Intimidation','Représentation'];
+const ALLSKILLS = [];
+CARS.forEach(c => SKILLS[c].forEach(s => ALLSKILLS.push({s:s, car:c})));
+const CAR_DE = {};
+ALLSKILLS.forEach(o => CAR_DE[o.s] = o.car);
+
+/* ============ les règles de la maison ============
+   Le livre donne les compétences, les Pratiques et les compétences de Bannière. Le Registre des Compétences les
+   retouche, et ce module pose ces retouches par-dessus le livre, dans le créateur comme à la table.
+   Une retouche est une pièce avec sa date : la plus récente l'emporte, et une suppression laisse une trace,
+   pour ne pas revenir d'un autre appareil. Le livre ne bouge pas : il reste dans le code, et « revenir au livre »
+   est toujours possible.
+   Une compétence garde toujours sa clé, le nom que le livre lui donne : rien de ce qui est gardé (une fiche, une
+   sauvegarde) ne la désigne autrement. Renommer change ce qu'on lit, jamais cette clé.
+   Une Pratique retouchée garde la liste de ses versions d'avant : une fiche qui porte encore l'une d'elles, sans
+   que personne y ait touché, prend la nouvelle. Une fiche retouchée à la main, elle, n'est jamais changée. */
+
+const REG_CLE = 'faelorenn.competences';
+const REG_FORMAT = 'faelorenn-competences';
+const REG_VERSION = 1;
+/* ce qu'un fichier peut porter de pièces : bien au-delà de ce que le livre et la maison en auront jamais, mais pas sans fin */
+const REG_MAX_PRAT = 4000, REG_MAX_COMP = 400;
+/* les cinq caractéristiques qui portent des compétences : Constitution et Contenance n'en ont pas, et les fiches n'ont pas de place pour en ajouter */
+const REG_CARS = ['Force', 'Dextérité', 'Intelligence', 'Sagesse', 'Charisme'];
+/* ce que les règles nomment par son nom : Combat pare, Tir tire, Acrobatie esquive. Leur nom ne change pas, elles ne se retirent pas ;
+   Combat et Tir restent aussi sous leur caractéristique, celle de leur geste */
+const REG_FIXES = {'Combat':{car:true}, 'Tir':{car:true}, 'Acrobatie':{car:false}};
+const REG_JETS_CAR = ['Force', 'Dextérité', 'Contenance'];
+const REG_JETS_SANS = ['aucun jet', 'la cible teste', 'les cibles testent'];
+const REG = {competences:Object.create(null), pratiques:Object.create(null)};
+const COMP_LIB = {};
+let REG_LIVRE = null, REG_APPLIQUE = '', REG_CHAINE = {}, REG_NOMS = {};
+/* le dernier enregistrement dans ce navigateur a-t-il réussi ? et l'avis de rechargement, écarté pour quel état du registre ? */
+let REG_GARDE = true, REG_ECARTE = '';
+
+const REG_NOMBRES = ['zéro', 'une', 'deux', 'trois', 'quatre', 'cinq', 'six', 'sept', 'huit', 'neuf', 'dix', 'onze', 'douze', 'treize', 'quatorze', 'quinze',
+  'seize', 'dix-sept', 'dix-huit', 'dix-neuf', 'vingt', 'vingt et une', 'vingt-deux', 'vingt-trois', 'vingt-quatre', 'vingt-cinq', 'vingt-six',
+  'vingt-sept', 'vingt-huit', 'vingt-neuf', 'trente'];
+/* « Les vingt compétences » : le titre suit leur nombre, si la maison en a retiré ou ajouté */
+function titreCompetences(){
+  const n = typeof ALLSKILLS !== 'undefined' ? ALLSKILLS.length : 20;
+  return n === 1 ? 'La compétence' : 'Les ' + (REG_NOMBRES[n] || String(n)) + ' compétences';
+}
+/* le nom d'une compétence, tel qu'on le lit : la clé, ou le nom que la maison lui a donné */
+function nomComp(cle){ return Object.prototype.hasOwnProperty.call(COMP_LIB, cle) ? COMP_LIB[cle] : cle; }
+
+const regNorm = s => String(s == null ? '' : s).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[’‘`´]/g, "'").replace(/\s+/g, ' ').trim();
+const regTxt = (v, max) => String(v == null ? '' : v).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, '').slice(0, max);
+const regIdOk = id => typeof id === 'string' && id.length > 0 && id.length <= 260 && id !== '__proto__';
+const regVide = () => ({competences:Object.create(null), pratiques:Object.create(null)});
+const regDe = (m, id) => (m && Object.prototype.hasOwnProperty.call(m, id)) ? m[id] : undefined;
+function regCanon(x){
+  if(x === null || x === undefined || typeof x !== 'object') return JSON.stringify(x === undefined ? null : x);
+  if(Array.isArray(x)) return '[' + x.map(regCanon).join(',') + ']';
+  return '{' + Object.keys(x).filter(k => x[k] !== undefined).sort().map(k => JSON.stringify(k) + ':' + regCanon(x[k])).join(',') + '}';
+}
+const regEstBanniere = dom => /^de la Bannière/.test(dom || '');
+const regIdPrat = (dom, grp, n) => dom + '|' + grp + '|' + n;
+
+/* ---------- ce qu'on lit : le stockage de ce navigateur, un fichier du dépôt, une sauvegarde ---------- */
+/* une version d'une Pratique : ce qui fait que deux fiches parlent de la même */
+function regSnap(o){
+  if(!o || typeof o !== 'object') return null;
+  const n = regTxt(o.n, 80).trim();
+  if(!n) return null;
+  const j = REG_JETS_CAR.concat(REG_JETS_SANS).indexOf(o.j) >= 0 ? o.j : 'aucun jet';
+  return {n:n, d:regTxt(o.d, 1200).replace(/\s*\n\s*/g, ' ').trim(), j:j, pc:Math.max(0, Math.min(20, Math.round(+o.pc || 0))),
+    pct:regTxt(o.pct, 80).trim(), base:!!o.base};
+}
+const regCle = s => [regNorm(s.n), regNorm(s.d), s.j, s.pc, regNorm(s.pct), s.base ? 1 : 0].join('␟');
+/* la date d'une pièce : un nombre fini, jamais plus d'un jour dans le futur (une horloge déréglée, un fichier retouché à la main) */
+const regMajOk = v => { v = +v; return isFinite(v) && v > 0 ? Math.min(Math.floor(v), Date.now() + 864e5) : 0; };
+function regRecPrat(o){
+  if(!o || typeof o !== 'object' || Array.isArray(o)) return null;
+  const maj = regMajOk(o.maj);
+  if(o.supprime) return {supprime:true, maj:maj};
+  const s = regSnap(o);
+  if(!s) return null;
+  s.dom = regTxt(o.dom, 200); s.grp = regTxt(o.grp, 200); s.ordre = isFinite(+o.ordre) ? +o.ordre : 0; s.maj = maj;
+  s.precedent = Array.isArray(o.precedent) ? o.precedent.slice(-10).map(regSnap).filter(Boolean) : [];
+  return s;
+}
+function regRecComp(o){
+  if(!o || typeof o !== 'object' || Array.isArray(o)) return null;
+  return {nom:regTxt(o.nom, 60).trim(), car:REG_CARS.indexOf(o.car) >= 0 ? o.car : '', retire:!!o.retire, ajout:!!o.ajout,
+    ordre:isFinite(+o.ordre) ? +o.ordre : 0, maj:regMajOk(o.maj)};
+}
+function regLireBrut(o){
+  const out = regVide();
+  if(!o || typeof o !== 'object') return out;
+  const sec = (src, dst, norm, max) => {
+    if(!src || typeof src !== 'object' || Array.isArray(src)) return;
+    let n = 0;
+    Object.keys(src).forEach(id => { if(n >= max || !regIdOk(id)) return; const r = norm(src[id]); if(r){ dst[id] = r; n++; } });
+  };
+  sec(o.competences, out.competences, regRecComp, REG_MAX_COMP);
+  sec(o.pratiques, out.pratiques, regRecPrat, REG_MAX_PRAT);
+  return out;
+}
+function regContenu(){ return {format:REG_FORMAT, version:REG_VERSION, competences:REG.competences, pratiques:REG.pratiques}; }
+function regCharger(){
+  let o = null, brut = null;
+  try{ brut = localStorage.getItem(REG_CLE); }catch(e){}
+  if(brut){
+    try{ o = JSON.parse(brut); }catch(e){
+      /* illisible : on le met de côté plutôt que de le laisser écraser au prochain enregistrement */
+      try{ if(!localStorage.getItem(REG_CLE + '.illisible')) localStorage.setItem(REG_CLE + '.illisible', brut); }catch(x){}
+    }
+  }
+  const r = regLireBrut(o);
+  REG.competences = r.competences; REG.pratiques = r.pratiques;
+}
+/* vrai si le navigateur a bien gardé le registre ; sinon (espace plein, stockage bloqué) la page le dit */
+function regGarder(){
+  try{ localStorage.setItem(REG_CLE, JSON.stringify(regContenu())); REG_GARDE = true; }catch(e){ REG_GARDE = false; }
+  return REG_GARDE;
+}
+/* le plus récent l'emporte, une trace de suppression aussi ; à égalité, une règle fixe, pour que l'ordre n'y change rien */
+function regFondre(a, b){
+  const out = regVide();
+  ['competences', 'pratiques'].forEach(c => {
+    [a[c], b[c]].forEach(m => Object.keys(m).forEach(id => {
+      const x = m[id], y = out[c][id];
+      if(!y || x.maj > y.maj || (x.maj === y.maj && regCanon(x) > regCanon(y))) out[c][id] = x;
+    }));
+  });
+  return out;
+}
+/* ce qu'on a ici et que l'autre n'a pas : une pièce absente là-bas, ou plus récente ici */
+function regEnAvance(ici, labas){
+  return ['competences', 'pratiques'].some(c => Object.keys(ici[c]).some(id => {
+    const y = labas[c][id];
+    return !y || ici[c][id].maj > y.maj;
+  }));
+}
+function regEgal(a, b){ return regCanon(regContenu2(a)) === regCanon(regContenu2(b)); }
+function regContenu2(x){ return {competences:x.competences, pratiques:x.pratiques}; }
+
+/* ---------- ce que le livre donne ---------- */
+function regLivre(){
+  if(REG_LIVRE) return REG_LIVRE;
+  REG_LIVRE = {
+    pratiques: typeof PRATIQUES !== 'undefined' ? JSON.parse(JSON.stringify(PRATIQUES)) : {},
+    skills: typeof SKILLS !== 'undefined' ? JSON.parse(JSON.stringify(SKILLS)) : {}
+  };
+  return REG_LIVRE;
+}
+
+/* ---------- les compétences, telles qu'elles sont maintenant ---------- */
+function regCompetence(cle, carLivre, ajout){
+  const rec = regDe(REG.competences, cle), fixe = REG_FIXES[cle];
+  let car = carLivre, nom = cle, retire = false;
+  if(rec){
+    if(rec.car && !(fixe && fixe.car)) car = rec.car;
+    if(rec.nom && !fixe) nom = rec.nom;
+    if(rec.retire && !fixe) retire = true;
+  }
+  if(!car) return null;
+  return {cle:cle, nom:nom, car:car, carLivre:carLivre, ajout:!!ajout, retire:retire, fixe:!!fixe, fixeCar:!!(fixe && fixe.car),
+    retouche:!!rec && (nom !== cle || car !== carLivre || retire)};
+}
+/* toutes, retirées comprises : celles du livre dans l'ordre du livre, puis celles de la maison dans l'ordre où elles sont venues */
+function regVueCompetences(){
+  const L = regLivre(), out = [], vues = Object.create(null);
+  Object.keys(L.skills).forEach(car => L.skills[car].forEach(cle => {
+    vues[cle] = 1;
+    const c = regCompetence(cle, car, false);
+    if(c) out.push(c);
+  }));
+  Object.keys(REG.competences).filter(k => REG.competences[k].ajout && !vues[k]).sort((a, b) => {
+    const d = REG.competences[a].ordre - REG.competences[b].ordre;
+    return d || (a < b ? -1 : a > b ? 1 : 0);
+  }).forEach(cle => {
+    const c = regCompetence(cle, '', true);
+    if(c) out.push(c);
+  });
+  return out;
+}
+
+/* sous quelle caractéristique se lit aujourd'hui chaque compétence que le Registre a déplacée : une fiche qui porte des totaux
+   l'emporte avec eux, pour que le déplacement ne se fasse qu'une fois */
+function regCarsCourants(){
+  const out = {};
+  regVueCompetences().forEach(c => { if(c.car !== c.carLivre) out[c.cle] = c.car; });
+  return out;
+}
+
+/* ---------- les Pratiques, telles qu'elles sont maintenant ---------- */
+/* la caractéristique de lanceur d'une liste : celle que portent ses entrées qui se lancent, la plus fréquente si elles divergent */
+function regCaster(entrees){
+  const n = {};
+  entrees.forEach(e => { if(REG_JETS_CAR.indexOf(e.j) >= 0) n[e.j] = (n[e.j] || 0) + 1; });
+  const b = entrees.find(e => e.base && REG_JETS_CAR.indexOf(e.j) >= 0);
+  let best = '', max = 0;
+  /* à égalité, celle de l'attaque de base ; sinon la première dans l'ordre Force, Dextérité, Contenance */
+  REG_JETS_CAR.forEach(c => {
+    const v = n[c] || 0;
+    if(v > max || (v === max && v > 0 && b && b.j === c)){ best = c; max = v; }
+  });
+  return best;
+}
+function regEntreeBanniere(s){ return {n:s.n, d:s.d, j:'aucun jet', pc:0, pct:'', base:false}; }
+/* toutes les listes, avec leurs entrées, et celles du livre qu'on a retirées */
+function regVuePratiques(){
+  const L = regLivre(), out = [], index = {};
+  Object.keys(L.pratiques).forEach(dom => Object.keys(L.pratiques[dom]).forEach(grp => {
+    const liste = {dom:dom, grp:grp, banniere:regEstBanniere(dom), entrees:[], retirees:[], caster:''};
+    out.push(liste); index[dom + '|' + grp] = liste;
+    L.pratiques[dom][grp].forEach(e => {
+      const livre = regSnap(e), id = regIdPrat(dom, grp, e.n), rec = regDe(REG.pratiques, id);
+      if(rec && rec.supprime){ liste.retirees.push(Object.assign({id:id, livre:true, du:livre}, livre)); return; }
+      const eff = rec ? regSnap(rec) : livre;
+      /* retouchée : la moindre différence avec le livre compte, une majuscule ou un accent aussi */
+      liste.entrees.push(Object.assign({id:id, livre:true, du:livre, retouche:!!rec && regCanon(eff) !== regCanon(livre), maj:rec ? rec.maj : -1}, eff));
+    });
+  }));
+  Object.keys(REG.pratiques).filter(id => id.indexOf('|') < 0).sort((a, b) => {
+    const d = REG.pratiques[a].ordre - REG.pratiques[b].ordre;
+    return d || (a < b ? -1 : a > b ? 1 : 0);
+  }).forEach(id => {
+    const rec = REG.pratiques[id];
+    if(rec.supprime || !index[rec.dom + '|' + rec.grp]) return;
+    const eff = regSnap(rec);
+    index[rec.dom + '|' + rec.grp].entrees.push(Object.assign({id:id, livre:false, du:null, retouche:false, maj:rec.maj}, eff));
+  });
+  out.forEach(l => {
+    if(l.banniere){
+      l.entrees.forEach(e => Object.assign(e, regEntreeBanniere(e)));
+      return;
+    }
+    /* une seule attaque de base par liste : si deux appareils en ont posé chacun une, la plus récente reste, l'autre n'en est plus une */
+    const bases = l.entrees.filter(e => e.base);
+    if(bases.length > 1){
+      const gagnante = bases.reduce((a, b) => (b.maj > a.maj || (b.maj === a.maj && b.id < a.id)) ? b : a);
+      bases.forEach(e => {
+        if(e === gagnante) return;
+        e.base = false;
+        if(e.livre) e.retouche = regCanon(regSnap(e)) !== regCanon(e.du);
+      });
+    }
+    l.caster = regCaster(l.entrees);
+    /* une liste, une caractéristique : tout ce qui s'y lance se lance sous elle */
+    l.entrees.forEach(e => { if(REG_JETS_CAR.indexOf(e.j) >= 0) e.j = l.caster; });
+  });
+  return out;
+}
+
+/* ---------- poser tout cela par-dessus le livre ---------- */
+/* memoire : on garde ce qu'on a en mémoire au lieu de relire le stockage (la page des compétences, qui vient d'y écrire) */
+function regAppliquer(memoire){
+  if(!memoire) regCharger();
+  regLivre();
+  /* les compétences : les listes se refont sur place, ceux qui les tiennent gardent leur référence */
+  const comps = regVueCompetences();
+  if(typeof SKILLS !== 'undefined'){
+    Object.keys(SKILLS).forEach(c => { SKILLS[c].length = 0; });
+    comps.forEach(c => { if(!c.retire){ if(!SKILLS[c.car]) SKILLS[c.car] = []; SKILLS[c.car].push(c.cle); } });
+    if(typeof ALLSKILLS !== 'undefined'){
+      ALLSKILLS.length = 0;
+      Object.keys(SKILLS).forEach(c => SKILLS[c].forEach(s => ALLSKILLS.push({s:s, car:c})));
+    }
+    if(typeof CAR_DE !== 'undefined'){
+      Object.keys(CAR_DE).forEach(k => delete CAR_DE[k]);
+      Object.keys(SKILLS).forEach(c => SKILLS[c].forEach(s => { CAR_DE[s] = c; }));
+    }
+    /* une compétence sociale, c'est une compétence de Charisme */
+    if(typeof SOCIAL !== 'undefined'){ SOCIAL.length = 0; (SKILLS.Charisme || []).forEach(s => SOCIAL.push(s)); }
+  }
+  Object.keys(COMP_LIB).forEach(k => delete COMP_LIB[k]);
+  comps.forEach(c => { if(c.nom !== c.cle) COMP_LIB[c.cle] = c.nom; });
+  /* les Pratiques, sur place aussi */
+  const vue = regVuePratiques();
+  REG_CHAINE = {}; REG_NOMS = {};
+  if(typeof PRATIQUES !== 'undefined'){
+    vue.forEach(l => {
+      if(!PRATIQUES[l.dom]) PRATIQUES[l.dom] = {};
+      const tab = PRATIQUES[l.dom][l.grp] || (PRATIQUES[l.dom][l.grp] = []);
+      tab.length = 0;
+      l.entrees.forEach(e => {
+        const x = {n:e.n, d:e.d, j:e.j, pc:e.pc};
+        if(e.pct) x.pct = e.pct;
+        if(e.base) x.base = true;
+        tab.push(x);
+      });
+    });
+  }
+  /* de quoi remettre à jour les fiches qui portent une ancienne version */
+  const noms = {};
+  vue.forEach(l => l.entrees.forEach(e => { noms[regNorm(l.banniere ? 'banniere' : l.dom) + '␟' + regNorm(e.n)] = 1; }));
+  Object.keys(REG.pratiques).forEach(id => {
+    const rec = REG.pratiques[id];
+    if(rec.supprime || !rec.precedent || !rec.precedent.length) return;
+    let l = null, e = null;
+    vue.some(x => { const t = x.entrees.find(y => y.id === id); if(t){ l = x; e = t; return true; } return false; });
+    if(!e) return;
+    const dom = regNorm(l.banniere ? 'banniere' : l.dom), courant = {n:e.n, d:e.d, j:e.j, pc:e.pc, pct:e.pct, base:e.base};
+    rec.precedent.forEach(s => {
+      const k = dom + '␟' + regCle(s);
+      /* une version d'avant qui ne diffère de celle d'aujourd'hui que par une majuscule ou un accent se met à jour aussi */
+      if(regCanon(regSnap(s)) !== regCanon(regSnap(courant)) && !REG_CHAINE[k]) REG_CHAINE[k] = courant;
+      const nk = dom + '␟' + regNorm(s.n);
+      if(regNorm(s.n) !== regNorm(e.n) && !noms[nk] && !REG_NOMS[nk]) REG_NOMS[nk] = e.n;
+    });
+  });
+  REG_APPLIQUE = regCanon(regContenu2(REG));
+  return {competences:comps, pratiques:vue};
+}
+/* ce qui est posé est-il ce que ce navigateur garde maintenant ? */
+const regAJour = () => regCanon(regContenu2(REG)) === REG_APPLIQUE;
+
+/* le domaine d'une Pratique, tel que le livre l'écrit (« de la Sève (Écorciens et Élytris) ») : une Pratique apprise à la table
+   porte seulement son nom court (« seve »), que la table sait lire (domaineCle) */
+function regDomLong(dom){
+  if(!dom || typeof PRATIQUES === 'undefined') return dom || '';
+  if(Object.prototype.hasOwnProperty.call(PRATIQUES, dom)) return dom;
+  if(typeof domaineCle === 'function'){
+    const k = Object.keys(PRATIQUES).find(x => !regEstBanniere(x) && domaineCle(x) === dom);
+    if(k) return k;
+  }
+  return dom;
+}
+/* la version d'aujourd'hui d'une Pratique portée par une fiche : seulement si la fiche en est restée à une version d'avant */
+function regMajCopie(p, domPerso){
+  if(!p) return null;
+  const dom = p.banniere ? 'banniere' : regDomLong(p.dom || domPerso || '');
+  const s = regSnap(p);
+  if(!s) return null;
+  return REG_CHAINE[regNorm(dom) + '␟' + regCle(s)] || null;
+}
+/* le nom d'aujourd'hui d'une Pratique qui a changé de nom : une sauvegarde du créateur garde les noms */
+function regNomPratique(n, dom, banniere){
+  return REG_NOMS[regNorm(banniere ? 'banniere' : dom) + '␟' + regNorm(n)] || n;
+}
+
+/* ---------- le dépôt : relire de temps en temps, sans rien écrire ---------- */
+/* le fichier du dépôt rejoint ce qu'on garde ici ; vrai si ce qui est posé n'est plus ce qu'on garde */
+function regLireEnLigne(){
+  if(typeof ghcPret !== 'function' || !ghcPret() || !GHC_FICHIERS.competences) return Promise.resolve(false);
+  return ghcLireUnFichier(GHC_FICHIERS.competences).then(o => {
+    if(!o || typeof o !== 'object' || o.format !== REG_FORMAT) return false;
+    const fond = regFondre(REG, regLireBrut(o));
+    if(!regEgal(fond, REG)){ REG.competences = fond.competences; REG.pratiques = fond.pratiques; regGarder(); }
+    return !regAJour();
+  }, () => false);
+}
+function regAvis(){
+  if(typeof document === 'undefined' || !document.body || document.getElementById('regAvis')) return;
+  /* « Plus tard » vaut jusqu'à ce que le registre change de nouveau : l'avis ne revient pas toutes les deux minutes */
+  if(REG_ECARTE && REG_ECARTE === regCanon(regContenu2(REG))) return;
+  const s = document.createElement('style');
+  s.textContent = '@media print{#regAvis{display:none!important}}';
+  const d = document.createElement('div');
+  d.id = 'regAvis'; d.setAttribute('role', 'status');
+  d.style.cssText = 'position:fixed;left:50%;transform:translateX(-50%);bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:9999;'
+    + 'max-width:min(560px,calc(100vw - 32px));background:var(--surface,#fff);color:var(--ink,#1B1C18);border:1px solid var(--forest,#1F3D2B);'
+    + 'border-radius:3px;box-shadow:0 2px 12px rgba(0,0,0,.28);padding:10px 14px;font:14px/1.4 "IBM Plex Sans",system-ui,sans-serif;'
+    + 'display:flex;gap:10px 14px;align-items:center;flex-wrap:wrap';
+  const t = document.createElement('span');
+  t.textContent = 'Les compétences ou les Pratiques ont changé dans le Registre des Compétences. Recharge la page pour les prendre.';
+  const bt = (txt, plein) => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.textContent = txt;
+    b.style.cssText = 'font:inherit;font-size:13px;padding:5px 11px;border:1px solid var(--forest,#1F3D2B);border-radius:2px;cursor:pointer;'
+      + (plein ? 'background:var(--forest,#1F3D2B);color:var(--paper,#F4F2EA)' : 'background:transparent;color:var(--forest,#1F3D2B)');
+    return b;
+  };
+  const r = bt('Recharger', true), p = bt('Plus tard', false);
+  r.id = 'regRecharger'; p.id = 'regPlusTard';
+  r.onclick = () => location.reload();
+  p.onclick = () => { REG_ECARTE = regCanon(regContenu2(REG)); d.remove(); };
+  d.append(t, r, p);
+  document.head.appendChild(s);
+  document.body.appendChild(d);
+}
+/* créateur et table : relire le dépôt à l'ouverture et toutes les deux minutes, et suivre l'autre onglet */
+function regSurveiller(){
+  if(typeof window === 'undefined') return;
+  const verifier = () => regLireEnLigne().then(neuf => { if(neuf) regAvis(); }, () => {});
+  window.addEventListener('storage', e => {
+    if(e.key !== REG_CLE && e.key !== null) return;
+    regCharger();
+    if(!regAJour()) regAvis();
+  });
+  setTimeout(verifier, 2500);
+  setInterval(() => { if(!document.hidden) verifier(); }, 120000);
+}
+
+/* ============ les retouches : ce que le Registre des Compétences écrit ============
+   Chaque retouche est une pièce datée, rangée par identifiant. Une Pratique du livre se reconnaît à son identifiant
+   (sa liste et son nom dans le livre) : le retoucher, c'est poser une pièce à cet identifiant ; la retirer, c'est y poser
+   une trace de suppression ; « revenir au livre », c'est y reposer ce que le livre dit. Une Pratique de la maison a un
+   identifiant à elle, qui commence par « + ». */
+
+let REG_T = 0;
+/* la date d'une retouche : jamais avant la précédente de la même pièce, même si l'horloge d'un appareil avance ou retarde.
+   Qui retouche ce qu'il a sous les yeux l'emporte donc sur cette version-là, quelle que soit sa date */
+const regMaintenant = prev => { REG_T = Math.max(Date.now(), REG_T + 1, (prev && isFinite(+prev.maj) ? +prev.maj : 0) + 1); return REG_T; };
+const regSortie = () => { regGarder(); regAppliquer(true); };
+
+function regTrouverPrat(id){
+  const v = regVuePratiques();
+  for(let i = 0; i < v.length; i++){
+    const e = v[i].entrees.find(x => x.id === id) || v[i].retirees.find(x => x.id === id);
+    if(e) return {liste:v[i], e:e};
+  }
+  return null;
+}
+/* poser des champs sur une Pratique : ce qu'elle était entre dans la liste de ses versions d'avant.
+   t = {liste, e} : la Pratique telle qu'on la voyait juste avant (une liste qui change d'un coup se lit une seule fois) */
+function regEcrirePratique(t, champs){
+  if(!t) return false;
+  const id = t.e.id;
+  const avant = regSnap(t.e);
+  const apres = regSnap(Object.assign({}, avant, champs));
+  if(!apres) return false;
+  const rec = regDe(REG.pratiques, id);
+  const actif = !!rec && !rec.supprime;
+  /* rien n'a changé, pas même une majuscule ou un accent : rien ne s'écrit, et aucune date ne se pose sur une pièce intacte */
+  if(regCanon(avant) === regCanon(apres)) return false;
+  let prec = actif && rec.precedent ? rec.precedent.slice() : [];
+  prec = prec.filter(s => regCanon(s) !== regCanon(avant));
+  prec.push(avant);
+  /* au-delà de dix versions, on garde la première (celle du livre) et les neuf dernières */
+  if(prec.length > 10) prec = [prec[0]].concat(prec.slice(-9));
+  REG.pratiques[id] = Object.assign({}, apres, {dom:t.liste.dom, grp:t.liste.grp, ordre:actif ? rec.ordre : 0,
+    precedent:prec, maj:regMaintenant(rec)});
+  return true;
+}
+function regPoserPratique(id, champs){
+  const fait = regEcrirePratique(regTrouverPrat(id), champs);
+  if(fait) regSortie();
+  return fait;
+}
+function regRetirerPratique(id){
+  if(!regTrouverPrat(id)) return false;
+  REG.pratiques[id] = {supprime:true, maj:regMaintenant(regDe(REG.pratiques, id))};
+  regSortie();
+  return true;
+}
+/* le nom que le livre donne à une Pratique est-il déjà celui d'une autre, dans la même école ? (la remettre en ferait deux) */
+function regNomLivrePris(id){
+  const t = regTrouverPrat(id);
+  return !!(t && t.e.du && regNomPratPris(t.liste.dom, t.e.du.n, id));
+}
+/* une Pratique du livre retirée revient telle que le livre la donne */
+function regRemettrePratique(id){
+  const t = regTrouverPrat(id);
+  if(!t || !t.e.du || regNomLivrePris(id)) return false;
+  REG.pratiques[id] = Object.assign({}, t.e.du, {dom:t.liste.dom, grp:t.liste.grp, ordre:0, precedent:[], maj:regMaintenant(regDe(REG.pratiques, id))});
+  regSortie();
+  return true;
+}
+function regRevenirAuLivre(id){
+  const t = regTrouverPrat(id);
+  if(!t || !t.e.du || regNomLivrePris(id)) return false;
+  return regPoserPratique(id, t.e.du);
+}
+function regNouvellePratique(dom, grp, champs){
+  const maj = regMaintenant();
+  const id = '+' + maj.toString(36) + Math.random().toString(36).slice(2, 6);
+  const s = regSnap(champs);
+  if(!s) return '';
+  REG.pratiques[id] = Object.assign({}, s, {dom:dom, grp:grp, ordre:maj, precedent:[], maj:maj});
+  regSortie();
+  return id;
+}
+/* la caractéristique de la liste change : tout ce qui s'y lance la suit, d'un seul coup */
+function regChangerCaster(dom, grp, car){
+  if(REG_JETS_CAR.indexOf(car) < 0) return false;
+  const l = regVuePratiques().find(x => x.dom === dom && x.grp === grp);
+  if(!l) return false;
+  let fait = false;
+  l.entrees.forEach(e => { if(REG_JETS_CAR.indexOf(e.j) >= 0 && e.j !== car) fait = regEcrirePratique({liste:l, e:e}, {j:car}) || fait; });
+  if(fait) regSortie();
+  return fait;
+}
+/* une seule attaque de base par liste */
+function regPoserBase(dom, grp, id){
+  const l = regVuePratiques().find(x => x.dom === dom && x.grp === grp);
+  if(!l) return false;
+  let fait = false;
+  l.entrees.forEach(e => {
+    if(e.id === id) fait = regEcrirePratique({liste:l, e:e}, {base:true}) || fait;
+    else if(e.base) fait = regEcrirePratique({liste:l, e:e}, {base:false}) || fait;
+  });
+  if(fait) regSortie();
+  return fait;
+}
+
+/* ---------- les compétences ---------- */
+function regPoserCompetence(cle, champs){
+  const c = regVueCompetences().find(x => x.cle === cle);
+  if(!c) return false;
+  const rec = regDe(REG.competences, cle) || {nom:'', car:'', retire:false, ajout:c.ajout, ordre:0, maj:0};
+  const n = Object.assign({}, rec);
+  if(champs.nom != null && !c.fixe){ const nom = regTxt(champs.nom, 60).trim(); n.nom = nom === cle ? '' : nom; }
+  if(champs.car != null && !c.fixeCar && REG_CARS.indexOf(champs.car) >= 0) n.car = champs.car === c.carLivre ? '' : champs.car;
+  if(champs.retire != null && !c.fixe) n.retire = !!champs.retire;
+  if(c.ajout){ n.ajout = true; if(!n.ordre) n.ordre = regMaintenant(); }
+  if(regCanon(n) === regCanon(rec)) return false;
+  n.maj = regMaintenant(rec);
+  REG.competences[cle] = n;
+  regSortie();
+  return true;
+}
+/* une compétence du livre retouchée revient telle que le livre la donne */
+function regRevenirCompetence(cle){
+  const k = regDe(REG.competences, cle), c = regVueCompetences().find(x => x.cle === cle);
+  if(!k || !c || c.ajout) return false;
+  REG.competences[cle] = Object.assign({}, k, {nom:'', car:'', retire:false, maj:regMaintenant(k)});
+  regSortie();
+  return true;
+}
+function regNouvelleCompetence(nom, car){
+  const cle = regTxt(nom, 60).trim();
+  if(!cle || REG_CARS.indexOf(car) < 0) return '';
+  const maj = regMaintenant(regDe(REG.competences, cle));
+  REG.competences[cle] = {nom:'', car:car, retire:false, ajout:true, ordre:maj, maj:maj};
+  regSortie();
+  return cle;
+}
+/* un nom est-il déjà pris, par une compétence ou par une clé ? */
+function regNomComptePris(nom, sauf){
+  const k = regNorm(nom);
+  return regVueCompetences().some(c => c.cle !== sauf && (regNorm(c.nom) === k || regNorm(c.cle) === k));
+}
+function regNomPratPris(dom, nom, sauf){
+  const k = regNorm(nom);
+  return regVuePratiques().some(l => l.dom === dom && l.entrees.concat(l.retirees).some(e => e.id !== sauf && regNorm(e.n) === k));
+}
+
+const COMP_USAGES = {"Discrétion":["la Voie Éclaireur (+20)"],"Perception":["la Voie Éclaireur (+20)","la Voie Marchand (+20)"],"Survie":["la Voie Éclaireur (+20)","la Voie Chasseur (+20)","le peuple Ori'Ican (+10)"],"Nature":["la Voie Chercheur (+20)"],"Savoir":["la Voie Chercheur (+20)","la Voie Artisan (+20)"],"Connaissance des Floraisons":["la Voie Chercheur (+20)"],"Tir":["la Voie Chasseur (+20)"],"Athlétisme":["la Voie Chasseur (+20)","la Voie Garde (+20)"],"Médecine":["la Voie Secouriste (+40)"],"Empathie":["la Voie Secouriste (+20)"],"Persuasion":["la Voie Porte-parole (+20)","le choix des Cimérans (+10)"],"Représentation":["la Voie Porte-parole (+20)","le choix des Cimérans (+10)","le peuple Ilvès (+20)"],"Tromperie":["la Voie Porte-parole (+20)","la Voie Marchand (+40)","le choix des Cimérans (+10)"],"Combat":["la Voie Garde (+20)"],"Intimidation":["la Voie Garde (+20)","le choix des Cimérans (+10)"],"Artisanat":["la Voie Artisan (+40)"],"Sentir l'Énergie":["le peuple Élytris (+20)"]};
+
+/* ============ le Registre des Compétences ============
+   Trois choses, une seule page : les Pratiques (par liste, avec la caractéristique de la liste), les compétences,
+   et les compétences de Bannière. Tout ce qu'on retouche se range dans ce navigateur (module reglesmaison.js)
+   et, si le dépôt est relié, dans competences.json. Le créateur et la table s'en servent au chargement suivant. */
+
+const $ = id => document.getElementById(id);
+const el = (tag, cls, txt) => { const e = document.createElement(tag); if(cls) e.className = cls; if(txt != null) e.textContent = txt; return e; };
+
+const UI = {dom:'', ouvert:null, neuve:false, flash:'', retirees:{}, aRedessiner:false};
+let VUE = {competences:[], pratiques:[]};
+
+const slug = s => regNorm(s).replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+const pluriel = (n, un, plus) => n + ' ' + (n > 1 ? plus : un);
+const apos = s => String(s).replace(/'/g, '’');
+
+/* « de la Sève (Écorciens et Élytris) » : le nom court, et les peuples */
+function domCourt(dom){
+  const m = /^(?:de la |du |de l['’]|de )(.+?)(?: \((.+)\))?$/.exec(dom);
+  const n = apos(m ? m[1] : dom);
+  return n.charAt(0).toUpperCase() + n.slice(1);
+}
+function domPeuples(dom){ const m = /\((.+)\)$/.exec(dom); return m ? m[1] : ''; }
+const grpTitre = l => l.grp === '_' ? domCourt(l.dom) : apos(l.grp);
+const idListe = l => 'l-' + slug(l.dom + ' ' + l.grp);
+
+function jetTexte(e){
+  if(REG_JETS_CAR.indexOf(e.j) >= 0) return 'se lance sous la ' + e.j;
+  return e.j;
+}
+const coutTexte = e => e.pct ? e.pct : e.pc ? e.pc + ' PC' : 'gratuite';
+
+/* ---------- petits morceaux d'interface ---------- */
+function champ(parent, id, label, noeud, aide){
+  const w = el('div','fld');
+  const l = el('label', null, label); l.htmlFor = id;
+  noeud.id = id;
+  w.append(l, noeud);
+  if(aide) w.append(el('p','aide', aide));
+  parent.append(w);
+  return noeud;
+}
+function saisie(type, val, ph){ const i = el('input'); i.type = type; i.value = val == null ? '' : val; if(ph) i.placeholder = ph; return i; }
+function zone(val, lignes){ const t = el('textarea'); t.value = val || ''; t.rows = lignes || 3; return t; }
+function bouton(texte, cls, action, id){
+  const b = el('button', 'btn ' + cls, texte); b.type = 'button';
+  if(id) b.id = id;
+  b.onclick = action;
+  return b;
+}
+/* un geste qui défait quelque chose se fait en deux temps : « Retirer », puis « Sûr ? ».
+   Un double clic n'est pas une confirmation : le second clic, trop près du premier, est ignoré */
+function boutonDanger(texte, action, id, sur){
+  const b = el('button', 'btn danger xs', texte); b.type = 'button';
+  if(id) b.id = id;
+  let t = 0, arme = 0;
+  b.onclick = () => {
+    if(b.classList.contains('sur')){
+      if(Date.now() - arme < 600) return;
+      clearTimeout(t); action(); return;
+    }
+    arme = Date.now();
+    b.classList.add('sur'); b.textContent = sur || 'Sûr ?';
+    t = setTimeout(() => { b.classList.remove('sur'); b.textContent = texte; }, 4000);
+  };
+  return b;
+}
+const badge = (t, cls) => el('span', 'badge' + (cls ? ' ' + cls : ''), t);
+const erreur = (w, t) => { const p = w.querySelector('.err.edit'); if(!p) return; p.textContent = t || ''; p.hidden = !t; };
+/* un refus dans une ligne qui n'a pas d'éditeur : le message se pose sous son texte */
+function refuser(noeud, t){
+  let p = noeud.querySelector('.err.edit');
+  if(!p){ p = el('p', 'err edit'); p.setAttribute('role', 'alert'); noeud.append(p); }
+  p.textContent = t || ''; p.hidden = !t;
+}
+
+/* ce qui vient d'être retouché se signale un instant */
+function apres(id){
+  UI.ouvert = null;
+  UI.flash = id || '';
+  dessiner();
+  sauverBientot();
+  if(UI.flash){
+    const r = Array.from(document.querySelectorAll('[data-id]')).find(x => x.dataset.id === UI.flash);
+    if(r){ r.classList.add('flash'); try{ r.scrollIntoView({block:'nearest'}); }catch(e){} }
+    UI.flash = '';
+  }
+}
+
+/* ---------- les Pratiques ---------- */
+function domaines(){
+  const v = [];
+  VUE.pratiques.forEach(l => { if(!l.banniere && v.indexOf(l.dom) < 0) v.push(l.dom); });
+  return v;
+}
+function dessinerDomaines(){
+  const ds = domaines();
+  if(ds.indexOf(UI.dom) < 0) UI.dom = ds[0] || '';
+  const seg = $('domSeg'); seg.innerHTML = '';
+  ds.forEach(d => {
+    const n = VUE.pratiques.filter(l => l.dom === d).reduce((s, l) => s + l.entrees.length, 0);
+    const b = el('button', null, domCourt(d)); b.type = 'button'; b.dataset.dom = d;
+    b.title = domPeuples(d);
+    b.append(el('span', 'nb', String(n)));
+    b.setAttribute('aria-pressed', d === UI.dom ? 'true' : 'false');
+    b.onclick = () => { UI.dom = d; UI.ouvert = null; dessiner(); };
+    seg.append(b);
+  });
+}
+function selectCaster(l){
+  const w = el('div', 'plcaster');
+  if(l.banniere) return w;
+  if(!l.caster){ w.append(el('span', 'aucun', 'Aucune ne se lance : ceux qu’elles touchent testent.')); return w; }
+  const id = 'car-' + idListe(l);
+  const lab = el('label', null, 'Se lance sous la'); lab.htmlFor = id;
+  const s = el('select'); s.id = id; s.dataset.dom = l.dom; s.dataset.grp = l.grp;
+  REG_JETS_CAR.forEach(c => s.add(new Option(c, c)));
+  s.value = l.caster;
+  s.onchange = () => { if(regChangerCaster(l.dom, l.grp, s.value)){ UI.ouvert = null; dessiner(); sauverBientot(); } };
+  w.append(lab, s);
+  return w;
+}
+function ligneEntree(l, e){
+  const r = el('div', 'prrow' + (e.retouche ? ' retouche' : ''));
+  r.dataset.id = e.id; r.dataset.nom = e.n;
+  const tx = el('div', 'prtxt');
+  const nm = el('div', 'prnm', e.n);
+  if(e.base) nm.append(badge('attaque de base', 'or'));
+  if(!e.livre) nm.append(badge('à toi', 'or'));
+  else if(e.retouche) nm.append(badge('retouchée', 'or'));
+  tx.append(nm);
+  if(!l.banniere) tx.append(el('div', 'prmeta', coutTexte(e) + ' · ' + jetTexte(e)));
+  if(e.d) tx.append(el('div', 'prd', e.d));
+  r.append(tx);
+  const ac = el('div', 'bact');
+  ac.append(bouton('Modifier', 'ghost xs', () => { UI.ouvert = {type:'prat', id:e.id}; dessiner(); }));
+  /* retirer une Pratique du livre se défait (« Remettre ») ; supprimer une des tiennes, non */
+  ac.append(e.livre
+    ? boutonDanger('Retirer', () => { regRetirerPratique(e.id); apres(''); })
+    : boutonDanger('Supprimer', () => { regRetirerPratique(e.id); apres(''); }, null, 'Sûr ? Elle ne revient pas'));
+  r.append(ac);
+  return r;
+}
+/* l'éditeur d'une Pratique ou d'une compétence de Bannière, en place de sa ligne */
+function editeurEntree(l, e, nouveau){
+  const ban = l.banniere;
+  const w = el('div', 'editeur');
+  w.dataset.editeur = nouveau ? 'nouvelle' : e.id;
+  const tete = el('div', 'edtete');
+  tete.append(el('h3', null, nouveau ? (ban ? 'Une compétence de Bannière de plus' : 'Une Pratique de plus') : 'Modifier « ' + e.n + ' »'));
+  w.append(tete);
+  const init = nouveau ? {n:'', d:'', j:l.caster || 'aucun jet', pc:1, pct:'', base:false} : e;
+  const n = saisie('text', init.n); n.maxLength = 80;
+  champ(w, 'ed-n', 'Nom', n);
+  let pc = null, pct = null, j = null, base = null;
+  if(!ban){
+    const l2 = el('div', 'ligne2');
+    pc = saisie('number', init.pc); pc.min = 0; pc.max = 20; pc.step = 1;
+    champ(l2, 'ed-pc', 'Coût en PC', pc);
+    pct = saisie('text', init.pct, '1 PC au contact, 2 PC à vue'); pct.maxLength = 80;
+    champ(l2, 'ed-pct', 'Coût particulier, facultatif', pct, 'S’il est écrit, il remplace le chiffre sur les fiches.');
+    w.append(l2);
+    j = el('select');
+    /* une liste a une seule caractéristique de lanceur : seule celle-là est proposée. Une liste où rien ne se lançait en choisit une */
+    (l.caster ? [l.caster] : REG_JETS_CAR).forEach(c => j.add(new Option('Se lance sous la ' + c, c)));
+    REG_JETS_SANS.forEach(c => j.add(new Option(c.charAt(0).toUpperCase() + c.slice(1), c)));
+    j.value = init.j;
+    champ(w, 'ed-j', 'Comment elle se lance', j, l.caster
+      ? 'La liste se lance sous la ' + l.caster + ' : pour la changer, c’est le choix en tête de la liste.'
+      : 'Aucune Pratique de cette liste ne se lançait. Si celle-ci se lance, sa caractéristique devient celle de la liste.');
+  }
+  const d = zone(init.d, 4); d.maxLength = 1200;
+  champ(w, 'ed-d', ban ? 'Ce qu’elle permet' : 'Ce qu’elle fait', d);
+  if(!ban){
+    const lb = el('label', 'coche'); lb.htmlFor = 'ed-base';
+    base = el('input'); base.type = 'checkbox'; base.id = 'ed-base'; base.checked = !!init.base;
+    lb.append(base, el('span', null, 'L’attaque de base de la liste : tous ceux qui l’ont l’ont d’office. Une seule par liste, et elle se lance.'));
+    w.append(lb);
+  }
+  const err = el('p', 'err edit'); err.hidden = true; err.setAttribute('role', 'alert');
+  w.append(err);
+  const ac = el('div', 'acts edact');
+  const ok = bouton('Enregistrer', 'sm', () => {
+    const nom = n.value.replace(/\s+/g, ' ').trim();
+    if(!nom){ erreur(w, 'Il lui faut un nom.'); n.setAttribute('aria-invalid', 'true'); n.focus(); return; }
+    if(regNomPratPris(l.dom, nom, nouveau ? '' : e.id)){ erreur(w, 'Une Pratique de cette école porte déjà ce nom.'); n.setAttribute('aria-invalid', 'true'); n.focus(); return; }
+    const champs = {n:nom, d:d.value};
+    let veutBase = false;
+    if(!ban){
+      const cout = Math.round(+pc.value);
+      if(!(cout >= 0 && cout <= 20)){ erreur(w, 'Le coût va de 0 à 20 PC.'); pc.setAttribute('aria-invalid', 'true'); pc.focus(); return; }
+      champs.pc = cout; champs.pct = pct.value; champs.j = j.value;
+      veutBase = base.checked;
+      if(veutBase && REG_JETS_CAR.indexOf(champs.j) < 0){ erreur(w, 'L’attaque de base se lance : choisis « Se lance sous la… » plutôt qu’un jet de la cible.'); j.focus(); return; }
+    }
+    let id = nouveau ? '' : e.id;
+    if(nouveau) id = regNouvellePratique(l.dom, l.grp, champs);
+    else {
+      /* seulement ce que ce formulaire a changé : ce qu'un autre appareil a retouché pendant qu'il était ouvert ne revient pas en arrière */
+      const change = {};
+      Object.keys(champs).forEach(k => { if(String(champs[k]) !== String(init[k] == null ? '' : init[k])) change[k] = champs[k]; });
+      if(Object.keys(change).length) regPoserPratique(id, change);
+    }
+    if(!ban && id && (nouveau ? veutBase : veutBase !== !!e.base)){
+      if(veutBase) regPoserBase(l.dom, l.grp, id);
+      else regPoserPratique(id, {base:false});
+    }
+    apres(id);
+  }, 'ed-ok');
+  ac.append(ok, bouton('Annuler', 'ghost sm', () => { UI.ouvert = null; dessiner(); }, 'ed-non'));
+  if(!nouveau && e.livre && e.retouche) ac.append(bouton('Revenir au livre', 'ghost sm', () => {
+    if(regNomLivrePris(e.id)){ erreur(w, 'Le livre l’appelle « ' + e.du.n + ' », et une autre Pratique de cette école porte déjà ce nom : renomme-la d’abord.'); return; }
+    regRevenirAuLivre(e.id); apres(e.id);
+  }, 'ed-livre'));
+  w.append(ac);
+  setTimeout(() => { try{ n.focus({preventScroll:true}); }catch(x){} }, 0);
+  return w;
+}
+function blocListe(l){
+  const w = el('div', 'pliste');
+  w.id = idListe(l); w.dataset.dom = l.dom; w.dataset.grp = l.grp;
+  const t = el('div', 'pltete');
+  const h = el('h3', null, grpTitre(l));
+  const pe = l.grp === '_' ? domPeuples(l.dom) : '';
+  if(pe) h.append(el('small', null, pe));
+  t.append(h, selectCaster(l));
+  w.append(t);
+  const o = UI.ouvert;
+  l.entrees.forEach(e => w.append(o && o.type === 'prat' && o.id === e.id ? editeurEntree(l, e, false) : ligneEntree(l, e)));
+  if(!l.entrees.length) w.append(el('p', 'vide', l.banniere ? 'Aucune compétence dans cette Bannière.' : 'Aucune Pratique dans cette liste.'));
+  if(o && o.type === 'nouvelle' && o.dom === l.dom && o.grp === l.grp) w.append(editeurEntree(l, null, true));
+  else {
+    const ac = el('div', 'acts'); ac.style.marginTop = '8px';
+    ac.append(bouton(l.banniere ? 'Nouvelle compétence' : 'Nouvelle Pratique', 'ghost xs', () => { UI.ouvert = {type:'nouvelle', dom:l.dom, grp:l.grp}; dessiner(); }));
+    w.append(ac);
+  }
+  if(l.retirees.length){
+    const dt = el('details', 'retirees');
+    dt.open = !!UI.retirees && !!UI.retirees[idListe(l)];
+    dt.ontoggle = () => { UI.retirees = UI.retirees || {}; UI.retirees[idListe(l)] = dt.open; };
+    dt.append(el('summary', null, pluriel(l.retirees.length, 'retirée du livre', 'retirées du livre')));
+    l.retirees.forEach(e => {
+      const r = el('div', 'prrow'); r.dataset.id = e.id; r.dataset.nom = e.n;
+      const tx = el('div', 'prtxt');
+      tx.append(el('div', 'prnm', e.n));
+      if(e.d) tx.append(el('div', 'prd', e.d));
+      r.append(tx);
+      const ac = el('div', 'bact');
+      ac.append(bouton('Remettre', 'ghost xs', () => {
+        if(regNomLivrePris(e.id)){ refuser(tx, 'Une autre Pratique de cette école s’appelle déjà « ' + e.n + ' » : renomme-la d’abord.'); return; }
+        regRemettrePratique(e.id); apres(e.id);
+      }));
+      r.append(ac);
+      dt.append(r);
+    });
+    w.append(dt);
+  }
+  return w;
+}
+function dessinerPratiques(){
+  const box = $('prListes'); box.innerHTML = '';
+  VUE.pratiques.filter(l => l.dom === UI.dom && !l.banniere).forEach(l => box.append(blocListe(l)));
+}
+
+/* ---------- les compétences de Bannière ---------- */
+function dessinerBanniere(){
+  const box = $('banListes'); box.innerHTML = '';
+  VUE.pratiques.filter(l => l.banniere).forEach(l => box.append(blocListe(l)));
+}
+
+/* ---------- les compétences ---------- */
+function usagesTexte(cle){
+  const u = (typeof COMP_USAGES !== 'undefined' && COMP_USAGES[cle]) || [];
+  return u.length ? u.join(', ') : '';
+}
+function ligneComp(c){
+  const r = el('div', 'cprow'); r.dataset.id = c.cle; r.dataset.cle = c.cle;
+  const tx = el('div', 'cptxt');
+  const nm = el('div', 'cpnm', c.nom);
+  if(c.nom !== c.cle) nm.append(el('span', 'cpcle', '(' + c.cle + ' dans le livre)'));
+  if(c.fixe) nm.append(badge('nommée par les règles'));
+  if(c.ajout) nm.append(badge('à toi', 'or'));
+  else if(c.retouche) nm.append(badge('retouchée', 'or'));
+  tx.append(nm);
+  const u = usagesTexte(c.cle);
+  if(u) tx.append(el('div', 'cpusage', 'Bonus donné par : ' + u));
+  r.append(tx);
+  const ac = el('div', 'bact');
+  ac.append(bouton('Modifier', 'ghost xs', () => { UI.ouvert = {type:'comp', id:c.cle}; dessiner(); }));
+  r.append(ac);
+  return r;
+}
+function editeurComp(c, nouveau){
+  const w = el('div', 'editeur');
+  w.dataset.editeur = nouveau ? 'nouvelle-comp' : c.cle;
+  const tete = el('div', 'edtete');
+  tete.append(el('h3', null, nouveau ? 'Une compétence de plus' : 'Modifier « ' + c.nom + ' »'));
+  w.append(tete);
+  const n = saisie('text', nouveau ? '' : c.nom); n.maxLength = 60;
+  n.disabled = !nouveau && c.fixe;
+  champ(w, 'ec-n', 'Nom', n, !nouveau && c.fixe ? 'Les règles la nomment : son nom ne change pas.'
+    : nouveau ? 'Elle gardera ce nom comme clé, même si tu le changes plus tard : aucune fiche n’en est changée.'
+    : 'Seul ce qu’on lit change : la clé du livre, « ' + c.cle + ' », reste dessous.');
+  const s = el('select');
+  REG_CARS.forEach(x => s.add(new Option(x, x)));
+  s.value = nouveau ? 'Intelligence' : c.car;
+  s.disabled = !nouveau && c.fixeCar;
+  champ(w, 'ec-car', 'Sous quelle caractéristique', s, !nouveau && c.fixeCar ? 'Son geste est celui de cette caractéristique : elle n’en change pas.'
+    : 'Une fiche qui existe déjà garde le total qui y est écrit ; les nouvelles partent de la caractéristique choisie ici.');
+  if(!nouveau){
+    const u = usagesTexte(c.cle);
+    if(u){ const p = el('p', 'usage-liste', 'Bonus donné par : ' + u + '. La retirer enlève ces bonus.'); w.append(p); }
+  }
+  const err = el('p', 'err edit'); err.hidden = true; err.setAttribute('role', 'alert');
+  w.append(err);
+  const ac = el('div', 'acts edact');
+  ac.append(bouton('Enregistrer', 'sm', () => {
+    const nom = n.value.replace(/\s+/g, ' ').trim();
+    if(!nom){ erreur(w, 'Il lui faut un nom.'); n.focus(); return; }
+    if(regNomComptePris(nom, nouveau ? '' : c.cle)){ erreur(w, 'Une compétence porte déjà ce nom.'); n.setAttribute('aria-invalid', 'true'); n.focus(); return; }
+    if(nouveau){
+      const cle = regNouvelleCompetence(nom, s.value);
+      UI.neuve = false;
+      apres(cle);
+    } else {
+      /* seulement ce que ce formulaire a changé, comme pour les Pratiques */
+      const change = {};
+      if(nom !== c.nom) change.nom = nom;
+      if(s.value !== c.car) change.car = s.value;
+      if(Object.keys(change).length) regPoserCompetence(c.cle, change);
+      apres(c.cle);
+    }
+  }, 'ec-ok'));
+  ac.append(bouton('Annuler', 'ghost sm', () => { UI.ouvert = null; UI.neuve = false; dessiner(); }, 'ec-non'));
+  if(!nouveau && !c.fixe) ac.append(boutonDanger('Retirer', () => { regPoserCompetence(c.cle, {retire:true}); apres(''); }, 'ec-retirer'));
+  if(!nouveau && c.retouche && !c.ajout) ac.append(bouton('Revenir au livre', 'ghost sm', () => { regRevenirCompetence(c.cle); apres(c.cle); }, 'ec-livre'));
+  w.append(ac);
+  setTimeout(() => { try{ (n.disabled ? s : n).focus({preventScroll:true}); }catch(x){} }, 0);
+  return w;
+}
+function dessinerCompetences(){
+  const box = $('cpListe'); box.innerHTML = '';
+  const actives = VUE.competences.filter(c => !c.retire);
+  const o = UI.ouvert;
+  REG_CARS.forEach(car => {
+    const liste = actives.filter(c => c.car === car);
+    const g = el('div', 'cpgrp'); g.dataset.car = car;
+    const h = el('h3', null, car); h.append(el('small', null, pluriel(liste.length, 'compétence', 'compétences')));
+    g.append(h);
+    liste.forEach(c => g.append(o && o.type === 'comp' && o.id === c.cle ? editeurComp(c, false) : ligneComp(c)));
+    if(!liste.length) g.append(el('p', 'vide', 'Aucune compétence sous cette caractéristique.'));
+    box.append(g);
+  });
+  const neuve = $('cpNeuve'); neuve.innerHTML = '';
+  if(UI.neuve) neuve.append(editeurComp(null, true));
+  $('cpNouvelle').hidden = !!UI.neuve;
+  const ret = VUE.competences.filter(c => c.retire);
+  $('cpRetireesBloc').hidden = !ret.length;
+  $('cpRetireesTitre').textContent = pluriel(ret.length, 'compétence retirée', 'compétences retirées');
+  const rb = $('cpRetirees'); rb.innerHTML = '';
+  ret.forEach(c => {
+    const r = el('div', 'cprow'); r.dataset.id = c.cle; r.dataset.cle = c.cle;
+    const tx = el('div', 'cptxt');
+    tx.append(el('div', 'cpnm', c.nom));
+    tx.append(el('div', 'cpmeta', 'sous ' + c.car));
+    r.append(tx);
+    const ac = el('div', 'bact');
+    ac.append(bouton('Remettre', 'ghost xs', () => { regPoserCompetence(c.cle, {retire:false}); apres(c.cle); }));
+    r.append(ac);
+    rb.append(r);
+  });
+}
+
+/* ---------- ce qui se compte, et l'état ---------- */
+function dessinerCompte(){
+  const ps = VUE.pratiques.filter(l => !l.banniere);
+  const tout = ps.reduce((s, l) => s + l.entrees.length, 0);
+  const ret = ps.reduce((s, l) => s + l.entrees.filter(e => e.retouche).length, 0);
+  const moi = ps.reduce((s, l) => s + l.entrees.filter(e => !e.livre).length, 0);
+  const out = ps.reduce((s, l) => s + l.retirees.length, 0);
+  const bits = [];
+  if(ret) bits.push(pluriel(ret, 'retouchée', 'retouchées'));
+  if(moi) bits.push(pluriel(moi, 'à toi', 'à toi'));
+  if(out) bits.push(pluriel(out, 'retirée du livre', 'retirées du livre'));
+  $('prCompte').textContent = pluriel(tout, 'Pratique', 'Pratiques') + (bits.length ? ', dont ' + bits.join(', ') : '');
+  const cs = VUE.competences.filter(c => !c.retire);
+  const cr = cs.filter(c => c.retouche && !c.ajout).length, cm = cs.filter(c => c.ajout).length;
+  const cb = [];
+  if(cr) cb.push(pluriel(cr, 'retouchée', 'retouchées'));
+  if(cm) cb.push(pluriel(cm, 'à toi', 'à toi'));
+  $('cpCompte').textContent = pluriel(cs.length, 'compétence', 'compétences') + (cb.length ? ', dont ' + cb.join(', ') : '');
+  const bs = VUE.pratiques.filter(l => l.banniere);
+  $('banCompte').textContent = pluriel(bs.reduce((s, l) => s + l.entrees.length, 0), 'compétence de Bannière', 'compétences de Bannière');
+}
+
+function dessiner(){
+  UI.aRedessiner = false;
+  VUE = regAppliquer(true);
+  dessinerCompte();
+  dessinerDomaines();
+  dessinerPratiques();
+  dessinerCompetences();
+  dessinerBanniere();
+  dessinerEtat();
+}
+$('cpNouvelle').onclick = () => { UI.neuve = true; UI.ouvert = null; dessiner(); };
+
+/* ============ la sauvegarde en ligne : un dépôt GitHub privé pour les registres ============
+   Le dépôt et le jeton se donnent une fois, dans n'importe quelle page du site : ils restent dans
+   ce navigateur, et chaque registre y garde son fichier. On relit toutes les dix secondes : tant que
+   rien n'a bougé, GitHub répond 304 et ça ne coûte rien. On écrit en regroupant les changements,
+   jamais deux fois en moins de quinze secondes : GitHub accepte 500 écritures par heure et par jeton. */
+
+const GHC_CLE = 'faelorenn.github';
+const GHC_FICHIERS = {table:'table-faelorenn.json', personnages:'personnages.json', bestiaire:'bestiaire.json', competences:'competences.json'};
+const GHC_API = 'https://api.github.com';
+const GHC = {depot:'', jeton:'', branche:'', api:GHC_API, actif:false, table:''};
+const GHC_DOCS = [];
+let GHC_VU = '';   /* le dépôt dont on sait qu'il existe et que le jeton l'ouvre */
+
+function ghcCharger(){
+  let o = null;
+  try{ o = JSON.parse(localStorage.getItem(GHC_CLE) || 'null'); }catch(e){}
+  if(!o){
+    /* la table gardait son dépôt pour elle seule : il sert maintenant à tous les registres */
+    try{
+      const v = JSON.parse(localStorage.getItem('faelorenn.table.github') || 'null');
+      if(v && typeof v === 'object'){
+        o = {depot:v.depot, jeton:v.jeton, branche:v.branche, api:v.api, actif:!!v.actif,
+          table: v.chemin && v.chemin !== GHC_FICHIERS.table ? v.chemin : ''};
+        localStorage.setItem(GHC_CLE, JSON.stringify(o));
+        localStorage.removeItem('faelorenn.table.github');
+      }
+    }catch(e){}
+  }
+  GHC.depot = ''; GHC.jeton = ''; GHC.branche = ''; GHC.api = GHC_API; GHC.actif = false; GHC.table = '';
+  if(o && typeof o === 'object'){
+    ['depot','jeton','branche','api','table'].forEach(k => { if(typeof o[k] === 'string' && o[k].trim()) GHC[k] = o[k].trim(); });
+    GHC.actif = !!o.actif;
+  }
+  return GHC;
+}
+function ghcGarder(){
+  try{ localStorage.setItem(GHC_CLE, JSON.stringify({depot:GHC.depot, jeton:GHC.jeton, branche:GHC.branche, api:GHC.api, actif:GHC.actif, table:GHC.table})); }catch(e){}
+}
+/* un navigateur qui refuse le stockage (fenêtre privée stricte, page sans origine) : pas de sauvegarde en ligne */
+function ghcPossible(){ try{ return typeof fetch === 'function' && typeof TextEncoder === 'function' && !!window.localStorage; }catch(e){ return false; } }
+/* dans une page hébergée par Claude, les appels vers GitHub sont bloqués */
+function ghcBloque(){ try{ return typeof claude !== 'undefined' && !!claude && typeof claude.use === 'function'; }catch(e){ return false; } }
+const ghcPret = () => GHC.actif && !!GHC.jeton && !!GHC.depot && ghcPossible() && !ghcBloque();
+const ghcCleDepot = () => GHC.api + '|' + GHC.depot + '|' + GHC.jeton;
+
+/* ---------- les petites choses ---------- */
+const ghcSeg = s => String(s).split('/').filter(Boolean).map(encodeURIComponent).join('/');
+const ghcBase = () => GHC.api.replace(/\/+$/, '') + '/repos/' + ghcSeg(GHC.depot);
+function ghcUrl(chemin, avecRef){
+  const u = ghcBase() + '/contents/' + ghcSeg(chemin);
+  return avecRef && GHC.branche ? u + '?ref=' + encodeURIComponent(GHC.branche) : u;
+}
+function ghcEntetes(plus){
+  return Object.assign({'Accept':'application/vnd.github+json', 'Authorization':'Bearer ' + GHC.jeton, 'X-GitHub-Api-Version':'2022-11-28'}, plus || {});
+}
+function ghcErreur(r){
+  if(r.status === 401) return 'GitHub refuse le jeton : il est faux, ou il a expiré.';
+  if(r.status === 403 || r.status === 429) return 'GitHub refuse pour l’instant : droits du jeton trop courts, ou trop d’écritures d’un coup.';
+  if(r.status === 404) return 'Dépôt introuvable : vérifie son nom, et que le jeton y a accès.';
+  return 'GitHub répond ' + r.status + '.';
+}
+function ghcB64(txt){
+  const o = new TextEncoder().encode(txt);
+  let s = '';
+  for(let i = 0; i < o.length; i += 0x8000) s += String.fromCharCode.apply(null, o.subarray(i, i + 0x8000));
+  return btoa(s);
+}
+function ghcDeB64(b){
+  const s = atob(String(b).replace(/\s+/g, ''));
+  const o = new Uint8Array(s.length);
+  for(let i = 0; i < s.length; i++) o[i] = s.charCodeAt(i);
+  return new TextDecoder().decode(o);
+}
+/* le même contenu donne le même texte, quel que soit l'ordre des clés */
+function ghcCanon(x){
+  if(x === null || x === undefined || typeof x !== 'object') return JSON.stringify(x === undefined ? null : x);
+  if(Array.isArray(x)) return '[' + x.map(ghcCanon).join(',') + ']';
+  return '{' + Object.keys(x).filter(k => x[k] !== undefined).sort().map(k => JSON.stringify(k) + ':' + ghcCanon(x[k])).join(',') + '}';
+}
+/* ce qu'on a ici et que le fichier n'a pas : une pièce absente là-bas, ou plus récente ici */
+function ghcEnAvance(ici, labas){
+  labas = labas || {};
+  return Object.keys(ici || {}).some(id => {
+    const a = ici[id], b = labas[id];
+    if(!a) return false;
+    if(!b) return true;
+    return (+a.maj || 0) > (+b.maj || 0) || (+a.majPv || 0) > (+b.majPv || 0) || (+a.majEtat || 0) > (+b.majEtat || 0);
+  });
+}
+function ghcJoueur(){
+  try{ const m = JSON.parse(localStorage.getItem('faelorenn.table.moi') || 'null'); return m && m.joueur ? String(m.joueur).trim() : ''; }catch(e){ return ''; }
+}
+function ghcIlYA(t){
+  if(!t) return 'jamais';
+  const s = Math.round((Date.now() - t) / 1000);
+  if(s < 5) return 'à l’instant';
+  if(s < 60) return 'il y a ' + s + ' secondes';
+  const m = Math.round(s / 60);
+  return m < 60 ? 'il y a ' + m + ' minute' + (m > 1 ? 's' : '') : 'il y a plus d’une heure';
+}
+const ghcNettoyerDepot = d => String(d || '').trim().replace(/^https?:\/\/github\.com\//i, '').replace(/\.git$/i, '').replace(/\/+$/, '');
+
+/* ---------- relier le dépôt ---------- */
+/* le dépôt existe, le jeton l'ouvre ; on regarde au passage s'il est privé */
+function ghcVerifier(){
+  return fetch(ghcBase(), {headers:ghcEntetes(), cache:'no-store'}).then(r => {
+    if(r.status === 401) return {ok:false, msg:ghcErreur(r)};
+    if(r.status === 404) return {ok:false, msg:'Dépôt introuvable : vérifie son nom, et que le jeton y a accès.'};
+    if(!r.ok) return {ok:false, msg:ghcErreur(r)};
+    return r.json().then(j => ({ok:true, prive:j.private !== false}));
+  }, () => ({ok:false, msg:'GitHub ne répond pas. Vérifie la connexion, puis réessaie.'}));
+}
+function ghcDepotVu(){
+  const cle = ghcCleDepot();
+  if(GHC_VU === cle) return Promise.resolve(true);
+  return fetch(ghcBase(), {headers:ghcEntetes(), cache:'no-store'}).then(r => {
+    if(r.ok){ GHC_VU = cle; return true; }
+    if(r.status === 404) return false;
+    if(r.status === 401) throw {gh:ghcErreur(r), fatal:true};
+    /* GitHub a un souci passager : ce n'est pas le dépôt qui manque */
+    throw {gh:ghcErreur(r)};
+  }, () => { throw {gh:'GitHub ne répond pas. Tout reste gardé ici, on réessaie.'}; });
+}
+function ghcLisezmoi(){
+  const qui = ghcJoueur();
+  let quand = '';
+  try{ quand = new Date().toLocaleString('fr-BE', {dateStyle:'long', timeStyle:'short'}); }catch(e){ quand = new Date().toLocaleString('fr-BE'); }
+  return '# Sauvegarde Faelorenn\n\n'
+    + 'Ce dépôt garde ce que les registres de Faelorenn enregistrent. Les pages du site y écrivent toutes seules, chacune dans son fichier :\n\n'
+    + '- `' + (GHC.table || GHC_FICHIERS.table) + '` : la table, avec les séances, les personnages joués, les PNJ et leurs liens, les jets.\n'
+    + '- `' + GHC_FICHIERS.personnages + '` : les personnages enregistrés dans le Registre du Havre.\n'
+    + '- `' + GHC_FICHIERS.bestiaire + '` : les créatures et les familles du Registre des Rencontres.\n'
+    + '- `' + GHC_FICHIERS.competences + '` : les retouches du Registre des Compétences : les Pratiques, les compétences et celles de Bannière.\n\n'
+    + 'Chaque enregistrement devient une version dans l’historique du dépôt.\n\n'
+    + 'Garde ce dépôt privé : vos séances et vos personnages y sont.\n\n'
+    + 'Dernière liaison : ' + (qui ? qui + ', ' : '') + 'le ' + quand + '.\n';
+}
+/* le jeton peut-il écrire ? On le sait en écrivant : un petit mot pour qui ouvre le dépôt */
+function ghcEssaiEcriture(){
+  return fetch(ghcUrl('LISEZMOI.md', true), {headers:ghcEntetes(), cache:'no-store'}).then(r => {
+    if(r.status === 404) return '';
+    if(!r.ok) throw {r:r};
+    return r.json().then(j => j.sha || '');
+  }).then(sha => {
+    const corps = {message:'Sauvegarde reliée · ' + (ghcJoueur() || 'quelqu’un') + ' · ' + new Date().toLocaleString('fr-BE'), content:ghcB64(ghcLisezmoi())};
+    if(GHC.branche) corps.branch = GHC.branche;
+    if(sha) corps.sha = sha;
+    return fetch(ghcUrl('LISEZMOI.md', false), {method:'PUT', headers:ghcEntetes({'Content-Type':'application/json'}), body:JSON.stringify(corps), cache:'no-store'});
+  }).then(r => {
+    if(r.ok) return {ok:true};
+    if(r.status === 403) return {ok:false, msg:'Le jeton ouvre le dépôt mais ne peut pas y écrire : sur GitHub, donne-lui « Contents » en « Read and write ».'};
+    if(r.status === 404 || r.status === 409 || r.status === 422)
+      return {ok:false, msg:'L’écriture n’a pas pris' + (GHC.branche ? ' sur la branche « ' + GHC.branche + ' »' : '') + '. Si le dépôt est tout vide, ajoute-lui un README sur GitHub, puis réessaie.'};
+    return {ok:false, msg:ghcErreur(r)};
+  }, e => ({ok:false, msg:e && e.r ? ghcErreur(e.r) : 'GitHub ne répond pas. Vérifie la connexion, puis réessaie.'}));
+}
+function ghcRelier(depot, jeton, branche, table){
+  depot = ghcNettoyerDepot(depot);
+  jeton = String(jeton || '').trim();
+  if(!/^[\w.-]+\/[\w.-]+$/.test(depot)) return Promise.resolve({ok:false, msg:'Écris le dépôt comme ceci : ton-nom/faelorenn-table.'});
+  if(!jeton) return Promise.resolve({ok:false, msg:'Colle le jeton d’accès.'});
+  if(ghcBloque()) return Promise.resolve({ok:false, msg:'Depuis cette page-ci, GitHub est hors d’atteinte : ouvre le registre sur le site.'});
+  if(!ghcPossible()) return Promise.resolve({ok:false, msg:'Ce navigateur ne sait pas parler à GitHub.'});
+  const avant = Object.assign({}, GHC);
+  GHC.depot = depot; GHC.jeton = jeton; GHC.branche = String(branche || '').trim();
+  if(table !== undefined){ const t = String(table || '').trim(); GHC.table = t && t !== GHC_FICHIERS.table ? t : ''; }
+  const remettre = r => { Object.assign(GHC, avant); return r; };
+  return ghcVerifier().then(v => {
+    if(!v.ok) return remettre(v);
+    return ghcEssaiEcriture().then(w => {
+      if(!w.ok) return remettre(w);
+      GHC.actif = true; ghcGarder();
+      GHC_VU = ghcCleDepot();
+      return {ok:true, prive:v.prive, msg: v.prive
+        ? 'Relié à ' + depot + '. Ce que les registres enregistrent y part tout seul.'
+        : 'Relié à ' + depot + ', mais ce dépôt est public : tout le monde peut y lire vos séances et vos personnages. Passe-le en privé dans ses réglages sur GitHub.'};
+    });
+  });
+}
+function ghcDetacher(){ GHC.actif = false; ghcGarder(); }
+function ghcOublier(){ GHC.actif = false; GHC.jeton = ''; GHC_VU = ''; ghcGarder(); }
+/* un autre onglet a relié, détaché ou oublié : on suit */
+/* ce qu'on dit après « Sauvegarder en ligne » */
+function ghcPhraseSauvegarde(r, sujet){
+  if(!r.ok) return r.msg || 'La sauvegarde en ligne n’a pas pu se faire.';
+  if(r.rien) return sujet + ' est à jour dans le dépôt ' + GHC.depot + '.';
+  const h = new Date();
+  return sujet + ' est dans le dépôt ' + GHC.depot + ', à ' + String(h.getHours()).padStart(2, '0') + ':' + String(h.getMinutes()).padStart(2, '0') + '.';
+}
+/* pas encore relié : on montre le panneau, prêt à remplir */
+function ghcOuvrirPanneau(){
+  const d = document.getElementById('ghcBloc');
+  if(!d) return;
+  d.open = true;
+  d.scrollIntoView({block:'center', behavior:'smooth'});
+  const champ = ['ghcDepot','ghcJeton'].map(id => document.getElementById(id)).find(i => i && !i.value) || document.getElementById('ghcRelier');
+  if(champ) setTimeout(() => { try{ champ.focus({preventScroll:true}); }catch(e){} }, 450);
+}
+function ghcSurveiller(fn){
+  window.addEventListener('storage', e => { if(e.key === GHC_CLE || e.key === null){ ghcCharger(); try{ fn(); }catch(x){} } });
+}
+/* lire un fichier du dépôt une fois, sans le suivre : l'objet, ou null s'il n'existe pas encore */
+function ghcLireUnFichier(chemin){
+  if(!ghcPret()) return Promise.resolve(null);
+  return fetch(ghcUrl(chemin, true), {headers:ghcEntetes(), cache:'no-store'}).then(r => {
+    if(r.status === 404) return '';
+    if(!r.ok) throw {gh:ghcErreur(r)};
+    return r.json().then(j => j.content ? ghcDeB64(j.content)
+      : j.size ? fetch(ghcUrl(chemin, true), {headers:ghcEntetes({'Accept':'application/vnd.github.raw+json'}), cache:'no-store'})
+          .then(b => { if(!b.ok) throw {gh:ghcErreur(b)}; return b.text(); })
+      : '');
+  }, () => { throw {gh:'GitHub ne répond pas.'}; }).then(t => {
+    if(!t || !String(t).trim()) return null;
+    try{ return JSON.parse(t); }catch(e){ throw {gh:'Le fichier ' + chemin + ' du dépôt n’est pas lisible.'}; }
+  });
+}
+/* ce que le dépôt contient, pour l'accueil */
+function ghcInventaire(){
+  if(!ghcPret()) return Promise.resolve(null);
+  return fetch(ghcBase() + '/contents/' + (GHC.branche ? '?ref=' + encodeURIComponent(GHC.branche) : ''), {headers:ghcEntetes(), cache:'no-store'}).then(r => {
+    if(r.status === 404) return [];
+    if(!r.ok) throw {gh:ghcErreur(r)};
+    return r.json().then(j => Array.isArray(j) ? j.filter(x => x && x.type === 'file').map(x => ({nom:x.name, taille:+x.size || 0})) : []);
+  });
+}
+
+/* ---------- un fichier du dépôt, tenu à jour dans les deux sens ----------
+   o.recevoir(obj)  fond le fichier du dépôt dans ce qu'on a ici
+   o.enAvance(obj)  dit si on a ici du neuf que le fichier n'a pas
+   o.contenu()      ce qu'on écrit
+   o.absent()       le fichier n'existe pas encore
+   o.ecrit(ok, rien) une écriture a abouti (ou n'était pas utile), ou a raté
+   o.rate(d, e)     une lecture a raté
+   o.etat(d)        quelque chose a changé : on redessine */
+function ghcDoc(o){
+  const t = (typeof window !== 'undefined' && window.GHC_TEMPS) || {};   /* les essais vont plus vite */
+  const d = {nom:o.nom || '', sha:'', etag:'', boucle:null, ecrit:null, prevu:false, occupe:false, encore:false, reessai:false,
+    derniereEcriture:0, pause:0, tLecture:t.lecture || 10000, tRegroupe:t.regroupe || 4000, tEcart:t.ecart || 15000,
+    actif:false, erreur:'', errDe:'', dernier:0, cle:'', lu:false};
+  const chemin = () => (typeof o.chemin === 'function' ? o.chemin() : o.chemin) || 'faelorenn.json';
+  const signaler = () => { ghcGarde(); try{ if(o.etat) o.etat(d); }catch(e){} };
+  const patienter = r => { const s = parseInt(r.headers.get('retry-after') || '', 10); d.pause = Date.now() + (isFinite(s) && s > 0 ? s * 1000 : 60000); };
+  d.chemin = chemin;
+  d.enAttente = () => d.actif && (d.prevu || d.occupe || d.encore || d.reessai);
+
+  /* null : rien de neuf ; {absent} : pas encore de fichier ; {obj} : le fichier ; false : ça a raté */
+  d.lire = function(force, pourEcrire){
+    if(!d.actif || Date.now() < d.pause) return Promise.resolve(false);
+    const cle = d.cle;
+    const plus = !force && d.etag ? {'If-None-Match': d.etag} : null;
+    return fetch(ghcUrl(chemin(), true), {headers:ghcEntetes(plus), cache:'no-store'}).then(r => {
+      if(r.status === 304){ d.dernier = Date.now(); return null; }
+      if(r.status === 404) return ghcDepotVu().then(vu => {
+        if(!vu) throw {gh:'Dépôt introuvable : vérifie son nom, et que le jeton y a accès.', fatal:true};
+        d.sha = ''; d.etag = ''; d.dernier = Date.now();
+        return {absent:true};
+      });
+      if(r.status === 401) throw {gh:ghcErreur(r), fatal:true};
+      if(r.status === 403 || r.status === 429) patienter(r);
+      if(!r.ok) throw {gh:ghcErreur(r)};
+      const etag = r.headers.get('ETag') || '';
+      return r.json().then(j => {
+        /* plus d'un Mo : le contenu arrive à part, en brut */
+        const brut = j.content ? Promise.resolve(ghcDeB64(j.content))
+          : j.size ? fetch(ghcUrl(chemin(), true), {headers:ghcEntetes({'Accept':'application/vnd.github.raw+json'}), cache:'no-store'})
+              .then(b => { if(!b.ok) throw {gh:ghcErreur(b)}; return b.text(); })
+          : Promise.resolve('');
+        return brut.then(txt => {
+          d.sha = j.sha || ''; d.etag = etag; d.dernier = Date.now();
+          if(!txt || !txt.trim()) return {absent:true};
+          let obj = null;
+          try{ obj = JSON.parse(txt); }catch(e){ throw {gh:'Le fichier ' + chemin() + ' du dépôt n’est pas lisible.', fatal:true}; }
+          if(!obj || obj.format !== o.format) throw {gh:'Le fichier ' + chemin() + ' du dépôt n’est pas ' + (o.quoi || 'à nous') + '.', fatal:true};
+          return {obj:obj};
+        });
+      });
+    }).then(res => {
+      if(cle !== d.cle || !d.actif) return false;
+      if(d.errDe === 'lecture'){ d.erreur = ''; d.errDe = ''; }
+      d.lu = true;
+      if(res && res.obj) o.recevoir(res.obj);
+      if(res && res.absent && o.absent) o.absent();
+      if(res && !pourEcrire && (res.absent || (o.enAvance && o.enAvance(res.obj)))) d.planifier();
+      signaler();
+      return res;
+    }, e => {
+      if(cle !== d.cle || !d.actif) return false;
+      d.erreur = e && e.gh ? e.gh : 'GitHub ne répond pas. Tout reste gardé ici, on réessaie.';
+      d.errDe = 'lecture';
+      if(e && e.fatal) d.arreter(true);
+      if(o.rate) o.rate(d, e);
+      signaler();
+      return false;
+    });
+  };
+
+  /* on relit, on fond, puis on écrit ; si quelqu'un a écrit entre-temps, on recommence */
+  d.ecrire = function(){
+    if(!d.actif) return Promise.resolve(false);
+    if(d.occupe){ d.encore = true; return Promise.resolve(false); }
+    clearTimeout(d.ecrit);
+    const attente = Math.max(d.pause - Date.now(), d.derniereEcriture + d.tEcart - Date.now());
+    if(attente > 0){ d.prevu = true; d.ecrit = setTimeout(d.ecrire, attente + 50); ghcGarde(); return Promise.resolve(false); }
+    d.prevu = false; d.occupe = true;
+    const cle = d.cle;
+    ghcGarde();
+    const essai = n => d.lire(true, true).then(res => {
+      if(!d.actif || cle !== d.cle) throw {arret:true};
+      if(res === false) throw {gh:d.erreur};
+      if(res && res.obj && o.enAvance && !o.enAvance(res.obj)) return 'rien';
+      const corps = {message:(o.message ? o.message() : d.nom + ' · ' + (ghcJoueur() || 'quelqu’un') + ' · ' + new Date().toLocaleString('fr-BE')),
+        content:ghcB64(JSON.stringify(o.contenu(), null, 1))};
+      if(GHC.branche) corps.branch = GHC.branche;
+      if(d.sha) corps.sha = d.sha;
+      d.derniereEcriture = Date.now();
+      return fetch(ghcUrl(chemin(), false), {method:'PUT', headers:ghcEntetes({'Content-Type':'application/json'}), body:JSON.stringify(corps), cache:'no-store'}).then(r => {
+        if((r.status === 409 || r.status === 422) && n < 3) return new Promise(ok => setTimeout(ok, 1200)).then(() => essai(n + 1));
+        if(r.status === 401) throw {gh:ghcErreur(r), fatal:true};
+        if(r.status === 403 || r.status === 429) patienter(r);
+        if(!r.ok) throw {gh:ghcErreur(r)};
+        /* détaché ou relié ailleurs pendant l'écriture : elle ne compte pas pour la suite */
+        if(!d.actif || cle !== d.cle) throw {arret:true};
+        return r.json().then(j => {
+          d.sha = (j.content && j.content.sha) || d.sha;
+          d.etag = '';
+          d.dernier = Date.now();
+          return 'ecrit';
+        });
+      });
+    });
+    return essai(0).then(v => {
+      if(d.errDe === 'ecriture' || d.errDe === 'lecture'){ d.erreur = ''; d.errDe = ''; }
+      d.resultat = v;
+      if(o.ecrit) o.ecrit(true, v === 'rien');
+      return true;
+    }, e => {
+      if(o.ecrit) o.ecrit(false, false);
+      if(e && e.arret) return false;
+      d.erreur = e && e.gh ? e.gh : 'L’écriture sur GitHub a échoué. Tout reste gardé ici, on réessaie.';
+      d.errDe = 'ecriture';
+      if(e && e.fatal) d.arreter(true);
+      else d.reessai = true;
+      return false;
+    }).then(v => {
+      d.occupe = false;
+      if(d.actif && (d.encore || d.reessai)){
+        const tard = d.reessai;
+        d.encore = false; d.reessai = false;
+        d.planifier(tard ? Math.max(d.tEcart, 15000) : 0);
+      }
+      signaler();
+      return v;
+    });
+  };
+  /* « Sauvegarder en ligne » : on écrit tout de suite, ou dès que GitHub le permet */
+  d.maintenant = function(essais){
+    essais = essais || 0;
+    if(!d.actif) return Promise.resolve({ok:false, msg:d.erreur || 'La sauvegarde en ligne n’est pas en route.'});
+    const attente = d.occupe ? 700 : Math.max(d.pause - Date.now(), d.derniereEcriture + d.tEcart - Date.now());
+    if(attente > 0 && essais < 100) return new Promise(ok => setTimeout(ok, Math.min(attente + 100, 65000))).then(() => d.maintenant(essais + 1));
+    return d.ecrire().then(ok => {
+      if(ok) return {ok:true, rien:d.resultat === 'rien'};
+      if(d.erreur || !d.actif || essais >= 100) return {ok:false, msg:d.erreur || 'L’écriture n’a pas pu partir.'};
+      return new Promise(r => setTimeout(r, 700)).then(() => d.maintenant(essais + 1));
+    });
+  };
+  d.planifier = function(delai){
+    if(!d.actif) return;
+    clearTimeout(d.ecrit);
+    d.prevu = true;
+    d.ecrit = setTimeout(d.ecrire, delai || d.tRegroupe);
+    ghcGarde();
+  };
+  d.demarrer = function(){
+    const cle = [GHC.api, GHC.depot, GHC.branche, GHC.jeton, chemin()].join('|');
+    if(d.actif && d.cle === cle) return Promise.resolve(null);
+    d.arreter();
+    d.cle = cle; d.actif = true; d.lu = false;
+    d.sha = ''; d.etag = ''; d.pause = 0; d.derniereEcriture = 0; d.erreur = ''; d.errDe = '';
+    d.boucle = setInterval(() => { if(d.actif && !document.hidden && !d.occupe) d.lire(false); }, d.tLecture);
+    signaler();
+    return d.lire(true);
+  };
+  d.arreter = function(garderErreur){
+    d.actif = false; d.prevu = false; d.encore = false; d.reessai = false;
+    if(d.boucle){ clearInterval(d.boucle); d.boucle = null; }
+    clearTimeout(d.ecrit);
+    if(!garderErreur){ d.erreur = ''; d.errDe = ''; }
+    signaler();
+  };
+  GHC_DOCS.push(d);
+  return d;
+}
+
+/* on ne quitte pas la page avec un changement qui n'est pas encore parti */
+function ghcAvantDepart(e){ e.preventDefault(); e.returnValue = ''; return ''; }
+function ghcGarde(){
+  if(typeof window === 'undefined') return;
+  const besoin = GHC_DOCS.some(d => d.enAttente());
+  if(besoin === !!ghcGarde.on) return;
+  ghcGarde.on = besoin;
+  if(besoin) window.addEventListener('beforeunload', ghcAvantDepart);
+  else window.removeEventListener('beforeunload', ghcAvantDepart);
+}
+if(typeof document !== 'undefined'){
+  /* l'onglet passe derrière : ce qui attend part tout de suite ; il revient : on relit */
+  document.addEventListener('visibilitychange', () => {
+    GHC_DOCS.forEach(d => {
+      if(!d.actif || d.occupe) return;
+      if(document.hidden){ if(d.prevu) d.ecrire(); }
+      else d.lire(false);
+    });
+  });
+}
+
+/* ---------- le panneau : relier le dépôt, une fois pour tous les registres ---------- */
+function ghcStyle(){
+  if(document.getElementById('ghcStyle')) return;
+  const s = document.createElement('style');
+  s.id = 'ghcStyle';
+  s.textContent = [
+    '.ghc{margin-top:14px;border-top:1px solid var(--rule,#CBD6C9);padding-top:10px}',
+    '.ghc.ghc-encart{margin-top:10px;border:1px solid var(--rule,#CBD6C9);border-radius:3px;background:var(--surface,#fff);padding:12px 16px;box-shadow:var(--shadow,none)}',
+    '.ghc [hidden]{display:none!important}',
+    '.ghc>summary{cursor:pointer;color:var(--forest,#1F3D2B);font-weight:500;font-size:14px;line-height:1.5}',
+    '.ghc-pastille{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--muted,#6B7469);margin:0 6px 1px 4px;vertical-align:middle}',
+    '.ghc-pastille.on{background:var(--sage,#4A6B52)}',
+    '.ghc-pastille.off{background:var(--rust,#9A4A28)}',
+    '.ghc-resume{font-weight:400;color:var(--muted,#6B7469);font-size:13px;margin-left:6px;overflow-wrap:anywhere}',
+    '.ghc-corps{margin-top:10px}',
+    '.ghc-texte{font-size:14px;margin:0 0 8px;max-width:68ch;color:var(--ink,#1B1C18)}',
+    '.ghc-outil{font-size:13px;margin:0 0 8px;color:var(--muted,#6B7469)}',
+    '.ghc-outil.err,.ghc-msg.err{color:var(--rust,#9A4A28)}',
+    '.ghc-etapes{margin:0 0 12px;padding-left:20px;font-size:13.5px;max-width:68ch;color:var(--ink,#1B1C18)}',
+    '.ghc-etapes li{margin:3px 0}',
+    '.ghc a{color:var(--forest,#1F3D2B)}',
+    '.ghc-champs{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:10px}',
+    '.ghc label{display:block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted,#6B7469);margin:0 0 4px}',
+    '.ghc input{width:100%;box-sizing:border-box;font:inherit;font-size:14px;padding:7px 9px;border:1px solid var(--rule,#CBD6C9);border-radius:2px;background:var(--surface,#fff);color:var(--ink,#1B1C18)}',
+    '.ghc input:disabled{opacity:.6}',
+    '.ghc input:focus-visible,.ghc-btn:focus-visible,.ghc summary:focus-visible{outline:2px solid var(--sage,#4A6B52);outline-offset:1px}',
+    '.ghc-plus{margin-top:8px}',
+    '.ghc-plus>summary{cursor:pointer;font-size:13px;color:var(--sage,#4A6B52)}',
+    '.ghc-plus .ghc-champs{margin-top:8px}',
+    '.ghc-acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}',
+    '.ghc-btn{font:inherit;font-size:13.5px;line-height:1.3;padding:6px 12px;border:1px solid var(--forest,#1F3D2B);background:var(--forest,#1F3D2B);color:var(--paper,#F4F2EA);border-radius:2px;cursor:pointer}',
+    '.ghc-btn.ghc-ghost{background:transparent;color:var(--forest,#1F3D2B)}',
+    '.ghc-btn:disabled{opacity:.5;cursor:default}',
+    '.ghc-msg{font-size:13px;margin:10px 0 0;color:var(--forest,#1F3D2B);max-width:68ch}',
+    '.ghc-petit{font-size:12.5px;color:var(--muted,#6B7469);margin:10px 0 0;max-width:68ch}'
+  ].join('\n');
+  document.head.appendChild(s);
+}
+/* opt.table : le champ du fichier de la table ; opt.etat() : {nom, texte, erreur} du registre ;
+   opt.apresRelier(r) et opt.apresDetacher() : ce que le registre fait ensuite */
+function ghcPanneau(boite, opt){
+  opt = opt || {};
+  if(!boite) return {dessiner:function(){}, dire:function(){}};
+  ghcStyle();
+  boite.innerHTML =
+    '<details class="ghc' + (opt.encart ? ' ghc-encart' : '') + '" id="ghcBloc"' + (opt.ouvert ? ' open' : '') + '>' +
+      '<summary><span class="ghc-pastille" id="ghcPastille"></span>Sauvegarde en ligne<span class="ghc-resume" id="ghcResume"></span></summary>' +
+      '<div class="ghc-corps">' +
+        '<p class="ghc-texte" id="ghcTexte"></p>' +
+        '<p class="ghc-outil" id="ghcOutil" hidden></p>' +
+        '<ol class="ghc-etapes" id="ghcEtapes">' +
+          '<li>Sur GitHub, crée un dépôt <b>privé</b>, <i>faelorenn-table</i> par exemple, en cochant « Add a README file ».</li>' +
+          '<li>Crée un <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">jeton à accès fin</a> : seulement ce dépôt, <i>Contents</i> en <i>Read and write</i>, avec une date d’expiration.</li>' +
+          '<li>Colle le dépôt et le jeton ici, puis « Relier ». Ceux qui jouent avec toi collent les mêmes chez eux.</li>' +
+        '</ol>' +
+        '<div class="ghc-champs" id="ghcChamps">' +
+          '<div><label for="ghcDepot">Dépôt</label><input type="text" id="ghcDepot" placeholder="ton-nom/faelorenn-table" autocomplete="off" spellcheck="false"></div>' +
+          '<div><label for="ghcJeton">Jeton d’accès</label><input type="password" id="ghcJeton" placeholder="github_pat_…" autocomplete="off" spellcheck="false"></div>' +
+        '</div>' +
+        '<details class="ghc-plus" id="ghcPlus"><summary>' + (opt.table ? 'Fichier de la table et branche' : 'Branche') + '</summary><div class="ghc-champs">' +
+          (opt.table ? '<div><label for="ghcFichier">Fichier de la table</label><input type="text" id="ghcFichier" placeholder="' + GHC_FICHIERS.table + '" autocomplete="off" spellcheck="false"></div>' : '') +
+          '<div><label for="ghcBranche">Branche</label><input type="text" id="ghcBranche" placeholder="celle du dépôt" autocomplete="off" spellcheck="false"></div>' +
+        '</div></details>' +
+        '<div class="ghc-acts">' +
+          '<button type="button" class="ghc-btn" id="ghcRelier">Relier</button>' +
+          '<button type="button" class="ghc-btn ghc-ghost" id="ghcDetacher" hidden>Détacher</button>' +
+          '<button type="button" class="ghc-btn ghc-ghost" id="ghcOublier" hidden>Oublier le jeton</button>' +
+        '</div>' +
+        '<p class="ghc-msg" id="ghcMsg" role="status" hidden></p>' +
+        '<p class="ghc-petit">Le jeton reste dans ce navigateur, jamais dans le dépôt. Chaque enregistrement devient une version dans l’historique du dépôt.</p>' +
+      '</div>' +
+    '</details>';
+  const $g = id => document.getElementById(id);
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;'})[c]);
+  let enCours = false;
+  function dire(t, ok){
+    const m = $g('ghcMsg');
+    m.textContent = t || ''; m.className = 'ghc-msg' + (ok ? '' : ' err'); m.hidden = !t;
+    clearTimeout(dire.t);
+    if(t) dire.t = setTimeout(() => { m.hidden = true; }, 12000);
+  }
+  function dessiner(){
+    const bloque = ghcBloque(), relie = ghcPret();
+    let e = null;
+    try{ e = relie && opt.etat ? opt.etat() : null; }catch(x){}
+    const err = !!(e && e.erreur);
+    $g('ghcPastille').className = 'ghc-pastille' + (relie ? (err ? ' off' : ' on') : '');
+    $g('ghcResume').textContent = bloque ? 'hors d’atteinte ici' : !relie ? 'pas reliée'
+      : GHC.depot + (err ? ' · à vérifier' : e && e.texte ? ' · ' + e.texte : '');
+    $g('ghcTexte').innerHTML = bloque
+      ? 'Depuis cette page-ci, GitHub est hors d’atteinte : ouvre le registre sur le site pour garder tes données en ligne.'
+      : relie
+        ? 'Relié à <b>' + esc(GHC.depot) + '</b>' + (GHC.branche ? ', branche <i>' + esc(GHC.branche) + '</i>' : '') + '. Les registres de ce navigateur y gardent chacun leur fichier : la table et ses PNJ, les personnages, le bestiaire, les compétences.'
+        : 'Tout peut se garder dans un dépôt GitHub privé : la table et ses PNJ, les personnages, le bestiaire, les compétences. On le relie une fois dans ce navigateur, et les registres s’en servent. À plusieurs, chacun relie le même dépôt.';
+    /* le registre ne parle ici que s'il a un souci : sinon, le résumé suffit */
+    const o = $g('ghcOutil');
+    o.hidden = !err;
+    if(err){ o.textContent = e.nom + ' : ' + e.erreur; o.className = 'ghc-outil err'; }
+    $g('ghcEtapes').hidden = relie || bloque;
+    ['ghcDepot','ghcJeton','ghcBranche','ghcFichier'].forEach(id => { const i = $g(id); if(i) i.disabled = bloque; });
+    const b = $g('ghcRelier');
+    b.disabled = bloque || enCours;
+    if(!enCours) b.textContent = relie ? 'Relier de nouveau' : 'Relier';
+    $g('ghcDetacher').hidden = !relie;
+    $g('ghcOublier').hidden = !GHC.jeton;
+    [['ghcDepot', GHC.depot], ['ghcBranche', GHC.branche], ['ghcFichier', GHC.table], ['ghcJeton', GHC.jeton]].forEach(([id, v]) => {
+      const i = $g(id); if(i && document.activeElement !== i && !i.value && v) i.value = v;
+    });
+  }
+  $g('ghcRelier').onclick = () => {
+    const b = $g('ghcRelier');
+    enCours = true; b.disabled = true; b.textContent = 'On frappe à la porte…';
+    dire('', true);
+    let relie = false;
+    ghcRelier($g('ghcDepot').value, $g('ghcJeton').value, $g('ghcBranche').value, opt.table ? $g('ghcFichier').value : undefined)
+      .then(r => {
+        if(!r.ok || !opt.apresRelier) return r;
+        relie = true;
+        return Promise.resolve(opt.apresRelier(r)).then(x => x || r);
+      })
+      .then(r => {
+        /* le dépôt s'ouvre, mais le registre n'y arrive pas : on ne reste pas accroché */
+        if(!r.ok && relie){ ghcDetacher(); if(opt.apresDetacher) opt.apresDetacher(); }
+        enCours = false;
+        dire(r.msg, r.ok && r.prive !== false);
+        dessiner();
+      }, () => { enCours = false; dire('Quelque chose a coincé. Réessaie.', false); dessiner(); });
+  };
+  $g('ghcDetacher').onclick = () => {
+    ghcDetacher();
+    if(opt.apresDetacher) opt.apresDetacher();
+    dire('Détaché. Tout reste gardé dans ce navigateur, et le dépôt garde ce qui y est déjà.', true);
+    dessiner();
+  };
+  $g('ghcOublier').onclick = () => {
+    ghcOublier();
+    $g('ghcJeton').value = '';
+    if(opt.apresDetacher) opt.apresDetacher();
+    dire('Jeton oublié par ce navigateur.', true);
+    dessiner();
+  };
+  setInterval(() => { if(ghcPret()) dessiner(); }, 10000);
+  dessiner();
+  return {dessiner:dessiner, dire:dire};
+}
+
+/* ============ le registre sur GitHub ============
+   competences.json, dans le dépôt de la sauvegarde en ligne, avec les mêmes règles que les autres fichiers :
+   on relit toutes les dix secondes (GitHub répond 304 tant que rien n'a bougé), on écrit en regroupant les
+   changements, jamais deux fois en moins de quinze secondes. Chaque pièce y porte sa date, et la plus récente l'emporte. */
+
+let GH = null;          /* le fichier du dépôt, tant que le dépôt est relié */
+let PANNEAU = null;
+
+function ghCompetences(){
+  const doc = ghcDoc({
+    nom:'Compétences', quoi:'un registre de compétences Faelorenn', format:REG_FORMAT, chemin:GHC_FICHIERS.competences,
+    recevoir: o => {
+      const fond = regFondre(REG, regLireBrut(o));
+      if(regEgal(fond, REG)) return;
+      REG.competences = fond.competences; REG.pratiques = fond.pratiques;
+      regGarder();
+      /* on ne referme pas ce que quelqu'un est en train d'écrire */
+      if(UI.ouvert || UI.neuve) UI.aRedessiner = true; else dessiner();
+    },
+    enAvance: o => regEnAvance(REG, regLireBrut(o)),
+    contenu: () => regContenu(),
+    etat: () => { dessinerEtat(); if(PANNEAU) PANNEAU.dessiner(); }
+  });
+  doc.demarrer();
+  return doc;
+}
+/* relier, détacher : le registre repart du bon pied, sans recharger la page */
+function relancerEnLigne(){
+  if(GH){ GH.arreter(); GH = null; }
+  ghcCharger();
+  if(ghcPret()) GH = ghCompetences();
+  dessinerEtat();
+}
+function sauverBientot(){
+  if(GH && GH.actif) GH.planifier();
+  dessinerEtat();
+}
+function dessinerEtat(){
+  const p = $('etat');
+  if(!p) return;
+  let cls = 'pt', t = 'Gardé dans ce navigateur seulement';
+  /* une erreur qui a arrêté la sauvegarde en ligne se lit aussi : c'est elle qui explique pourquoi rien ne part */
+  if(GH && ghcPret() && (GH.actif || GH.erreur)){
+    if(GH.erreur){ cls = 'pt off'; t = 'En ligne : à vérifier. ' + GH.erreur; }
+    else { cls = 'pt on'; t = GH.enAttente() ? 'En ligne : un changement part dans un instant' : 'En ligne : dernier échange ' + ghcIlYA(GH.dernier); }
+  }
+  /* le navigateur refuse d'écrire (espace plein, stockage bloqué) : mieux vaut le savoir avant de tout perdre */
+  if(!REG_GARDE){ cls = 'pt off'; t = 'Pas gardé dans ce navigateur : il refuse d’écrire (espace plein ou stockage bloqué). Télécharge une sauvegarde .json pour ne rien perdre.'; }
+  /* la ligne est annoncée aux lecteurs d'écran : on ne la réécrit que si elle a changé */
+  const marque = cls + '|' + t;
+  if(dessinerEtat.marque === marque && p.firstChild) return;
+  dessinerEtat.marque = marque;
+  p.innerHTML = '';
+  const pt = el('span', cls);
+  p.append(pt, document.createTextNode(t));
+}
+/* « Sauvegarder en ligne » : tout part tout de suite dans le dépôt */
+function sauverEnLigne(){
+  const b = $('cmpEnLigne');
+  const dire = (t, ok) => {
+    const m = $('cmpMsg');
+    m.textContent = t; m.hidden = false; m.className = ok ? 'note ok' : 'note err';
+    clearTimeout(dire.t); dire.t = setTimeout(() => { m.hidden = true; }, 12000);
+  };
+  if(!ghcPret()){
+    dire('Relie d’abord ton dépôt GitHub, une seule fois : c’est le panneau « Sauvegarde en ligne », juste en dessous. Ensuite, chaque changement part tout seul.', false);
+    ghcOuvrirPanneau();
+    return;
+  }
+  /* le dépôt n'avait pas répondu à l'ouverture : on refrappe à la porte */
+  if(!GH || !GH.actif){
+    relancerEnLigne();
+    dire('Nouvel essai avec le dépôt : ce qui attend ici y part dès qu’il répond. L’état s’affiche en haut de la page.', true);
+    return;
+  }
+  b.disabled = true; b.textContent = 'Sauvegarde…';
+  GH.maintenant().then(r => {
+    b.disabled = false; b.textContent = 'Sauvegarder en ligne';
+    dire(ghcPhraseSauvegarde(r, 'Le registre'), r.ok);
+    dessinerEtat();
+  });
+}
+
+/* ---------- une sauvegarde .json ---------- */
+let DLNS;
+function espaceTelechargement(){
+  if(DLNS !== undefined) return Promise.resolve(DLNS);
+  try{
+    if(typeof claude === 'undefined' || !claude || typeof claude.use !== 'function'){ DLNS = null; return Promise.resolve(null); }
+    return claude.use('downloads').then(ns => (DLNS = ns || null), () => (DLNS = null));
+  }catch(e){ DLNS = null; return Promise.resolve(null); }
+}
+function telecharger(nom, contenu, type, bouton){
+  const libelle = bouton ? bouton.textContent : '';
+  const dire = t => { if(!bouton) return; bouton.textContent = t; setTimeout(() => { bouton.textContent = libelle; }, 2200); };
+  const blob = contenu instanceof Blob ? contenu : new Blob([contenu], {type:type});
+  return espaceTelechargement().then(ns => {
+    if(ns) return ns.save({filename:nom, data:blob}).then(() => dire('Enregistré'),
+      e => dire(e && e.code === 'declined' ? 'Annulé' : 'Refusé'));
+    const url = URL.createObjectURL(blob), a = document.createElement('a');
+    a.href = url; a.download = nom; a.style.display = 'none';
+    document.body.appendChild(a); a.click();
+    setTimeout(() => { a.remove(); URL.revokeObjectURL(url); }, 4000);
+    dire('Fichier envoyé');
+  });
+}
+const sauvegardeJson = () => JSON.stringify(regContenu(), null, 1);
+/* une sauvegarde se fond dans ce qu'on a : la plus récente de chaque pièce l'emporte, rien ne s'efface */
+function importerJson(texte){
+  let o = null;
+  try{ o = JSON.parse(texte); }catch(e){ return {ok:false, msg:'Ce fichier n’est pas lisible.'}; }
+  if(!o || typeof o !== 'object' || o.format !== REG_FORMAT) return {ok:false, msg:'Ce n’est pas une sauvegarde du Registre des Compétences.'};
+  if(+o.version > REG_VERSION) return {ok:false, msg:'Cette sauvegarde vient d’une version plus récente du Registre : mets d’abord le site à jour.'};
+  const r = regLireBrut(o), fond = regFondre(REG, r);
+  let n = 0;
+  ['competences', 'pratiques'].forEach(c => Object.keys(fond[c]).forEach(id => { if(!REG[c][id] || regCanon(REG[c][id]) !== regCanon(fond[c][id])) n++; }));
+  if(!n) return {ok:true, msg:'Rien de neuf dans ce fichier : tout y est déjà, ou en plus récent ici.'};
+  REG.competences = fond.competences; REG.pratiques = fond.pratiques;
+  regSortie();
+  UI.ouvert = null; UI.neuve = false;
+  return {ok:true, msg:'Repris : ' + pluriel(n, 'pièce nouvelle ou plus récente', 'pièces nouvelles ou plus récentes') + '.'};
+}
+function brancherEnLigne(){
+  $('cmpEnLigne').onclick = sauverEnLigne;
+  $('cmpJson').onclick = e => telecharger('competences-faelorenn.json', sauvegardeJson(), 'application/json', e.currentTarget);
+  $('cmpImport').onclick = () => $('cmpFichier').click();
+  $('cmpFichier').onchange = e => {
+    const f = e.target.files && e.target.files[0];
+    if(!f) return;
+    const lecteur = new FileReader();
+    lecteur.onload = () => {
+      const r = importerJson(String(lecteur.result));
+      const m = $('cmpMsg'); m.textContent = r.msg; m.hidden = false; m.className = r.ok ? 'note ok' : 'note err';
+      clearTimeout(brancherEnLigne.t); brancherEnLigne.t = setTimeout(() => { m.hidden = true; }, 8000);
+      e.target.value = '';
+      dessiner();
+      sauverBientot();
+    };
+    lecteur.readAsText(f);
+  };
+  PANNEAU = ghcPanneau($('ghcPlace'), {
+    etat: () => GH ? {nom:'Les compétences', texte:GH.actif ? 'dernier échange ' + ghcIlYA(GH.dernier) : 'à l’arrêt', erreur:GH.erreur} : null,
+    apresRelier: r => { relancerEnLigne(); return r; },
+    apresDetacher: () => relancerEnLigne()
+  });
+  ghcSurveiller(() => { relancerEnLigne(); PANNEAU.dessiner(); });
+  /* un autre onglet du même navigateur retouche le registre : celui-ci le suit */
+  window.addEventListener('storage', e => {
+    if(e.key !== REG_CLE && e.key !== null) return;
+    const fond = regFondre(REG, regLireBrut((() => { try{ return JSON.parse(e.newValue || 'null'); }catch(x){ return null; } })()));
+    if(regEgal(fond, REG)) return;
+    REG.competences = fond.competences; REG.pratiques = fond.pratiques;
+    if(UI.ouvert || UI.neuve) UI.aRedessiner = true; else dessiner();
+  });
+  setInterval(dessinerEtat, 5000);
+}
+
+/* ---------- démarrage, en dernier : tout ce qui précède est défini ---------- */
+ghcCharger();
+regAppliquer();
+dessiner();
+brancherEnLigne();
+relancerEnLigne();
+</script>
+</body>
+</html>

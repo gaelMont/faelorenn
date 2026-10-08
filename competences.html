@@ -159,7 +159,7 @@ select:focus-visible,input:focus-visible,textarea:focus-visible,button:focus-vis
 
 <section id="secPratiques">
   <h2><span class="num">1</span> Les Pratiques</h2>
-  <p class="hint">Chaque liste se lance sous une seule caractéristique, écrite en tête : tout ce qui s’y lance se teste sous elle. Retouche une Pratique, ajoutes-en une, retires-en une : le créateur et la table s’en servent au prochain chargement. Le livre ne bouge pas, et « Revenir au livre » défait une retouche.</p>
+  <p class="hint">Chaque liste du livre se lance sous une seule caractéristique, écrite en tête. Chaque Pratique peut pourtant se lancer sous une autre (la Force, la Dextérité, l’Intelligence, la Sagesse, le Charisme ou la Contenance), et le choix en tête de liste les remet toutes sous la même d’un coup. Retouche une Pratique, ajoutes-en une, retires-en une : le créateur et la table s’en servent au prochain chargement. Le livre ne bouge pas, et « Revenir au livre » défait une retouche.</p>
   <div class="card">
     <div class="btete">
       <p class="bcompte" id="prCompte"></p>
@@ -258,7 +258,10 @@ const REG_CARS = ['Force', 'Dextérité', 'Intelligence', 'Sagesse', 'Charisme']
 /* ce que les règles nomment par son nom : Combat pare, Tir tire, Acrobatie esquive. Leur nom ne change pas, elles ne se retirent pas ;
    Combat et Tir restent aussi sous leur caractéristique, celle de leur geste */
 const REG_FIXES = {'Combat':{car:true}, 'Tir':{car:true}, 'Acrobatie':{car:false}};
-const REG_JETS_CAR = ['Force', 'Dextérité', 'Contenance'];
+/* sous quelles caractéristiques une Pratique peut se lancer : dans l'ordre de la fiche, Contenance en dernier. Constitution n'en est pas */
+const REG_JETS_CAR = ['Force', 'Dextérité', 'Intelligence', 'Sagesse', 'Charisme', 'Contenance'];
+/* « sous la Force », « sous l’Intelligence », « sous le Charisme » */
+const regSousLa = c => (c === 'Intelligence' ? 'l’Intelligence' : c === 'Charisme' ? 'le Charisme' : 'la ' + c);
 const REG_JETS_SANS = ['aucun jet', 'la cible teste', 'les cibles testent'];
 const REG = {competences:Object.create(null), pratiques:Object.create(null)};
 const COMP_LIB = {};
@@ -425,7 +428,7 @@ function regCaster(entrees){
   entrees.forEach(e => { if(REG_JETS_CAR.indexOf(e.j) >= 0) n[e.j] = (n[e.j] || 0) + 1; });
   const b = entrees.find(e => e.base && REG_JETS_CAR.indexOf(e.j) >= 0);
   let best = '', max = 0;
-  /* à égalité, celle de l'attaque de base ; sinon la première dans l'ordre Force, Dextérité, Contenance */
+  /* à égalité, celle de l'attaque de base ; sinon la première dans l'ordre de REG_JETS_CAR */
   REG_JETS_CAR.forEach(c => {
     const v = n[c] || 0;
     if(v > max || (v === max && v > 0 && b && b.j === c)){ best = c; max = v; }
@@ -791,7 +794,7 @@ const grpTitre = l => l.grp === '_' ? domCourt(l.dom) : apos(l.grp);
 const idListe = l => 'l-' + slug(l.dom + ' ' + l.grp);
 
 function jetTexte(e){
-  if(REG_JETS_CAR.indexOf(e.j) >= 0) return 'se lance sous la ' + e.j;
+  if(REG_JETS_CAR.indexOf(e.j) >= 0) return 'se lance sous ' + regSousLa(e.j);
   return e.j;
 }
 const coutTexte = e => e.pct ? e.pct : e.pc ? e.pc + ' PC' : 'gratuite';
@@ -879,10 +882,10 @@ function selectCaster(l){
   if(!l.caster){ w.append(el('span', 'aucun', 'Aucune ne se lance : ceux qu’elles touchent testent.')); return w; }
   const id = 'car-' + idListe(l);
   /* mêlées : ce choix les remet toutes sous la même, et chaque Pratique garde sinon la sienne */
-  const lab = el('label', null, l.melange ? 'Tout mettre sous la' : 'Se lance sous la'); lab.htmlFor = id;
+  const lab = el('label', null, l.melange ? 'Tout mettre sous' : 'Se lance sous'); lab.htmlFor = id;
   const s = el('select'); s.id = id; s.dataset.dom = l.dom; s.dataset.grp = l.grp;
-  if(l.melange) s.add(new Option('chacune la sienne', ''));
-  REG_JETS_CAR.forEach(c => s.add(new Option(c, c)));
+  if(l.melange) s.add(new Option('choisir…', ''));
+  REG_JETS_CAR.forEach(c => s.add(new Option(regSousLa(c), c)));
   s.value = l.melange ? '' : l.caster;
   s.onchange = () => { if(s.value && regChangerCaster(l.dom, l.grp, s.value)){ UI.ouvert = null; dessiner(); sauverBientot(); } };
   w.append(lab, s);
@@ -931,11 +934,11 @@ function editeurEntree(l, e, nouveau){
     w.append(l2);
     j = el('select');
     /* chaque Pratique se lance sous la caractéristique qu'on lui donne ; le choix en tête de la liste les met toutes sous la même */
-    REG_JETS_CAR.forEach(c => j.add(new Option('Se lance sous la ' + c, c)));
+    REG_JETS_CAR.forEach(c => j.add(new Option('Se lance sous ' + regSousLa(c), c)));
     REG_JETS_SANS.forEach(c => j.add(new Option(c.charAt(0).toUpperCase() + c.slice(1), c)));
     j.value = init.j;
     champ(w, 'ed-j', 'Comment elle se lance', j, l.caster
-      ? 'Le reste de la liste se lance sous la ' + l.caster + '. En donner une autre à celle-ci est permis : le choix en tête de la liste les remet toutes sous la même.'
+      ? 'Le reste de la liste se lance sous ' + regSousLa(l.caster) + '. En donner une autre à celle-ci est permis : le choix en tête de la liste les remet toutes sous la même.'
       : 'Aucune Pratique de cette liste ne se lançait. Si celle-ci se lance, la liste prend sa caractéristique.');
   }
   const d = zone(init.d, 4); d.maxLength = 1200;
@@ -960,7 +963,7 @@ function editeurEntree(l, e, nouveau){
       if(!(cout >= 0 && cout <= 20)){ erreur(w, 'Le coût va de 0 à 20 PC.'); pc.setAttribute('aria-invalid', 'true'); pc.focus(); return; }
       champs.pc = cout; champs.pct = pct.value; champs.j = j.value;
       veutBase = base.checked;
-      if(veutBase && REG_JETS_CAR.indexOf(champs.j) < 0){ erreur(w, 'L’attaque de base se lance : choisis « Se lance sous la… » plutôt qu’un jet de la cible.'); j.focus(); return; }
+      if(veutBase && REG_JETS_CAR.indexOf(champs.j) < 0){ erreur(w, 'L’attaque de base se lance : choisis « Se lance sous… » plutôt qu’un jet de la cible.'); j.focus(); return; }
     }
     let id = nouveau ? '' : e.id;
     if(nouveau) id = regNouvellePratique(l.dom, l.grp, champs);

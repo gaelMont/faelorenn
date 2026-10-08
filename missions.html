@@ -914,7 +914,7 @@ const CAR_DE = {};
 ALLSKILLS.forEach(o => CAR_DE[o.s] = o.car);
 
 const GESTE = {'Force':'Combat', 'Dextérité':'Tir'};
-const ABR_JET = {'Force':'FOR', 'Dextérité':'DEX', 'Contenance':'CNT'};
+const ABR_JET = {'Force':'FOR', 'Dextérité':'DEX', 'Intelligence':'INT', 'Sagesse':'SAG', 'Charisme':'CHA', 'Contenance':'CNT'};
 const JETS_SANS = ['aucun jet', 'la cible teste', 'les cibles testent'];
 /* Le 07/10, chaque liste de Pratiques a pris UNE caractéristique de lanceur (livre, « 5 · Les Pratiques »). Une fiche faite
    avant garde, sur ses Pratiques, le jet que le livre donnait alors : normPerso le remet au nouveau, mais seulement s'il vaut
@@ -1174,7 +1174,10 @@ const REG_CARS = ['Force', 'Dextérité', 'Intelligence', 'Sagesse', 'Charisme']
 /* ce que les règles nomment par son nom : Combat pare, Tir tire, Acrobatie esquive. Leur nom ne change pas, elles ne se retirent pas ;
    Combat et Tir restent aussi sous leur caractéristique, celle de leur geste */
 const REG_FIXES = {'Combat':{car:true}, 'Tir':{car:true}, 'Acrobatie':{car:false}};
-const REG_JETS_CAR = ['Force', 'Dextérité', 'Contenance'];
+/* sous quelles caractéristiques une Pratique peut se lancer : dans l'ordre de la fiche, Contenance en dernier. Constitution n'en est pas */
+const REG_JETS_CAR = ['Force', 'Dextérité', 'Intelligence', 'Sagesse', 'Charisme', 'Contenance'];
+/* « sous la Force », « sous l’Intelligence », « sous le Charisme » */
+const regSousLa = c => (c === 'Intelligence' ? 'l’Intelligence' : c === 'Charisme' ? 'le Charisme' : 'la ' + c);
 const REG_JETS_SANS = ['aucun jet', 'la cible teste', 'les cibles testent'];
 const REG = {competences:Object.create(null), pratiques:Object.create(null)};
 const COMP_LIB = {};
@@ -1341,7 +1344,7 @@ function regCaster(entrees){
   entrees.forEach(e => { if(REG_JETS_CAR.indexOf(e.j) >= 0) n[e.j] = (n[e.j] || 0) + 1; });
   const b = entrees.find(e => e.base && REG_JETS_CAR.indexOf(e.j) >= 0);
   let best = '', max = 0;
-  /* à égalité, celle de l'attaque de base ; sinon la première dans l'ordre Force, Dextérité, Contenance */
+  /* à égalité, celle de l'attaque de base ; sinon la première dans l'ordre de REG_JETS_CAR */
   REG_JETS_CAR.forEach(c => {
     const v = n[c] || 0;
     if(v > max || (v === max && v > 0 && b && b.j === c)){ best = c; max = v; }
@@ -3539,7 +3542,7 @@ function dessinerPratsEditeur(){
     const l = el('div','table'); l.style.marginBottom = '6px';
     champ(l, 'Nom', Object.assign(el('input'), {type:'text', value:p.n, oninput:e => { p.n = e.target.value; }, style:'width:100%'}));
     const s = el('select');
-    ['Force','Dextérité','Contenance'].concat(JETS_SANS).forEach(j => s.add(new Option(j, j)));
+    REG_JETS_CAR.concat(JETS_SANS).forEach(j => s.add(new Option(j, j)));
     s.value = p.j; s.onchange = () => { p.j = s.value; majApercuEditeur(); };
     champ(l, 'Se lance sous', s);
     champ(l, 'PC', Object.assign(nombre(p.pc, 0, 9), {oninput:e => p.pc = Math.max(0, +e.target.value || 0), style:'width:70px'}));
@@ -3693,7 +3696,7 @@ function pratiqueDuLivre(dom, nom){
   for(const x of Object.keys(g)){ const it = g[x].find(p => p.n === nom); if(it) return it; }
   return null;
 }
-const jetDePratique = j => JETS_SANS.indexOf(j) >= 0 ? (j === 'aucun jet' ? 'ne se lance pas' : j) : 'se lance sous ' + j;
+const jetDePratique = j => JETS_SANS.indexOf(j) >= 0 ? (j === 'aucun jet' ? 'ne se lance pas' : j) : 'se lance sous ' + regSousLa(j);
 function coutAchat(c){
   if(ACHAT.type === 'comp') return coutCompetence(bonusComp(c, ACHAT.cible), bonusComp(c, ACHAT.cible) + Math.max(1, ACHAT.n));
   if(ACHAT.type === 'prat') return 10;
@@ -3726,7 +3729,7 @@ function aupresDe(n){
 function phraseAchat(c, a){
   const nom = c.nom || 'Sans nom', p = a.cout + ' point' + (a.cout > 1 ? 's' : '');
   if(a.type === 'prat') return nom + ' apprend une Pratique, ' + a.cible + (a.maitre ? ', ' + aupresDe(a.maitre) : '') +
-    (a.jet && JETS_SANS.indexOf(a.jet) < 0 ? ', sous ' + a.jet : '') + ' (' + p + ').';
+    (a.jet && JETS_SANS.indexOf(a.jet) < 0 ? ', sous ' + regSousLa(a.jet) : '') + ' (' + p + ').';
   return nom + ' dépense ' + p + ' : ' + a.detail + '.';
 }
 /* les PV suivent la Constitution, les PC la moitié de la Contenance : un gain arrive aussi dans l'actuel,

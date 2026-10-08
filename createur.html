@@ -331,7 +331,10 @@ const REG_CARS = ['Force', 'Dextérité', 'Intelligence', 'Sagesse', 'Charisme']
 /* ce que les règles nomment par son nom : Combat pare, Tir tire, Acrobatie esquive. Leur nom ne change pas, elles ne se retirent pas ;
    Combat et Tir restent aussi sous leur caractéristique, celle de leur geste */
 const REG_FIXES = {'Combat':{car:true}, 'Tir':{car:true}, 'Acrobatie':{car:false}};
-const REG_JETS_CAR = ['Force', 'Dextérité', 'Contenance'];
+/* sous quelles caractéristiques une Pratique peut se lancer : dans l'ordre de la fiche, Contenance en dernier. Constitution n'en est pas */
+const REG_JETS_CAR = ['Force', 'Dextérité', 'Intelligence', 'Sagesse', 'Charisme', 'Contenance'];
+/* « sous la Force », « sous l’Intelligence », « sous le Charisme » */
+const regSousLa = c => (c === 'Intelligence' ? 'l’Intelligence' : c === 'Charisme' ? 'le Charisme' : 'la ' + c);
 const REG_JETS_SANS = ['aucun jet', 'la cible teste', 'les cibles testent'];
 const REG = {competences:Object.create(null), pratiques:Object.create(null)};
 const COMP_LIB = {};
@@ -498,7 +501,7 @@ function regCaster(entrees){
   entrees.forEach(e => { if(REG_JETS_CAR.indexOf(e.j) >= 0) n[e.j] = (n[e.j] || 0) + 1; });
   const b = entrees.find(e => e.base && REG_JETS_CAR.indexOf(e.j) >= 0);
   let best = '', max = 0;
-  /* à égalité, celle de l'attaque de base ; sinon la première dans l'ordre Force, Dextérité, Contenance */
+  /* à égalité, celle de l'attaque de base ; sinon la première dans l'ordre de REG_JETS_CAR */
   REG_JETS_CAR.forEach(c => {
     const v = n[c] || 0;
     if(v > max || (v === max && v > 0 && b && b.j === c)){ best = c; max = v; }
@@ -786,7 +789,7 @@ CARS.forEach(c => S.car[c] = 0);
 ALLSKILLS.forEach(o => S.sk[o.s] = 0);
 
 const GESTE = {'Force':'Combat', 'Dextérité':'Tir'};
-const ABR_JET = {'Force':'FOR', 'Dextérité':'DEX', 'Contenance':'CNT'};
+const ABR_JET = {'Force':'FOR', 'Dextérité':'DEX', 'Intelligence':'INT', 'Sagesse':'SAG', 'Charisme':'CHA', 'Contenance':'CNT'};
 const $ = id => document.getElementById(id);
 const near = n => Math.floor(n);   /* tout arrondi se fait vers le bas */
 const d20 = t => Math.floor(t / 5);
@@ -1023,17 +1026,17 @@ function drawPrat(){
   }
   /* une liste dont les Pratiques ne se lancent pas toutes sous la même (une retouche du Registre) le dit ainsi */
   const jets = [];
-  const noterJet = it => { if(it && ['Force', 'Dextérité', 'Contenance'].indexOf(it.j) >= 0 && jets.indexOf(it.j) < 0) jets.push(it.j); };
+  const noterJet = it => { if(it && REG_JETS_CAR.indexOf(it.j) >= 0 && jets.indexOf(it.j) < 0) jets.push(it.j); };
   noterJet(base);
   groups.forEach(g => g.items.forEach(it => noterJet(it)));
   $('pratHint').textContent = 'Trois à la création, plus l’attaque de base de ta liste, donnée et gratuite. Bonus +' + bonus +
     (S.peuple === 'Humains' ? ' (+20 de base, +10 par ton école).' : ' (+20 de base, +20 par ton domaine).') +
     (jets.length > 1
       ? ' Ici, chaque Pratique se lance sous la sienne, ou sous ta compétence de la même caractéristique si elle est plus haute.'
-      : base && ['Force', 'Dextérité', 'Contenance'].indexOf(base.j) >= 0
-      ? ' Ta liste se lance sous la ' + base.j + (GESTE[base.j] ? ', ou sous ta compétence ' + GESTE[base.j] + ' si elle est plus haute' : '') + '.'
+      : base && REG_JETS_CAR.indexOf(base.j) >= 0
+      ? ' Ta liste se lance sous ' + regSousLa(base.j) + (GESTE[base.j] ? ', ou sous ta compétence ' + GESTE[base.j] + ' si elle est plus haute' : '') + '.'
       : jets.length === 1
-      ? ' Ta liste se lance sous la ' + jets[0] + (GESTE[jets[0]] ? ', ou sous ta compétence ' + GESTE[jets[0]] + ' si elle est plus haute' : '') + '.'
+      ? ' Ta liste se lance sous ' + regSousLa(jets[0]) + (GESTE[jets[0]] ? ', ou sous ta compétence ' + GESTE[jets[0]] + ' si elle est plus haute' : '') + '.'
       : ' Chaque liste se lance sous sa caractéristique.') +
     ' La valeur et le d20 sont écrits à côté.';
   groups.forEach(g => {
@@ -1232,7 +1235,7 @@ function pratTotal(){ return carVal('Contenance') * 2 + pratBonus(); }
 /* ce que lance une Pratique, et sous quelle valeur : le meilleur de la Pratique et de la competence du meme geste */
 function pratValeur(it){
   const j = (it && it.j) || '';
-  if(j === 'Force' || j === 'Dextérité' || j === 'Contenance'){
+  if(REG_JETS_CAR.indexOf(j) >= 0){
     const propre = carVal(j) * 2 + pratBonus();
     const comp = GESTE[j] ? skTotal(GESTE[j]) : 0;
     return {jet:j, val:Math.max(propre, comp), par: comp > propre ? GESTE[j] : ''};

@@ -829,6 +829,7 @@ svg.reseau:active{cursor:grabbing}
   <a href="createur.html">Registre du Havre</a>
   <a href="rencontres.html">Registre des Rencontres</a>
   <a href="competences.html">Registre des Compétences</a>
+  <a href="plans.html">Registre des Plans</a>
 </nav>
 <style>
 .fae-site{display:flex;flex-wrap:wrap;gap:4px 18px;align-items:baseline;max-width:980px;margin:0 auto;padding:12px 18px 0;font:13px/1.4 "IBM Plex Sans",system-ui,sans-serif}
@@ -9278,7 +9279,7 @@ function dessinerMissionTable(){
    jamais deux fois en moins de quinze secondes : GitHub accepte 500 écritures par heure et par jeton. */
 
 const GHC_CLE = 'faelorenn.github';
-const GHC_FICHIERS = {table:'table-faelorenn.json', personnages:'personnages.json', bestiaire:'bestiaire.json', competences:'competences.json'};
+const GHC_FICHIERS = {table:'table-faelorenn.json', personnages:'personnages.json', bestiaire:'bestiaire.json', competences:'competences.json', plans:'plans.json'};
 const GHC_API = 'https://api.github.com';
 const GHC = {depot:'', jeton:'', branche:'', api:GHC_API, actif:false, table:''};
 const GHC_DOCS = [];
@@ -9403,7 +9404,8 @@ function ghcLisezmoi(){
     + '- `' + (GHC.table || GHC_FICHIERS.table) + '` : la table, avec les séances, les personnages joués, les PNJ et leurs liens, les jets.\n'
     + '- `' + GHC_FICHIERS.personnages + '` : les personnages enregistrés dans le Registre du Havre.\n'
     + '- `' + GHC_FICHIERS.bestiaire + '` : les créatures et les familles du Registre des Rencontres.\n'
-    + '- `' + GHC_FICHIERS.competences + '` : les retouches du Registre des Compétences : les Pratiques, les compétences et celles de Bannière.\n\n'
+    + '- `' + GHC_FICHIERS.competences + '` : les retouches du Registre des Compétences : les Pratiques, les compétences et celles de Bannière.\n'
+    + '- `' + GHC_FICHIERS.plans + '` : les plans du Registre des Plans : les bâtiments, les villages et les cartes du monde.\n\n'
     + 'Chaque enregistrement devient une version dans l’historique du dépôt.\n\n'
     + 'Garde ce dépôt privé : vos séances et vos personnages y sont.\n\n'
     + 'Dernière liaison : ' + (qui ? qui + ', ' : '') + 'le ' + quand + '.\n';
@@ -9582,7 +9584,7 @@ function ghcDoc(o){
       if(res === false) throw {gh:d.erreur};
       if(res && res.obj && o.enAvance && !o.enAvance(res.obj)) return 'rien';
       const corps = {message:(o.message ? o.message() : d.nom + ' · ' + (ghcJoueur() || 'quelqu’un') + ' · ' + new Date().toLocaleString('fr-BE')),
-        content:ghcB64(JSON.stringify(o.contenu(), null, 1))};
+        content:ghcB64(o.texte ? o.texte() : JSON.stringify(o.contenu(), null, 1))};
       if(GHC.branche) corps.branch = GHC.branche;
       if(d.sha) corps.sha = d.sha;
       d.derniereEcriture = Date.now();
@@ -9778,8 +9780,8 @@ function ghcPanneau(boite, opt){
     $g('ghcTexte').innerHTML = bloque
       ? 'Depuis cette page-ci, GitHub est hors d’atteinte : ouvre le registre sur le site pour garder tes données en ligne.'
       : relie
-        ? 'Relié à <b>' + esc(GHC.depot) + '</b>' + (GHC.branche ? ', branche <i>' + esc(GHC.branche) + '</i>' : '') + '. Les registres de ce navigateur y gardent chacun leur fichier : la table et ses PNJ, les personnages, le bestiaire, les compétences.'
-        : 'Tout peut se garder dans un dépôt GitHub privé : la table et ses PNJ, les personnages, le bestiaire, les compétences. On le relie une fois dans ce navigateur, et les registres s’en servent. À plusieurs, chacun relie le même dépôt.';
+        ? 'Relié à <b>' + esc(GHC.depot) + '</b>' + (GHC.branche ? ', branche <i>' + esc(GHC.branche) + '</i>' : '') + '. Les registres de ce navigateur y gardent chacun leur fichier : la table et ses PNJ, les personnages, le bestiaire, les compétences, les plans.'
+        : 'Tout peut se garder dans un dépôt GitHub privé : la table et ses PNJ, les personnages, le bestiaire, les compétences, les plans. On le relie une fois dans ce navigateur, et les registres s’en servent. À plusieurs, chacun relie le même dépôt.';
     /* le registre ne parle ici que s'il a un souci : sinon, le résumé suffit */
     const o = $g('ghcOutil');
     o.hidden = !err;

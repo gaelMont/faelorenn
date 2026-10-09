@@ -70,7 +70,7 @@ footer{margin-top:44px;padding-top:12px;border-top:1px solid var(--rule);font-si
 <header>
   <p class="sur">Faelorenn</p>
   <h1>Les registres de la table</h1>
-  <p class="intro">Sept outils pour jouer, solo avec l’Oracle ou à plusieurs : choisir une mission au tableau du Havre, créer ses Marchefleurs, tenir la partie séance après séance, garder trace de ceux qu’on croise, tenir la fiche, le sac et la bourse de chacun, tirer ce qui se dresse sur la route, retoucher à sa main les compétences et les Pratiques.</p>
+  <p class="intro">Huit outils pour jouer, solo avec l’Oracle ou à plusieurs : choisir une mission au tableau du Havre, créer ses Marchefleurs, tenir la partie séance après séance, garder trace de ceux qu’on croise, tenir la fiche, le sac et la bourse de chacun, tirer ce qui se dresse sur la route, retoucher à sa main les compétences et les Pratiques, dessiner et garder les plans des bâtiments, des villages et du monde.</p>
 </header>
 
 <nav class="registres" aria-label="Les registres">
@@ -109,10 +109,15 @@ footer{margin-top:44px;padding-top:12px;border-top:1px solid var(--rule);font-si
     <span class="rquoi">les règles de la maison</span>
     <span class="rdesc">Retoucher soi-même les Pratiques de chaque liste et la caractéristique qui les lance, les compétences et leur caractéristique, les compétences de Bannière. Le créateur et la table s’en servent, et Océane les reçoit par le dépôt.</span>
   </a>
+  <a class="registre" href="plans.html">
+    <span class="rnom">Registre des Plans</span>
+    <span class="rquoi">les lieux</span>
+    <span class="rdesc">Garder, lire et retoucher les plans des bâtiments, des villages et des cartes du monde : on entre d’une carte dans un village, puis dans un bâtiment. Océane les reçoit par le dépôt.</span>
+  </a>
 </nav>
 
 <h2 id="sauvegarde">Tout garder en ligne</h2>
-<p>Sans rien relier, chaque registre garde ce que tu fais dans ce navigateur, et seulement là : un nettoyage du navigateur, un autre ordinateur, et tout est à refaire. Relie une fois un dépôt GitHub privé : la table et ses PNJ, tes personnages, ton bestiaire et tes retouches des règles y partent tout seuls, et tu les retrouves partout où le dépôt est relié.</p>
+<p>Sans rien relier, chaque registre garde ce que tu fais dans ce navigateur, et seulement là : un nettoyage du navigateur, un autre ordinateur, et tout est à refaire. Relie une fois un dépôt GitHub privé : la table et ses PNJ, tes personnages, ton bestiaire, tes retouches des règles et tes plans y partent tout seuls, et tu les retrouves partout où le dépôt est relié.</p>
 <div id="ghcPlace"></div>
 <div class="inventaire" id="inventaire" hidden>
   <p class="lab">Dans le dépôt</p>
@@ -142,9 +147,9 @@ footer{margin-top:44px;padding-top:12px;border-top:1px solid var(--rule);font-si
 
 <h2>Ce que ce site montre</h2>
 <p>Le site est public : avec un compte GitHub gratuit, le dépôt qui l’héberge doit l’être, et n’importe qui peut lire le code des registres, avec ce qu’il contient du livre (peuples, Pratiques, bestiaire).</p>
-<p>Vos personnages, vos séances, votre bestiaire et vos retouches des règles ne sont jamais dans ce dépôt-là. Ils restent dans vos navigateurs, et dans votre dépôt privé si vous reliez la sauvegarde en ligne.</p>
+<p>Vos personnages, vos séances, votre bestiaire et vos retouches des règles et vos plans ne sont jamais dans ce dépôt-là. Ils restent dans vos navigateurs, et dans votre dépôt privé si vous reliez la sauvegarde en ligne.</p>
 
-<footer>Faelorenn · mis à jour le 7 octobre 2026</footer>
+<footer>Faelorenn · mis à jour le 9 octobre 2026</footer>
 </div>
 <script>try{ if(/^faelorenn-(table|visages|progression|missions|marchefleurs)$/.test(window.name)) window.name = ''; }catch(e){}</script>
 <script>
@@ -155,7 +160,7 @@ footer{margin-top:44px;padding-top:12px;border-top:1px solid var(--rule);font-si
    jamais deux fois en moins de quinze secondes : GitHub accepte 500 écritures par heure et par jeton. */
 
 const GHC_CLE = 'faelorenn.github';
-const GHC_FICHIERS = {table:'table-faelorenn.json', personnages:'personnages.json', bestiaire:'bestiaire.json', competences:'competences.json'};
+const GHC_FICHIERS = {table:'table-faelorenn.json', personnages:'personnages.json', bestiaire:'bestiaire.json', competences:'competences.json', plans:'plans.json'};
 const GHC_API = 'https://api.github.com';
 const GHC = {depot:'', jeton:'', branche:'', api:GHC_API, actif:false, table:''};
 const GHC_DOCS = [];
@@ -280,7 +285,8 @@ function ghcLisezmoi(){
     + '- `' + (GHC.table || GHC_FICHIERS.table) + '` : la table, avec les séances, les personnages joués, les PNJ et leurs liens, les jets.\n'
     + '- `' + GHC_FICHIERS.personnages + '` : les personnages enregistrés dans le Registre du Havre.\n'
     + '- `' + GHC_FICHIERS.bestiaire + '` : les créatures et les familles du Registre des Rencontres.\n'
-    + '- `' + GHC_FICHIERS.competences + '` : les retouches du Registre des Compétences : les Pratiques, les compétences et celles de Bannière.\n\n'
+    + '- `' + GHC_FICHIERS.competences + '` : les retouches du Registre des Compétences : les Pratiques, les compétences et celles de Bannière.\n'
+    + '- `' + GHC_FICHIERS.plans + '` : les plans du Registre des Plans : les bâtiments, les villages et les cartes du monde.\n\n'
     + 'Chaque enregistrement devient une version dans l’historique du dépôt.\n\n'
     + 'Garde ce dépôt privé : vos séances et vos personnages y sont.\n\n'
     + 'Dernière liaison : ' + (qui ? qui + ', ' : '') + 'le ' + quand + '.\n';
@@ -459,7 +465,7 @@ function ghcDoc(o){
       if(res === false) throw {gh:d.erreur};
       if(res && res.obj && o.enAvance && !o.enAvance(res.obj)) return 'rien';
       const corps = {message:(o.message ? o.message() : d.nom + ' · ' + (ghcJoueur() || 'quelqu’un') + ' · ' + new Date().toLocaleString('fr-BE')),
-        content:ghcB64(JSON.stringify(o.contenu(), null, 1))};
+        content:ghcB64(o.texte ? o.texte() : JSON.stringify(o.contenu(), null, 1))};
       if(GHC.branche) corps.branch = GHC.branche;
       if(d.sha) corps.sha = d.sha;
       d.derniereEcriture = Date.now();
@@ -655,8 +661,8 @@ function ghcPanneau(boite, opt){
     $g('ghcTexte').innerHTML = bloque
       ? 'Depuis cette page-ci, GitHub est hors d’atteinte : ouvre le registre sur le site pour garder tes données en ligne.'
       : relie
-        ? 'Relié à <b>' + esc(GHC.depot) + '</b>' + (GHC.branche ? ', branche <i>' + esc(GHC.branche) + '</i>' : '') + '. Les registres de ce navigateur y gardent chacun leur fichier : la table et ses PNJ, les personnages, le bestiaire, les compétences.'
-        : 'Tout peut se garder dans un dépôt GitHub privé : la table et ses PNJ, les personnages, le bestiaire, les compétences. On le relie une fois dans ce navigateur, et les registres s’en servent. À plusieurs, chacun relie le même dépôt.';
+        ? 'Relié à <b>' + esc(GHC.depot) + '</b>' + (GHC.branche ? ', branche <i>' + esc(GHC.branche) + '</i>' : '') + '. Les registres de ce navigateur y gardent chacun leur fichier : la table et ses PNJ, les personnages, le bestiaire, les compétences, les plans.'
+        : 'Tout peut se garder dans un dépôt GitHub privé : la table et ses PNJ, les personnages, le bestiaire, les compétences, les plans. On le relie une fois dans ce navigateur, et les registres s’en servent. À plusieurs, chacun relie le même dépôt.';
     /* le registre ne parle ici que s'il a un souci : sinon, le résumé suffit */
     const o = $g('ghcOutil');
     o.hidden = !err;
@@ -721,7 +727,8 @@ function ghcPanneau(boite, opt){
       {quoi:'La table et ses PNJ', fic:GHC.table || GHC_FICHIERS.table, pas:'Pas encore : ouvre le Registre de la Table une fois.'},
       {quoi:'Tes personnages', fic:GHC_FICHIERS.personnages, pas:'Pas encore : ouvre le Registre du Havre une fois.'},
       {quoi:'Le bestiaire', fic:GHC_FICHIERS.bestiaire, pas:'Pas encore : ouvre le Registre des Rencontres une fois.'},
-      {quoi:'Les compétences et les Pratiques retouchées', fic:GHC_FICHIERS.competences, pas:'Pas encore : retouche quelque chose dans le Registre des Compétences.'}
+      {quoi:'Les compétences et les Pratiques retouchées', fic:GHC_FICHIERS.competences, pas:'Pas encore : retouche quelque chose dans le Registre des Compétences.'},
+      {quoi:'Les plans', fic:GHC_FICHIERS.plans, pas:'Pas encore : touche à un plan dans le Registre des Plans.'}
     ];
     ghcInventaire().then(liste => {
       const noms = {};

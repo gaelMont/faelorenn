@@ -138,7 +138,7 @@ textarea{width:100%;resize:vertical;line-height:1.4}
 .dl dt{color:var(--muted);font-size:12px;padding-top:1px}
 .dl dd{margin:0;overflow-wrap:anywhere}
 #side details>summary{cursor:pointer;font-family:Spectral,Georgia,serif;font-weight:700;font-size:16px;color:var(--forest);margin:14px 0 6px}
-#pop{position:fixed;z-index:20;background:var(--surface);border:1px solid var(--rule);border-radius:3px;box-shadow:0 4px 16px rgba(0,0,0,.25);padding:6px;display:none;min-width:210px}
+#pop{position:fixed;z-index:20;background:var(--surface);border:1px solid var(--rule);border-radius:3px;box-shadow:0 4px 16px rgba(0,0,0,.25);padding:6px;display:none;min-width:210px;width:max-content;max-width:min(380px,calc(100vw - 16px))}
 #pop button{display:block;width:100%;text-align:left;background:transparent;border:0;color:var(--ink);border-radius:2px;padding:7px 10px;cursor:pointer}
 #pop button:hover{background:var(--fill)}
 #pop hr{border:0;border-top:1px solid var(--rule);margin:4px 0}
@@ -169,15 +169,29 @@ textarea{width:100%;resize:vertical;line-height:1.4}
   #top select{max-width:100%;flex:1 1 100%}
   #top .sep{display:none}
 }
-.genres{margin-top:16px;padding-top:12px;border-top:1px solid var(--rule)}
-.genres h3{margin:0;font:600 14px/1.3 "IBM Plex Sans",system-ui,sans-serif;color:var(--forest)}
-.genre{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;margin-top:10px}
-.genre .gn{flex:0 0 7.5em;font-weight:600}
-.genre .gc{flex:0 0 6.5em;color:var(--muted);font-size:13px;font-variant-numeric:tabular-nums}
 @media print{
   .noprint,#top,#tools,#side,#hud,#floorbar{display:none!important}
   html,body{background:#fff;color:#000}
 }
+/* les listes du panneau : la ligne choisie se voit, et chaque lieu s'ouvre depuis sa ligne */
+.legend li{min-width:0}
+.legend li a[data-wsel]{min-width:0;overflow-wrap:anywhere;color:inherit}
+.legend li.on{background:var(--fill);border-radius:2px;box-shadow:0 0 0 3px var(--fill)}
+.legend li .go{margin-left:auto;flex:none;align-self:center}
+/* le bouton plein écran : une icône, de la même hauteur que les autres boutons */
+.btn.icone{display:inline-flex;align-items:center;justify-content:center;padding:5px 8px}
+.btn.icone svg{display:block}
+/* plein écran : l'établi couvre toute la fenêtre, le reste de la page s'efface derrière */
+body.plein{overflow:hidden}
+body.plein #app{position:fixed;inset:0;z-index:15;height:auto;border:0;border-radius:0;box-shadow:none;overflow:auto}
+body.plein #main{min-height:0}
+@media (min-width:861px){body.plein #app{overflow:hidden}}
+/* la barre : les boutons de droite restent ensemble, à droite, sur la ligne où ils tiennent */
+#top .grp{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-left:auto}
+/* une ligne de la liste des lieux : un repère, le nom (avec sa position quand il n'en a pas), le bouton */
+.legend li.lieu{align-items:center}
+.legend li .nm{display:flex;flex-direction:column;align-items:flex-start;flex:1 1 auto;min-width:0}
+.legend li .nm small{font-size:11.5px;color:var(--muted);line-height:1.25}
 </style>
 </head>
 <body>
@@ -221,11 +235,14 @@ textarea{width:100%;resize:vertical;line-height:1.4}
   <button type="button" class="btn" id="bNew">Nouveau</button>
   <button type="button" class="btn" id="bDup">Dupliquer</button>
   <button type="button" class="btn danger" id="bDel">Supprimer</button>
-  <span class="spacer"></span>
-  <button type="button" class="btn" id="bUndo" title="Annuler (Ctrl+Z)" aria-label="Annuler">↶</button>
-  <button type="button" class="btn" id="bRedo" title="Rétablir (Ctrl+Y)" aria-label="Rétablir">↷</button>
-  <button type="button" class="btn primary" id="bExp" aria-haspopup="menu">Exporter ▾</button>
-  <button type="button" class="btn" id="bHelp" aria-label="Aide">?</button>
+  <div class="grp">
+   <button type="button" class="btn" id="bUndo" title="Annuler (Ctrl+Z)" aria-label="Annuler">↶</button>
+   <button type="button" class="btn" id="bRedo" title="Rétablir (Ctrl+Y)" aria-label="Rétablir">↷</button>
+   <button type="button" class="btn" id="bImp" aria-haspopup="menu">Importer ▾</button>
+   <button type="button" class="btn primary" id="bExp" aria-haspopup="menu">Exporter ▾</button>
+   <button type="button" class="btn icone" id="bFull" aria-pressed="false" title="Plein écran (Maj+F)" aria-label="Plein écran"></button>
+   <button type="button" class="btn" id="bHelp" aria-label="Aide">?</button>
+  </div>
  </div>
  <div id="main">
   <nav id="tools" aria-label="Outils"></nav>
@@ -250,24 +267,16 @@ textarea{width:100%;resize:vertical;line-height:1.4}
     <div class="acts">
       <button class="btn primary" id="plEnLigne" type="button">Sauvegarder en ligne</button>
       <button class="btn" id="plJson" type="button">Sauvegarde .json</button>
-      <button class="btn" id="plImport" type="button">Importer un .json</button>
-      <input type="file" id="plFichier" accept=".json,application/json" hidden>
     </div>
     <p class="note" id="plMsg" role="status" hidden></p>
-    <p class="note">La sauvegarde .json garde tous les plans ; elle se réimporte ici, sur un autre appareil ou chez Océane, et le plus récent l’emporte, plan par plan. Pour reprendre un projet de l’ancien Atelier des plans : dans l’Atelier, « Projet » puis « Sauvegarder le projet (.json) », puis « Importer un .json » ici.</p>
-    <div class="genres" role="group" aria-labelledby="plGenresT">
-      <h3 id="plGenresT">Un genre à la fois</h3>
-      <p class="note">Exporte ou reprends les bâtiments, les villages ou les cartes du monde sans toucher aux autres. Pour un seul plan, « Exporter » en haut de l’établi propose « Ce plan : fichier .json », avec ou sans les plans qui en dépendent.</p>
-      <div class="genre"><span class="gn">Bâtiments</span><span class="gc" id="plN-b"></span><span class="acts"><button class="btn" id="plExp-b" type="button" aria-label="Exporter tous les bâtiments">Exporter</button><button class="btn" id="plImp-b" type="button" aria-label="Importer des bâtiments">Importer</button></span></div>
-      <div class="genre"><span class="gn">Villages</span><span class="gc" id="plN-v"></span><span class="acts"><button class="btn" id="plExp-v" type="button" aria-label="Exporter tous les villages">Exporter</button><button class="btn" id="plImp-v" type="button" aria-label="Importer des villages">Importer</button></span></div>
-      <div class="genre"><span class="gn">Mondes</span><span class="gc" id="plN-w"></span><span class="acts"><button class="btn" id="plExp-w" type="button" aria-label="Exporter toutes les cartes du monde">Exporter</button><button class="btn" id="plImp-w" type="button" aria-label="Importer des cartes du monde">Importer</button></span></div>
-    </div>
+    <p class="note">La sauvegarde .json garde tous les plans ; elle se reprend avec « Importer », en haut de l’établi, sur un autre appareil ou chez Océane, et le plus récent l’emporte, plan par plan. Pour un seul plan, ou seulement les bâtiments, les villages ou les cartes du monde, « Exporter » et « Importer » proposent aussi ces fichiers-là. Pour reprendre un projet de l’ancien Atelier des plans : dans l’Atelier, « Projet » puis « Sauvegarder le projet (.json) », puis « Importer » ici.</p>
     <div id="ghcPlace"></div>
   </div>
 </section>
 </div>
 
 <div id="pop"></div>
+<input type="file" id="plFichier" accept=".json,application/json" hidden>
 <div id="modal" role="dialog" aria-modal="true" aria-label="Fenêtre"><div class="card" id="modalCard"></div></div>
 <script>
 /* ============ la sauvegarde en ligne : un dépôt GitHub privé pour les registres ============
@@ -927,10 +936,10 @@ function dirty(){save();renderCanvas();renderSideLight()}
 
 /* ====== retours ====== */
 let toastT=0;
-function toast(t){const m=$('#msg');m.textContent=t;m.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>m.classList.remove('on'),2600)}
+function toast(t){const m=$('#msg');m.textContent=t;m.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>m.classList.remove('on'),clamp(2600+String(t).length*45,2600,9000))}
 function closePop(){$('#pop').style.display='none'}
-function popup(btn,entries){const p=$('#pop');p.innerHTML=entries.map((e,i)=>e==='-'?'<hr>':`<button data-i="${i}">${esc(e.t)}</button>`).join('');const r=btn.getBoundingClientRect();p.style.display='block';p.style.top=(r.bottom+4)+'px';p.style.left=Math.max(8,Math.min(r.left,innerWidth-230))+'px';p.onclick=ev=>{const b=ev.target.closest('button');if(!b)return;closePop();entries[+b.dataset.i].f()}}
-document.addEventListener('pointerdown',e=>{if(!e.target.closest('#pop')&&!e.target.closest('#bExp'))closePop()},true);
+function popup(btn,entries){const p=$('#pop');p.innerHTML=entries.map((e,i)=>e==='-'?'<hr>':`<button data-i="${i}">${esc(e.t)}</button>`).join('');const r=btn.getBoundingClientRect();p.style.display='block';p.style.left='0px';p.style.top=(r.bottom+4)+'px';p.style.left=Math.max(8,Math.min(r.left,innerWidth-p.offsetWidth-8))+'px';p.onclick=ev=>{const b=ev.target.closest('button');if(!b)return;closePop();entries[+b.dataset.i].f()}}
+document.addEventListener('pointerdown',e=>{if(!e.target.closest('#pop')&&!e.target.closest('#bExp,#bImp'))closePop()},true);
 let modalDe=null;
 function modal(html){if($('#modal').style.display!=='flex')modalDe=document.activeElement;$('#modalCard').innerHTML=html;$('#modal').style.display='flex';const f=$('#modalCard').querySelector('input:not([type=hidden]),textarea,select,button');if(f)f.focus()}
 function closeModal(){$('#modal').style.display='none';if(modalDe&&modalDe.focus&&document.contains(modalDe))modalDe.focus();modalDe=null}
@@ -1040,18 +1049,20 @@ function wrapName(name,aw,fs){const mc=Math.max(3,Math.floor(aw/(fs*.52)));const
 function textBlock(lines,cx,cy,fs,extra=''){const lh=fs*1.12,y0=cy-(lines.length-1)*lh/2+fs*.34;return lines.map((l,i)=>`<text x="${fx(cx)}" y="${fx(y0+i*lh)}" font-size="${fx(fs)}" ${extra}>${esc(l)}</text>`).join('')}
 function roomLabel(r,opts){
   if(!r.name)return'';
-  const wpx=r.w*BU,hpx=r.h*BU;let aw=wpx-8,cx=(r.x+r.w/2)*BU,cy=(r.y+r.h/2)*BU;
+  const LB=libreOk(r)?libreLabel(r):null;
+  const wpx=r.w*BU,hpx=LB?LB.sv*BU:r.h*BU;let aw=LB?Math.max(20,LB.sh*BU-8):wpx-8,cx=(LB?LB.x:r.x+r.w/2)*BU,cy=(LB?LB.y:r.y+r.h/2)*BU;
   if(r.shape==='ring'){const t=(r.thick||1)*BU;aw=wpx-20;cy=r.y*BU+t/2;}
   let fs=clamp(Math.min(13,aw/(Math.max(...r.name.split(/\s+/).map(s=>s.length),6)*.52)),7,13.5);
   let lines=wrapName(r.name,aw,fs);
   const maxLines=Math.max(1,Math.floor(((r.shape==='ring'?(r.thick||1)*BU:hpx)-6)/(fs*1.12)));
   while(lines.length>maxLines&&fs>6.5){fs-=.5;lines=wrapName(r.name,aw,fs)}
   let out=textBlock(lines,cx,cy-(opts.dims&&r.shape!=='ring'?5:0),fs,`font-weight="${r.kind==='piece'&&r.w*r.h>40?600:400}"`);
-  if(opts.dims&&r.shape!=='ring')out+=`<text x="${fx(cx)}" y="${fx(cy+fs*.9+lines.length*fs*.56)}" font-size="8.5" fill="#6d6354">${fx(r.w)}×${fx(r.h)} m</text>`;
+  if(opts.dims&&r.shape!=='ring')out+=`<text x="${fx(cx)}" y="${fx(cy+fs*.9+lines.length*fs*.56)}" font-size="8.5" fill="#6d6354">${LB?fx(LB.area)+' m²':fx(r.w)+'×'+fx(r.h)+' m'}</text>`;
   return out}
 function roomShape(r,ghost){
   const x=r.x*BU,y=r.y*BU,w=r.w*BU,h=r.h*BU,k=RK[r.kind]||RK.piece;
   const sw=r.kind==='secure'?6:r.kind==='couloir'?0:3;let fill=k.f;
+  if(libreOk(r))return libreSVG(r,ghost,fill,sw);
   if(ghost)return `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="none" stroke="${INK}" stroke-width="1.2"/>`;
   if(r.shape==='ring'){const t=(r.thick||1)*BU;return `<path d="M${x} ${y}h${w}v${h}h${-w}Z M${x+t} ${y+t}v${h-2*t}h${w-2*t}v${-(h-2*t)}Z" fill="${fill}" fill-rule="evenodd" stroke="${sw?INK:'none'}" stroke-width="${sw}"/>`}
   if(r.shape==='ellipse')return `<ellipse cx="${x+w/2}" cy="${y+h/2}" rx="${w/2}" ry="${h/2}" fill="${fill}" stroke="${INK}" stroke-width="${sw||3}"/>`;
@@ -1066,6 +1077,7 @@ function roomShape(r,ghost){
     return s}
   return `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${fill}" stroke="${sw?INK:'none'}" stroke-width="${sw}" stroke-linejoin="round"/>`}
 function doorSVG(d){
+  if(d.o==='a')return libreRot(d,doorSVG({...d,o:'h'}));
   const px=d.x*BU,py=d.y*BU,w=d.w*BU,hf=w/2,H=d.o==='h';const hg=d.hg||1,fl=d.fl||1;
   const gap=H?`<line x1="${px-hf}" y1="${py}" x2="${px+hf}" y2="${py}" stroke="${PAPER}" stroke-width="8"/>`:`<line x1="${px}" y1="${py-hf}" x2="${px}" y2="${py+hf}" stroke="${PAPER}" stroke-width="8"/>`;
   const jamb=H?`<path d="M${px-hf} ${py-4}v8M${px+hf} ${py-4}v8" stroke="${INK}" stroke-width="2"/>`:`<path d="M${px-4} ${py-hf}h8M${px-4} ${py+hf}h8" stroke="${INK}" stroke-width="2"/>`;
@@ -1084,6 +1096,7 @@ function doorSVG(d){
   if(d.k==='secrete')s+=`<text x="${px}" y="${py+3}" font-size="9" text-anchor="middle" fill="${INK}" font-style="italic" stroke="${PAPER}" stroke-width="3" paint-order="stroke">S</text>`;
   return s}
 function winSVG(w){
+  if(w.o==='a')return libreRot(w,winSVG({...w,o:'h'}));
   const px=w.x*BU,py=w.y*BU,l=w.w*BU,H=w.o==='h';
   if(w.k==='meurtriere'){return H?`<rect x="${px-2}" y="${py-4}" width="4" height="8" fill="#a9c5d3" stroke="${INK}" stroke-width="1.2"/>`:`<rect x="${px-4}" y="${py-2}" width="8" height="4" fill="#a9c5d3" stroke="${INK}" stroke-width="1.2"/>`}
   const t=w.k==='baie'?9:7;
@@ -1121,7 +1134,7 @@ function itemBounds(it){
   switch(it.t){
   case 'room':case 'stair':return[it.x,it.y,it.x+it.w,it.y+it.h];
   case 'wall':return[Math.min(it.x1,it.x2),Math.min(it.y1,it.y2),Math.max(it.x1,it.x2),Math.max(it.y1,it.y2)];
-  case 'door':case 'win':{const h=it.w/2;return it.o==='h'?[it.x-h,it.y-.3,it.x+h,it.y+.3]:[it.x-.3,it.y-h,it.x+.3,it.y+h]}
+  case 'door':case 'win':{const h=it.w/2;if(it.o==='a'){const a=rad(it.ang||0),dx=Math.cos(a)*h,dy=Math.sin(a)*h;return[Math.min(it.x-dx,it.x+dx)-.3,Math.min(it.y-dy,it.y+dy)-.3,Math.max(it.x-dx,it.x+dx)+.3,Math.max(it.y-dy,it.y+dy)+.3]}return it.o==='h'?[it.x-h,it.y-.3,it.x+h,it.y+.3]:[it.x-.3,it.y-h,it.x+.3,it.y+h]}
   case 'furn':{const d=FD[it.k]||{w:1,h:1};const q=((it.r||0)/90)%2?[d.h,d.w]:[d.w,d.h];return[it.x-q[0]/2,it.y-q[1]/2,it.x+q[0]/2,it.y+q[1]/2]}
   case 'label':{const lines=String(it.text).split('\n');const w=Math.max(...lines.map(l=>l.length))*(it.size||12)*.55/BU;const h=lines.length*(it.size||12)*1.1/BU;return[it.x-w/2,it.y-h/2,it.x+w/2,it.y+h/2]}}
   return[0,0,0,0]}
@@ -1206,10 +1219,11 @@ function renderTools(){
 $('#tools').addEventListener('click',e=>{const t=e.target.closest('.tool');if(!t)return;setTool(t.dataset.tool)});
 function setTool(t){ui.tool=t;g=null;wdraw=null;wg=null;if(t!=='city'&&ui.wk)ui.wk.vil=null;renderTools();renderSide();renderOverlay();cv.style.cursor=t==='pan'?'grab':t==='sel'?'default':'crosshair'}
 function selItems(){const F=CF();return ui.sel.map(id=>F.items.find(i=>i.id===id)).filter(Boolean)}
-let g=null,clip=[];
+let g=null,clip=[],bdraw=null;
 const tolM=()=>9/(BU*ui.view.k);
 /* ---- tests de collision ---- */
 function inRoom(r,x,y){
+  if(libreOk(r))return inPoly(x,y,r.pts);
   if(r.shape==='ellipse'){const a=r.w/2,b=r.h/2;return((x-r.x-a)/a)**2+((y-r.y-b)/b)**2<=1}
   if(x<r.x||x>r.x+r.w||y<r.y||y>r.y+r.h)return false;
   if(r.shape==='ring'){const t=r.thick||1;return!(x>r.x+t&&x<r.x+r.w-t&&y>r.y+t&&y<r.y+r.h-t)}
@@ -1226,18 +1240,20 @@ function hitAt(x,y,F,want){
     case 'room':return inRoom(it,x,y)}
     return false};
   for(const ty of ['label','furn','stair','door','win','wall']){for(let i=its.length-1;i>=0;i--){const it=its[i];if(it.t===ty&&test(it))return it}}
-  let best=null,ba=1e18;for(const it of its){if(it.t==='room'&&test(it)){const a=it.w*it.h;if(a<ba){ba=a;best=it}}}
+  let best=null,ba=1e18;for(const it of its){if(it.t==='room'&&test(it)){const a=libreOk(it)?polyArea(it.pts):it.w*it.h;if(a<ba){ba=a;best=it}}}
   return best}
 /* ---- placement des portes / fenêtres sur les murs ---- */
 function wallSegs(F){const S=[];for(const it of F.items){
-  if(it.t==='room'&&it.shape!=='ellipse'){const{x,y,w,h}=it;S.push([x,y,x+w,y],[x,y+h,x+w,y+h],[x,y,x,y+h],[x+w,y,x+w,y+h]);if(it.shape==='ring'){const t=it.thick||1;S.push([x+t,y+t,x+w-t,y+t],[x+t,y+h-t,x+w-t,y+h-t],[x+t,y+t,x+t,y+h-t],[x+w-t,y+t,x+w-t,y+h-t])}}
-  else if(it.t==='wall'&&(it.x1===it.x2||it.y1===it.y2))S.push([it.x1,it.y1,it.x2,it.y2])}
+  if(libreOk(it)){const n=it.pts.length;for(let i=0;i<n;i++){const p=it.pts[i],q=it.pts[(i+1)%n];S.push([p[0],p[1],q[0],q[1]])}}
+  else if(it.t==='room'&&it.shape!=='ellipse'){const{x,y,w,h}=it;S.push([x,y,x+w,y],[x,y+h,x+w,y+h],[x,y,x,y+h],[x+w,y,x+w,y+h]);if(it.shape==='ring'){const t=it.thick||1;S.push([x+t,y+t,x+w-t,y+t],[x+t,y+h-t,x+w-t,y+h-t],[x+t,y+t,x+t,y+h-t],[x+w-t,y+t,x+w-t,y+h-t])}}
+  else if(it.t==='wall')S.push([it.x1,it.y1,it.x2,it.y2])}
   return S}
 function place(m,w,F){
   let best=null;const lim=Math.max(.7,tolM()*2);
   for(const s of wallSegs(F)){const x0=Math.min(s[0],s[2]),x1=Math.max(s[0],s[2]),y0=Math.min(s[1],s[3]),y1=Math.max(s[1],s[3]);
-    const r=dseg(m[0],m[1],s[0],s[1],s[2],s[3]);if(r.d<lim&&(!best||r.d<best.d))best={d:r.d,s,H:s[1]===s[3],x0,x1,y0,y1}}
+    const r=dseg(m[0],m[1],s[0],s[1],s[2],s[3]);if(r.d<lim&&(!best||r.d<best.d))best={d:r.d,s,H:s[1]===s[3],A:s[0]!==s[2]&&s[1]!==s[3],t:r.t,x0,x1,y0,y1}}
   let o,x,y,fl=1;
+  if(best&&best.A)return placeOblique(m,w,best);
   if(best){o=best.H?'h':'v';
     if(best.H){x=clamp(snapv(m[0],.5),best.x0+w/2,best.x1-w/2);y=best.s[1];fl=m[1]<y?-1:1}
     else{y=clamp(snapv(m[1],.5),best.y0+w/2,best.y1-w/2);x=best.s[0];fl=m[0]<x?-1:1}
@@ -1254,25 +1270,26 @@ const BM={
   if(ui.facade)return false;
   if(t==='sel'){
     const sel=selItems();
-    if(sel.length===1){const h=handleAt(sel[0],m);if(h){snap();g={t:'resize',it:sel[0],h,o:{...sel[0]}};return true}}
+    if(sel.length===1){const h=handleAt(sel[0],m);if(h){if(libreOk(sel[0])){libreDown(sel[0],h,e);return true}snap();g={t:'resize',it:sel[0],h,o:{...sel[0]}};return true}}
     const hit=hitAt(m[0],m[1],F);
     if(!hit){if(!e.shiftKey){ui.sel=[];renderSide();renderOverlay()}return false}
     if(e.shiftKey){ui.sel=ui.sel.includes(hit.id)?ui.sel.filter(i=>i!==hit.id):[...ui.sel,hit.id]}
     else if(!ui.sel.includes(hit.id))ui.sel=[hit.id];
     const items=selItems();const attach=new Set();
-    if(!e.altKey)for(const r of items.filter(i=>i.t==='room'))for(const o of F.items)if((o.t==='door'||o.t==='win')&&!items.includes(o)){const on=(Math.abs(o.y-r.y)<.01||Math.abs(o.y-r.y-r.h)<.01)&&o.x>=r.x-.01&&o.x<=r.x+r.w+.01||(Math.abs(o.x-r.x)<.01||Math.abs(o.x-r.x-r.w)<.01)&&o.y>=r.y-.01&&o.y<=r.y+r.h+.01;if(on)attach.add(o)}
+    if(!e.altKey)for(const r of items.filter(i=>i.t==='room'))for(const o of F.items)if((o.t==='door'||o.t==='win')&&!items.includes(o)){const on=libreOk(r)?libreSurBord(r,o):((Math.abs(o.y-r.y)<.01||Math.abs(o.y-r.y-r.h)<.01)&&o.x>=r.x-.01&&o.x<=r.x+r.w+.01||(Math.abs(o.x-r.x)<.01||Math.abs(o.x-r.x-r.w)<.01)&&o.y>=r.y-.01&&o.y<=r.y+r.h+.01);if(on)attach.add(o)}
     g={t:'move',m0:m,items:[...items,...attach],orig:[...items,...attach].map(i=>({...i})),moved:false};
     renderSide();renderOverlay();return true}
+  if(t==='room'&&ui.roomShape==='poly'){libreClic(m,e);return true}
   if(t==='room'||t==='stair'){g={t:'draw',m0:[sn(m[0]),sn(m[1])],m:[sn(m[0]),sn(m[1])]};return true}
   if(t==='wall'){g={t:'wall',m0:[sn(m[0]),sn(m[1])],m:[sn(m[0]),sn(m[1])]};return true}
   if(t==='door'||t==='win'){const w=t==='door'?DW[ui.doorK]:WW[ui.winK];const p=place(m,w,F);snap();
-    const it=addItem(t==='door'?{t:'door',k:ui.doorK,x:p.x,y:p.y,o:p.o,w,fl:p.fl,hg:1}:{t:'win',k:ui.winK,x:p.x,y:p.y,o:p.o,w});ui.sel=[it.id];dirty();renderSide();renderOverlay();return true}
+    const it=addItem(t==='door'?{t:'door',k:ui.doorK,x:p.x,y:p.y,o:p.o,...(p.o==='a'?{ang:p.ang}:{}),w,fl:p.fl,hg:1}:{t:'win',k:ui.winK,x:p.x,y:p.y,o:p.o,...(p.o==='a'?{ang:p.ang}:{}),w});ui.sel=[it.id];dirty();renderSide();renderOverlay();return true}
   if(t==='furn'){snap();const it=addItem({t:'furn',k:ui.furn,x:snapv(m[0],.25),y:snapv(m[1],.25),r:ui.furnRot||0});ui.sel=[it.id];dirty();renderSide();return true}
   if(t==='label'){snap();const it=addItem({t:'label',x:snapv(m[0],.25),y:snapv(m[1],.25),text:'Texte',size:12});ui.sel=[it.id];setTool('sel');dirty();renderSide();return true}
   if(t==='erase'){const h=hitAt(m[0],m[1],F);if(h){snap();F.items=F.items.filter(i=>i!==h);ui.sel=ui.sel.filter(i=>i!==h.id);dirty();renderSide()}return true}
   return false},
  move(e,dragging){
-  const m=toM(e),F=CF();ui.hover=m;
+  const m=toM(e),F=CF();ui.hover=m;if(bdraw)bdraw.sh=!!e.shiftKey;
   if(!g){renderOverlay();return}
   if(g.t==='move'){const dx=snapv(m[0]-g.m0[0]),dy=snapv(m[1]-g.m0[1]);if(!g.moved&&(dx||dy)){snap();g.moved=true}
     g.items.forEach((it,i)=>moveItem(it,g.orig[i],dx,dy));dirty();renderOverlay()}
@@ -1286,24 +1303,29 @@ const BM={
       if(it.shape==='ring')it.thick=1;
       ui.sel=[it.id];dirty();renderSide()}}
   else if(g.t==='wall'){if(Math.hypot(g.m[0]-g.m0[0],g.m[1]-g.m0[1])>=.5){snap();const it=addItem({t:'wall',x1:g.m0[0],y1:g.m0[1],x2:g.m[0],y2:g.m[1],k:ui.wallK});ui.sel=[it.id];dirty();renderSide()}}
+  if(g.t==='resize'&&libreOk(g.it))renderSide();
   g=null;renderOverlay();renderSideLight()},
  cancel(){g=null;renderOverlay()},
- dbl(e){const F=CF(),m=toM(e);const h=hitAt(m[0],m[1],F);if(h&&h.t==='room'){ui.sel=[h.id];renderSide();const i=$('#side [data-f="name"]');i&&(i.focus(),i.select())}}
+ ctx(e){if(bdrawOk())bRetirer()},
+ dbl(e){if(bdrawOk()){if(bdraw.pts.length>=3)bFinish();else{bdraw=null;renderSide();renderOverlay()}return}const F=CF(),m=toM(e);const h=hitAt(m[0],m[1],F);if(h&&h.t==='room'){ui.sel=[h.id];renderSide();const i=$('#side [data-f="name"]');i&&(i.focus(),i.select())}}
 };
 function moveItem(it,o,dx,dy){
-  if(it.t==='wall'){it.x1=o.x1+dx;it.x2=o.x2+dx;it.y1=o.y1+dy;it.y2=o.y2+dy}else{it.x=fx(o.x+dx);it.y=fx(o.y+dy)}}
+  if(it.t==='wall'){it.x1=o.x1+dx;it.x2=o.x2+dx;it.y1=o.y1+dy;it.y2=o.y2+dy}else{it.x=fx(o.x+dx);it.y=fx(o.y+dy);if(o.pts&&it.t==='room')it.pts=o.pts.map(p=>[fx(p[0]+dx),fx(p[1]+dy)])}}
 function handlesOf(it){
+  if(libreOk(it))return libreHandles(it);
   if(it.t==='room'||it.t==='stair'){const{x,y,w,h}=it;const H={nw:[x,y],n:[x+w/2,y],ne:[x+w,y],e:[x+w,y+h/2],se:[x+w,y+h],s:[x+w/2,y+h],sw:[x,y+h],w:[x,y+h/2]};return H}
   if(it.t==='wall')return{a:[it.x1,it.y1],b:[it.x2,it.y2]};
-  if(it.t==='door'||it.t==='win'){const h=it.w/2;return it.o==='h'?{a:[it.x-h,it.y],b:[it.x+h,it.y]}:{a:[it.x,it.y-h],b:[it.x,it.y+h]}}
+  if(it.t==='door'||it.t==='win'){const h=it.w/2;if(it.o==='a'){const a=rad(it.ang||0),dx=Math.cos(a)*h,dy=Math.sin(a)*h;return{a:[it.x-dx,it.y-dy],b:[it.x+dx,it.y+dy]}}return it.o==='h'?{a:[it.x-h,it.y],b:[it.x+h,it.y]}:{a:[it.x,it.y-h],b:[it.x,it.y+h]}}
   return{}}
 function handleAt(it,m){const H=handlesOf(it),tol=tolM()*1.3;for(const k in H)if(Math.hypot(H[k][0]-m[0],H[k][1]-m[1])<=tol)return k;return null}
 function resizeItem(gs,m){
   const it=gs.it,o=gs.o,h=gs.h,x=snapv(m[0]),y=snapv(m[1]);
-  if(it.t==='room'||it.t==='stair'){let x0=o.x,y0=o.y,x1=o.x+o.w,y1=o.y+o.h;
+  if(libreOk(it))libreVertex(gs,x,y);
+  else if(it.t==='room'||it.t==='stair'){let x0=o.x,y0=o.y,x1=o.x+o.w,y1=o.y+o.h;
     if(h.includes('w'))x0=Math.min(x,x1-.5);if(h.includes('e'))x1=Math.max(x,x0+.5);if(h.includes('n'))y0=Math.min(y,y1-.5);if(h.includes('s'))y1=Math.max(y,y0+.5);
     it.x=fx(x0);it.y=fx(y0);it.w=fx(x1-x0);it.h=fx(y1-y0)}
   else if(it.t==='wall'){if(h==='a'){it.x1=x;it.y1=y}else{it.x2=x;it.y2=y}}
+  else if((it.t==='door'||it.t==='win')&&it.o==='a')libreRedim(it,h,m);
   else if(it.t==='door'||it.t==='win'){const H=it.o==='h';const c=H?it.x:it.y;const p=snapv(H?m[0]:m[1],.25);const a=h==='a'?Math.min(p,c+it.w/2-.25):c-it.w/2,b=h==='b'?Math.max(p,c-it.w/2+.25):c+it.w/2;const nw=b-a;if(H)it.x=fx((a+b)/2);else it.y=fx((a+b)/2);it.w=fx(Math.max(.25,nw))}}
 /* ---- surcouche ---- */
 function renderOverlay(){
@@ -1312,20 +1334,21 @@ function renderOverlay(){
   if(ui.facade){overlay.innerHTML='';return}
   const F=CF();let s='';const k=1/ui.view.k;
   for(const it of selItems()){const b=itemBounds(it);const pad=3*k;
-    if(it.t==='wall')s+=`<line x1="${it.x1*BU}" y1="${it.y1*BU}" x2="${it.x2*BU}" y2="${it.y2*BU}" stroke="var(--accent)" stroke-width="${5*k}" opacity=".45"/>`;
+    if(libreOk(it))s+=libreSel(it,k,selItems().length===1);else if(it.t==='wall')s+=`<line x1="${it.x1*BU}" y1="${it.y1*BU}" x2="${it.x2*BU}" y2="${it.y2*BU}" stroke="var(--accent)" stroke-width="${5*k}" opacity=".45"/>`;
     else if(it.t==='furn'){const d=FD[it.k]||{w:1,h:1};s+=`<rect x="${-d.w*BU/2-pad}" y="${-d.h*BU/2-pad}" width="${d.w*BU+2*pad}" height="${d.h*BU+2*pad}" transform="translate(${it.x*BU} ${it.y*BU}) rotate(${it.r||0})" fill="none" stroke="var(--accent)" stroke-width="${2*k}" stroke-dasharray="${6*k} ${4*k}"/>`}
     else s+=`<rect x="${b[0]*BU-pad}" y="${b[1]*BU-pad}" width="${(b[2]-b[0])*BU+2*pad}" height="${(b[3]-b[1])*BU+2*pad}" fill="none" stroke="var(--accent)" stroke-width="${2*k}" stroke-dasharray="${6*k} ${4*k}"/>`;
-    if(it.t==='room'||it.t==='stair'){const lab=`font-family="${FONT}" font-size="${12*k}" fill="var(--accent)" font-weight="700" stroke="${PAPER}" stroke-width="${3*k}" paint-order="stroke" text-anchor="middle"`;
+    if((it.t==='room'||it.t==='stair')&&!libreOk(it)){const lab=`font-family="${FONT}" font-size="${12*k}" fill="var(--accent)" font-weight="700" stroke="${PAPER}" stroke-width="${3*k}" paint-order="stroke" text-anchor="middle"`;
       s+=`<text x="${(it.x+it.w/2)*BU}" y="${it.y*BU-9*k}" ${lab}>${fx(it.w)} m</text><text transform="translate(${it.x*BU-9*k} ${(it.y+it.h/2)*BU}) rotate(-90)" ${lab}>${fx(it.h)} m</text>`}
     if(it.t==='wall'){const L=Math.hypot(it.x2-it.x1,it.y2-it.y1);s+=`<text x="${(it.x1+it.x2)/2*BU}" y="${(it.y1+it.y2)/2*BU-8*k}" font-family="${FONT}" font-size="${12*k}" fill="var(--accent)" font-weight="700" stroke="${PAPER}" stroke-width="${3*k}" paint-order="stroke" text-anchor="middle">${fx(L)} m</text>`}
-    if(ui.edit&&selItems().length===1){const H=handlesOf(it);for(const q in H)s+=`<rect x="${H[q][0]*BU-4.5*k}" y="${H[q][1]*BU-4.5*k}" width="${9*k}" height="${9*k}" fill="#fff" stroke="var(--accent)" stroke-width="${1.6*k}"/>`}}
+    if(ui.edit&&selItems().length===1){const H=handlesOf(it);for(const q in H)if(libreOk(it)&&q[0]==='m')s+=libreMid(H[q],k);else s+=`<rect x="${H[q][0]*BU-4.5*k}" y="${H[q][1]*BU-4.5*k}" width="${9*k}" height="${9*k}" fill="#fff" stroke="var(--accent)" stroke-width="${1.6*k}"/>`}}
   const m=ui.hover;
-  if(g&&g.t==='draw'){const x=Math.min(g.m0[0],g.m[0]),y=Math.min(g.m0[1],g.m[1]),w=Math.abs(g.m[0]-g.m0[0]),h=Math.abs(g.m[1]-g.m0[1]);
+  if(bdrawOk())s+=libreTrace(bdraw,k);
+  else if(g&&g.t==='draw'){const x=Math.min(g.m0[0],g.m[0]),y=Math.min(g.m0[1],g.m[1]),w=Math.abs(g.m[0]-g.m0[0]),h=Math.abs(g.m[1]-g.m0[1]);
     s+=`<rect x="${x*BU}" y="${y*BU}" width="${w*BU}" height="${h*BU}" fill="var(--accent)" fill-opacity=".12" stroke="var(--accent)" stroke-width="${2*k}"/><text x="${(x+w/2)*BU}" y="${(y+h/2)*BU}" text-anchor="middle" font-size="${13*k}" fill="var(--accent)" font-family="${FONT}">${fx(w)} × ${fx(h)} m</text>`}
   else if(g&&g.t==='wall'){s+=`<line x1="${g.m0[0]*BU}" y1="${g.m0[1]*BU}" x2="${g.m[0]*BU}" y2="${g.m[1]*BU}" stroke="var(--accent)" stroke-width="${3*k}"/><text x="${(g.m0[0]+g.m[0])/2*BU}" y="${((g.m0[1]+g.m[1])/2)*BU-8*k}" text-anchor="middle" font-size="${13*k}" fill="var(--accent)" font-family="${FONT}">${fx(Math.hypot(g.m[0]-g.m0[0],g.m[1]-g.m0[1]))} m</text>`}
   else if(!g&&m){
     if(ui.tool==='door'||ui.tool==='win'){const w=ui.tool==='door'?DW[ui.doorK]:WW[ui.winK];const p=place(m,w,F);const L=w*BU/2;
-      s+=p.o==='h'?`<rect x="${p.x*BU-L}" y="${p.y*BU-5}" width="${2*L}" height="10" fill="var(--accent)" fill-opacity="${p.onWall?.45:.2}"/>`:`<rect x="${p.x*BU-5}" y="${p.y*BU-L}" width="10" height="${2*L}" fill="var(--accent)" fill-opacity="${p.onWall?.45:.2}"/>`}
+      s+=p.o==='a'?`<rect x="${p.x*BU-L}" y="${p.y*BU-5}" width="${2*L}" height="10" transform="rotate(${p.ang} ${p.x*BU} ${p.y*BU})" fill="var(--accent)" fill-opacity=".45"/>`:p.o==='h'?`<rect x="${p.x*BU-L}" y="${p.y*BU-5}" width="${2*L}" height="10" fill="var(--accent)" fill-opacity="${p.onWall?.45:.2}"/>`:`<rect x="${p.x*BU-5}" y="${p.y*BU-L}" width="10" height="${2*L}" fill="var(--accent)" fill-opacity="${p.onWall?.45:.2}"/>`}
     else if(ui.tool==='furn'){const d=FD[ui.furn];s+=`<g opacity=".55" transform="translate(${snapv(m[0],.25)*BU} ${snapv(m[1],.25)*BU}) rotate(${ui.furnRot||0}) translate(${-d.w*BU/2} ${-d.h*BU/2})">${furnSVG(d.k,d.w,d.h)}</g>`}
     else if(ui.tool==='room'||ui.tool==='stair'||ui.tool==='wall'){s+=`<circle cx="${snapv(m[0])*BU}" cy="${snapv(m[1])*BU}" r="${4*k}" fill="var(--accent)"/>`}}
   overlay.innerHTML=s}
@@ -1387,7 +1410,7 @@ function B_side(){
   // liste des pièces
   const rooms=b.floors.flatMap((f,i)=>f.items.filter(x=>x.t==='room'&&x.name&&x.kind!=='cour'&&x.kind!=='couloir').map(x=>({...x,fi:i})));
   h+=`<h3>Pièces (${rooms.length})</h3>`;
-  if(rooms.length){let tot=0;h+=`<ul class="legend">`+rooms.map(r=>{const a=r.shape==='ellipse'?Math.PI*r.w*r.h/4:r.w*r.h;tot+=a;return `<li><span class="pill">${r.fi===0?'RDC':'É'+r.fi}</span><a href="#" data-goto="${r.fi}:${r.id}" style="color:inherit">${esc(r.name)}</a> <span class="hint">${fx(a)} m²</span></li>`}).join('')+`</ul><p class="hint">Surface totale des pièces : ${fx(tot)} m²</p>`}
+  if(rooms.length){let tot=0;h+=`<ul class="legend">`+rooms.map(r=>{const a=roomAire(r);tot+=a;return `<li><span class="pill">${r.fi===0?'RDC':'É'+r.fi}</span><a href="#" data-goto="${r.fi}:${r.id}" style="color:inherit">${esc(r.name)}</a> <span class="hint">${fx(a)} m²</span></li>`}).join('')+`</ul><p class="hint">Surface totale des pièces : ${fx(tot)} m²</p>`}
   else h+=`<p class="hint">Dessine des pièces avec l'outil « Pièce ».</p>`;
   if(b.gen)h+=`<h3>Générateur</h3><div class="row"><button class="btn sm" data-act="regen">Autre variante</button><span class="hint">Remplace le plan actuel</span></div>`;
   h+=`<h3>Notes</h3><textarea data-b="notes" rows="4" placeholder="Histoire, occupants, secrets…">${esc(b.notes)}</textarea>`;
@@ -1397,10 +1420,11 @@ function furnCatalog(){
 function toolPanel(){
   const t=ui.tool;let h='';
   const T={sel:['Sélection','Clique un élément pour le modifier. Double-clic sur une pièce pour la renommer. Glisse dans le vide pour déplacer la vue.'],pan:['Main','Glisse pour déplacer la vue, molette pour zoomer.'],
-   room:['Nouvelle pièce','Glisse un rectangle sur la grille.'],wall:['Nouveau mur','Glisse un trait. Alt = angle libre.'],door:['Nouvelle porte','Clique sur un mur : la porte s\'ouvre du côté du curseur.'],win:['Nouvelle fenêtre','Clique sur un mur extérieur.'],
+   room:['Nouvelle pièce',ui.roomShape==='poly'?'Clique les coins l’un après l’autre. Pour fermer : reclique le premier coin, ou double-clic, ou Entrée. Maj : angles de 45 degrés. Retour arrière : retire le dernier coin.':'Glisse un rectangle sur la grille.'],wall:['Nouveau mur','Glisse un trait. Alt = angle libre.'],door:['Nouvelle porte','Clique sur un mur : la porte s\'ouvre du côté du curseur.'],win:['Nouvelle fenêtre','Clique sur un mur extérieur.'],
    furn:['Mobilier','Choisis un objet puis clique pour le poser. R tourne.'],stair:['Nouvel escalier','Glisse un rectangle. Ensuite règle le sens.'],label:['Texte','Clique pour poser un texte libre.'],erase:['Gomme','Clique un élément pour le supprimer.']}[t];
   h+=`<h3>${T[0]}</h3><p class="hint">${T[1]}</p>`;
-  if(t==='room'){h+=`<div class="row"><label>Type</label><select data-ui="roomK">${opt(RK,ui.roomK)}</select></div><div class="row"><label>Forme</label><select data-ui="roomShape">${opt({rect:'Rectangle',ring:'Anneau (galerie)',ellipse:'Ovale / tour'},ui.roomShape)}</select></div>`}
+  if(t==='room'){h+=`<div class="row"><label>Type</label><select data-ui="roomK">${opt(RK,ui.roomK)}</select></div><div class="row"><label>Forme</label><select data-ui="roomShape">${opt({rect:'Rectangle',ring:'Anneau (galerie)',ellipse:'Ovale / tour',poly:'Forme libre (coin par coin)'},ui.roomShape)}</select></div>`}
+  if(t==='room'&&ui.roomShape==='poly')h+=libreEtat();
   if(t==='door')h+=`<div class="row"><label>Type</label><select data-ui="doorK">${opt(DK,ui.doorK)}</select></div>`;
   if(t==='win')h+=`<div class="row"><label>Type</label><select data-ui="winK">${opt(WK,ui.winK)}</select></div>`;
   if(t==='wall')h+=`<div class="row"><label>Type</label><select data-ui="wallK">${opt({mur:'Mur épais',cloison:'Cloison fine'},ui.wallK)}</select></div>`;
@@ -1410,9 +1434,9 @@ function toolPanel(){
 function itemPanel(it){
   let h='';const del=`<div class="row"><button class="btn sm" data-act="dup">Dupliquer</button><button class="btn sm danger" data-act="del">Supprimer</button></div>`;
   if(it.t==='room'){
-    h+=`<h3>Pièce</h3>`+fld('Nom','name',it.name)+`<div class="row"><label>Type</label><select data-f="kind">${opt(RK,it.kind)}</select></div><div class="row"><label>Forme</label><select data-f="shape">${opt({rect:'Rectangle',ring:'Anneau',ellipse:'Ovale'},it.shape||'rect')}</select></div>`;
+    h+=`<h3>Pièce</h3>`+fld('Nom','name',it.name)+`<div class="row"><label>Type</label><select data-f="kind">${opt(RK,it.kind)}</select></div><div class="row"><label>Forme</label><select data-f="shape">${opt({rect:'Rectangle',ring:'Anneau',ellipse:'Ovale',poly:'Libre'},it.shape||'rect')}</select></div>`;
     h+=`<div class="row"><label>x · y (m)</label><input type="number" data-f="x" step="0.5" value="${it.x}"><input type="number" data-f="y" step="0.5" value="${it.y}"></div><div class="row"><label>Larg. × haut. (m)</label><input type="number" data-f="w" step="0.5" min="0.5" value="${it.w}"><input type="number" data-f="h" step="0.5" min="0.5" value="${it.h}"></div>`;
-    h+=`<p class="hint">Surface : ${fx(it.shape==='ellipse'?Math.PI*it.w*it.h/4:it.w*it.h)} m² · périmètre ${fx(2*(it.w+it.h))} m</p>`;
+    h+=libreOk(it)?libreInfo(it):`<p class="hint">Surface : ${fx(it.shape==='ellipse'?Math.PI*it.w*it.h/4:it.w*it.h)} m² · périmètre ${fx(2*(it.w+it.h))} m</p>`;
     if(it.shape==='ring')h+=fld('Épaisseur (m)','thick',it.thick||1,'number','step="0.25" min="0.5"');
     if(it.kind==='cour')h+=`<div class="row"><label><input type="checkbox" data-f="arc"${it.arc!==false?' checked':''}> Colonnade</label></div>`;
     h+=`<div class="row"><label>Notes</label></div><textarea data-f="note" rows="3" placeholder="Occupants, ambiance, secrets…">${esc(it.note||'')}</textarea><div class="row"><button class="btn sm" data-act="oracle">Contenu aléatoire</button></div>`+del}
@@ -1433,14 +1457,15 @@ side.addEventListener('input',e=>{
 side.addEventListener('change',e=>{const el=e.target;if(el.tagName==='SELECT'||el.type==='checkbox'){if(ui.mode==='b')B_input(el,false);else if(ui.mode==='w')W_input(el,false);else V_input(el,false)}});
 function B_input(el,typing){
   const b=CB();const d=el.dataset;
-  if(d.ui){if(el.type==='checkbox')ui[d.ui]=el.checked;else{const v=el.value;ui[d.ui]=isNaN(+v)||['roomK','roomShape','doorK','winK','wallK','stairDir'].includes(d.ui)?v:+v}renderCanvas();renderOverlay();if(['roomK','roomShape','doorK','winK','wallK','stairDir','furnRot'].includes(d.ui))return;return}
+  if(d.ui){if(el.type==='checkbox')ui[d.ui]=el.checked;else{const v=el.value;ui[d.ui]=isNaN(+v)||['roomK','roomShape','doorK','winK','wallK','stairDir'].includes(d.ui)?v:+v}renderCanvas();renderOverlay();if(d.ui==='roomShape'){bdraw=null;renderSide()}return}
   if(typing&&el.tagName==='SELECT')return;
   if(d.b){once();let v=numOrStr(el);if(d.b==='gw'||d.b==='gh')v=clamp(+v||30,8,120);b[d.b]=v;save();if(d.b==='name'){fillItemSel()}renderCanvas();return}
   if(d.fn){once();CF().name=el.value;save();renderFloorbar();return}
   if(d.fc){once();b.facade[d.fc]=el.type==='checkbox'?el.checked:el.type==='number'?+el.value:el.value;save();renderCanvas();return}
   if(d.f){const sel=selItems();if(sel.length!==1)return;once();const it=sel[0];let v=numOrStr(el);
     if(['x','y','w','h','size','thick'].includes(d.f)){if(isNaN(v))return;if((d.f==='w'||d.f==='h'||d.f==='thick')&&v<=0)return}
-    it[d.f]=v;save();renderCanvas();renderOverlay();
+    if(d.f==='shape')libreVers(it,v);else if(libreOk(it)&&['x','y','w','h'].includes(d.f))libreRegler(it,d.f,v);else it[d.f]=v;
+    save();renderCanvas();renderOverlay();
     if(el.tagName==='SELECT'||el.type==='checkbox'){renderSide()}}
 }
 side.addEventListener('click',e=>{
@@ -1453,6 +1478,7 @@ function B_act(a,btn){
   const b=CB(),F=CF(),sel=selItems();
   if(a==='del'){snap();F.items=F.items.filter(i=>!ui.sel.includes(i.id));ui.sel=[];dirty();renderSide();return}
   if(a==='dup'){dupSel();return}
+  if(a==='bFin'){bFinish();return}if(a==='bBack'){bRetirer();return}if(a==='bAnn'){bdraw=null;renderSide();renderOverlay();return}
   if(a==='rotR'||a==='rotL'){snap();sel.forEach(i=>i.r=((i.r||0)+(a==='rotR'?90:270))%360);dirty();renderOverlay();return}
   if(a==='flip'){snap();sel.forEach(i=>i.fl=-(i.fl||1));dirty();return}
   if(a==='hinge'){snap();sel.forEach(i=>i.hg=-(i.hg||1));dirty();return}
@@ -1464,16 +1490,17 @@ function B_act(a,btn){
 }
 function armed(btn,txt){ // confirmation en deux temps, sans dialogue natif
   if(btn.classList.contains('armed'))return true;const o=btn.textContent;btn.classList.add('armed');btn.textContent=txt;setTimeout(()=>{btn.classList.remove('armed');btn.textContent=o},2500);return false}
-function dupSel(){const F=CF(),sel=selItems();if(!sel.length)return;snap();const out=[];for(const it of sel){const c=JSON.parse(JSON.stringify(it));c.id=uid();if(c.t==='wall'){c.x1+=1;c.x2+=1;c.y1+=1;c.y2+=1}else{c.x+=1;c.y+=1}F.items.push(c);out.push(c.id)}ui.sel=out;dirty();renderSide();renderOverlay()}
+function dupSel(){const F=CF(),sel=selItems();if(!sel.length)return;snap();const out=[];for(const it of sel){const c=JSON.parse(JSON.stringify(it));c.id=uid();if(c.t==='wall'){c.x1+=1;c.x2+=1;c.y1+=1;c.y2+=1}else{c.x+=1;c.y+=1;if(c.pts)c.pts=c.pts.map(p=>[p[0]+1,p[1]+1])}F.items.push(c);out.push(c.id)}ui.sel=out;dirty();renderSide();renderOverlay()}
 function B_key(e){
   const F=CF(),sel=selItems();const k=e.key;
+  if(bdrawOk()){if(k==='Enter'){bFinish();return true}if(k==='Backspace'||k==='Delete'){bRetirer();return true}}
   if(k==='Delete'||k==='Backspace'){if(sel.length){snap();F.items=F.items.filter(i=>!ui.sel.includes(i.id));ui.sel=[];dirty();renderSide();renderOverlay();return true}}
   if((k==='d'||k==='D')&&(e.ctrlKey||e.metaKey)){dupSel();return true}
   if((k==='c'||k==='C')&&(e.ctrlKey||e.metaKey)){clip=sel.map(i=>JSON.parse(JSON.stringify(i)));toast(clip.length+' élément(s) copié(s)');return true}
-  if((k==='v'||k==='V')&&(e.ctrlKey||e.metaKey)){if(clip.length){snap();const out=[];for(const c0 of clip){const c=JSON.parse(JSON.stringify(c0));c.id=uid();if(c.t==='wall'){c.x1+=1;c.x2+=1;c.y1+=1;c.y2+=1}else{c.x+=1;c.y+=1}F.items.push(c);out.push(c.id)}ui.sel=out;dirty();renderSide();renderOverlay()}return true}
+  if((k==='v'||k==='V')&&(e.ctrlKey||e.metaKey)){if(clip.length){snap();const out=[];for(const c0 of clip){const c=JSON.parse(JSON.stringify(c0));c.id=uid();if(c.t==='wall'){c.x1+=1;c.x2+=1;c.y1+=1;c.y2+=1}else{c.x+=1;c.y+=1;if(c.pts)c.pts=c.pts.map(p=>[p[0]+1,p[1]+1])}F.items.push(c);out.push(c.id)}ui.sel=out;dirty();renderSide();renderOverlay()}return true}
   if((k==='a'||k==='A')&&(e.ctrlKey||e.metaKey)){ui.sel=F.items.map(i=>i.id);renderSide();renderOverlay();return true}
   if(k==='r'||k==='R'){if(sel.length){snap();sel.forEach(i=>{if(i.t==='furn')i.r=((i.r||0)+90)%360;else if(i.t==='stair'){const o=['n','e','s','w'];i.dir=o[(o.indexOf(i.dir)+1)%4]||'n'}else if(i.t==='door'||i.t==='win'){}});dirty();renderOverlay();renderSide()}else if(ui.tool==='furn'){ui.furnRot=((ui.furnRot||0)+90)%360;renderOverlay();renderSide()}return true}
-  if(k.startsWith('Arrow')&&sel.length){e.preventDefault();const st=e.shiftKey?1:ui.snap;const dx=k==='ArrowLeft'?-st:k==='ArrowRight'?st:0,dy=k==='ArrowUp'?-st:k==='ArrowDown'?st:0;snap();sel.forEach(i=>{if(i.t==='wall'){i.x1+=dx;i.x2+=dx;i.y1+=dy;i.y2+=dy}else{i.x=fx(i.x+dx);i.y=fx(i.y+dy)}});dirty();renderOverlay();return true}
+  if(k.startsWith('Arrow')&&sel.length){e.preventDefault();const st=e.shiftKey?1:ui.snap;const dx=k==='ArrowLeft'?-st:k==='ArrowRight'?st:0,dy=k==='ArrowUp'?-st:k==='ArrowDown'?st:0;snap();sel.forEach(i=>{if(i.t==='wall'){i.x1+=dx;i.x2+=dx;i.y1+=dy;i.y2+=dy}else{i.x=fx(i.x+dx);i.y=fx(i.y+dy);if(i.pts)i.pts=i.pts.map(p=>[fx(p[0]+dx),fx(p[1]+dy)])}});dirty();renderOverlay();return true}
   return false}
 /* ====== bâtiments : générateurs ====== */
 const GT={havre:'Havre des Marchefleurs (cour carrée, 3 étages)',manoir:'Manoir / grande demeure',auberge:'Auberge',maison:'Maison',boutique:'Boutique avec logis',forge:'Forge',entrepot:'Entrepôt / grange',chapelle:'Chapelle',tour:'Tour (de mage, de guet)',vide:'Page blanche'};
@@ -1717,13 +1744,14 @@ function realBody(b,th){
   const l=linkedB(b),fp=bldFootprint(l),ox=(fp.x0+fp.x1)/2,oy=(fp.y0+fp.y1)/2,d=VKD[b.k]||VKD.maison;
   const col=roofColor(th,b.roof||d.roof,b.id),P_=v=>fx(v*VU);
   const shp=(r,extra)=>{const x=P_(r.x-ox),y=P_(r.y-oy),w=P_(r.w),h=P_(r.h);
+    if(libreOk(r))return `<polygon points="${r.pts.map(p=>P_(p[0]-ox)+','+P_(p[1]-oy)).join(' ')}" ${extra}/>`;
     if(r.shape==='ring'){const t=(r.thick||1)*VU;return `<path d="M${x} ${y}h${w}v${h}h${-w}ZM${fx(+x+t)} ${fx(+y+t)}v${fx(h-2*t)}h${fx(w-2*t)}v${fx(-(h-2*t))}Z" fill-rule="evenodd" ${extra}/>`}
     if(r.shape==='ellipse')return `<ellipse cx="${fx(+x+w/2)}" cy="${fx(+y+h/2)}" rx="${fx(w/2)}" ry="${fx(h/2)}" ${extra}/>`;
     return `<rect x="${x}" y="${y}" width="${w}" height="${h}" ${extra}/>`};
   let s=`<g transform="translate(2.2 2.6)">`+fp.roofs.map(r=>shp(r,'fill="rgba(40,30,10,.22)"')).join('')+`</g>`;
   s+=fp.roofs.map(r=>shp(r,`fill="${INK}" stroke="${INK}" stroke-width="2.6" stroke-linejoin="round"`)).join('');
   s+=fp.roofs.map(r=>shp(r,`fill="${col}"`)).join('');
-  s+=fp.roofs.filter(r=>r.shape!=='ring'&&r.shape!=='ellipse').map(r=>{const x=P_(r.x-ox),y=P_(r.y-oy),w=r.w*VU,h=r.h*VU;const lg=r.w>=r.h;return `<path d="${lg?`M${x} ${fx(+y+h/2)}h${fx(w)}`:`M${fx(+x+w/2)} ${y}v${fx(h)}`}" stroke="${shade(col,.62)}" stroke-width="1" fill="none"/><rect x="${x}" y="${y}" width="${fx(w)}" height="${fx(h)}" fill="rgba(0,0,0,.07)" clip-path="none" opacity=".0"/>`}).join('');
+  s+=fp.roofs.filter(r=>r.shape!=='ring'&&r.shape!=='ellipse'&&r.shape!=='poly').map(r=>{const x=P_(r.x-ox),y=P_(r.y-oy),w=r.w*VU,h=r.h*VU;const lg=r.w>=r.h;return `<path d="${lg?`M${x} ${fx(+y+h/2)}h${fx(w)}`:`M${fx(+x+w/2)} ${y}v${fx(h)}`}" stroke="${shade(col,.62)}" stroke-width="1" fill="none"/><rect x="${x}" y="${y}" width="${fx(w)}" height="${fx(h)}" fill="rgba(0,0,0,.07)" clip-path="none" opacity=".0"/>`}).join('');
   s+=fp.courts.map(r=>shp(r,`fill="${th.jardin}" stroke="${INK}" stroke-width="1.4"`)).join('');
   if(fp.door!=null)s+=`<rect x="${fx(fp.door*VU-3)}" y="${fx(fp.h/2*VU-2)}" width="6" height="4.5" fill="#5a4128" stroke="${INK}" stroke-width=".8"/>`;
   return s}
@@ -2542,10 +2570,10 @@ function W_side(){
   h+=`<div class="row"><label>Graine</label><input type="number" data-wgen="seed" value="${G.seed}"><button class="btn sm" data-act="dice" title="Nouvelle graine">Au hasard</button></div>`;
   h+=`<div class="row"><button class="btn primary" data-act="genW">Générer la carte</button><button class="btn sm" data-act="popW" title="Ajoute des hameaux et villages">Peupler</button><button class="btn sm" data-act="nameW">Nom au hasard</button></div><p class="hint">La génération remplace le contenu de cette carte (annulable).</p></details>`;
   h+=`<h3>Mes villages (${P.villages.length})</h3><p class="hint">Glisse un village sur la carte, ou clique-le puis clique la carte. Sa situation (royaume, distance) est alors notée dans le village.</p><div style="display:flex;flex-direction:column;gap:4px">`+P.villages.map(v=>{const here=w.items.some(i=>i.t==='city'&&i.link===v.id);return `<div class="btn sm" draggable="true" data-wvil="${v.id}" style="text-align:left;cursor:grab;white-space:normal" title="Glisser sur la carte">⠿ ${esc(v.name)} <span class="hint">${here?'✓ placé ici':v.where?'placé ailleurs':'non placé'}</span></div>`}).join('')+`</div>`;
-  const cs=w.items.filter(i=>i.t==='city').sort((a,b)=>a.name.localeCompare(b.name,'fr'));
-  h+=`<h3>Lieux (${cs.length})</h3>`+(cs.length?`<ul class="legend">`+cs.slice(0,60).map(c=>`<li><span class="pill" title="${esc(CK[c.k]||'')}">${esc((CK[c.k]||'').slice(0,4))}</span><a href="#" data-wsel="${c.id}" style="color:inherit">${esc(c.name)}</a>${c.link&&P.villages.find(v=>v.id===c.link)?' <span class="hint">▸</span>':''}</li>`).join('')+`</ul>`:`<p class="hint">Aucun lieu. L'outil « Lieu » en pose.</p>`);
+  const cs=wLieuxTries(w);
+  h+=`<h3>Lieux (${cs.length})</h3>`+(cs.length?`<ul class="legend">`+cs.map(c=>wLigneLieu(c,false)).join('')+`</ul>`:`<p class="hint">Aucun lieu. L'outil « Lieu » en pose.</p>`);
   const rl=w.items.filter(i=>i.t==='realm');
-  if(rl.length)h+=`<h3>Royaumes (${rl.length})</h3><ul class="legend">`+rl.map(r=>`<li><b style="background:${esc(r.color||'#c4784f')}">&nbsp;</b><a href="#" data-wsel="${r.id}" style="color:inherit">${esc(r.name||'(sans nom)')}</a></li>`).join('')+`</ul>`;
+  if(rl.length)h+=`<h3>Royaumes (${rl.length})</h3><ul class="legend">`+rl.map(r=>wLigneRoyaume(r,false)).join('')+`</ul>`;
   h+=`<h3>Notes</h3><textarea data-w="notes" rows="4" placeholder="Histoire, peuples, légendes…">${esc(w.notes||'')}</textarea>`;
   return h}
 function wToolPanel(){
@@ -2611,7 +2639,8 @@ function W_act(a,btn){
     if(it.t==='realm'){let c=P.worlds.find(q=>q.id===it.link);if(!c){snap();c=zoomInto(w,boxForRealm(it),it.name||'Royaume');it.link=c.id}goWorld(c.id)}}}
 side.addEventListener('click',e=>{
   if(ui.mode!=='w')return;
-  const a=e.target.closest('[data-wsel]');if(a){e.preventDefault();ui.sel=[a.dataset.wsel];renderSide();renderOverlay();return}
+  const a=e.target.closest('[data-wsel]');if(a){e.preventDefault();wChoisirListe(a);if(e.detail>=2)wDoubleClic(a);return}
+  const go=e.target.closest('[data-wgo]');if(go){e.preventDefault();wAller(go.dataset.wgo);return}
   const o=e.target.closest('[data-wopen]');if(o){goWorld(o.dataset.wopen);return}
   const vl=e.target.closest('[data-wvil]');if(vl){ui.wk.vil=vl.dataset.wvil;ui.tool='city';renderTools();renderSide();toast('Clique la carte pour placer « '+P.villages.find(v=>v.id===ui.wk.vil).name+' »');return}
   const m=e.target.closest('[data-wbm]');if(m){ui.wb.mode=m.dataset.wbm;renderSide();return}
@@ -2847,7 +2876,7 @@ function fixOverlaps(w,winnerId,quiet){
 /* ====== interface générale ====== */
 const MODE=()=>ui.edit?(ui.mode==='b'?BM:ui.mode==='w'?WM:VM):RO[ui.mode];
 function renderCanvas(){ui.mode==='b'?B_render():ui.mode==='w'?W_render():V_render()}
-function renderSide(){side.innerHTML=ui.edit?(ui.mode==='b'?B_side():ui.mode==='w'?W_side():V_side()):roPanneau()}
+function renderSide(){panneauEcrire(ui.edit?(ui.mode==='b'?B_side():ui.mode==='w'?W_side():V_side()):roPanneau())}
 function renderSideLight(){
   const sel=ui.mode==='b'?selItems():ui.mode==='w'?wsel():vsel();if(sel.length!==1)return;
   $$('#side [data-f]').forEach(el=>{if(document.activeElement===el||el.type==='checkbox')return;const v=sel[0][el.dataset.f];if(v!=null&&el.tagName!=='SELECT')el.value=v});
@@ -2891,7 +2920,7 @@ async function exportPng(o,name){try{const sc=Math.min(2,7000/Math.max(o.w,o.h))
 function mdBuilding(b){
   let s=`# ${b.name}\n\n`;if(b.notes)s+=b.notes+'\n\n';
   b.floors.forEach(F=>{s+=`## ${F.name}\n\n`;const rs=F.items.filter(i=>i.t==='room'&&i.name&&i.kind!=='cour');
-    rs.forEach(r=>{const a=r.shape==='ellipse'?Math.PI*r.w*r.h/4:r.w*r.h;s+=`- **${r.name}** : ${fx(r.w)} × ${fx(r.h)} m (${fx(a)} m²)${r.note?'\n  '+r.note.replace(/\n+/g,'\n  '):''}\n`});
+    rs.forEach(r=>{const a=roomAire(r);s+=`- **${r.name}** : ${fx(r.w)} × ${fx(r.h)} m (${fx(a)} m²)${r.note?'\n  '+r.note.replace(/\n+/g,'\n  '):''}\n`});
     const fu=F.items.filter(i=>i.t==='furn').length,dr=F.items.filter(i=>i.t==='door').length,wn=F.items.filter(i=>i.t==='win').length;s+=`\n_${rs.length} pièces, ${dr} portes, ${wn} fenêtres, ${fu} meubles._\n\n`});
   return s}
 function mdVillage(v){
@@ -2934,13 +2963,15 @@ $('#bHelp').onclick=()=>modal(`<h2>Registre des Plans</h2>
 <p>Trois établis : <b>Bâtiments</b> (plans par étage, façade), <b>Villages</b> (cartes générées ou dessinées à la main) et <b>Mondes</b> (planisphère, continent, pays, région). Un lieu de la carte du monde ouvre son village, et les bâtisses d’un village ouvrent leurs plans.</p>
 <p class="tag">Consulter ou modifier</p><p>En <b>Consulter</b>, rien ne bouge par erreur : clique un élément pour lire sa fiche, zoome, et entre d’une carte dans un village puis dans un bâtiment (double-clic, ou bouton « Entrer »). Passe en <b>Modifier</b> quand tu veux dessiner.</p>
 <p class="tag">Garder</p><p>Chaque plan est gardé dans ce navigateur dès que tu le touches. Une fois ton dépôt GitHub relié (section « Sauvegarder ou partager », en bas de la page), il l’est aussi dans <b>plans.json</b> et il passe chez Océane : celui qui a retouché un plan en dernier l’emporte, plan par plan.</p>
-<p class="tag">Exporter, importer</p><p>« Exporter », en haut, donne pour le plan affiché un fichier .json : ce plan seul, ce plan avec les plans qui en dépendent (une carte du monde mène à ses villages, un village à ses bâtiments), ou tous les plans du même genre. En bas de la page, « Un genre à la fois » exporte ou reprend les bâtiments, les villages ou les cartes du monde sans toucher aux autres. Une fenêtre dit ce qui entre avant de valider, et le fichier prend la place d’un plan qui existe déjà ici.</p>
+<p class="tag">Exporter, importer</p><p>« Exporter », en haut, donne pour le plan affiché un fichier .json : ce plan seul, ce plan avec les plans qui en dépendent (une carte du monde mène à ses villages, un village à ses bâtiments), tous les plans du même genre, ou tous les plans d’un coup. « Importer », juste à côté, reprend un fichier .json : tout ce qu’il porte, ou seulement ses bâtiments, ses villages ou ses cartes du monde, sans toucher aux autres. Une fenêtre dit ce qui entre avant de valider, et le fichier prend la place d’un plan qui existe déjà ici.</p>
+<p class="tag">Plein écran</p><p>Le bouton à droite d’« Exporter » (ou <kbd>Maj</kbd>+<kbd>F</kbd>) donne toute la fenêtre à l’établi. <kbd>Échap</kbd> en sort.</p>
 <p class="tag">Dimensions</p><p>Tout est en mètres. Dans un bâtiment, la grille fait 1 m par carreau (traits forts tous les 5 m) et l’aimant se règle à 25 cm, 50 cm ou 1 m. La pièce choisie affiche ses cotes sur le plan et ses valeurs exactes (largeur, hauteur, surface, périmètre) dans le panneau de droite, où tu peux les saisir au centimètre. La case « Dimensions » écrit la taille de chaque pièce sur le plan et dans l’export. Dans un village, tailles et distances sont aussi en mètres, avec une échelle graphique sur l’export.</p>
-<p class="tag">Mondes</p><p>Chaque carte du monde couvre une zone en kilomètres. L’outil <b>Zoom</b> trace un rectangle et crée une carte plus précise (relief affiné, lieux, rivières, routes et royaumes repris). Un <b>lieu</b> (ville, village, hameau) ouvre sa carte de village, dont les bâtisses mènent à leurs plans : monde, continent, pays, région, village, bâtiment. L’outil <b>Relief</b> se peint comme un pinceau (monter, creuser, terre, mer, humide, sec). Le générateur crée continent, archipel, îles ou pangée avec rivières, lieux, routes et royaumes.</p>
+<p class="tag">Mondes</p><p>Chaque carte du monde couvre une zone en kilomètres. L’outil <b>Zoom</b> trace un rectangle et crée une carte plus précise (relief affiné, lieux, rivières, routes et royaumes repris). Un <b>lieu</b> (ville, village, hameau) ouvre sa carte de village, dont les bâtisses mènent à leurs plans : monde, continent, pays, région, village, bâtiment. Dans la liste des lieux, à droite du panneau, un clic sur le nom le montre sur la carte, « Ouvrir ▸ » (ou un double-clic sur le nom) ouvre son village. L’outil <b>Relief</b> se peint comme un pinceau (monter, creuser, terre, mer, humide, sec). Le générateur crée continent, archipel, îles ou pangée avec rivières, lieux, routes et royaumes.</p>
 <p class="tag">Raccourcis, partout</p>
-<table><tr><td>Molette, ou deux doigts</td><td>Zoomer</td></tr><tr><td>Glisser dans le vide</td><td>Déplacer la vue</td></tr><tr><td><kbd>F</kbd></td><td>Tout voir</td></tr><tr><td><kbd>+</kbd> <kbd>-</kbd></td><td>Zoomer, dézoomer (le plan a le focus)</td></tr><tr><td>Flèches</td><td>Déplacer la vue, en mode Consulter</td></tr><tr><td><kbd>Échap</kbd></td><td>Désélectionner</td></tr></table>
+<table><tr><td>Molette, ou deux doigts</td><td>Zoomer</td></tr><tr><td>Glisser dans le vide</td><td>Déplacer la vue</td></tr><tr><td><kbd>F</kbd></td><td>Tout voir</td></tr><tr><td><kbd>Maj</kbd>+<kbd>F</kbd></td><td>Plein écran</td></tr><tr><td><kbd>+</kbd> <kbd>-</kbd></td><td>Zoomer, dézoomer (le plan a le focus)</td></tr><tr><td>Flèches</td><td>Déplacer la vue, en mode Consulter</td></tr><tr><td><kbd>Échap</kbd></td><td>Désélectionner</td></tr></table>
 <p class="tag" style="margin-top:10px">Raccourcis, en mode Modifier</p>
-<table><tr><td><kbd>1</kbd> à <kbd>0</kbd></td><td>Changer d’outil</td></tr><tr><td><kbd>Espace</kbd> + glisser</td><td>Déplacer la vue</td></tr><tr><td><kbd>Suppr</kbd></td><td>Supprimer la sélection</td></tr><tr><td><kbd>R</kbd></td><td>Pivoter (meuble, escalier, bâtisse ; <kbd>Maj</kbd>+<kbd>R</kbd> dans l’autre sens)</td></tr><tr><td><kbd>Ctrl</kbd>+<kbd>Z</kbd> / <kbd>Y</kbd></td><td>Annuler / rétablir</td></tr><tr><td><kbd>Ctrl</kbd>+<kbd>D</kbd>, <kbd>C</kbd>, <kbd>V</kbd></td><td>Dupliquer, copier, coller</td></tr><tr><td>Flèches</td><td>Déplacer la sélection (<kbd>Maj</kbd> : grand pas)</td></tr><tr><td><kbd>Entrée</kbd> / double-clic</td><td>Terminer une route, rivière, zone</td></tr></table>
+<table><tr><td><kbd>1</kbd> à <kbd>0</kbd></td><td>Changer d’outil</td></tr><tr><td><kbd>Espace</kbd> + glisser</td><td>Déplacer la vue</td></tr><tr><td><kbd>Suppr</kbd></td><td>Supprimer la sélection</td></tr><tr><td><kbd>R</kbd></td><td>Pivoter (meuble, escalier, bâtisse ; <kbd>Maj</kbd>+<kbd>R</kbd> dans l’autre sens)</td></tr><tr><td><kbd>Ctrl</kbd>+<kbd>Z</kbd> / <kbd>Y</kbd></td><td>Annuler / rétablir</td></tr><tr><td><kbd>Ctrl</kbd>+<kbd>D</kbd>, <kbd>C</kbd>, <kbd>V</kbd></td><td>Dupliquer, copier, coller</td></tr><tr><td>Flèches</td><td>Déplacer la sélection (<kbd>Maj</kbd> : grand pas)</td></tr><tr><td><kbd>Entrée</kbd> / double-clic</td><td>Terminer une route, rivière, zone, pièce libre</td></tr><tr><td><kbd>Retour arrière</kbd></td><td>Retirer le dernier point d’un tracé en cours</td></tr></table>
+<p class="tag" style="margin-top:10px">Pièces en forme libre</p><p>Avec l’outil « Pièce », choisis la forme « Forme libre », puis clique les coins l’un après l’autre ; ferme en recliquant le premier coin, ou par double-clic ou <kbd>Entrée</kbd>. <kbd>Maj</kbd> tient les angles à 45 degrés. Une pièce déjà posée devient libre depuis son panneau (« Forme »). Une pièce libre choisie montre un carré à chaque coin, qu’on glisse, et un petit rond au milieu de chaque côté, qui ajoute un coin ; <kbd>Alt</kbd>+clic sur un coin le retire. Les portes et fenêtres se posent aussi sur ses côtés obliques.</p>
 <p class="tag" style="margin-top:10px">Astuces</p><p>Déplacer une pièce emporte ses portes et fenêtres (Alt pour les laisser). La porte s’ouvre du côté où se trouve le curseur. Dans un village, un bâtiment peut être lié à un plan : « Créer un plan de ce bâtiment » en génère un adapté.</p>
 <div class="row"><button type="button" class="btn primary" onclick="closeModal()">Fermer</button></div>`);
 const _av=applyView;applyView=function(){_av();const isW=ui.mode==='w',m=ui.view.k*U()/(isW?CW().kmu:1);const L=[.5,1,2,5,10,20,50,100,200,500,1000,2000,5000,10000,20000];let best=L[L.length-1];for(const l of L)if(l*m>=60&&(isW||l>=1)){best=l;break}$('#sbar').style.width=(best*m)+'px';$('#sLbl').textContent=best.toLocaleString('fr-BE')+(isW?' km':' m');if(typeof updEnter==='function')updEnter()};
@@ -2970,8 +3001,8 @@ function roEnter(){
 /* ---- bâtiments ---- */
 function roItemB(it){
   const F=CF();
-  if(it.t==='room'){const a=it.shape==='ellipse'?Math.PI*it.w*it.h/4:it.w*it.h;
-    return `<h3>${esc(it.name||'Pièce sans nom')}</h3><p class="tag">${esc((RK[it.kind]||RK.piece).n)}</p>`+dl([['Dimensions',fx(it.w)+' × '+fx(it.h)+' m'],['Surface',fx(a)+' m²'],['Étage',F.name]])+texte(it.note)}
+  if(it.t==='room'){const a=roomAire(it);
+    return `<h3>${esc(it.name||'Pièce sans nom')}</h3><p class="tag">${esc((RK[it.kind]||RK.piece).n)}</p>`+dl([[libreOk(it)?'Emprise':'Dimensions',fx(it.w)+' × '+fx(it.h)+' m'],['Surface',fx(a)+' m²'],['Étage',F.name]])+texte(it.note)}
   if(it.t==='door')return `<h3>Porte</h3>`+dl([['Type',DK[it.k]||DK.porte],['Largeur',fx(it.w)+' m']]);
   if(it.t==='win')return `<h3>Fenêtre</h3>`+dl([['Type',WK[it.k]||WK.fenetre],['Largeur',fx(it.w)+' m']]);
   if(it.t==='furn'){const d=FD[it.k]||{n:'Objet',w:1,h:1};return `<h3>${esc(d.n)}</h3>`+dl([['Taille',d.w+' × '+d.h+' m']])}
@@ -2995,7 +3026,7 @@ function B_consult(){
   h+=`<div class="row"><label><input type="checkbox" data-ui="grid"${ui.grid?' checked':''}> Grille</label><label><input type="checkbox" data-ui="ghost"${ui.ghost?' checked':''}> Étage du dessous</label><label><input type="checkbox" data-ui="dims"${ui.dims?' checked':''}> Dimensions</label></div>`;
   const rooms=b.floors.flatMap((f,i)=>f.items.filter(x=>x.t==='room'&&x.name&&x.kind!=='cour'&&x.kind!=='couloir').map(x=>({...x,fi:i})));
   h+=`<h3>Pièces (${rooms.length})</h3>`;
-  if(rooms.length){let tot=0;h+=`<ul class="legend">`+rooms.map(r=>{const a=r.shape==='ellipse'?Math.PI*r.w*r.h/4:r.w*r.h;tot+=a;return `<li><span class="pill">${r.fi===0?'RDC':'É'+r.fi}</span><a href="#" data-goto="${r.fi}:${r.id}">${esc(r.name)}</a> <span class="hint">${fx(a)} m²</span></li>`}).join('')+`</ul><p class="hint">Surface totale des pièces : ${fx(tot)} m²</p>`}
+  if(rooms.length){let tot=0;h+=`<ul class="legend">`+rooms.map(r=>{const a=roomAire(r);tot+=a;return `<li><span class="pill">${r.fi===0?'RDC':'É'+r.fi}</span><a href="#" data-goto="${r.fi}:${r.id}">${esc(r.name)}</a> <span class="hint">${fx(a)} m²</span></li>`}).join('')+`</ul><p class="hint">Surface totale des pièces : ${fx(tot)} m²</p>`}
   else h+=`<p class="hint">Ce plan n’a encore aucune pièce nommée.</p>`;
   h+=roDansVillage(b);
   if(b.notes&&b.notes.trim())h+=`<h3>Notes</h3>`+texte(b.notes);
@@ -3049,10 +3080,10 @@ function W_consult(){
   if(par||kids.length){h+=`<h3>Hiérarchie</h3>`;
     if(par)h+=`<div class="row"><button type="button" class="btn sm" data-wopen="${par.id}">↑ ${esc(par.name)}</button><span class="hint">${scaleName(par.kmu)}</span></div>`;
     if(kids.length)h+=`<p class="tag" style="margin:6px 0 4px">Cartes détaillées</p><div style="display:flex;flex-direction:column;gap:4px">`+kids.map(c=>`<button type="button" class="btn sm" style="text-align:left" data-wopen="${c.id}">▾ ${esc(c.name)} <span class="hint">${scaleName(c.kmu)}</span></button>`).join('')+`</div>`}
-  const cs=w.items.filter(i=>i.t==='city').sort((a,b)=>String(a.name||'').localeCompare(String(b.name||''),'fr'));
-  if(cs.length)h+=`<h3>Lieux (${cs.length})</h3><ul class="legend">`+cs.slice(0,80).map(c=>`<li><span class="pill" title="${esc(CK[c.k]||'')}">${esc((CK[c.k]||'').slice(0,4))}</span><a href="#" data-wsel="${c.id}">${esc(c.name||'(sans nom)')}</a>${c.link&&P.villages.find(v=>v.id===c.link&&!VIRT.has(v.id))?' <span class="hint">▸</span>':''}</li>`).join('')+`</ul>`;
+  const cs=wLieuxTries(w);
+  if(cs.length)h+=`<h3>Lieux (${cs.length})</h3><ul class="legend">`+cs.map(c=>wLigneLieu(c,true)).join('')+`</ul>`;
   const rl=w.items.filter(i=>i.t==='realm');
-  if(rl.length)h+=`<h3>Royaumes (${rl.length})</h3><ul class="legend">`+rl.map(r=>`<li><b style="background:${esc(/^#[0-9a-f]{6}$/i.test(r.color||'')?r.color:'#c4784f')}">&nbsp;</b><a href="#" data-wsel="${r.id}">${esc(r.name||'(sans nom)')}</a></li>`).join('')+`</ul>`;
+  if(rl.length)h+=`<h3>Royaumes (${rl.length})</h3><ul class="legend">`+rl.map(r=>wLigneRoyaume(r,true)).join('')+`</ul>`;
   if(w.notes&&w.notes.trim())h+=`<h3>Notes</h3>`+texte(w.notes);
   return h}
 /* le panneau de droite en lecture : la fiche du plan, ou rien quand le plan n'existe pas encore */
@@ -3086,7 +3117,7 @@ function setEdition(on){
   on=!!on;
   if(!on){
     plansVider();                       /* ce qui attendait d'être gardé l'est avant de passer en lecture */
-    g=null;vg=null;wg=null;vdraw=null;wdraw=null;ui.tool='sel';ui.wPreview=false;if(ui.wk)ui.wk.vil=null;
+    g=null;vg=null;wg=null;vdraw=null;wdraw=null;bdraw=null;ui.tool='sel';ui.wPreview=false;if(ui.wk)ui.wk.vil=null;
     cv.style.cursor='default';
   }
   ui.edit=on;
@@ -3106,9 +3137,327 @@ function majVide(){
   el.hidden=!vide;
   if(!vide)return;
   $('#videT').textContent=ui.mode==='b'?'Aucun bâtiment pour l’instant':ui.mode==='v'?'Aucun village pour l’instant':'Aucune carte du monde pour l’instant';
-  $('#videP').textContent=ui.mode==='b'?'Les bâtiments se dessinent en mode Modifier. Si tu avais des plans dans l’ancien Atelier, importe son fichier .json (section « Sauvegarder ou partager », plus bas).'
+  $('#videP').textContent=ui.mode==='b'?'Les bâtiments se dessinent en mode Modifier. Si tu avais des plans dans l’ancien Atelier, importe son fichier .json avec « Importer », en haut.'
     :ui.mode==='v'?'Les villages se génèrent ou se dessinent en mode Modifier. Un lieu de la carte du monde peut aussi en créer un.'
-    :'Les cartes du monde se génèrent ou se peignent en mode Modifier. Si tu avais des plans dans l’ancien Atelier, importe son fichier .json (section « Sauvegarder ou partager », plus bas).'}
+    :'Les cartes du monde se génèrent ou se peignent en mode Modifier. Si tu avais des plans dans l’ancien Atelier, importe son fichier .json avec « Importer », en haut.'}
+/* ====== le panneau de droite, les lieux, l'import et le plein écran ====== */
+
+/* ---- les tiroirs (<details>) restent comme tu les as laissés ----
+   Le panneau se réécrit à chaque clic sur le plan : sans mémoire, tout tiroir se refermait. L'état se garde par genre de plan
+   et par titre, dans ce navigateur. */
+const TIROIRS=Object.create(null);
+try{
+  const o=JSON.parse(localStorage.getItem('faelorenn.plans.tiroirs')||'null');
+  if(o&&typeof o==='object'&&!Array.isArray(o))for(const k of Object.keys(o))if(typeof o[k]==='boolean'&&/^[bvw]:.{1,80}$/.test(k))TIROIRS[k]=o[k]
+}catch(e){}
+let tiroirsT=0;
+const tiroirCle=d=>{const s=d.querySelector(':scope>summary');return ui.mode+':'+(s?s.textContent.trim():'')};
+function tiroirsGarder(){clearTimeout(tiroirsT);tiroirsT=setTimeout(()=>{try{localStorage.setItem('faelorenn.plans.tiroirs',JSON.stringify(TIROIRS))}catch(e){}},250)}
+/* « toggle » ne remonte pas : on l'écoute en capture. Il porte toujours l'état du moment, donc le répéter ne gêne pas. */
+side.addEventListener('toggle',e=>{
+  const d=e.target;
+  if(!d||d.tagName!=='DETAILS'||!side.contains(d))return;
+  const k=tiroirCle(d);
+  if(TIROIRS[k]===d.open)return;
+  TIROIRS[k]=d.open;tiroirsGarder()},true);
+/* écrire le panneau : les tiroirs retrouvent leur état et le défilement ne bouge pas */
+function panneauEcrire(html){
+  const y=side.scrollTop;
+  side.innerHTML=html;
+  side.querySelectorAll('details').forEach(d=>{const k=tiroirCle(d);if(k in TIROIRS)d.open=TIROIRS[k]});
+  side.scrollTop=y}
+
+/* ---- les lieux de la carte du monde : se choisir, se montrer, s'ouvrir ---- */
+const wNom=c=>c.name||'('+((CK[c.k]||'lieu').toLowerCase())+' sans nom)';
+/* les lieux nommés d'abord, dans l'ordre alphabétique ; ceux qui n'ont pas de nom ensuite, par genre puis par position */
+function wLieuxTries(w){
+  return w.items.filter(i=>i.t==='city').sort((a,b)=>{
+    const na=a.name?0:1,nb=b.name?0:1;
+    if(na!==nb)return na-nb;
+    if(na===0)return String(a.name).localeCompare(String(b.name),'fr');
+    return String(a.k).localeCompare(String(b.k))||a.y-b.y||a.x-b.x})}
+/* un lieu a un village à ouvrir ? (en lecture : seulement s'il existe déjà) */
+function wOuvrable(c,lecture){
+  if(c.t==='city'){
+    if(!canEnter(c))return null;
+    const v=P.villages.find(q=>q.id===c.link&&!VIRT.has(q.id));
+    if(v)return{txt:'Ouvrir ▸',titre:'Ouvrir le village « '+v.name+' »'};
+    return lecture?null:{txt:'Ouvrir ▸',titre:'Créer la carte du village et l’ouvrir'}}
+  if(c.t==='realm'){
+    const m=P.worlds.find(q=>q.id===c.link&&!VIRT.has(q.id));
+    if(m)return{txt:'Ouvrir ▸',titre:'Ouvrir la carte détaillée « '+m.name+' »'};
+    return lecture?null:{txt:'Zoom ▸',titre:'Créer la carte détaillée de ce royaume et l’ouvrir'}}
+  return null}
+function wLigneLieu(c,lecture){
+  const sel=ui.sel.includes(c.id),o=wOuvrable(c,lecture);
+  const pos=c.name?'':'<small>'+esc(wKm(c.x)+' ; '+wKm(c.y)+' km')+'</small>';
+  return `<li class="lieu${sel?' on':''}"${sel?' aria-current="true"':''}><span class="pill" title="${esc(CK[c.k]||'')}">${esc((CK[c.k]||'').slice(0,4))}</span><span class="nm"><a href="#" data-wsel="${c.id}">${esc(wNom(c))}</a>${pos}</span>`
+    +(o?`<button type="button" class="btn sm go" data-wgo="${c.id}" title="${esc(o.titre)}">${o.txt}</button>`:'')+`</li>`}
+function wLigneRoyaume(r,lecture){
+  const sel=ui.sel.includes(r.id),o=wOuvrable(r,lecture);
+  const col=/^#[0-9a-f]{6}$/i.test(r.color||'')?r.color:'#c4784f';
+  return `<li class="lieu${sel?' on':''}"${sel?' aria-current="true"':''}><b style="background:${esc(col)}">&nbsp;</b><span class="nm"><a href="#" data-wsel="${r.id}">${esc(r.name||'(sans nom)')}</a></span>`
+    +(o?`<button type="button" class="btn sm go" data-wgo="${r.id}" title="${esc(o.titre)}">${o.txt}</button>`:'')+`</li>`}
+/* ramener dans la fenêtre le lieu qu'on vient de choisir dans la liste (sans changer le zoom) */
+function wMontrer(id){
+  if(ui.mode!=='w')return;
+  const it=CW().items.find(i=>i.id===id);if(!it)return;
+  let x=it.x,y=it.y;
+  if(it.t==='realm'){const L=realmLab(it);x=L[0];y=L[1]}
+  if(typeof x!=='number'||typeof y!=='number')return;
+  const r=cv.getBoundingClientRect();if(!r.width)return;
+  const k=ui.view.k,sx=x*k+ui.view.x,sy=y*k+ui.view.y,mx=Math.min(60,r.width*.12),my=Math.min(60,r.height*.12);
+  if(sx>=mx&&sx<=r.width-mx&&sy>=my&&sy<=r.height-my)return;
+  ui.userView=true;ui.view.x=r.width/2-x*k;ui.view.y=r.height/2-y*k;applyView()}
+/* choisir dans la liste : la ligne reste sous le doigt (le panneau du haut change de hauteur), le lieu apparaît sur la carte */
+function wChoisirListe(a){
+  const id=a.dataset.wsel,haut=a.getBoundingClientRect().top;
+  ui.sel=[id];renderSide();
+  const b=side.querySelector('[data-wsel="'+id+'"]');
+  if(b)side.scrollTop+=b.getBoundingClientRect().top-haut;
+  wMontrer(id);renderOverlay()}
+/* double-clic sur un nom de la liste : comme sur la carte, ça ouvre (seulement ce que le bouton « Ouvrir ▸ » de la ligne ouvrirait) */
+function wDoubleClic(a){
+  const it=CW().items.find(i=>i.id===a.dataset.wsel);
+  if(it&&wOuvrable(it,!ui.edit))wAller(it.id)}
+/* ouvrir : le village d'un lieu, la carte détaillée d'un royaume */
+function wAller(id){
+  const it=CW().items.find(i=>i.id===id);if(!it)return;
+  ui.sel=[id];
+  if(ui.edit)W_act('enter');else roEnter()}
+
+/* ---- Importer, à côté d'Exporter ---- */
+$('#bImp').onclick=function(){
+  const ouvrir=genre=>{plGenreImport=genre;$('#plFichier').click()};
+  popup(this,[
+    {t:'Un fichier .json : tout ce qu’il porte',f:()=>ouvrir(null)},
+    '-',
+    {t:'Seulement les bâtiments du fichier',f:()=>ouvrir('b')},
+    {t:'Seulement les villages du fichier',f:()=>ouvrir('v')},
+    {t:'Seulement les cartes du monde du fichier',f:()=>ouvrir('w')}])};
+
+/* ---- plein écran ----
+   La page entière passe en plein écran (la fenêtre du navigateur s'efface) et l'établi prend toute la place. Quand le navigateur
+   ne sait pas (iPhone), l'établi couvre quand même toute la fenêtre. Les fenêtres et le menu restent au-dessus. */
+const IC_PLEIN='<svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6V2h4M10 2h4v4M14 10v4h-4M6 14H2v-4"/></svg>';
+const IC_QUITTER='<svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2v4H2M14 6h-4V2M10 14v-4h4M2 10h4v4"/></svg>';
+const pleinOn=()=>document.body.classList.contains('plein');
+let pleinJusqua=0;
+function pleinMaj(){
+  const on=pleinOn(),b=$('#bFull');
+  b.setAttribute('aria-pressed',String(on));
+  b.title=on?'Quitter le plein écran (Maj+F, ou Échap)':'Plein écran (Maj+F)';
+  b.setAttribute('aria-label',on?'Quitter le plein écran':'Plein écran');
+  b.innerHTML=on?IC_QUITTER:IC_PLEIN}
+function pleinBasculer(vouloir){
+  const on=vouloir===undefined?!pleinOn():!!vouloir;
+  if(on===pleinOn())return;
+  pleinJusqua=Date.now()+1200;       /* le temps que la fenêtre change de taille : la vue garde son centre */
+  closePop();
+  document.body.classList.toggle('plein',on);
+  /* le reste de la page n'est plus atteignable au clavier tant que l'établi la couvre */
+  document.querySelectorAll('.fae-site,.wrap>:not(#app)').forEach(el=>{el.inert=on});
+  if(on){
+    const el=document.documentElement;
+    if(el.requestFullscreen){try{const p=el.requestFullscreen({navigationUI:'hide'});if(p&&p.catch)p.catch(()=>{})}catch(e){}}}
+  else if(document.fullscreenElement&&document.exitFullscreen){
+    try{const p=document.exitFullscreen();if(p&&p.catch)p.catch(()=>{})}catch(e){}}
+  pleinMaj();
+  if(!ui.userView)requestAnimationFrame(()=>fit())}
+/* Échap du navigateur : il sort du plein écran tout seul, l'établi suit */
+document.addEventListener('fullscreenchange',()=>{
+  if(!document.fullscreenElement&&pleinOn())pleinBasculer(false);
+  else if(document.fullscreenElement&&!pleinOn()&&document.exitFullscreen){try{const p=document.exitFullscreen();if(p&&p.catch)p.catch(()=>{})}catch(e){}}});
+$('#bFull').onclick=()=>pleinBasculer();
+pleinMaj();
+/* ====== pièces en forme libre ======
+   Une pièce libre est une pièce comme les autres ({t:'room', x, y, w, h, kind, name...}) qui porte en plus shape:'poly' et ses coins,
+   pts:[[x,y],...] en mètres. x, y, w, h restent toujours l'emprise (le plus petit rectangle qui la contient) : tout ce qui sait
+   déplacer, copier, mesurer ou ranger une pièce continue de marcher. Les portes et fenêtres posées sur un côté oblique portent
+   o:'a' et ang (l'angle du côté, en degrés). */
+const libreOk=r=>!!r&&r.t==='room'&&r.shape==='poly'&&Array.isArray(r.pts)&&r.pts.length>=3;
+const roomAire=r=>libreOk(r)?polyArea(r.pts):r.shape==='ellipse'?Math.PI*r.w*r.h/4:r.w*r.h;
+const libreChaine=(pts,k)=>pts.map(q=>fx(q[0]*(k||BU))+','+fx(q[1]*(k||BU))).join(' ');
+function libreBoite(it){
+  let x0=Infinity,y0=Infinity,x1=-Infinity,y1=-Infinity;
+  for(const p of it.pts){if(p[0]<x0)x0=p[0];if(p[0]>x1)x1=p[0];if(p[1]<y0)y0=p[1];if(p[1]>y1)y1=p[1]}
+  it.x=fx(x0);it.y=fx(y0);it.w=Math.max(.01,fx(x1-x0));it.h=Math.max(.01,fx(y1-y0))}
+/* un rectangle ou un ovale devient une forme libre : ses coins sont à toi */
+function libreDepuis(it){
+  const x=it.x,y=it.y,w=it.w,h=it.h;
+  if(it.shape==='ellipse'){const n=24;it.pts=Array.from({length:n},(_,i)=>{const a=i/n*2*Math.PI;return[fx(x+w/2+Math.cos(a)*w/2),fx(y+h/2+Math.sin(a)*h/2)]})}
+  else it.pts=[[x,y],[x+w,y],[x+w,y+h],[x,y+h]].map(p=>[fx(p[0]),fx(p[1])]);
+  it.shape='poly';libreBoite(it)}
+function libreVers(it,shape){
+  if(shape==='poly'){if(it.shape!=='poly')libreDepuis(it);return}
+  if(it.shape==='poly')delete it.pts;
+  it.shape=shape;
+  if(shape==='ring'&&!it.thick)it.thick=1}
+/* les cases x, y, largeur, hauteur du panneau : la forme suit, toujours depuis l'état du début de la saisie */
+let libreBase=null;
+side.addEventListener('focusin',()=>{libreBase=null});
+function libreRegler(it,f,v){
+  if(!libreBase||libreBase.id!==it.id)libreBase={id:it.id,pts:it.pts.map(p=>p.slice()),x:it.x,y:it.y,w:it.w,h:it.h};
+  const b=libreBase;
+  if(f==='x'||f==='y'){
+    const i=f==='x'?0:1,d=v-b[f];
+    it.pts=b.pts.map(p=>{const q=p.slice();q[i]=fx(p[i]+d);return q})}
+  else{
+    const i=f==='w'?0:1,o=f==='w'?b.x:b.y,old=f==='w'?b.w:b.h;
+    if(!(old>.005)||!(v>0))return;
+    const s=v/old;
+    it.pts=b.pts.map(p=>{const q=p.slice();q[i]=fx(o+(p[i]-o)*s);return q})}
+  libreBoite(it)}
+
+/* ---- où poser le nom, et de quelle largeur il dispose ---- */
+function libreCentre(p){
+  let A=0,cx=0,cy=0;
+  for(let i=0,n=p.length;i<n;i++){const P=p[i],Q=p[(i+1)%n],f=P[0]*Q[1]-Q[0]*P[1];A+=f;cx+=(P[0]+Q[0])*f;cy+=(P[1]+Q[1])*f}
+  return Math.abs(A)<1e-9?[p[0][0],p[0][1]]:[cx/(3*A),cy/(3*A)]}
+/* la corde horizontale (ou verticale) qui passe par c, à l'intérieur du polygone */
+function libreCoupe(p,c,verticale){
+  const a=verticale?1:0,b=verticale?0:1,xs=[];
+  for(let i=0,n=p.length;i<n;i++){
+    const P=p[i],Q=p[(i+1)%n];
+    if((P[b]>c[b])!==(Q[b]>c[b]))xs.push(P[a]+(c[b]-P[b])*(Q[a]-P[a])/(Q[b]-P[b]))}
+  xs.sort((u,v)=>u-v);
+  for(let i=0;i+1<xs.length;i+=2)if(c[a]>=xs[i]&&c[a]<=xs[i+1])return xs[i+1]-xs[i];
+  return 0}
+function libreLabel(r){
+  const p=r.pts;let c=libreCentre(p);
+  if(!inPoly(c[0],c[1],p)){
+    /* une forme creuse (un L, un U) : le centre tombe dehors, on prend le point le plus éloigné des murs */
+    let best=-1;const n=14;c=[r.x+r.w/2,r.y+r.h/2];
+    for(let i=0;i<=n;i++)for(let j=0;j<=n;j++){
+      const x=r.x+r.w*(i+.5)/(n+1),y=r.y+r.h*(j+.5)/(n+1);
+      if(!inPoly(x,y,p))continue;
+      const d=dpoly(x,y,p,true).d;
+      if(d>best){best=d;c=[x,y]}}}
+  return{x:c[0],y:c[1],sh:libreCoupe(p,c,false),sv:libreCoupe(p,c,true),area:polyArea(p)}}
+
+/* ---- le dessin ---- */
+function libreSVG(r,ghost,fill,sw){
+  const d=libreChaine(r.pts);
+  if(ghost)return `<polygon points="${d}" fill="none" stroke="${INK}" stroke-width="1.2"/>`;
+  if(r.kind==='cour')return `<polygon points="${d}" fill="${fill}" stroke="${INK}" stroke-width="1.5" stroke-linejoin="round"/>`;
+  return `<polygon points="${d}" fill="${fill}" stroke="${sw?INK:'none'}" stroke-width="${sw}" stroke-linejoin="round"/>`}
+/* la sélection : le contour en pointillés et la longueur de chaque côté */
+function libreSel(it,k,cotes){
+  const p=it.pts,n=p.length;
+  let s=`<polygon points="${libreChaine(p)}" fill="none" stroke="var(--accent)" stroke-width="${2*k}" stroke-dasharray="${6*k} ${4*k}" stroke-linejoin="round"/>`;
+  if(!cotes)return s;
+  const lab=`font-family="${FONT}" font-size="${11.5*k}" fill="var(--accent)" font-weight="700" stroke="${PAPER}" stroke-width="${3*k}" paint-order="stroke" text-anchor="middle"`;
+  for(let i=0;i<n;i++){
+    const a=p[i],b=p[(i+1)%n],L=Math.hypot(b[0]-a[0],b[1]-a[1]);
+    if(L*BU*ui.view.k<46)continue;
+    s+=`<text x="${fx((a[0]+b[0])/2*BU)}" y="${fx((a[1]+b[1])/2*BU-7*k)}" ${lab}>${fx(L)} m</text>`}
+  return s}
+const libreMid=(q,k)=>`<circle cx="${fx(q[0]*BU)}" cy="${fx(q[1]*BU)}" r="${4*k}" fill="#fff" fill-opacity=".9" stroke="var(--accent)" stroke-width="${1.3*k}"/><path d="M${fx(q[0]*BU-2*k)} ${fx(q[1]*BU)}h${4*k}M${fx(q[0]*BU)} ${fx(q[1]*BU-2*k)}v${4*k}" stroke="var(--accent)" stroke-width="${1.2*k}"/>`;
+/* les poignées : un carré à chaque coin, un petit rond au milieu de chaque côté pour y ajouter un coin */
+function libreHandles(it){
+  const p=it.pts,n=p.length,H={};
+  p.forEach((q,i)=>{H['v'+i]=[q[0],q[1]]});
+  p.forEach((q,i)=>{const b=p[(i+1)%n];H['m'+i]=[(q[0]+b[0])/2,(q[1]+b[1])/2]});
+  return H}
+function libreDown(it,h,e){
+  const i=+h.slice(1),n=it.pts.length;
+  if(h[0]==='m'){
+    snap();
+    const a=it.pts[i],b=it.pts[(i+1)%n];
+    it.pts=[...it.pts.slice(0,i+1),[fx((a[0]+b[0])/2),fx((a[1]+b[1])/2)],...it.pts.slice(i+1)];
+    libreBoite(it);
+    g={t:'resize',it,h:'v'+(i+1),o:{...it}};
+    dirty();renderOverlay();return}
+  if(e.altKey){
+    if(n>3){snap();it.pts=it.pts.filter((_,j)=>j!==i);libreBoite(it);dirty();renderSide();renderOverlay()}
+    else toast('Une pièce garde au moins trois coins');
+    return}
+  snap();g={t:'resize',it,h,o:{...it}}}
+function libreVertex(gs,x,y){
+  const i=+gs.h.slice(1),pts=gs.o.pts.map(p=>p.slice());
+  if(!(i>=0&&i<pts.length))return;
+  pts[i]=[fx(x),fx(y)];gs.it.pts=pts;libreBoite(gs.it)}
+/* une porte ou une fenêtre posée sur un côté de la pièce suit la pièce quand on la déplace */
+function libreSurBord(r,o){
+  const p=r.pts,n=p.length;
+  for(let i=0;i<n;i++){const a=p[i],b=p[(i+1)%n];if(dseg(o.x,o.y,a[0],a[1],b[0],b[1]).d<.05)return true}
+  return false}
+function libreInfo(it){
+  const p=it.pts;let per=0;
+  for(let i=0;i<p.length;i++){const a=p[i],b=p[(i+1)%p.length];per+=Math.hypot(b[0]-a[0],b[1]-a[1])}
+  return `<p class="hint">Surface : ${fx(polyArea(p))} m² · périmètre ${fx(per)} m · ${p.length} coins. Glisse un carré pour déplacer un coin, un petit rond pour en ajouter un, Alt+clic sur un coin pour le retirer.</p>`}
+
+/* ---- tracer une pièce libre, coin après coin ---- */
+function bdrawOk(){
+  if(bdraw&&!(ui.edit&&ui.mode==='b'&&!ui.facade&&ui.tool==='room'&&ui.roomShape==='poly'&&bdraw.b===P.curB&&bdraw.fl===ui.fl))bdraw=null;
+  return bdraw}
+/* Maj : angles de 45 degrés depuis le coin précédent */
+function libreAimant(m,last,maj){
+  let x=snapv(m[0]),y=snapv(m[1]);
+  if(maj&&last){
+    const dx=x-last[0],dy=y-last[1];
+    if(Math.abs(dx)>=2*Math.abs(dy))y=last[1];
+    else if(Math.abs(dy)>=2*Math.abs(dx))x=last[0];
+    else{const d=snapv((Math.abs(dx)+Math.abs(dy))/2);x=last[0]+(dx<0?-d:d);y=last[1]+(dy<0?-d:d)}}
+  return[fx(x),fx(y)]}
+function libreClic(m,e){
+  if(!bdrawOk()){bdraw={b:P.curB,fl:ui.fl,pts:[],sh:false};ui.sel=[];renderSide()}
+  const pts=bdraw.pts,last=pts[pts.length-1],p=libreAimant(m,last,e.shiftKey),f=pts[0];
+  /* au doigt, le premier coin se vise moins précisément : on pardonne davantage */
+  if(pts.length>=3&&Math.hypot(f[0]-p[0],f[1]-p[1])<tolM()*(e&&e.pointerType==='touch'?3.6:1.8)){bFinish();return}
+  if(last&&last[0]===p[0]&&last[1]===p[1])return;
+  pts.push(p);renderSide();renderOverlay()}
+function bFinish(){
+  const bd=bdrawOk();if(!bd)return;
+  const pts=bd.pts;bdraw=null;
+  if(pts.length<3||polyArea(pts)<.25){renderSide();renderOverlay();toast('Il faut au moins trois coins qui entourent une surface');return}
+  snap();
+  const it=addItem({t:'room',x:0,y:0,w:1,h:1,kind:ui.roomK,shape:'poly',pts:pts.map(q=>[fx(q[0]),fx(q[1])]),name:defaultName(ui.roomK),note:''});
+  libreBoite(it);
+  ui.sel=[it.id];dirty();renderSide();renderOverlay()}
+function bRetirer(){
+  const bd=bdrawOk();if(!bd)return;
+  bd.pts.pop();if(!bd.pts.length)bdraw=null;
+  renderSide();renderOverlay()}
+function libreTrace(bd,k){
+  const pts=bd.pts,last=pts[pts.length-1];
+  if(!last)return '';
+  const h=ui.hover?libreAimant(ui.hover,last,bd.sh):null;
+  const pose=!!h&&(h[0]!==last[0]||h[1]!==last[1]);
+  const tout=pose?[...pts,h]:pts;
+  let s=`<polyline points="${libreChaine(tout)}" fill="var(--accent)" fill-opacity=".1" stroke="var(--accent)" stroke-width="${2.4*k}" stroke-linejoin="round"/>`;
+  for(const q of pts)s+=`<circle cx="${fx(q[0]*BU)}" cy="${fx(q[1]*BU)}" r="${3.4*k}" fill="var(--accent)"/>`;
+  if(pts.length>=3){
+    const f=pts[0],pres=!!h&&Math.hypot(f[0]-h[0],f[1]-h[1])<tolM()*1.8;
+    s+=`<circle cx="${fx(f[0]*BU)}" cy="${fx(f[1]*BU)}" r="${(pres?9:6.5)*k}" fill="${pres?'var(--accent)':'none'}" fill-opacity=".28" stroke="var(--accent)" stroke-width="${1.7*k}"/>`}
+  if(pose){
+    const L=Math.hypot(h[0]-last[0],h[1]-last[1]);
+    s+=`<text x="${fx((h[0]+last[0])/2*BU)}" y="${fx((h[1]+last[1])/2*BU-8*k)}" text-anchor="middle" font-size="${13*k}" fill="var(--accent)" font-family="${FONT}" font-weight="700" stroke="${PAPER}" stroke-width="${3*k}" paint-order="stroke">${fx(L)} m</text>`}
+  return s}
+/* ce que le panneau dit pendant le tracé */
+function libreEtat(){
+  const bd=bdrawOk();
+  if(!bd||!bd.pts.length)return `<p class="hint">Aucun coin posé pour l’instant.</p>`;
+  const n=bd.pts.length;
+  return `<p class="hint">${n} coin${n>1?'s':''}${n>=3?' · surface '+fx(polyArea(bd.pts))+' m²':''}</p>`
+    +`<div class="row"><button type="button" class="btn sm primary" data-act="bFin"${n<3?' disabled':''}>Fermer la pièce</button><button type="button" class="btn sm" data-act="bBack">Retirer le dernier coin</button><button type="button" class="btn sm" data-act="bAnn">Annuler</button></div>`}
+
+/* ---- portes et fenêtres sur un côté oblique ---- */
+function placeOblique(m,w,best){
+  const s=best.s,L=Math.hypot(s[2]-s[0],s[3]-s[1]),ux=(s[2]-s[0])/L,uy=(s[3]-s[1])/L;
+  const ds=L>w?clamp(snapv(best.t*L,.5),w/2,L-w/2):L/2;
+  const x=s[0]+ux*ds,y=s[1]+uy*ds;
+  let ang=deg(Math.atan2(uy,ux));
+  if(ang>90)ang-=180;else if(ang<=-90)ang+=180;
+  const a=rad(ang),ly=-(m[0]-x)*Math.sin(a)+(m[1]-y)*Math.cos(a);
+  return{o:'a',ang:Math.round(ang*100)/100,x:fx(x),y:fx(y),fl:ly<0?-1:1,onWall:true}}
+/* le dessin d'une porte ou d'une fenêtre à plat, tourné autour de son centre */
+const libreRot=(d,s)=>`<g transform="rotate(${fx(d.ang||0)} ${fx(d.x*BU)} ${fx(d.y*BU)})">${s}</g>`;
+function libreRedim(it,h,m){
+  const a=rad(it.ang||0),ux=Math.cos(a),uy=Math.sin(a),hw=it.w/2;
+  const s=Math.round(((m[0]-it.x)*ux+(m[1]-it.y)*uy)/.25)*.25;
+  const lo=h==='a'?Math.min(s,hw-.25):-hw,hi=h==='b'?Math.max(s,-hw+.25):hw,mid=(lo+hi)/2;
+  it.x=fx(it.x+ux*mid);it.y=fx(it.y+uy*mid);it.w=fx(Math.max(.25,hi-lo))}
 /* ============ garder les plans, plan par plan ============
    Chaque bâtiment, chaque village, chaque carte du monde est une pièce qui porte sa date (maj) : la plus récente l'emporte,
    et une suppression laisse une trace datée (supprime) pour ne pas revenir d'un autre appareil. Le même document sert au
@@ -3159,14 +3508,21 @@ function pnItem(genre,it){
     switch(q.t){
       case 'room':if(!(xy()&&pnFini(q,'w')&&pnFini(q,'h')&&q.w>0&&q.h>0))return null;
         if(q.kind!==undefined&&!RK[q.kind])q.kind='piece';
-        if(q.shape!==undefined&&!['rect','ring','ellipse'].includes(q.shape))q.shape='rect';
+        if(q.shape!==undefined&&!['rect','ring','ellipse','poly'].includes(q.shape))q.shape='rect';
+        /* une pièce libre : ses coins (entre 3 et 400), et l'emprise qui en découle. Illisible, elle redevient le rectangle de son emprise. */
+        if(q.shape==='poly'){
+          const pts=pnPts(q.pts,3);
+          const c=pts?pts.slice(0,400).map(a=>[fx(a[0]),fx(a[1])]):null;
+          if(!c||!(polyArea(c)>1e-6)){q.shape='rect';delete q.pts}
+          else{q.pts=c;libreBoite(q)}}
+        else if(q.pts!==undefined)delete q.pts;
         return q;
       case 'wall':if(!(pnFini(q,'x1')&&pnFini(q,'y1')&&pnFini(q,'x2')&&pnFini(q,'y2')))return null;
         if(q.k!==undefined&&!['mur','cloison'].includes(q.k))q.k='mur';return q;
       case 'door':if(!(xy()&&pnFini(q,'w')&&q.w>0))return null;
-        if(q.k!==undefined&&!DK[q.k])q.k='porte';if(q.o!=='h'&&q.o!=='v')q.o='h';return q;
+        if(q.k!==undefined&&!DK[q.k])q.k='porte';pnOrient(q);return q;
       case 'win':if(!(xy()&&pnFini(q,'w')&&q.w>0))return null;
-        if(q.k!==undefined&&!WK[q.k])q.k='fenetre';if(q.o!=='h'&&q.o!=='v')q.o='h';return q;
+        if(q.k!==undefined&&!WK[q.k])q.k='fenetre';pnOrient(q);return q;
       case 'furn':if(!xy()||!FD[q.k])return null;if(q.r!==undefined&&!pnFini(q,'r'))q.r=0;return q;
       case 'stair':if(!(xy()&&pnFini(q,'w')&&pnFini(q,'h')&&q.w>0&&q.h>0))return null;
         if(q.dir!==undefined&&!['n','s','e','w','spiral'].includes(q.dir))q.dir='n';return q;
@@ -3198,6 +3554,10 @@ function pnItem(genre,it){
       if(q.a!==undefined&&!pnFini(q,'a'))q.a=0;if(q.k!==undefined&&!['pays','region','mer','montagne','lieu'].includes(q.k))q.k='lieu';return q;
   }
   return q}
+/* l'orientation d'une porte ou d'une fenêtre : horizontale, verticale, ou oblique avec son angle */
+function pnOrient(q){
+  if(q.o==='a'){if(pnFini(q,'ang'))q.ang=clamp(q.ang,-180,180);else q.o='h'}
+  else{if(q.o!=='h'&&q.o!=='v')q.o='h';if(q.ang!==undefined)delete q.ang}}
 const pnItems=(genre,v,max)=>(Array.isArray(v)?v.slice(0,max):[]).map(it=>pnItem(genre,it)).filter(Boolean);
 /* un plan entier. Idempotent : ce que l'éditeur écrit lui-même ressort tel quel. */
 function plansNettoyer(k,p,id){
@@ -3375,7 +3735,7 @@ function plansRecevoir(obj,opt){
     /* on n'a pas le droit de laisser un geste en cours tenir un objet qui vient d'être remplacé */
     const courant=['b','v','w'].some(k=>touche[k].has(avant[k]));
     const bouge=avant.b!==P.curB||avant.v!==P.curV||avant.w!==P.curW;
-    if(courant||bouge){g=null;vg=null;wg=null;vdraw=null;wdraw=null;drag=null;pan=null;pinch=null;ptrs.clear();cv.classList.remove('pan')}
+    if(courant||bouge){g=null;vg=null;wg=null;vdraw=null;wdraw=null;bdraw=null;drag=null;pan=null;pinch=null;ptrs.clear();cv.classList.remove('pan')}
     const existe=new Set();for(const[k]of PL_GENRES){plansListe(k).forEach(p=>{existe.add(p.id);if(k==='b')p.floors.forEach(f=>f.items.forEach(i=>existe.add(i.id)));else p.items.forEach(i=>existe.add(i.id))})}
     ui.sel=ui.sel.filter(id=>existe.has(id));
     histClear();                         /* les états d'avant ne savent plus ce qui vient d'arriver */
@@ -3435,7 +3795,6 @@ function relancerEnLigne(){
   if(ghcPret())GH=ghPlans();
   dessinerEtat()}
 function dessinerEtat(){
-  majGenres();
   const p=$('#etat');
   if(!p)return;
   let cls='pt',t='Gardé dans ce navigateur seulement';
@@ -3455,7 +3814,9 @@ function dessinerEtat(){
 function plDire(t,ok){
   const m=$('#plMsg');
   m.textContent=t;m.hidden=false;m.className=ok?'note ok':'note err';
-  clearTimeout(plDire.t);plDire.t=setTimeout(()=>{m.hidden=true},12000)}
+  clearTimeout(plDire.t);plDire.t=setTimeout(()=>{m.hidden=true},12000);
+  /* « Importer » est en haut de l'établi : la réponse s'y lit aussi, pas seulement dans la section du bas */
+  toast(t)}
 /* « Sauvegarder en ligne » : tout part tout de suite dans le dépôt */
 function sauverEnLigne(){
   const b=$('#plEnLigne');
@@ -3544,7 +3905,7 @@ function plansAppliquerAtelier(r){
   if(plansListe('v').some(x=>x.id===r.cur.v))P.curV=r.cur.v;
   if(plansListe('w').some(x=>x.id===r.cur.w))P.curW=r.cur.w;
   fixCur();
-  g=null;vg=null;wg=null;vdraw=null;wdraw=null;
+  g=null;vg=null;wg=null;vdraw=null;wdraw=null;bdraw=null;
   histClear();ui.sel=[];ui.fl=0;ui.facade=false;ui.from=null;ui.fromW=null;
   try{refreshLocs()}catch(e){}
   plansSuivre();
@@ -3626,15 +3987,14 @@ function exporterPlan(k,avecLies){
   const nom=({b:'batiment',v:'village',w:'monde'})[k]+'-'+slug(p.name)+(avecLies?'-et-liens':'')+'.json';
   telecharger(nom,r.texte,'application/json',null);
   toast('Fichier téléchargé : '+nom+(r.n>1?' ('+r.n+' plans)':''))}
-function exporterGenre(k,bouton){
+function exporterGenre(k){
   const ids=plansListe(k).filter(p=>!VIRT.has(p.id)).map(p=>p.id);
-  if(!ids.length){const t='Rien à exporter : il n’y a encore '+PL_AUCUN[k]+'.';if(bouton)plDire(t,false);else toast(t);return}
+  if(!ids.length){toast('Rien à exporter : il n’y a encore '+PL_AUCUN[k]+'.');return}
   const sel=plansVide();ids.forEach(id=>sel[k].add(id));
   const r=plansTexteChoix(sel);
   const nom=({b:'batiments',v:'villages',w:'mondes'})[k]+'-faelorenn.json';
-  telecharger(nom,r.texte,'application/json',bouton||null);
-  if(bouton)plDire('Fichier prêt : '+nom+' ('+pluriel(r.n,'plan','plans')+').',true);
-  else toast('Fichier téléchargé : '+nom+' ('+pluriel(r.n,'plan','plans')+')')}
+  telecharger(nom,r.texte,'application/json',null);
+  toast('Fichier téléchargé : '+nom+' ('+pluriel(r.n,'plan','plans')+')')}
 /* le menu « Exporter » de chaque établi y ajoute ses fichiers .json */
 function plansMenuJson(E){
   const k=ui.mode,p=plansCourant(k),vide=!p||VIRT.has(p.id);
@@ -3643,24 +4003,13 @@ function plansMenuJson(E){
   if(!vide){
     const d=plansDepend(k,p),nb=d.b.size+d.v.size+d.w.size;
     if(nb>1)E.push({t:'Ce plan et '+(nb>2?'ses '+(nb-1)+' plans liés':'son plan lié')+' : fichier .json',f:()=>exporterPlan(k,true)})}
-  E.push({t:({b:'Tous les bâtiments',v:'Tous les villages',w:'Tous les mondes'})[k]+' : fichier .json',f:()=>exporterGenre(k)})}
-/* le nombre de plans de chaque genre, dans la section « Sauvegarder ou partager » */
-function majGenres(){
-  if(!P)return;
-  for(const[k]of PL_GENRES){
-    const n=plansListe(k).filter(p=>!VIRT.has(p.id)).length;
-    const c=$('#plN-'+k),b=$('#plExp-'+k),t=n?pluriel(n,'plan','plans'):'aucun plan';
-    if(c&&c.textContent!==t)c.textContent=t;
-    if(b)b.disabled=!n}}
-let plGenreImport=null;   /* le genre du bouton « Importer » qu'on vient de presser */
+  E.push({t:({b:'Tous les bâtiments',v:'Tous les villages',w:'Tous les mondes'})[k]+' : fichier .json',f:()=>exporterGenre(k)});
+  E.push({t:'Tous les plans : sauvegarde .json',f:()=>{telecharger('plans-faelorenn.json',sauvegardeJson(),'application/json',null);toast('Fichier téléchargé : plans-faelorenn.json')}})}
+let plGenreImport=null;   /* le genre que « Importer » vient de demander (null : tout ce que le fichier porte) */
 
 function brancherEnLigne(){
   $('#plEnLigne').onclick=sauverEnLigne;
   $('#plJson').onclick=e=>telecharger('plans-faelorenn.json',sauvegardeJson(),'application/json',e.currentTarget);
-  $('#plImport').onclick=()=>{plGenreImport=null;$('#plFichier').click()};
-  for(const[k]of PL_GENRES){
-    $('#plExp-'+k).onclick=e=>exporterGenre(k,e.currentTarget);
-    $('#plImp-'+k).onclick=()=>{plGenreImport=k;$('#plFichier').click()}}
   $('#plFichier').onchange=e=>{
     const f=e.target.files&&e.target.files[0];
     if(!f)return;
@@ -3684,15 +4033,20 @@ document.addEventListener('keydown',e=>{
   const tg=e.target,typing=!!tg&&(tg.tagName==='INPUT'||tg.tagName==='TEXTAREA'||tg.tagName==='SELECT'||tg.isContentEditable);
   if(e.key==='Escape'){
     if(ouvertModal()){closeModal();return}
+    const menu=$('#pop').style.display==='block';
     closePop();
-    if(!typing&&enEditeur(tg)){g=null;vg=null;wg=null;vdraw=null;wdraw=null;
+    if(!typing&&enEditeur(tg)){
+      /* rien à annuler, rien de choisi : Échap sort aussi du plein écran (quand le navigateur ne l'a pas déjà fait) */
+      const rien=!menu&&!g&&!vg&&!wg&&!vdraw&&!wdraw&&!bdraw&&!ui.sel.length&&(!ui.edit||ui.tool==='sel');
+      g=null;vg=null;wg=null;vdraw=null;wdraw=null;bdraw=null;
       if(ui.edit&&ui.tool!=='sel')setTool('sel');else{ui.sel=[];renderSide()}
-      renderOverlay()}
+      renderOverlay();
+      if(rien&&pleinOn())pleinBasculer(false)}
     return}
   if(typing||ouvertModal()||!enEditeur(tg))return;
   const k=e.key,ctrl=e.ctrlKey||e.metaKey;
   /* lecture ou écriture : voir tout, zoomer, déplacer la vue */
-  if(!ctrl&&(k==='f'||k==='F')){fit();e.preventDefault();return}
+  if(!ctrl&&(k==='f'||k==='F')){if(e.shiftKey)pleinBasculer();else fit();e.preventDefault();return}
   if(tg===cv&&!ctrl&&(k==='+'||k==='='||k==='-'||k==='_')){
     const r=cv.getBoundingClientRect();zoomAt(r.width/2,r.height/2,k==='-'||k==='_'?.8:1.25);e.preventDefault();return}
   if(!ui.edit){
@@ -3710,6 +4064,9 @@ document.addEventListener('keydown',e=>{
   if(h)e.preventDefault()});
 document.addEventListener('keyup',e=>{if(e.key===' '){ui.space=false;cv.classList.remove('pan')}});
 window.addEventListener('blur',()=>{ui.space=false;cv.classList.remove('pan')});
+/* le plan reprend la main après chaque geste : un appui qui retrace la surcouche (tracé d'une pièce, poignées) retire l'élément visé
+   de la page, le navigateur laisse alors le focus à la page, et sans focus dans l'établi le clavier n'entend plus rien */
+cv.addEventListener('pointerup',()=>{if(document.activeElement!==cv)cv.focus({preventScroll:true})});
 
 /* ====== un plan sous les yeux, à chaque ouverture ====== */
 function demarrer(){
@@ -3726,8 +4083,15 @@ function demarrer(){
   requestAnimationFrame(()=>fit());
   /* tant que personne n'a bougé la vue, elle suit la taille de la fenêtre */
   if(typeof ResizeObserver==='function'){
-    let raf=0;
-    new ResizeObserver(()=>{if(ui.userView)return;cancelAnimationFrame(raf);raf=requestAnimationFrame(()=>{if(!ui.userView)fit()})}).observe($('#cvwrap'))}
+    let raf=0,avant=null;
+    new ResizeObserver(es=>{
+      const r=es[0]&&es[0].contentRect,w=r?r.width:0,h=r?r.height:0,prec=avant;
+      avant={w:w,h:h};
+      if(ui.userView){
+        /* plein écran : une vue que quelqu'un a placée garde son centre quand la fenêtre change de taille */
+        if(prec&&Date.now()<pleinJusqua&&(w!==prec.w||h!==prec.h)){ui.view.x+=(w-prec.w)/2;ui.view.y+=(h-prec.h)/2;applyView()}
+        return}
+      cancelAnimationFrame(raf);raf=requestAnimationFrame(()=>{if(!ui.userView)fit()})}).observe($('#cvwrap'))}
   window.addEventListener('error',e=>{
     const m=String(e&&e.message||'');
     if(/ResizeObserver/i.test(m))return;

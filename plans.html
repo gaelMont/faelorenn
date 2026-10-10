@@ -1115,12 +1115,12 @@ function stairSVG(s){
   return `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="#e6d9b6" stroke="${INK}" stroke-width="1.5"/><path d="${steps}" stroke="${INK}" stroke-width="1" fill="none"/><path d="${arrow}" stroke="${INK}" stroke-width="1.4" fill="none" opacity=".75"/>`}
 function renderFloor(b,fi,o={}){
   const F=b.floors[fi];let s='';
-  if(o.ghost&&fi>0){s+='<g opacity=".28">';for(const it of b.floors[fi-1].items){if(it.t==='room'&&it.kind!=='cour')s+=roomShape(it,true);if(it.t==='wall')s+=`<line x1="${it.x1*BU}" y1="${it.y1*BU}" x2="${it.x2*BU}" y2="${it.y2*BU}" stroke="${INK}" stroke-width="1.2"/>`}s+='</g>'}
+  if(o.ghost&&fi>0){s+='<g opacity=".28">';for(const it of b.floors[fi-1].items){if(it.t==='room'&&it.kind!=='cour')s+=roomShape(it,true);if(it.t==='wall')s+=`<path d="${murD(it)}" fill="none" stroke="${INK}" stroke-width="1.2"/>`}s+='</g>'}
   const rooms=F.items.filter(i=>i.t==='room');
   const order=r=>({cour:0,ext:0,couloir:1,vide:1}[r.kind]??2);
   const rs=rooms.slice().sort((a,b)=>order(a)-order(b));
   for(const r of rs)s+=roomShape(r);
-  for(const w of F.items.filter(i=>i.t==='wall'))s+=`<line x1="${w.x1*BU}" y1="${w.y1*BU}" x2="${w.x2*BU}" y2="${w.y2*BU}" stroke="${INK}" stroke-width="${w.k==='cloison'?1.8:3.5}" stroke-linecap="round"/>`;
+  for(const w of F.items.filter(i=>i.t==='wall'))s+=`<path d="${murD(w)}" fill="none" stroke="${INK}" stroke-width="${w.k==='cloison'?1.8:3.5}" stroke-linecap="round"/>`;
   for(const d of F.items.filter(i=>i.t==='door'))s+=doorSVG(d);
   for(const w of F.items.filter(i=>i.t==='win'))s+=winSVG(w);
   for(const f of F.items.filter(i=>i.t==='furn')){const d=FD[f.k];if(!d)continue;const w=d.w,h=d.h,cx=f.x*BU,cy=f.y*BU;s+=`<g transform="translate(${fx(cx)} ${fx(cy)}) rotate(${f.r||0}) translate(${fx(-w*BU/2)} ${fx(-h*BU/2)})">${furnSVG(f.k,w,h)}</g>`}
@@ -1133,7 +1133,7 @@ function renderFloor(b,fi,o={}){
 function itemBounds(it){
   switch(it.t){
   case 'room':case 'stair':return[it.x,it.y,it.x+it.w,it.y+it.h];
-  case 'wall':return[Math.min(it.x1,it.x2),Math.min(it.y1,it.y2),Math.max(it.x1,it.x2),Math.max(it.y1,it.y2)];
+  case 'wall':{const f=murApl(it),xs=f.map(q=>q[0]),ys=f.map(q=>q[1]);return[Math.min(...xs),Math.min(...ys),Math.max(...xs),Math.max(...ys)]}
   case 'door':case 'win':{const h=it.w/2;if(it.o==='a'){const a=rad(it.ang||0),dx=Math.cos(a)*h,dy=Math.sin(a)*h;return[Math.min(it.x-dx,it.x+dx)-.3,Math.min(it.y-dy,it.y+dy)-.3,Math.max(it.x-dx,it.x+dx)+.3,Math.max(it.y-dy,it.y+dy)+.3]}return it.o==='h'?[it.x-h,it.y-.3,it.x+h,it.y+.3]:[it.x-.3,it.y-h,it.x+.3,it.y+h]}
   case 'furn':{const d=FD[it.k]||{w:1,h:1};const q=((it.r||0)/90)%2?[d.h,d.w]:[d.w,d.h];return[it.x-q[0]/2,it.y-q[1]/2,it.x+q[0]/2,it.y+q[1]/2]}
   case 'label':{const lines=String(it.text).split('\n');const w=Math.max(...lines.map(l=>l.length))*(it.size||12)*.55/BU;const h=lines.length*(it.size||12)*1.1/BU;return[it.x-w/2,it.y-h/2,it.x+w/2,it.y+h/2]}}
@@ -1236,7 +1236,7 @@ function hitAt(x,y,F,want){
     case 'furn':{const d=FD[it.k]||{w:1,h:1};const a=-rad(it.r||0),dx=x-it.x,dy=y-it.y;const lx=dx*Math.cos(a)-dy*Math.sin(a),ly=dx*Math.sin(a)+dy*Math.cos(a);return Math.abs(lx)<=d.w/2+tol/2&&Math.abs(ly)<=d.h/2+tol/2}
     case 'stair':return x>=it.x&&x<=it.x+it.w&&y>=it.y&&y<=it.y+it.h;
     case 'door':case 'win':{const b=itemBounds(it);return x>=b[0]-tol&&x<=b[2]+tol&&y>=b[1]-tol&&y<=b[3]+tol}
-    case 'wall':return dseg(x,y,it.x1,it.y1,it.x2,it.y2).d<=Math.max(tol,.2);
+    case 'wall':return dpoly(x,y,murApl(it),false).d<=Math.max(tol,.2);
     case 'room':return inRoom(it,x,y)}
     return false};
   for(const ty of ['label','furn','stair','door','win','wall']){for(let i=its.length-1;i>=0;i--){const it=its[i];if(it.t===ty&&test(it))return it}}
@@ -1246,7 +1246,7 @@ function hitAt(x,y,F,want){
 function wallSegs(F){const S=[];for(const it of F.items){
   if(libreOk(it)){const f=libreApli(it),n=f.length;for(let i=0;i<n;i++){const p=f[i],q=f[(i+1)%n];S.push([p[0],p[1],q[0],q[1]])}}
   else if(it.t==='room'&&it.shape!=='ellipse'){const{x,y,w,h}=it;S.push([x,y,x+w,y],[x,y+h,x+w,y+h],[x,y,x,y+h],[x+w,y,x+w,y+h]);if(it.shape==='ring'){const t=it.thick||1;S.push([x+t,y+t,x+w-t,y+t],[x+t,y+h-t,x+w-t,y+h-t],[x+t,y+t,x+t,y+h-t],[x+w-t,y+t,x+w-t,y+h-t])}}
-  else if(it.t==='wall')S.push([it.x1,it.y1,it.x2,it.y2])}
+  else if(it.t==='wall'){const f=murApl(it);for(let i=0;i+1<f.length;i++)S.push([f[i][0],f[i][1],f[i+1][0],f[i+1][1]])}}
   return S}
 function place(m,w,F){
   let best=null;const lim=Math.max(.7,tolM()*2);
@@ -1306,7 +1306,7 @@ const BM={
       ui.sel=[it.id];dirty();renderSide()}}
   else if(g.t==='wall'){if(Math.hypot(g.m[0]-g.m0[0],g.m[1]-g.m0[1])>=.5){snap();const it=addItem({t:'wall',x1:g.m0[0],y1:g.m0[1],x2:g.m[0],y2:g.m[1],k:ui.wallK});ui.sel=[it.id];dirty();renderSide()}}
   if(g.t==='pen'){const pen=g;g=null;libreHaut(pen);renderOverlay();return}
-  if(g.t==='resize'&&libreOk(g.it))renderSide();
+  if(g.t==='resize'&&(libreOk(g.it)||g.it.t==='wall'))renderSide();
   g=null;renderOverlay();renderSideLight()},
  cancel(){g=null;renderOverlay()},
  ctx(e){if(bdrawOk())bRetirer()},
@@ -1317,7 +1317,7 @@ function moveItem(it,o,dx,dy){
 function handlesOf(it){
   if(libreOk(it))return libreHandles(it);
   if(it.t==='room'||it.t==='stair'){const{x,y,w,h}=it;const H={nw:[x,y],n:[x+w/2,y],ne:[x+w,y],e:[x+w,y+h/2],se:[x+w,y+h],s:[x+w/2,y+h],sw:[x,y+h],w:[x,y+h/2]};return H}
-  if(it.t==='wall')return{a:[it.x1,it.y1],b:[it.x2,it.y2]};
+  if(it.t==='wall')return{a:[it.x1,it.y1],b:[it.x2,it.y2],c:murApex(it)};
   if(it.t==='door'||it.t==='win'){const h=it.w/2;if(it.o==='a'){const a=rad(it.ang||0),dx=Math.cos(a)*h,dy=Math.sin(a)*h;return{a:[it.x-dx,it.y-dy],b:[it.x+dx,it.y+dy]}}return it.o==='h'?{a:[it.x-h,it.y],b:[it.x+h,it.y]}:{a:[it.x,it.y-h],b:[it.x,it.y+h]}}
   return{}}
 function handleAt(it,m){const H=handlesOf(it),tol=tolM()*1.3;for(const k in H)if(Math.hypot(H[k][0]-m[0],H[k][1]-m[1])<=tol)return k;return null}
@@ -1327,7 +1327,7 @@ function resizeItem(gs,m){
   else if(it.t==='room'||it.t==='stair'){let x0=o.x,y0=o.y,x1=o.x+o.w,y1=o.y+o.h;
     if(h.includes('w'))x0=Math.min(x,x1-.5);if(h.includes('e'))x1=Math.max(x,x0+.5);if(h.includes('n'))y0=Math.min(y,y1-.5);if(h.includes('s'))y1=Math.max(y,y0+.5);
     it.x=fx(x0);it.y=fx(y0);it.w=fx(x1-x0);it.h=fx(y1-y0)}
-  else if(it.t==='wall'){if(h==='a'){it.x1=x;it.y1=y}else{it.x2=x;it.y2=y}}
+  else if(it.t==='wall'){if(h==='c')murRegler(it,m);else if(h==='a'){it.x1=x;it.y1=y}else{it.x2=x;it.y2=y}}
   else if((it.t==='door'||it.t==='win')&&it.o==='a')libreRedim(it,h,m);
   else if(it.t==='door'||it.t==='win'){const H=it.o==='h';const c=H?it.x:it.y;const p=snapv(H?m[0]:m[1],.25);const a=h==='a'?Math.min(p,c+it.w/2-.25):c-it.w/2,b=h==='b'?Math.max(p,c-it.w/2+.25):c+it.w/2;const nw=b-a;if(H)it.x=fx((a+b)/2);else it.y=fx((a+b)/2);it.w=fx(Math.max(.25,nw))}}
 /* ---- surcouche ---- */
@@ -1337,13 +1337,15 @@ function renderOverlay(){
   if(ui.facade){overlay.innerHTML='';return}
   const F=CF();let s='';const k=1/ui.view.k;
   for(const it of selItems()){const b=itemBounds(it);const pad=3*k;
-    if(libreOk(it))s+=libreSel(it,k,selItems().length===1);else if(it.t==='wall')s+=`<line x1="${it.x1*BU}" y1="${it.y1*BU}" x2="${it.x2*BU}" y2="${it.y2*BU}" stroke="var(--accent)" stroke-width="${5*k}" opacity=".45"/>`;
+    if(libreOk(it))s+=libreSel(it,k,selItems().length===1);else if(it.t==='wall')s+=`<path d="${murD(it)}" fill="none" stroke="var(--accent)" stroke-width="${5*k}" opacity=".45"/>`;
     else if(it.t==='furn'){const d=FD[it.k]||{w:1,h:1};s+=`<rect x="${-d.w*BU/2-pad}" y="${-d.h*BU/2-pad}" width="${d.w*BU+2*pad}" height="${d.h*BU+2*pad}" transform="translate(${it.x*BU} ${it.y*BU}) rotate(${it.r||0})" fill="none" stroke="var(--accent)" stroke-width="${2*k}" stroke-dasharray="${6*k} ${4*k}"/>`}
     else s+=`<rect x="${b[0]*BU-pad}" y="${b[1]*BU-pad}" width="${(b[2]-b[0])*BU+2*pad}" height="${(b[3]-b[1])*BU+2*pad}" fill="none" stroke="var(--accent)" stroke-width="${2*k}" stroke-dasharray="${6*k} ${4*k}"/>`;
     if((it.t==='room'||it.t==='stair')&&!libreOk(it)){const lab=`font-family="${FONT}" font-size="${12*k}" fill="var(--accent)" font-weight="700" stroke="${PAPER}" stroke-width="${3*k}" paint-order="stroke" text-anchor="middle"`;
       s+=`<text x="${(it.x+it.w/2)*BU}" y="${it.y*BU-9*k}" ${lab}>${fx(it.w)} m</text><text transform="translate(${it.x*BU-9*k} ${(it.y+it.h/2)*BU}) rotate(-90)" ${lab}>${fx(it.h)} m</text>`}
-    if(it.t==='wall'){const L=Math.hypot(it.x2-it.x1,it.y2-it.y1);s+=`<text x="${(it.x1+it.x2)/2*BU}" y="${(it.y1+it.y2)/2*BU-8*k}" font-family="${FONT}" font-size="${12*k}" fill="var(--accent)" font-weight="700" stroke="${PAPER}" stroke-width="${3*k}" paint-order="stroke" text-anchor="middle">${fx(L)} m</text>`}
-    if(ui.edit&&selItems().length===1){const H=handlesOf(it);for(const q in H)if(libreOk(it))s+=libreHandleSVG(it,q,H[q],k);else s+=`<rect x="${H[q][0]*BU-4.5*k}" y="${H[q][1]*BU-4.5*k}" width="${9*k}" height="${9*k}" fill="#fff" stroke="var(--accent)" stroke-width="${1.6*k}"/>`}}
+    if(it.t==='wall'){const L=murLong(it),ap=murApex(it);s+=`<text x="${ap[0]*BU}" y="${ap[1]*BU-8*k}" font-family="${FONT}" font-size="${12*k}" fill="var(--accent)" font-weight="700" stroke="${PAPER}" stroke-width="${3*k}" paint-order="stroke" text-anchor="middle">${fx(L)} m</text>`}
+    if(ui.edit&&selItems().length===1){const H=handlesOf(it);for(const q in H)if(libreOk(it))s+=libreHandleSVG(it,q,H[q],k);
+      else if(it.t==='wall'&&q==='c')s+=`<circle cx="${fx(H[q][0]*BU)}" cy="${fx(H[q][1]*BU)}" r="${5*k}" fill="#fff" stroke="var(--accent)" stroke-width="${1.6*k}"/>`;
+      else s+=`<rect x="${H[q][0]*BU-4.5*k}" y="${H[q][1]*BU-4.5*k}" width="${9*k}" height="${9*k}" fill="#fff" stroke="var(--accent)" stroke-width="${1.6*k}"/>`}}
   const m=ui.hover;
   if(bdrawOk())s+=libreTrace(bdraw,k);
   else if(g&&g.t==='draw'){const x=Math.min(g.m0[0],g.m[0]),y=Math.min(g.m0[1],g.m[1]),w=Math.abs(g.m[0]-g.m0[0]),h=Math.abs(g.m[1]-g.m0[1]);
@@ -1423,7 +1425,7 @@ function furnCatalog(){
 function toolPanel(){
   const t=ui.tool;let h='';
   const T={sel:['Sélection','Clique un élément pour le modifier. Double-clic sur une pièce pour la renommer. Glisse dans le vide pour déplacer la vue.'],pan:['Main','Glisse pour déplacer la vue, molette pour zoomer.'],
-   room:['Nouvelle pièce',ui.roomShape==='poly'?'Clique pour poser un point, glisse en posant pour courber le côté. Pour fermer : reclique le premier point, ou double-clic, ou Entrée. Maj : angles de 45 degrés. Retour arrière : retire le dernier point.':'Glisse un rectangle sur la grille.'],wall:['Nouveau mur','Glisse un trait. Alt = angle libre.'],door:['Nouvelle porte','Clique sur un mur : la porte s\'ouvre du côté du curseur.'],win:['Nouvelle fenêtre','Clique sur un mur extérieur.'],
+   room:['Nouvelle pièce',ui.roomShape==='poly'?'Clique pour poser un point, glisse en posant pour courber le côté. Pour fermer : reclique le premier point, ou double-clic, ou Entrée. Maj : angles de 45 degrés. Retour arrière : retire le dernier point.':'Glisse un rectangle sur la grille.'],wall:['Nouveau mur','Glisse un trait. Alt : angle libre. Une fois posé, choisis-le pour l’arrondir.'],door:['Nouvelle porte','Clique sur un mur : la porte s\'ouvre du côté du curseur.'],win:['Nouvelle fenêtre','Clique sur un mur extérieur.'],
    furn:['Mobilier','Choisis un objet puis clique pour le poser. R tourne.'],stair:['Nouvel escalier','Glisse un rectangle. Ensuite règle le sens.'],label:['Texte','Clique pour poser un texte libre.'],erase:['Gomme','Clique un élément pour le supprimer.']}[t];
   h+=`<h3>${T[0]}</h3><p class="hint">${T[1]}</p>`;
   if(t==='room'){h+=`<div class="row"><label>Type</label><select data-ui="roomK">${opt(RK,ui.roomK)}</select></div><div class="row"><label>Forme</label><select data-ui="roomShape">${opt({rect:'Rectangle',ring:'Anneau (galerie)',ellipse:'Ovale / tour',poly:'Forme libre (la plume)'},ui.roomShape)}</select></div>`}
@@ -1448,7 +1450,7 @@ function itemPanel(it){
   else if(it.t==='furn')h+=`<h3>${esc((FD[it.k]||{}).n||'Objet')}</h3><div class="row"><label>Objet</label><select data-f="k">${FURN.map(f=>`<option value="${f[0]}"${f[0]===it.k?' selected':''}>${f[1]}</option>`).join('')}</select></div><div class="row"><button class="btn sm" data-act="rotL">↺ 90°</button><button class="btn sm" data-act="rotR">↻ 90°</button></div>`+del;
   else if(it.t==='stair')h+=`<h3>Escalier</h3><div class="row"><label>Sens</label><select data-f="dir">${opt({n:'Haut',s:'Bas',e:'Droite',w:'Gauche',spiral:'Colimaçon'},it.dir)}</select></div>`+fld('Étiquette','label',it.label||'')+`<div class="row"><label>Larg. × haut. (m)</label><input type="number" data-f="w" step="0.5" min="0.5" value="${it.w}"><input type="number" data-f="h" step="0.5" min="0.5" value="${it.h}"></div>`+del;
   else if(it.t==='label')h+=`<h3>Texte</h3><textarea data-f="text" rows="2">${esc(it.text)}</textarea>`+fld('Taille','size',it.size||12,'number','min="7" max="40"')+`<div class="row"><label><input type="checkbox" data-f="it"${it.it?' checked':''}> Italique</label></div>`+del;
-  else if(it.t==='wall')h+=`<h3>Mur</h3><div class="row"><label>Type</label><select data-f="k">${opt({mur:'Mur épais',cloison:'Cloison fine'},it.k||'mur')}</select></div>`+del;
+  else if(it.t==='wall')h+=`<h3>Mur</h3><div class="row"><label>Type</label><select data-f="k">${opt({mur:'Mur épais',cloison:'Cloison fine'},it.k||'mur')}</select></div>`+`<div class="row"><label>Arrondi (m)</label><input type="number" step="0.25" data-f="arc" value="${fx(murArc(it))}"></div>`+`<p class="hint">Longueur : ${fx(murLong(it))} m. Glisse le rond du milieu pour arrondir le mur, ou tape son creux ici. Zéro : un mur droit.</p>`+del;
   return h}
 /* ---- événements du panneau ---- */
 const side=$('#side');let editSnap=false;
@@ -1467,7 +1469,8 @@ function B_input(el,typing){
   if(d.fc){once();b.facade[d.fc]=el.type==='checkbox'?el.checked:el.type==='number'?+el.value:el.value;save();renderCanvas();return}
   if(d.f){const sel=selItems();if(sel.length!==1)return;once();const it=sel[0];let v=numOrStr(el);
     if(['x','y','w','h','size','thick'].includes(d.f)){if(isNaN(v))return;if((d.f==='w'||d.f==='h'||d.f==='thick')&&v<=0)return}
-    if(d.f==='shape')libreVers(it,v);else if(libreOk(it)&&['x','y','w','h'].includes(d.f))libreRegler(it,d.f,v);else it[d.f]=v;
+    if(d.f==='shape')libreVers(it,v);else if(libreOk(it)&&['x','y','w','h'].includes(d.f))libreRegler(it,d.f,v);
+    else if(d.f==='arc'&&it.t==='wall')murPoser(it,v);else it[d.f]=v;
     save();renderCanvas();renderOverlay();
     if(el.tagName==='SELECT'||el.type==='checkbox'){renderSide()}}
 }
@@ -2976,6 +2979,7 @@ $('#bHelp').onclick=()=>modal(`<h2>Registre des Plans</h2>
 <p class="tag" style="margin-top:10px">Raccourcis, en mode Modifier</p>
 <table><tr><td><kbd>1</kbd> à <kbd>0</kbd></td><td>Changer d’outil</td></tr><tr><td><kbd>Espace</kbd> + glisser</td><td>Déplacer la vue</td></tr><tr><td><kbd>Suppr</kbd></td><td>Supprimer la sélection</td></tr><tr><td><kbd>R</kbd></td><td>Pivoter (meuble, escalier, bâtisse ; <kbd>Maj</kbd>+<kbd>R</kbd> dans l’autre sens)</td></tr><tr><td><kbd>Ctrl</kbd>+<kbd>Z</kbd> / <kbd>Y</kbd></td><td>Annuler / rétablir</td></tr><tr><td><kbd>Ctrl</kbd>+<kbd>D</kbd>, <kbd>C</kbd>, <kbd>V</kbd></td><td>Dupliquer, copier, coller</td></tr><tr><td>Flèches</td><td>Déplacer la sélection (<kbd>Maj</kbd> : grand pas)</td></tr><tr><td><kbd>Entrée</kbd> / double-clic</td><td>Terminer une route, rivière, zone, pièce libre</td></tr><tr><td><kbd>Retour arrière</kbd></td><td>Retirer le dernier point d’un tracé en cours</td></tr></table>
 <p class="tag" style="margin-top:10px">Pièces en forme libre : la plume</p><p>Avec l’outil « Pièce », choisis la forme « Forme libre (la plume) » : la forme se choisit avant de dessiner. Clique pour poser un point ; <b>glisse en posant</b> pour courber le côté, comme une plume de dessin. Ferme en recliquant le premier point (glisse là aussi pour courber le retour), par double-clic ou avec <kbd>Entrée</kbd>. <kbd>Maj</kbd> tient les angles à 45 degrés, <kbd>Retour arrière</kbd> retire le dernier point, <kbd>Échap</kbd> annule le tracé.</p><p>Une pièce libre choisie montre un carré à chaque point, qu’on glisse, un rond plein au bout de chaque poignée de courbe (<kbd>Alt</kbd> pour ne bouger qu’une poignée ; ramène-la sur son point pour retrouver un angle vif) et un petit rond au milieu de chaque côté, qui ajoute un point ; <kbd>Alt</kbd>+clic sur un point le retire. Le bouton « Arrondir la forme » courbe tout d’un coup, et « Tout en angles vifs » défait. Une pièce déjà posée devient libre depuis son panneau (« Forme ») : un ovale garde sa courbe. Les portes et fenêtres se posent aussi sur ses côtés obliques et courbes.</p>
+<p class="tag" style="margin-top:10px">Murs arrondis</p><p>Un mur se courbe aussi : choisis-le, puis glisse le rond du milieu d’un côté ou de l’autre, ou tape son creux (en mètres) dans son panneau. Zéro le redresse. Les portes et fenêtres se posent sur un mur courbe comme sur un mur droit.</p>
 <p class="tag" style="margin-top:10px">Astuces</p><p>Déplacer une pièce emporte ses portes et fenêtres (Alt pour les laisser). La porte s’ouvre du côté où se trouve le curseur. Dans un village, un bâtiment peut être lié à un plan : « Créer un plan de ce bâtiment » en génère un adapté.</p>
 <div class="row"><button type="button" class="btn primary" onclick="closeModal()">Fermer</button></div>`);
 const _av=applyView;applyView=function(){_av();const isW=ui.mode==='w',m=ui.view.k*U()/(isW?CW().kmu:1);const L=[.5,1,2,5,10,20,50,100,200,500,1000,2000,5000,10000,20000];let best=L[L.length-1];for(const l of L)if(l*m>=60&&(isW||l>=1)){best=l;break}$('#sbar').style.width=(best*m)+'px';$('#sLbl').textContent=best.toLocaleString('fr-BE')+(isW?' km':' m');if(typeof updEnter==='function')updEnter()};
@@ -3601,6 +3605,40 @@ function libreRedim(it,h,m){
   const s=Math.round(((m[0]-it.x)*ux+(m[1]-it.y)*uy)/.25)*.25;
   const lo=h==='a'?Math.min(s,hw-.25):-hw,hi=h==='b'?Math.max(s,-hw+.25):hw,mid=(lo+hi)/2;
   it.x=fx(it.x+ux*mid);it.y=fx(it.y+uy*mid);it.w=fx(Math.max(.25,hi-lo))}
+
+/* ====== murs arrondis ======
+   Un mur garde ses deux bouts (x1, y1, x2, y2) et porte en plus arc : le creux au milieu, en mètres, compté
+   perpendiculairement au segment (positif d'un côté, négatif de l'autre). Sans arc, le mur est droit, comme avant. */
+const murArc=w=>typeof w.arc==='number'&&isFinite(w.arc)&&Math.abs(w.arc)>.004?w.arc:0;
+/* le point de conduite de la courbe : deux fois le creux, pour que le ventre passe juste par le creux */
+function murCtrl(w){
+  const dx=w.x2-w.x1,dy=w.y2-w.y1,L=Math.hypot(dx,dy)||1,a=murArc(w);
+  return[(w.x1+w.x2)/2-dy/L*2*a,(w.y1+w.y2)/2+dx/L*2*a]}
+function murApex(w){const c=murCtrl(w);return[fx(((w.x1+w.x2)/2+c[0])/2),fx(((w.y1+w.y2)/2+c[1])/2)]}
+/* le mur déroulé : ce qui mesure, touche et accroche travaille là-dessus */
+function murApl(w){
+  if(!murArc(w))return[[w.x1,w.y1],[w.x2,w.y2]];
+  const c=murCtrl(w),out=[],n=16;
+  for(let i=0;i<=n;i++){const t=i/n,u=1-t;
+    out.push([u*u*w.x1+2*u*t*c[0]+t*t*w.x2,u*u*w.y1+2*u*t*c[1]+t*t*w.y2])}
+  return out}
+function murD(w,k){
+  k=k||BU;const c=murCtrl(w);
+  return murArc(w)?`M${fx(w.x1*k)} ${fx(w.y1*k)}Q${fx(c[0]*k)} ${fx(c[1]*k)} ${fx(w.x2*k)} ${fx(w.y2*k)}`
+                  :`M${fx(w.x1*k)} ${fx(w.y1*k)}L${fx(w.x2*k)} ${fx(w.y2*k)}`}
+function murLong(w){
+  const f=murApl(w);let L=0;
+  for(let i=0;i+1<f.length;i++)L+=Math.hypot(f[i+1][0]-f[i][0],f[i+1][1]-f[i][1]);
+  return L}
+/* tirer le rond du milieu : seule la part perpendiculaire compte, et le mur redevient droit près de zéro */
+function murRegler(w,m){
+  const dx=w.x2-w.x1,dy=w.y2-w.y1,L=Math.hypot(dx,dy)||1;
+  const mx=(w.x1+w.x2)/2,my=(w.y1+w.y2)/2;
+  const v=(-(m[0]-mx)*dy+(m[1]-my)*dx)/L;
+  murPoser(w,snapv(v,.25))}
+function murPoser(w,v){
+  const a=typeof v==='number'&&isFinite(v)?clamp(v,-200,200):0;
+  if(Math.abs(a)<.13)delete w.arc;else w.arc=fx(a)}
 /* ============ garder les plans, plan par plan ============
    Chaque bâtiment, chaque village, chaque carte du monde est une pièce qui porte sa date (maj) : la plus récente l'emporte,
    et une suppression laisse une trace datée (supprime) pour ne pas revenir d'un autre appareil. Le même document sert au
@@ -3666,7 +3704,10 @@ function pnItem(genre,it){
         else if(q.pts!==undefined)delete q.pts;
         return q;
       case 'wall':if(!(pnFini(q,'x1')&&pnFini(q,'y1')&&pnFini(q,'x2')&&pnFini(q,'y2')))return null;
-        if(q.k!==undefined&&!['mur','cloison'].includes(q.k))q.k='mur';return q;
+        if(q.k!==undefined&&!['mur','cloison'].includes(q.k))q.k='mur';
+        /* le creux d'un mur arrondi : un nombre raisonnable, ou rien (le mur est droit) */
+        if(q.arc!==undefined){if(!pnFini(q,'arc')||Math.abs(q.arc)<.13)delete q.arc;else q.arc=fx(clamp(q.arc,-200,200))}
+        return q;
       case 'door':if(!(xy()&&pnFini(q,'w')&&q.w>0))return null;
         if(q.k!==undefined&&!DK[q.k])q.k='porte';pnOrient(q);return q;
       case 'win':if(!(xy()&&pnFini(q,'w')&&q.w>0))return null;

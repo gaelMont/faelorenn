@@ -1271,15 +1271,15 @@ const BM={
   if(ui.facade)return false;
   if(t==='sel'){
     const sel=selItems();
-    if(sel.length>1){const gh=grHandleAt(sel,m);if(gh){snap();g={t:'groupe',h:gh,items:sel,orig:sel.map(i=>JSON.parse(JSON.stringify(i))),b:grBoite(sel),m0:m,autres:grAutresEtages(),toutLEtage:CF().items.length===sel.length};return true}}
-    if(sel.length===1){const h=handleAt(sel[0],m);if(h){if(libreOk(sel[0])){libreDown(sel[0],h,e);return true}snap();g={t:'resize',it:sel[0],h,o:{...sel[0]},dedans:grContenu(sel[0],e.altKey),autres:(sel[0].t==='room'?grAutresEtages():null)};return true}}
+    if(sel.length>1){const gh=grHandleAt(sel,m);if(gh){snap();g={t:'groupe',h:gh,items:sel,orig:sel.map(i=>JSON.parse(JSON.stringify(i))),b:grBoite(sel),m0:m,autres:grAutresEtages(),toutLEtage:grToutLEtage(sel)};return true}}
+    if(sel.length===1){const h=handleAt(sel[0],m);if(h){if(libreOk(sel[0])){libreDown(sel[0],h,e);return true}snap();g={t:'resize',it:sel[0],h,o:{...sel[0]},dedans:grContenu(sel[0],e.altKey),autres:(sel[0].t==='room'?grAutresEtages():null),toutLEtage:grToutLEtage([sel[0]])};return true}}
     const hit=hitAt(m[0],m[1],F);
     if(!hit){if(!e.shiftKey){ui.sel=[];renderSide();renderOverlay()}return false}
     if(e.shiftKey){ui.sel=ui.sel.includes(hit.id)?ui.sel.filter(i=>i!==hit.id):[...ui.sel,hit.id]}
     else if(!ui.sel.includes(hit.id))ui.sel=[hit.id];
     const items=selItems();const attach=new Set(grAttraper(items,e.altKey));
     g={t:'move',m0:m,items:[...items,...attach],orig:[...items,...attach].map(i=>JSON.parse(JSON.stringify(i))),moved:false,
-      base:items,autres:grAutresEtages(),toutLEtage:CF().items.length===items.length};
+      base:items,autres:grAutresEtages(),toutLEtage:grToutLEtage(items)};
     renderSide();renderOverlay();return true}
   if(t==='room'&&ui.roomShape==='poly'){libreBas(m,e);return true}
   if(t==='room'||t==='stair'){g={t:'draw',m0:[sn(m[0]),sn(m[1])],m:[sn(m[0]),sn(m[1])]};return true}
@@ -3015,7 +3015,7 @@ $('#bHelp').onclick=()=>modal(`<h2>Registre des Plans</h2>
 <table><tr><td><kbd>1</kbd> à <kbd>0</kbd></td><td>Changer d’outil</td></tr><tr><td><kbd>Espace</kbd> + glisser</td><td>Déplacer la vue</td></tr><tr><td><kbd>Suppr</kbd></td><td>Supprimer la sélection</td></tr><tr><td><kbd>R</kbd></td><td>Pivoter (meuble, escalier, bâtisse ; <kbd>Maj</kbd>+<kbd>R</kbd> dans l’autre sens)</td></tr><tr><td><kbd>Ctrl</kbd>+<kbd>Z</kbd> / <kbd>Y</kbd></td><td>Annuler / rétablir</td></tr><tr><td><kbd>Ctrl</kbd>+<kbd>D</kbd>, <kbd>C</kbd>, <kbd>V</kbd></td><td>Dupliquer, copier, coller</td></tr><tr><td>Flèches</td><td>Déplacer la sélection (<kbd>Maj</kbd> : grand pas)</td></tr><tr><td><kbd>Entrée</kbd> / double-clic</td><td>Terminer une route, rivière, zone, pièce libre</td></tr><tr><td><kbd>Retour arrière</kbd></td><td>Retirer le dernier point d’un tracé en cours</td></tr></table>
 <p class="tag" style="margin-top:10px">Pièces en forme libre : la plume</p><p>Avec l’outil « Pièce », choisis la forme « Forme libre (la plume) » : la forme se choisit avant de dessiner. Clique pour poser un point ; <b>glisse en posant</b> pour courber le côté, comme une plume de dessin. Ferme en recliquant le premier point (glisse là aussi pour courber le retour), par double-clic ou avec <kbd>Entrée</kbd>. <kbd>Maj</kbd> tient les angles à 45 degrés, <kbd>Retour arrière</kbd> retire le dernier point, <kbd>Échap</kbd> annule le tracé.</p><p>Une pièce déjà posée s’arrondit aussi : choisis-la, puis <b>double-clique un de ses points</b> pour l’arrondir, et double-clique encore pour revenir à l’angle vif. Une pièce libre choisie montre un carré à chaque point, qu’on glisse, un rond plein au bout de chaque poignée de courbe (<kbd>Alt</kbd> pour ne bouger que celle-là ; ramenée sur son point, elle s’en va, seule : un côté droit peut suivre un côté arrondi) et un petit rond au milieu de chaque côté, qui ajoute un point ; <kbd>Alt</kbd>+clic sur un point le retire. Le bouton « Arrondir la forme » courbe tout d’un coup, et « Tout en angles vifs » défait. Une pièce déjà posée devient libre depuis son panneau (« Forme ») : un ovale garde sa courbe. Les portes et fenêtres se posent aussi sur ses côtés obliques et courbes.</p>
 <p class="tag" style="margin-top:10px">Murs arrondis</p><p>Un mur se courbe aussi : choisis-le, puis glisse le rond du milieu d’un côté ou de l’autre, ou tape son creux (en mètres) dans son panneau. Zéro le redresse. Une fois courbé, il porte une poignée à chaque bout, comme à la plume : tire-les pour une courbe en S ou pour changer l’angle d’arrivée ; ramenée sur son bout, une poignée s’en va. Les portes et fenêtres se posent sur un mur courbe comme sur un mur droit.</p>
-<p class="tag" style="margin-top:10px">Plusieurs éléments à la fois</p><p>Maj+clic ajoute ou retire de la sélection, <kbd>Ctrl</kbd>+<kbd>A</kbd> prend tout l’étage. Un groupe choisi reçoit un cadre : glisse un de ses coins pour changer la taille de tout l’ensemble (<kbd>Alt</kbd> : sans garder les proportions), et le bouton rond au-dessus pour le tourner (<kbd>Alt</kbd> : au degré près, sinon par pas de 15 degrés ; <kbd>R</kbd> fait un quart de tour, <kbd>Maj</kbd>+<kbd>R</kbd> dans l’autre sens). Les portes et fenêtres gardent leur largeur et restent sur leur mur, les meubles gardent leur taille. Une pièce rectangulaire tournée d’un angle libre devient une pièce en forme libre ; les escaliers, les ovales et les anneaux ne tournent que par quarts de tour, faute d’angle dans le format. Quand le bâtiment a plusieurs étages, coche <b>Changer aussi les autres étages</b> : la taille et la rotation s’appliquent de la même façon partout. Si tout l’étage est pris (<kbd>Ctrl</kbd>+<kbd>A</kbd>), les autres étages prennent en plus la même emprise que celui-ci, calée sur le coin que tu choisis (haut gauche par défaut) : tous les bords tombent ensemble. Au déplacement, c’est pareil : tout l’étage pris, les autres viennent se caler sur ce coin ; une partie seulement, ils suivent du même décalage. Le panneau donne aussi <b>Aligner</b> (les six bords et centres) et <b>Espacer également</b> (mêmes espaces, le premier et le dernier ne bougent pas, trois éléments au moins).</p><p class="tag" style="margin-top:10px">Une pièce emporte ce qu’elle contient</p><p>Déplacer une pièce, la retailler par ses poignées, tirer un coin d’une forme libre ou taper ses mesures dans le panneau : à chaque fois, ce qu’elle porte suit. Ses portes et fenêtres restent collées à ses murs, à la même largeur (sur une forme libre, elles se recollent au mur même quand il devient oblique) ; ses meubles, ses textes, ses cloisons et les pièces qu’elle contient se replacent dedans sans changer de taille. <kbd>Alt</kbd> pendant le geste ne bouge ou ne retaille que la pièce.</p><p class="tag" style="margin-top:10px">Escaliers</p><p>Un escalier posé se retrouve tout seul aux étages du dessus, à la même place et de la même taille (il y dit « descend ») : le déplacer, le retailler ou changer son sens emporte ses jumeaux. Dans son panneau, décoche <b>Continue à l’étage du dessus</b> pour l’arrêter là, ou, sur un jumeau, <b>Détacher celui-ci</b> pour le rendre indépendant (la suite d’en dessous s’arrête alors). Supprimer l’escalier d’origine emporte ses jumeaux automatiques.</p><p class="tag" style="margin-top:10px">Précision, mobilier</p><p>En bas du panneau, <b>Précision</b> règle le pas de la grille : 1 m, 50 cm, 25 cm, 10 cm, ou libre. Il vaut pour les pièces, les murs et les flèches du clavier ; les objets et les textes se posent au quart de mètre, ou plus fin si tu choisis plus fin. Ce réglage est gardé d’une visite à l’autre. Le catalogue du mobilier reste ouvert quand on pose un objet : on en pose plusieurs à la suite, et la fiche de celui qu’on vient de poser apparaît dessous. Un meuble choisi porte un rond au-dessus de lui : glisse-le pour le tourner sur le plan même (<kbd>Alt</kbd> : au degré).</p><p class="tag" style="margin-top:10px">Astuces</p><p>Déplacer une pièce emporte ses portes et fenêtres (Alt pour les laisser). La porte s’ouvre du côté où se trouve le curseur. Dans un village, un bâtiment peut être lié à un plan : « Créer un plan de ce bâtiment » en génère un adapté.</p>
+<p class="tag" style="margin-top:10px">Plusieurs éléments à la fois</p><p>Maj+clic ajoute ou retire de la sélection, <kbd>Ctrl</kbd>+<kbd>A</kbd> prend tout l’étage. Un groupe choisi reçoit un cadre : glisse un de ses coins pour changer la taille de tout l’ensemble (<kbd>Alt</kbd> : sans garder les proportions), et le bouton rond au-dessus pour le tourner (<kbd>Alt</kbd> : au degré près, sinon par pas de 15 degrés ; <kbd>R</kbd> fait un quart de tour, <kbd>Maj</kbd>+<kbd>R</kbd> dans l’autre sens). Les portes et fenêtres gardent leur largeur et restent sur leur mur, les meubles gardent leur taille. Une pièce rectangulaire tournée d’un angle libre devient une pièce en forme libre ; les escaliers, les ovales et les anneaux ne tournent que par quarts de tour, faute d’angle dans le format. Quand le bâtiment a plusieurs étages, coche <b>Changer aussi les autres étages</b> : la taille et la rotation s’appliquent de la même façon partout. Si ce que tu prends tient toute l’emprise de l’étage (<kbd>Ctrl</kbd>+<kbd>A</kbd>, ou simplement la grande pièce qui contient le reste, comme la salle d’une tour), les autres étages prennent en plus la même emprise que celui-ci, calée sur le coin que tu choisis (haut gauche par défaut) : tous les bords tombent ensemble. Au déplacement, c’est pareil ; si tu ne prends qu’un morceau de l’étage, les autres suivent simplement du même décalage. Le panneau donne aussi <b>Aligner</b> (les six bords et centres) et <b>Espacer également</b> (mêmes espaces, le premier et le dernier ne bougent pas, trois éléments au moins).</p><p class="tag" style="margin-top:10px">Une pièce emporte ce qu’elle contient</p><p>Déplacer une pièce, la retailler par ses poignées, tirer un coin d’une forme libre ou taper ses mesures dans le panneau : à chaque fois, ce qu’elle porte suit. Ses portes et fenêtres restent collées à ses murs, à la même largeur (sur une forme libre, elles se recollent au mur même quand il devient oblique) ; ses meubles, ses textes, ses cloisons et les pièces qu’elle contient se replacent dedans sans changer de taille. <kbd>Alt</kbd> pendant le geste ne bouge ou ne retaille que la pièce.</p><p class="tag" style="margin-top:10px">Escaliers</p><p>Un escalier posé se retrouve tout seul aux étages du dessus, à la même place et de la même taille (il y dit « descend ») : le déplacer, le retailler ou changer son sens emporte ses jumeaux. Dans son panneau, décoche <b>Continue à l’étage du dessus</b> pour l’arrêter là, ou, sur un jumeau, <b>Détacher celui-ci</b> pour le rendre indépendant (la suite d’en dessous s’arrête alors). Supprimer l’escalier d’origine emporte ses jumeaux automatiques.</p><p class="tag" style="margin-top:10px">Précision, mobilier</p><p>En bas du panneau, <b>Précision</b> règle le pas de la grille : 1 m, 50 cm, 25 cm, 10 cm, ou libre. Il vaut pour les pièces, les murs et les flèches du clavier ; les objets et les textes se posent au quart de mètre, ou plus fin si tu choisis plus fin. Ce réglage est gardé d’une visite à l’autre. Le catalogue du mobilier reste ouvert quand on pose un objet : on en pose plusieurs à la suite, et la fiche de celui qu’on vient de poser apparaît dessous. Un meuble choisi porte un rond au-dessus de lui : glisse-le pour le tourner sur le plan même (<kbd>Alt</kbd> : au degré).</p><p class="tag" style="margin-top:10px">Astuces</p><p>Déplacer une pièce emporte ses portes et fenêtres (Alt pour les laisser). La porte s’ouvre du côté où se trouve le curseur. Dans un village, un bâtiment peut être lié à un plan : « Créer un plan de ce bâtiment » en génère un adapté.</p>
 <div class="row"><button type="button" class="btn primary" onclick="closeModal()">Fermer</button></div>`);
 const _av=applyView;applyView=function(){_av();const isW=ui.mode==='w',m=ui.view.k*U()/(isW?CW().kmu:1);const L=[.5,1,2,5,10,20,50,100,200,500,1000,2000,5000,10000,20000];let best=L[L.length-1];for(const l of L)if(l*m>=60&&(isW||l>=1)){best=l;break}$('#sbar').style.width=(best*m)+'px';$('#sLbl').textContent=best.toLocaleString('fr-BE')+(isW?' km':' m');if(typeof updEnter==='function')updEnter()};
 /* ====== consulter : lire, zoomer, entrer, sans rien pouvoir déplacer ====== */
@@ -3520,12 +3520,12 @@ function libreDown(it,h,e){
     libreBoite(it);
     g={t:'resize',it,h:'v'+(i+1),o:{...it}};
     dirty();renderSide();renderOverlay();return}
-  if(h[0]==='i'||h[0]==='o'){g={t:'resize',it,h,o:{...it},alt:!!e.altKey,aSnap:true,dedans:grContenu(it,e.altKey)};return}
+  if(h[0]==='i'||h[0]==='o'){g={t:'resize',it,h,o:{...it},alt:!!e.altKey,aSnap:true,dedans:grContenu(it,e.altKey),autres:(ui.tousEtages?grAutresEtages():null),toutLEtage:grToutLEtage([it])};return}
   if(e.altKey){
     if(n>3){snap();it.pts=it.pts.filter((_,j)=>j!==i);libreBoite(it);dirty();renderSide();renderOverlay()}
     else toast('Une pièce garde au moins trois points');
     return}
-  g={t:'resize',it,h,o:{...it},aSnap:true,dedans:grContenu(it,e.altKey)}}
+  g={t:'resize',it,h,o:{...it},aSnap:true,dedans:grContenu(it,e.altKey),autres:(ui.tousEtages?grAutresEtages():null),toutLEtage:grToutLEtage([it])}}
 /* bouger un point, ou une poignée (libre, sans aimant ; l'autre poignée suit, sauf avec Alt) */
 function libreVertex(gs,x,y,m){
   if(gs.aSnap){snap();gs.aSnap=false}
@@ -3802,7 +3802,7 @@ function grSuivre(gs){
     grEchelle(q,d.orig[i],o.x,o.y,sx,sy,dx,dy);
     if((q.t==='door'||q.t==='win')&&d.bord&&d.bord[i])grRecoller(it,q)});
   /* cette pièce est tout l'étage : les autres prennent la même boîte, calée sur le coin choisi */
-  if(CF().items.length===1&&grEtagesBoite({autres:gs.autres,toutLEtage:true},grBoiteMurs([it])))return;
+  if(gs.toutLEtage&&grEtagesBoite({autres:gs.autres,toutLEtage:true},grBoiteMurs([it])))return;
   grTousEtages(gs,(q,orig)=>grEchelle(q,orig,o.x,o.y,sx,sy,dx,dy))}
 
 /* les poignées d'un groupe : les quatre coins pour la taille, le bouton au-dessus pour tourner */
@@ -3904,6 +3904,16 @@ function grAutresEtages(){
   return out.length?out:null}
 const grTousEtages=(gs,fn)=>{if(gs&&gs.autres)for(const e of gs.autres)e.items.forEach((it,i)=>fn(it,e.orig[i]))};
 const GR_COINS=[['nw','Haut gauche'],['ne','Haut droit'],['sw','Bas gauche'],['se','Bas droit']];
+/* « tout l'étage » : tout est choisi, ou ce qui est choisi tient déjà toute l'emprise de l'étage
+   (la grande pièce d'une tour, par exemple, avec ses meubles dedans) */
+function grToutLEtage(sel){
+  const F=CF();
+  if(!F||!F.items.length||!sel||!sel.length)return false;
+  if(F.items.length===sel.length)return true;
+  const a=grBoiteMurs(sel),b=grBoiteMurs(F.items);
+  if(!a||!b)return false;
+  const e=.06;
+  return Math.abs(a.x0-b.x0)<e&&Math.abs(a.y0-b.y0)<e&&Math.abs(a.x1-b.x1)<e&&Math.abs(a.y1-b.y1)<e}
 const grCoin=()=>GR_COINS.some(([k])=>k===ui.coinEtages)?ui.coinEtages:'nw';
 /* tout l'étage était pris : chaque autre étage prend la même boîte, calé sur le coin choisi */
 function grEtagesBoite(gs,nb){
@@ -3992,10 +4002,10 @@ function grEspacer(items,axe){
 /* ---- changer x, y, largeur ou hauteur depuis le panneau : la pièce emporte la même chose qu'à la poignée ---- */
 function grSaisie(it,fn){
   if(!it||it.t!=='room'){fn();return}
-  const d=grContenu(it,false),au=ui.tousEtages?grAutresEtages():null;
+  const d=grContenu(it,false),au=ui.tousEtages?grAutresEtages():null,tout=grToutLEtage([it]);
   const o={x:it.x,y:it.y,w:it.w,h:it.h};
   fn();
-  if(d||au)grSuivre({it:it,o:o,dedans:d,autres:au})}
+  if(d||au)grSuivre({it:it,o:o,dedans:d,autres:au,toutLEtage:tout})}
 
 /* ---- le bloc « tous les étages », partagé par le groupe et la pièce seule ---- */
 function grEtagePanneau(tout){
@@ -4005,7 +4015,7 @@ function grEtagePanneau(tout){
     +(ui.tousEtages?`<div class="row"><label>Aligner sur</label><select data-ui="coinEtages">`
       +GR_COINS.map(([k,n])=>`<option value="${k}"${grCoin()===k?' selected':''}>${n}</option>`).join('')+`</select></div>`:'')
     +`<p class="hint">Coché, la taille et la rotation s'appliquent de la même façon à tous les étages du bâtiment. `
-    +`Quand tout l'étage est pris (Ctrl+A${tout?'':", ou cette pièce seule s'il n'y a qu'elle"}), les autres étages prennent en plus la même boîte que celui-ci, calée sur le coin choisi : tous les bords tombent ensemble.</p>`}
+    +`Quand ce qui est pris tient toute l'emprise de l'étage (Ctrl+A, ou la grande pièce qui contient le reste), les autres étages prennent en plus la même boîte que celui-ci, calée sur le coin choisi : tous les bords tombent ensemble.</p>`}
 
 /* ---- le panneau de plusieurs éléments ---- */
 function grPanneau(sel){

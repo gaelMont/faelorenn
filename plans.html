@@ -3010,6 +3010,7 @@ $('#bHelp').onclick=()=>modal(`<h2>Registre des Plans</h2>
 <p class="tag">Consulter ou modifier</p><p>En <b>Consulter</b>, rien ne bouge par erreur : clique un élément pour lire sa fiche, zoome, et entre d’une carte dans un village puis dans un bâtiment (double-clic, ou bouton « Entrer »). Passe en <b>Modifier</b> quand tu veux dessiner.</p>
 <p class="tag">Garder</p><p>Chaque plan est gardé dans ce navigateur dès que tu le touches. Une fois ton dépôt GitHub relié (section « Sauvegarder ou partager », en bas de la page), il l’est aussi dans <b>plans.json</b> et il passe chez Océane : celui qui a retouché un plan en dernier l’emporte, plan par plan.</p>
 <p class="tag">Exporter, importer</p><p>« Exporter », en haut, donne pour le plan affiché un fichier .json : ce plan seul, ce plan avec les plans qui en dépendent (une carte du monde mène à ses villages, un village à ses bâtiments), tous les plans du même genre, ou tous les plans d’un coup. « Importer », juste à côté, reprend un fichier .json : tout ce qu’il porte, ou seulement ses bâtiments, ses villages ou ses cartes du monde, sans toucher aux autres. Une fenêtre dit ce qui entre avant de valider, et le fichier prend la place d’un plan qui existe déjà ici.</p>
+<p class="tag">Cité depuis les autres registres</p><p>Dans un compte rendu, sur une fiche de PNJ, dans une mission, deux tirets devant un nom (« --Ferpré ») citent un lieu, comme « /Nahya » cite quelqu’un : un bâtiment, un village, une carte du monde, ou un lieu nommé sur une carte. Le nom devient un lien qui ouvre le plan ici. Un lieu qui n’a pas encore de plan reçoit une fiche dans le Registre des Visages, onglet « Les lieux », et « Lui faire un plan » ramène ici pour le dessiner.</p>
 <p class="tag">Plein écran</p><p>Le bouton à droite d’« Exporter » (ou <kbd>Maj</kbd>+<kbd>F</kbd>) donne toute la fenêtre à l’établi. <kbd>Échap</kbd> en sort.</p>
 <p class="tag">Dimensions</p><p>Tout est en mètres. Dans un bâtiment, la grille fait 1 m par carreau (traits forts tous les 5 m) et l’aimant se règle à 25 cm, 50 cm ou 1 m. La pièce choisie affiche ses cotes sur le plan et ses valeurs exactes (largeur, hauteur, surface, périmètre) dans le panneau de droite, où tu peux les saisir au centimètre. La case « Dimensions » écrit la taille de chaque pièce sur le plan et dans l’export. Dans un village, tailles et distances sont aussi en mètres, avec une échelle graphique sur l’export.</p>
 <p class="tag">Étages</p><p>La barre au-dessus du plan tient un onglet par étage. <b>＋ Étage</b> en ajoute un vide, <b>⧉ Copier</b> recopie celui qui est affiché dans un nouvel étage, et <b>− Étage</b> retire l’étage affiché : le bouton demande d’abord « Confirmer ? », un second clic retire. Le panneau du bâtiment propose le même retrait sous <b>Supprimer l’étage</b>, et <b>Vider</b> le garde en l’effaçant. Le dernier étage ne se retire pas, et <kbd>Ctrl</kbd>+<kbd>Z</kbd> rend un étage retiré par erreur.</p>
@@ -4923,6 +4924,40 @@ window.addEventListener('blur',()=>{ui.space=false;cv.classList.remove('pan')});
 cv.addEventListener('pointerup',()=>{if(document.activeElement!==cv)cv.focus({preventScroll:true})});
 
 /* ====== un plan sous les yeux, à chaque ouverture ====== */
+/* ---------- un lieu cité ailleurs sur le site : « plans.html#plan=v:ID », « #lieu=CARTE:ID », « #neuf=v:Nom » ---------- */
+function plansOuvrir(k,id){
+  if(!['b','v','w'].includes(k)||!plansListe(k).some(p=>p.id===id))return false;
+  if(k==='b')P.curB=id;else if(k==='v')P.curV=id;else P.curW=id;
+  ui.fromW=null;ui.from=null;setMode(k);
+  return true}
+function plansAncre(){
+  let h='';
+  try{h=decodeURIComponent(location.hash.slice(1))}catch(e){h=location.hash.slice(1)}
+  if(!h)return;
+  if(h.indexOf('plan=')===0){
+    const x=h.slice(5);
+    if(!plansOuvrir(x.slice(0,1),x.slice(2)))toast('Ce plan n’est pas encore dans ce navigateur. Relie le dépôt, ou importe-le.');
+    return}
+  if(h.indexOf('lieu=')===0){
+    const x=h.slice(5),i=x.indexOf(':');
+    if(i<0)return;
+    if(!plansOuvrir('w',x.slice(0,i))){toast('Cette carte du monde n’est pas encore dans ce navigateur.');return}
+    const id=x.slice(i+1);
+    if(!CW().items.some(q=>q.id===id))return;
+    ui.sel=[id];renderSide();renderOverlay();
+    requestAnimationFrame(()=>{wMontrer(id);renderOverlay()});
+    return}
+  if(h.indexOf('neuf=')===0){
+    const x=h.slice(5),k=x.slice(0,1),nom=x.slice(2).trim();
+    if(!['b','v','w'].includes(k)||!nom)return;
+    const deja=plansListe(k).find(p=>!VIRT.has(p.id)&&String(p.name||'').trim().toLowerCase()===nom.toLowerCase());
+    if(deja){plansOuvrir(k,deja.id);return}
+    setMode(k);setEdition(true);
+    $('#bNew').click();
+    const n=$('#nbName');if(n){n.value=nom;n.focus()}
+    toast('Choisis son modèle puis « Créer » : le plan s’appellera « '+nom+' ».')}}
+window.addEventListener('hashchange',plansAncre);
+
 function demarrer(){
   plansCharger();
   const v=plansLireVue();
@@ -4955,7 +4990,8 @@ function demarrer(){
     toast('Quelque chose a coincé. Si ça se répète, recharge la page : tes plans sont gardés.')});
   ghcCharger();
   brancherEnLigne();
-  relancerEnLigne()}
+  relancerEnLigne();
+  setTimeout(plansAncre,60)}
 
 /* ---------- démarrage, en dernier : tout ce qui précède est défini ---------- */
 demarrer();

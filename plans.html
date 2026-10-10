@@ -932,7 +932,7 @@ const CB=()=>P.buildings.find(b=>b.id===P.curB);
 const CV=()=>P.villages.find(v=>v.id===P.curV);
 const CF=()=>{const b=CB();ui.fl=clamp(ui.fl,0,b.floors.length-1);return b.floors[ui.fl]};
 const snapv=(v,s=ui.snap)=>Math.round(v/s)*s;
-function dirty(){save();renderCanvas();renderSideLight()}
+function dirty(){if(ui.mode==='b'){try{escSync()}catch(e){}}save();renderCanvas();renderSideLight()}
 
 /* ====== retours ====== */
 let toastT=0;
@@ -1203,6 +1203,7 @@ function facadeSVG(b){
   return{svg:`<svg xmlns="http://www.w3.org/2000/svg" width="${fx(Wt)}" height="${fx(Hh)}" viewBox="0 0 ${fx(Wt)} ${fx(Hh)}">${s}</svg>`,w:Wt,h:Hh}}
 /* ====== bâtiments : édition ====== */
 const IC={
+ mesure:'<path d="M3 15.5L15.5 3l5.5 5.5L8.5 21z"/><path d="M7 11.5l2 2M10.5 8l2 2M14 4.5l2 2"/>',
  sel:'<path d="M6 3l12 9-5.5 1.2L9.5 19z"/>',pan:'<path d="M8 13V6.5a1.5 1.5 0 013 0V11m0-5.5a1.5 1.5 0 013 0V11m0-3.5a1.5 1.5 0 013 0V15c0 3.5-2 6-6 6-3 0-4.5-1.5-6-4l-2-3.5a1.5 1.5 0 012.3-1.9L8 13"/>',
  room:'<rect x="4" y="5" width="16" height="14"/>',wall:'<path d="M4 19L20 5"/><circle cx="4" cy="19" r="1.3"/><circle cx="20" cy="5" r="1.3"/>',
  door:'<path d="M4 20h3M17 20h3M7 20V6M7 6a14 14 0 0110 14"/>',win:'<path d="M3 12h18"/><rect x="6" y="9" width="12" height="6"/><path d="M12 9v6"/>',
@@ -1270,7 +1271,7 @@ const BM={
   if(ui.facade)return false;
   if(t==='sel'){
     const sel=selItems();
-    if(sel.length>1){const gh=grHandleAt(sel,m);if(gh){snap();g={t:'groupe',h:gh,items:sel,orig:sel.map(i=>JSON.parse(JSON.stringify(i))),b:grBoite(sel),m0:m};return true}}
+    if(sel.length>1){const gh=grHandleAt(sel,m);if(gh){snap();g={t:'groupe',h:gh,items:sel,orig:sel.map(i=>JSON.parse(JSON.stringify(i))),b:grBoite(sel),m0:m,autres:grAutresEtages()};return true}}
     if(sel.length===1){const h=handleAt(sel[0],m);if(h){if(libreOk(sel[0])){libreDown(sel[0],h,e);return true}snap();g={t:'resize',it:sel[0],h,o:{...sel[0]}};return true}}
     const hit=hitAt(m[0],m[1],F);
     if(!hit){if(!e.shiftKey){ui.sel=[];renderSide();renderOverlay()}return false}
@@ -1303,7 +1304,7 @@ const BM={
   if(!g)return;const F=CF();
   if(g.t==='draw'){const x=Math.min(g.m0[0],g.m[0]),y=Math.min(g.m0[1],g.m[1]),w=Math.abs(g.m[0]-g.m0[0]),h=Math.abs(g.m[1]-g.m0[1]);
     if(w>=.5&&h>=.5){snap();let it;if(ui.tool==='room'){it=addItem({t:'room',x,y,w,h,kind:ui.roomK,shape:ui.roomShape,name:defaultName(ui.roomK),note:''});}
-      else it=addItem({t:'stair',x,y,w,h,dir:ui.stairDir||(h>=w?'n':'e'),label:'monte'});
+      else it=addItem({t:'stair',x,y,w,h,dir:ui.stairDir||(h>=w?'n':'e'),label:'monte',esc:uid(),suite:true});
       if(it.shape==='ring')it.thick=1;
       ui.sel=[it.id];dirty();renderSide()}}
   else if(g.t==='wall'){if(Math.hypot(g.m[0]-g.m0[0],g.m[1]-g.m0[1])>=.5){snap();const it=addItem({t:'wall',x1:g.m0[0],y1:g.m0[1],x2:g.m[0],y2:g.m[1],k:ui.wallK});ui.sel=[it.id];dirty();renderSide()}}
@@ -1458,7 +1459,7 @@ function itemPanel(it){
   else if(it.t==='door')h+=`<h3>Porte</h3><div class="row"><label>Type</label><select data-f="k">${opt(DK,it.k)}</select></div>`+fld('Largeur (m)','w',it.w,'number','step="0.25" min="0.5"')+`<div class="row"><button class="btn sm" data-act="flip">↕ Ouvre de l'autre côté</button><button class="btn sm" data-act="hinge">↔ Charnière</button></div>`+del;
   else if(it.t==='win')h+=`<h3>Fenêtre</h3><div class="row"><label>Type</label><select data-f="k">${opt(WK,it.k)}</select></div>`+fld('Largeur (m)','w',it.w,'number','step="0.25" min="0.25"')+del;
   else if(it.t==='furn')h+=`<h3>${esc((FD[it.k]||{}).n||'Objet')}</h3><div class="row"><label>Objet</label><select data-f="k">${FURN.map(f=>`<option value="${f[0]}"${f[0]===it.k?' selected':''}>${f[1]}</option>`).join('')}</select></div><div class="row"><button class="btn sm" data-act="rotL">↺ 90°</button><button class="btn sm" data-act="rotR">↻ 90°</button></div>`+del;
-  else if(it.t==='stair')h+=`<h3>Escalier</h3><div class="row"><label>Sens</label><select data-f="dir">${opt({n:'Haut',s:'Bas',e:'Droite',w:'Gauche',spiral:'Colimaçon'},it.dir)}</select></div>`+fld('Étiquette','label',it.label||'')+`<div class="row"><label>Larg. × haut. (m)</label><input type="number" data-f="w" step="0.5" min="0.5" value="${it.w}"><input type="number" data-f="h" step="0.5" min="0.5" value="${it.h}"></div>`+del;
+  else if(it.t==='stair')h+=escPanneau(it)+`<h3>Escalier</h3><div class="row"><label>Sens</label><select data-f="dir">${opt({n:'Haut',s:'Bas',e:'Droite',w:'Gauche',spiral:'Colimaçon'},it.dir)}</select></div>`+fld('Étiquette','label',it.label||'')+`<div class="row"><label>Larg. × haut. (m)</label><input type="number" data-f="w" step="0.5" min="0.5" value="${it.w}"><input type="number" data-f="h" step="0.5" min="0.5" value="${it.h}"></div>`+del;
   else if(it.t==='label')h+=`<h3>Texte</h3><textarea data-f="text" rows="2">${esc(it.text)}</textarea>`+fld('Taille','size',it.size||12,'number','min="7" max="40"')+`<div class="row"><label><input type="checkbox" data-f="it"${it.it?' checked':''}> Italique</label></div>`+del;
   else if(it.t==='wall')h+=`<h3>Mur</h3><div class="row"><label>Type</label><select data-f="k">${opt({mur:'Mur épais',cloison:'Cloison fine'},it.k||'mur')}</select></div>`+`<div class="row"><label>Arrondi (m)</label><input type="number" step="0.25" data-f="arc" value="${murCreux(it)}"></div>`+`<p class="hint">Longueur : ${fx(murLong(it))} m. Glisse le rond du milieu pour arrondir le mur d’un coup, ou tape son creux ici (zéro le redresse). Une fois courbé, il a une poignée à chaque bout, comme à la plume : tire-les pour une courbe en S, ramène-en une sur son bout pour l’enlever.</p>`+del;
   return h}
@@ -1481,6 +1482,7 @@ function B_input(el,typing){
     if(['x','y','w','h','size','thick'].includes(d.f)){if(isNaN(v))return;if((d.f==='w'||d.f==='h'||d.f==='thick')&&v<=0)return}
     if(d.f==='shape')libreVers(it,v);else if(libreOk(it)&&['x','y','w','h'].includes(d.f))libreRegler(it,d.f,v);
     else if(d.f==='arc'&&it.t==='wall')murPoser(it,v);else it[d.f]=v;
+    if(it.t==='stair'){if(d.f==='suite'&&!it.esc)it.esc=uid();try{escSync()}catch(e){}}
     save();renderCanvas();renderOverlay();
     if(el.tagName==='SELECT'||el.type==='checkbox'){renderSide()}}
 }
@@ -1495,6 +1497,7 @@ function B_act(a,btn){
   if(a==='del'){snap();F.items=F.items.filter(i=>!ui.sel.includes(i.id));ui.sel=[];dirty();renderSide();return}
   if(a&&/^al[GDHB]$|^alC[xy]$/.test(a)){grAligner(selItems(),a.slice(2).toLowerCase());return}
   if(a==='espX'||a==='espY'){grEspacer(selItems(),a==='espX'?'x':'y');return}
+  if(a==='escDet'){const it=selItems()[0];if(it&&it.t==='stair'){snap();escCouper(it);delete it.auto;it.esc=uid();dirty();renderCanvas();renderOverlay();renderSide()}return}
   if(a==='dup'){dupSel();return}
   if(a==='bFin'){bFinish();return}if(a==='bBack'){bRetirer();return}if(a==='bAnn'){bdraw=null;renderSide();renderOverlay();return}
   if(a==='bRond'){const it=selItems()[0];if(libreOk(it)){snap();libreArrondir(it,!it.pts.some(pRond));dirty();renderCanvas();renderOverlay();renderSide()}return}
@@ -1509,17 +1512,19 @@ function B_act(a,btn){
 }
 function armed(btn,txt){ // confirmation en deux temps, sans dialogue natif
   if(btn.classList.contains('armed'))return true;const o=btn.textContent;btn.classList.add('armed');btn.textContent=txt;setTimeout(()=>{btn.classList.remove('armed');btn.textContent=o},2500);return false}
-function dupSel(){const F=CF(),sel=selItems();if(!sel.length)return;snap();const out=[];for(const it of sel){const c=JSON.parse(JSON.stringify(it));c.id=uid();if(c.t==='wall'){c.x1+=1;c.x2+=1;c.y1+=1;c.y2+=1}else{c.x+=1;c.y+=1;if(c.pts)c.pts=c.pts.map(p=>pBouge(p,1,1))}F.items.push(c);out.push(c.id)}ui.sel=out;dirty();renderSide();renderOverlay()}
+function dupSel(){const F=CF(),sel=selItems();if(!sel.length)return;snap();const out=[];for(const it of sel){const c=JSON.parse(JSON.stringify(it));c.id=uid();if(c.t==='wall'){c.x1+=1;c.x2+=1;c.y1+=1;c.y2+=1}else{c.x+=1;c.y+=1;if(c.pts)c.pts=c.pts.map(p=>pBouge(p,1,1))}if(c.t==='stair'){c.esc=uid();delete c.auto}F.items.push(c);out.push(c.id)}ui.sel=out;dirty();renderSide();renderOverlay()}
 function B_key(e){
   const F=CF(),sel=selItems();const k=e.key;
   if(bdrawOk()){if(k==='Enter'){bFinish();return true}if(k==='Backspace'||k==='Delete'){bRetirer();return true}}
   if(k==='Delete'||k==='Backspace'){if(sel.length){snap();F.items=F.items.filter(i=>!ui.sel.includes(i.id));ui.sel=[];dirty();renderSide();renderOverlay();return true}}
   if((k==='d'||k==='D')&&(e.ctrlKey||e.metaKey)){dupSel();return true}
   if((k==='c'||k==='C')&&(e.ctrlKey||e.metaKey)){clip=sel.map(i=>JSON.parse(JSON.stringify(i)));toast(clip.length+' élément(s) copié(s)');return true}
-  if((k==='v'||k==='V')&&(e.ctrlKey||e.metaKey)){if(clip.length){snap();const out=[];for(const c0 of clip){const c=JSON.parse(JSON.stringify(c0));c.id=uid();if(c.t==='wall'){c.x1+=1;c.x2+=1;c.y1+=1;c.y2+=1}else{c.x+=1;c.y+=1;if(c.pts)c.pts=c.pts.map(p=>pBouge(p,1,1))}F.items.push(c);out.push(c.id)}ui.sel=out;dirty();renderSide();renderOverlay()}return true}
+  if((k==='v'||k==='V')&&(e.ctrlKey||e.metaKey)){if(clip.length){snap();const out=[];for(const c0 of clip){const c=JSON.parse(JSON.stringify(c0));c.id=uid();if(c.t==='wall'){c.x1+=1;c.x2+=1;c.y1+=1;c.y2+=1}else{c.x+=1;c.y+=1;if(c.pts)c.pts=c.pts.map(p=>pBouge(p,1,1))}if(c.t==='stair'){c.esc=uid();delete c.auto}F.items.push(c);out.push(c.id)}ui.sel=out;dirty();renderSide();renderOverlay()}return true}
   if((k==='a'||k==='A')&&(e.ctrlKey||e.metaKey)){ui.sel=F.items.map(i=>i.id);renderSide();renderOverlay();return true}
   if((k==='r'||k==='R')&&sel.length>1){snap();const b=grBoite(sel),o=sel.map(i=>JSON.parse(JSON.stringify(i))),ang=e.shiftKey?-90:90;
-    sel.forEach((it,i)=>grTourner(it,o[i],b.cx,b.cy,rad(ang)));dirty();renderCanvas();renderOverlay();renderSide();return true}
+    const au={autres:grAutresEtages()};
+    sel.forEach((it,i)=>grTourner(it,o[i],b.cx,b.cy,rad(ang)));grTousEtages(au,(it,q)=>grTourner(it,q,b.cx,b.cy,rad(ang)));
+    dirty();renderCanvas();renderOverlay();renderSide();return true}
   if(k==='r'||k==='R'){if(sel.length){snap();sel.forEach(i=>{if(i.t==='furn')i.r=((i.r||0)+90)%360;else if(i.t==='stair'){const o=['n','e','s','w'];i.dir=o[(o.indexOf(i.dir)+1)%4]||'n'}else if(i.t==='door'||i.t==='win'){}});dirty();renderOverlay();renderSide()}else if(ui.tool==='furn'){ui.furnRot=((ui.furnRot||0)+90)%360;renderOverlay();renderSide()}return true}
   if(k.startsWith('Arrow')&&sel.length){e.preventDefault();const st=e.shiftKey?1:ui.snap;const dx=k==='ArrowLeft'?-st:k==='ArrowRight'?st:0,dy=k==='ArrowUp'?-st:k==='ArrowDown'?st:0;snap();sel.forEach(i=>{if(i.t==='wall'){i.x1+=dx;i.x2+=dx;i.y1+=dy;i.y2+=dy}else{i.x=fx(i.x+dx);i.y=fx(i.y+dy);if(i.pts)i.pts=i.pts.map(p=>[fx(p[0]+dx),fx(p[1]+dy)])}});dirty();renderOverlay();return true}
   return false}
@@ -2334,10 +2339,8 @@ function worldVector(w,o={}){
     s+=`<text x="${fx(lx)}" y="${fx(ly)}" font-size="${fx(fs)}" font-weight="700" letter-spacing="${fx(fs*.22)}" fill="${shade(/^#/.test(r.color||'')?r.color:'#c4784f',.45)}" opacity=".85" ${halo}>${esc(r.name.toUpperCase())}</text>`}
   for(const l of it.filter(i=>i.t==='label')){const st={pays:`font-size="${l.size||24}" font-weight="700" letter-spacing="${(l.size||24)*.25}"`,region:`font-size="${l.size||14}" font-weight="700" letter-spacing="${(l.size||14)*.2}"`,mer:`font-size="${l.size||18}" font-style="italic" letter-spacing="${(l.size||18)*.3}" fill="#3f6f8a"`,montagne:`font-size="${l.size||12}" font-style="italic" fill="#5b5247"`,lieu:`font-size="${l.size||11}" font-weight="700"`}[l.k||'lieu'];
     s+=`<text transform="translate(${fx(l.x)} ${fx(l.y)}) rotate(${l.a||0})" ${st} ${halo}>${esc((l.k==='pays'||l.k==='region')?String(l.text).toUpperCase():l.text)}</text>`}
-  for(const c of it.filter(i=>i.t==='city')){
-    s+=cityGlyph(c.k,fx(c.x),fx(c.y));
-    if(c.name&&c.hideName!==true){const fs={capitale:13,ville:11,village:9.5,hameau:8.5,port:10}[c.k]||9,off={capitale:15,ville:12,village:10,hameau:8.5}[c.k]||11;
-      s+=`<text x="${fx(c.x)}" y="${fx(c.y+off)}" font-size="${fs}" ${['capitale','ville','port'].includes(c.k)?'font-weight="700"':'font-style="italic"'} ${halo}>${esc(c.name)}</text>`}}
+  for(const c of it.filter(i=>i.t==='city'))s+=cityGlyph(c.k,fx(c.x),fx(c.y));
+  s+=wNomsSVG(w,halo);
   s+='</g></g>';return s}
 function W_bounds(){return{x0:-30,y0:-30,x1:MW+30,y1:MH+30}}
 function W_render(){const w=CW();paintEditor(w,!!ui.wPreview);content.innerHTML=worldVector(w)+`<rect x="0" y="0" width="${MW}" height="${MH}" fill="none" stroke="${INK}" stroke-width="2.5"/>`}
@@ -2356,7 +2359,7 @@ Object.assign(IC,{
  realm:'<path d="M6 21V4M6 5h11l-2 4 2 4H6"/>',
  city:'<rect x="5" y="10" width="14" height="10"/><path d="M5 10V7h3v3M16 10V7h3v3M10 20v-5h4v5"/>',
  zoom:'<circle cx="10.5" cy="10.5" r="6"/><path d="M15 15l5 5M10.5 8v5M8 10.5h5"/>'});
-const WTOOLS=[['sel','Choisir'],['pan','Main'],['brush','Relief'],['realm','Royaume'],['river','Rivière'],['road','Route'],['city','Lieu'],['label','Texte'],['zoom','Zoom'],['erase','Gomme']];
+const WTOOLS=[['sel','Choisir'],['pan','Main'],['brush','Relief'],['realm','Royaume'],['river','Rivière'],['road','Route'],['city','Lieu'],['label','Texte'],['zoom','Zoom'],['erase','Gomme'],['mesure','Mesurer']];
 ui.wb={mode:'monte',r:7,s:.6};
 ui.wk={city:'ville',label:'pays',road:'route',rc:0};
 ui.wgen={type:'continent',land:'moyen',climate:'tempere',realms:5,places:'moyen',rivers:'moyen',seed:Math.floor(Math.random()*99999)+1};
@@ -2497,6 +2500,7 @@ cv.addEventListener('drop',e=>{if(ui.mode!=='w'||!ui.edit)return;e.preventDefaul
 const WM={
  down(e){
   const m=toM(e),t=ui.tool,w=CW();
+  if(t==='mesure'){wMesDebut(m);wg={t:'mesure'};renderOverlay();renderSide();return true}
   if(t==='sel'){
     const sel=wsel();
     if(sel.length===1){const hd=wHandleAt(sel[0],m);
@@ -2523,6 +2527,7 @@ const WM={
  move(e,dragging){
   const m=toM(e);ui.hover=m;const w=CW();
   if(!wg){renderOverlay();return}
+  if(wg.t==='mesure'){wMesTirer(m);renderOverlay();renderSideLight();return}
   if(wg.t==='brush'){brushAt(m);renderOverlay();return}
   if(wg.t==='zoom'){wg.box=zoomBox(w,wg.x0,wg.y0,m);renderOverlay();return}
   if(wg.t==='move'){const dx=m[0]-wg.m0[0],dy=m[1]-wg.m0[1];if(!wg.moved&&Math.hypot(dx,dy)>1.5/ui.view.k){snap();wg.moved=true}
@@ -2533,6 +2538,7 @@ const WM={
   const w=CW();
   if(wg&&wg.t==='brush'){cancelAnimationFrame(wg.raf);ui.wPreview=false;commitGrid(w);save();wg=null;renderCanvas();renderOverlay();return}
   if(wg&&(wg.t==='vtx'||wg.t==='move')){const win=wg.t==='vtx'?wg.it.id:wg.items[0]&&wg.items[0].id;wg=null;if(fixOverlaps(w,win)){save();renderCanvas();renderOverlay();renderSide()}return}
+  if(wg&&wg.t==='mesure'){wg=null;renderOverlay();renderSide();return}
   if(wg&&wg.t==='zoom'){const b=wg.box;wg=null;renderOverlay();if(b&&b.w>=MW*.04)askZoom(b);return}
   wg=null;renderOverlay();renderSideLight()},
  cancel(){if(wg&&wg.t==='brush'){cancelAnimationFrame(wg.raf);ui.wPreview=false;commitGrid(CW());save();renderCanvas()}wg=null;renderOverlay()},
@@ -2562,6 +2568,7 @@ function wOverlay(){
   if(wdraw){const pts=wdraw.pts,all=ui.hover?[...pts,ui.hover]:pts;
     s+=`<path d="${pathD(all)}" fill="none" stroke="var(--accent)" stroke-width="${2.4*k}" stroke-dasharray="${5*k} ${3*k}"/>`+pts.map((p,i)=>`<circle cx="${p[0]}" cy="${p[1]}" r="${(i===0?5.5:3.5)*k}" fill="${i===0?'var(--accent)':'#fff'}" stroke="var(--accent)" stroke-width="${1.4*k}"/>`).join('')}
   if(wg&&wg.t==='zoom'&&wg.box){const b=wg.box;s+=`<rect x="${b.x}" y="${b.y}" width="${b.w}" height="${b.h}" fill="rgba(255,255,255,.12)" stroke="var(--accent)" stroke-width="${2*k}" stroke-dasharray="${6*k} ${4*k}"/><text x="${b.x+6*k}" y="${b.y+16*k}" font-family="${FONT}" font-size="${13*k}" font-weight="700" fill="var(--accent)" stroke="rgba(244,236,216,.9)" stroke-width="${3*k}" paint-order="stroke">${fmtKm(b.w*w.kmu)} km de large</text>`}
+  s+=wCerclesSVG(w,k)+wMesSVG(k);
   if(ui.hover&&!wg){
     if(ui.tool==='brush')s+=`<circle cx="${ui.hover[0]}" cy="${ui.hover[1]}" r="${ui.wb.r*wcw(w)}" fill="rgba(255,255,255,.1)" stroke="var(--accent)" stroke-width="${1.6*k}"/>`;
     else if(ui.tool==='city')s+=`<g opacity=".7">${cityGlyph(ui.wk.city,fx(ui.hover[0]),fx(ui.hover[1]))}</g>`}
@@ -2580,6 +2587,7 @@ function W_side(){
   if(sel.length===1)h+=wItemPanel(sel[0]);
   else if(sel.length>1)h+=`<h3>${sel.length} éléments</h3><div class="row"><button class="btn sm" data-act="dup">Dupliquer</button><button class="btn sm danger" data-act="del">Supprimer</button></div>`;
   else h+=wToolPanel();
+  h+=wNomsPanneau(w);
   h+=`<h3>Carte</h3><div class="row"><label>Nom</label><input type="text" data-w="name" value="${esc(w.name)}"></div>`;
   h+=`<div class="row"><label>Largeur (km)</label><input type="number" data-w="widthkm" min="1" max="100000" value="${Math.round(MW*w.kmu)}"></div><p class="hint">${scaleName(w.kmu)} · ${fmtKm(MW*w.kmu)} × ${fmtKm(MH*w.kmu)} km. Le zoom crée une carte dont l'échelle suit la zone choisie.</p>`;
   h+=`<div class="row"><label>Climat</label><select data-w="climate">${opt({froid:'Froid',tempere:'Tempéré',chaud:'Chaud'},w.climate||'tempere')}</select></div><div class="row"><label><input type="checkbox" data-w="glyph"${w.glyph!==false?' checked':''}> Dessiner montagnes et arbres</label></div>`;
@@ -2608,12 +2616,15 @@ function wToolPanel(){
    brush:['Relief','Peins directement le terrain : montagnes, mers, forêts et déserts (via l\'humidité). Touches [ et ] : taille du pinceau.'],
    realm:['Royaume','Clique les sommets, referme sur le premier point ou appuie sur Entrée. Seule la partie terrestre est colorée.'],river:['Rivière','Clique les points depuis la source, double-clic ou Entrée pour finir.'],road:['Route','Clique les points, double-clic ou Entrée pour finir.'],
    city:['Lieu','Choisis un type puis clique la carte. Chaque ville ou village peut ouvrir sa propre carte de village.'],label:['Texte','Choisis un style puis clique la carte.'],
+   mesure:['Mesurer','Glisse d\u2019un point à un autre : la distance s\u2019écrit en kilomètres, et un cercle montre cette distance autour du point de départ. Le pointeur se cale sur un lieu quand il en passe près. Échap efface la mesure.'],
    zoom:['Zoom','Trace un rectangle sur la zone à détailler. Une carte plus précise est créée, avec relief, lieux, rivières, routes et royaumes repris.'],erase:['Gomme','Clique un élément pour le supprimer. Le relief se corrige avec l\'outil Relief.']}[t]||['',''];
   let h=`<h3>${T[0]}</h3><p class="hint">${T[1]}</p>`;
   if(t==='brush'){
     const M=[['monte','Monter','#9a8e7a'],['creuse','Creuser','#6d8fa6'],['terre','Terre','#a8c67c'],['mer','Mer','#88a9c4'],['lisse','Lisser','#cbb98f'],['humide','Humide','#6d9b6c'],['sec','Sec','#d4c27e']];
     h+=`<div class="pal">`+M.map(([a,n,c])=>`<button data-wbm="${a}" aria-pressed="${b.mode===a}"><i style="display:block;width:34px;height:20px;border-radius:4px;background:${c};border:1px solid var(--rule)"></i><span>${n}</span></button>`).join('')+`</div>`;
     h+=`<div class="row"><label>Taille</label><input type="range" data-wb="r" min="2" max="26" value="${b.r}" style="flex:1"></div><div class="row"><label>Force</label><input type="range" data-wb="s" min="0.1" max="1.5" step="0.1" value="${b.s}" style="flex:1"></div>`}
+  if(t==='mesure')h+=(wmes?`<p class="hint" style="font-weight:700">${esc(wMesTexte())}</p>`:'')
+    +`<div class="row"><button class="btn sm" data-act="mesOff">Effacer la mesure</button></div>`;
   if(t==='road')h+=`<div class="row"><label>Type</label><select data-wk="road">${opt({route:'Route',sentier:'Sentier'},k.road)}</select></div>`;
   if(t==='label')h+=`<div class="row"><label>Style</label><select data-wk="label">${opt({pays:'Pays (majuscules)',region:'Région',mer:'Mer, océan',montagne:'Montagnes',lieu:'Lieu'},k.label)}</select></div>`;
   if(t==='city'&&ui.wk.vil){const v=P.villages.find(q=>q.id===ui.wk.vil);h+=`<p class="hint" style="color:var(--ink)">Placement de « ${esc(v?v.name:'')} » : clique la carte.</p><div class="row"><button class="btn sm" data-act="cancelVil">Annuler</button></div>`}
@@ -2624,7 +2635,7 @@ function wItemPanel(it){
   if(it.t==='city'){const v=P.villages.find(q=>q.id===it.link);
     h+=`<h3>${esc(CK[it.k]||'Lieu')}</h3>`;
     if(canEnter(it))h+=`<div class="row"><button class="btn primary" data-act="enter" style="flex:1">${v?'Entrer dans le village ▸':'Créer la carte du village et entrer ▸'}</button></div>`;
-    h+=fld('Nom','name',it.name||'')+`<div class="row"><label>Type</label><select data-f="k">${opt(CK,it.k)}</select></div><div class="row"><label><input type="checkbox" data-f="hideName"${it.hideName?' checked':''}> Masquer le nom sur la carte</label></div>`;
+    h+=fld('Nom','name',it.name||'')+`<div class="row"><label>Type</label><select data-f="k">${opt(CK,it.k)}</select></div><div class="row"><label><input type="checkbox" data-f="hideName"${it.hideName?' checked':''}> Masquer le nom sur la carte</label></div><div class="row"><label>Cercle de repère (km)</label><input type="number" data-f="cercle" min="0" step="1" value="${it.cercle||0}"></div><p class="hint">Zéro : aucun cercle. Sert à poser un lieu à telle distance de celui-ci ; il ne s\u2019imprime pas sur la carte.</p>`;
     h+=`<p class="hint">Position : ${wKm(it.x)} ; ${wKm(it.y)} km depuis le coin nord-ouest.${v?' Village : « '+esc(v.name)+' ».':''}</p><div class="row"><label>Notes</label></div><textarea data-f="note" rows="3" placeholder="Habitants, intrigues, rumeurs…">${esc(it.note||'')}</textarea>`+del}
   else if(it.t==='realm'){const c=P.worlds.find(q=>q.id===it.link);
     h+=`<h3>Royaume</h3><div class="row"><button class="btn primary" data-act="enter" style="flex:1">${c?'Ouvrir la carte détaillée ▸':'Zoom sur ce royaume ▸'}</button></div>`+fld('Nom','name',it.name||'')+`<div class="row"><button class="btn sm" data-act="weld" title="Fait coïncider les sommets voisins de tous les royaumes">Recoller les frontières</button></div><div class="row"><label>Couleur</label><input type="color" data-f="color" value="${esc(/^#[0-9a-f]{6}$/i.test(it.color||'')?it.color:'#c4784f')}"></div><div class="row"><label><input type="checkbox" data-f="hideName"${it.hideName?' checked':''}> Masquer le nom</label></div>`;
@@ -2639,6 +2650,10 @@ function W_input(el,typing){
   if(d.wgen){ui.wgen[d.wgen]=el.type==='number'?(parseInt(el.value)||0):el.value;return}
   if(d.wb){ui.wb[d.wb]=+el.value;renderOverlay();return}
   if(d.wk){ui.wk[d.wk]=el.value;renderSide();return}
+  if(d.wnom||d.wnomk){once();const c=wNomsCfg(w);
+    if(d.wnom==='t')c.t=clamp(parseFloat(el.value)||1,.5,2.5);
+    else{if(el.checked)delete c.off[d.wnomk];else c.off[d.wnomk]=true}
+    w.noms={t:c.t,off:c.off};save();renderCanvas();renderSide();return}
   if(d.w){if(typing&&el.tagName==='SELECT')return;once();let v=numOrStr(el);
     if(d.w==='widthkm'){v=+v;if(!(v>0))return;w.kmu=clamp(v,1,100000)/MW;save();renderCanvas();applyView();return}
     w[d.w]=v;save();if(d.w==='name'){fillItemSel();renderFloorbar()}renderCanvas();return}
@@ -2652,6 +2667,7 @@ function wMakeVillage(c,w){
   v.theme=w.climate==='froid'?'hiver':'ete';P.villages.push(v);c.link=v.id;return v}
 function W_act(a,btn){
   const w=CW(),sel=wsel();
+  if(a==='mesOff'){wmes=null;renderOverlay();renderSide();return}
   if(a==='del'){snap();w.items=w.items.filter(i=>!ui.sel.includes(i.id));ui.sel=[];dirty();renderSide();renderOverlay();return}
   if(a==='dup'){snap();const out=[];for(const it of sel){const c=JSON.parse(JSON.stringify(it));c.id=uid();delete c.link;if(c.pts)c.pts=c.pts.map(p=>[p[0]+10,p[1]+10]);else{c.x+=10;c.y+=10}w.items.push(c);out.push(c.id)}ui.sel=out;dirty();renderSide();renderOverlay();return}
   if(a==='weld'){snap();const n=weldRealms(w);const r=fixOverlaps(w,ui.sel[0],true);save();renderAll();toast(r?'Frontières réparées : chevauchements supprimés':n?n+' sommets recollés':'Frontières déjà jointes');return}
@@ -2992,14 +3008,14 @@ $('#bHelp').onclick=()=>modal(`<h2>Registre des Plans</h2>
 <p class="tag">Exporter, importer</p><p>« Exporter », en haut, donne pour le plan affiché un fichier .json : ce plan seul, ce plan avec les plans qui en dépendent (une carte du monde mène à ses villages, un village à ses bâtiments), tous les plans du même genre, ou tous les plans d’un coup. « Importer », juste à côté, reprend un fichier .json : tout ce qu’il porte, ou seulement ses bâtiments, ses villages ou ses cartes du monde, sans toucher aux autres. Une fenêtre dit ce qui entre avant de valider, et le fichier prend la place d’un plan qui existe déjà ici.</p>
 <p class="tag">Plein écran</p><p>Le bouton à droite d’« Exporter » (ou <kbd>Maj</kbd>+<kbd>F</kbd>) donne toute la fenêtre à l’établi. <kbd>Échap</kbd> en sort.</p>
 <p class="tag">Dimensions</p><p>Tout est en mètres. Dans un bâtiment, la grille fait 1 m par carreau (traits forts tous les 5 m) et l’aimant se règle à 25 cm, 50 cm ou 1 m. La pièce choisie affiche ses cotes sur le plan et ses valeurs exactes (largeur, hauteur, surface, périmètre) dans le panneau de droite, où tu peux les saisir au centimètre. La case « Dimensions » écrit la taille de chaque pièce sur le plan et dans l’export. Dans un village, tailles et distances sont aussi en mètres, avec une échelle graphique sur l’export.</p>
-<p class="tag">Mondes</p><p>Chaque carte du monde couvre une zone en kilomètres. L’outil <b>Zoom</b> trace un rectangle et crée une carte plus précise (relief affiné, lieux, rivières, routes et royaumes repris). Un <b>lieu</b> (ville, village, hameau) ouvre sa carte de village, dont les bâtisses mènent à leurs plans : monde, continent, pays, région, village, bâtiment. Dans la liste des lieux, à droite du panneau, un clic sur le nom le montre sur la carte, « Ouvrir ▸ » (ou un double-clic sur le nom) ouvre son village. L’outil <b>Relief</b> se peint comme un pinceau (monter, creuser, terre, mer, humide, sec). Le générateur crée continent, archipel, îles ou pangée avec rivières, lieux, routes et royaumes.</p>
+<p class="tag">Mondes</p><p>Chaque carte du monde couvre une zone en kilomètres. L’outil <b>Zoom</b> trace un rectangle et crée une carte plus précise (relief affiné, lieux, rivières, routes et royaumes repris). Un <b>lieu</b> (ville, village, hameau) ouvre sa carte de village, dont les bâtisses mènent à leurs plans : monde, continent, pays, région, village, bâtiment. Dans la liste des lieux, à droite du panneau, un clic sur le nom le montre sur la carte, « Ouvrir ▸ » (ou un double-clic sur le nom) ouvre son village. L’outil <b>Relief</b> se peint comme un pinceau (monter, creuser, terre, mer, humide, sec). Le générateur crée continent, archipel, îles ou pangée avec rivières, lieux, routes et royaumes.</p><p>L’outil <b>Mesurer</b> donne la distance en kilomètres : glisse d’un point à un autre, le pointeur se cale sur un lieu quand il en passe près, et un cercle montre cette distance autour du point de départ. <kbd>Échap</kbd> efface la mesure. Pour poser un lieu à une distance précise d’un autre, choisis ce dernier et donne-lui un <b>cercle de repère</b> (en kilomètres, dans son panneau) : il reste affiché tant qu’on dessine, et ne s’imprime pas sur la carte.</p><p>Les <b>noms des lieux</b> se posent tout seuls là où ils tiennent (sous le point, dessus, à côté) : ils ne se recouvrent plus. Un nom qui ne tient nulle part n’est pas écrit, et le panneau de la carte dit combien sont ainsi de côté. Ce même panneau règle leur <b>taille</b> (de petits à très grands) et <b>ce qu’on affiche</b>, type de lieu par type de lieu ; le panneau d’un lieu peut toujours masquer son seul nom.</p>
 <p class="tag">Raccourcis, partout</p>
 <table><tr><td>Molette, ou deux doigts</td><td>Zoomer</td></tr><tr><td>Glisser dans le vide</td><td>Déplacer la vue</td></tr><tr><td><kbd>F</kbd></td><td>Tout voir</td></tr><tr><td><kbd>Maj</kbd>+<kbd>F</kbd></td><td>Plein écran</td></tr><tr><td><kbd>+</kbd> <kbd>-</kbd></td><td>Zoomer, dézoomer (le plan a le focus)</td></tr><tr><td>Flèches</td><td>Déplacer la vue, en mode Consulter</td></tr><tr><td><kbd>Échap</kbd></td><td>Désélectionner</td></tr></table>
 <p class="tag" style="margin-top:10px">Raccourcis, en mode Modifier</p>
 <table><tr><td><kbd>1</kbd> à <kbd>0</kbd></td><td>Changer d’outil</td></tr><tr><td><kbd>Espace</kbd> + glisser</td><td>Déplacer la vue</td></tr><tr><td><kbd>Suppr</kbd></td><td>Supprimer la sélection</td></tr><tr><td><kbd>R</kbd></td><td>Pivoter (meuble, escalier, bâtisse ; <kbd>Maj</kbd>+<kbd>R</kbd> dans l’autre sens)</td></tr><tr><td><kbd>Ctrl</kbd>+<kbd>Z</kbd> / <kbd>Y</kbd></td><td>Annuler / rétablir</td></tr><tr><td><kbd>Ctrl</kbd>+<kbd>D</kbd>, <kbd>C</kbd>, <kbd>V</kbd></td><td>Dupliquer, copier, coller</td></tr><tr><td>Flèches</td><td>Déplacer la sélection (<kbd>Maj</kbd> : grand pas)</td></tr><tr><td><kbd>Entrée</kbd> / double-clic</td><td>Terminer une route, rivière, zone, pièce libre</td></tr><tr><td><kbd>Retour arrière</kbd></td><td>Retirer le dernier point d’un tracé en cours</td></tr></table>
 <p class="tag" style="margin-top:10px">Pièces en forme libre : la plume</p><p>Avec l’outil « Pièce », choisis la forme « Forme libre (la plume) » : la forme se choisit avant de dessiner. Clique pour poser un point ; <b>glisse en posant</b> pour courber le côté, comme une plume de dessin. Ferme en recliquant le premier point (glisse là aussi pour courber le retour), par double-clic ou avec <kbd>Entrée</kbd>. <kbd>Maj</kbd> tient les angles à 45 degrés, <kbd>Retour arrière</kbd> retire le dernier point, <kbd>Échap</kbd> annule le tracé.</p><p>Une pièce déjà posée s’arrondit aussi : choisis-la, puis <b>double-clique un de ses points</b> pour l’arrondir, et double-clique encore pour revenir à l’angle vif. Une pièce libre choisie montre un carré à chaque point, qu’on glisse, un rond plein au bout de chaque poignée de courbe (<kbd>Alt</kbd> pour ne bouger que celle-là ; ramenée sur son point, elle s’en va, seule : un côté droit peut suivre un côté arrondi) et un petit rond au milieu de chaque côté, qui ajoute un point ; <kbd>Alt</kbd>+clic sur un point le retire. Le bouton « Arrondir la forme » courbe tout d’un coup, et « Tout en angles vifs » défait. Une pièce déjà posée devient libre depuis son panneau (« Forme ») : un ovale garde sa courbe. Les portes et fenêtres se posent aussi sur ses côtés obliques et courbes.</p>
 <p class="tag" style="margin-top:10px">Murs arrondis</p><p>Un mur se courbe aussi : choisis-le, puis glisse le rond du milieu d’un côté ou de l’autre, ou tape son creux (en mètres) dans son panneau. Zéro le redresse. Une fois courbé, il porte une poignée à chaque bout, comme à la plume : tire-les pour une courbe en S ou pour changer l’angle d’arrivée ; ramenée sur son bout, une poignée s’en va. Les portes et fenêtres se posent sur un mur courbe comme sur un mur droit.</p>
-<p class="tag" style="margin-top:10px">Plusieurs éléments à la fois</p><p>Maj+clic ajoute ou retire de la sélection, <kbd>Ctrl</kbd>+<kbd>A</kbd> prend tout l’étage. Un groupe choisi reçoit un cadre : glisse un de ses coins pour changer la taille de tout l’ensemble (<kbd>Alt</kbd> : sans garder les proportions), et le bouton rond au-dessus pour le tourner (<kbd>Alt</kbd> : au degré près, sinon par pas de 15 degrés ; <kbd>R</kbd> fait un quart de tour, <kbd>Maj</kbd>+<kbd>R</kbd> dans l’autre sens). Les portes et fenêtres gardent leur largeur et restent sur leur mur, les meubles gardent leur taille. Une pièce rectangulaire tournée d’un angle libre devient une pièce en forme libre ; les escaliers, les ovales et les anneaux ne tournent que par quarts de tour, faute d’angle dans le format. Le panneau donne aussi <b>Aligner</b> (les six bords et centres) et <b>Espacer également</b> (mêmes espaces, le premier et le dernier ne bougent pas, trois éléments au moins).</p><p class="tag" style="margin-top:10px">Précision, mobilier</p><p>En bas du panneau, <b>Précision</b> règle le pas de la grille : 1 m, 50 cm, 25 cm, 10 cm, ou libre. Il vaut pour les pièces, les murs et les flèches du clavier ; les objets et les textes se posent au quart de mètre, ou plus fin si tu choisis plus fin. Ce réglage est gardé d’une visite à l’autre. Le catalogue du mobilier reste ouvert quand on pose un objet : on en pose plusieurs à la suite, et la fiche de celui qu’on vient de poser apparaît dessous. Un meuble choisi porte un rond au-dessus de lui : glisse-le pour le tourner sur le plan même (<kbd>Alt</kbd> : au degré).</p><p class="tag" style="margin-top:10px">Astuces</p><p>Déplacer une pièce emporte ses portes et fenêtres (Alt pour les laisser). La porte s’ouvre du côté où se trouve le curseur. Dans un village, un bâtiment peut être lié à un plan : « Créer un plan de ce bâtiment » en génère un adapté.</p>
+<p class="tag" style="margin-top:10px">Plusieurs éléments à la fois</p><p>Maj+clic ajoute ou retire de la sélection, <kbd>Ctrl</kbd>+<kbd>A</kbd> prend tout l’étage. Un groupe choisi reçoit un cadre : glisse un de ses coins pour changer la taille de tout l’ensemble (<kbd>Alt</kbd> : sans garder les proportions), et le bouton rond au-dessus pour le tourner (<kbd>Alt</kbd> : au degré près, sinon par pas de 15 degrés ; <kbd>R</kbd> fait un quart de tour, <kbd>Maj</kbd>+<kbd>R</kbd> dans l’autre sens). Les portes et fenêtres gardent leur largeur et restent sur leur mur, les meubles gardent leur taille. Une pièce rectangulaire tournée d’un angle libre devient une pièce en forme libre ; les escaliers, les ovales et les anneaux ne tournent que par quarts de tour, faute d’angle dans le format. Quand le bâtiment a plusieurs étages, coche <b>Changer aussi les autres étages</b> : la taille et la rotation s’appliquent de la même façon partout, les étages gardent la même dimension et restent l’un sur l’autre. Le panneau donne aussi <b>Aligner</b> (les six bords et centres) et <b>Espacer également</b> (mêmes espaces, le premier et le dernier ne bougent pas, trois éléments au moins).</p><p class="tag" style="margin-top:10px">Escaliers</p><p>Un escalier posé se retrouve tout seul aux étages du dessus, à la même place et de la même taille (il y dit « descend ») : le déplacer, le retailler ou changer son sens emporte ses jumeaux. Dans son panneau, décoche <b>Continue à l’étage du dessus</b> pour l’arrêter là, ou, sur un jumeau, <b>Détacher celui-ci</b> pour le rendre indépendant (la suite d’en dessous s’arrête alors). Supprimer l’escalier d’origine emporte ses jumeaux automatiques.</p><p class="tag" style="margin-top:10px">Précision, mobilier</p><p>En bas du panneau, <b>Précision</b> règle le pas de la grille : 1 m, 50 cm, 25 cm, 10 cm, ou libre. Il vaut pour les pièces, les murs et les flèches du clavier ; les objets et les textes se posent au quart de mètre, ou plus fin si tu choisis plus fin. Ce réglage est gardé d’une visite à l’autre. Le catalogue du mobilier reste ouvert quand on pose un objet : on en pose plusieurs à la suite, et la fiche de celui qu’on vient de poser apparaît dessous. Un meuble choisi porte un rond au-dessus de lui : glisse-le pour le tourner sur le plan même (<kbd>Alt</kbd> : au degré).</p><p class="tag" style="margin-top:10px">Astuces</p><p>Déplacer une pièce emporte ses portes et fenêtres (Alt pour les laisser). La porte s’ouvre du côté où se trouve le curseur. Dans un village, un bâtiment peut être lié à un plan : « Créer un plan de ce bâtiment » en génère un adapté.</p>
 <div class="row"><button type="button" class="btn primary" onclick="closeModal()">Fermer</button></div>`);
 const _av=applyView;applyView=function(){_av();const isW=ui.mode==='w',m=ui.view.k*U()/(isW?CW().kmu:1);const L=[.5,1,2,5,10,20,50,100,200,500,1000,2000,5000,10000,20000];let best=L[L.length-1];for(const l of L)if(l*m>=60&&(isW||l>=1)){best=l;break}$('#sbar').style.width=(best*m)+'px';$('#sLbl').textContent=best.toLocaleString('fr-BE')+(isW?' km':' m');if(typeof updEnter==='function')updEnter()};
 /* ====== consulter : lire, zoomer, entrer, sans rien pouvoir déplacer ====== */
@@ -3821,6 +3837,15 @@ function grEchelle(it,o,ax,ay,sx,sy){
     it.w=fx(Math.max(.5,o.w*sx));it.h=fx(Math.max(.5,o.h*sy));
     if(o.thick)it.thick=fx(Math.max(.2,o.thick*Math.min(sx,sy)))}}
 
+/* ---- les autres étages, quand on veut qu'ils suivent ---- */
+function grAutresEtages(){
+  if(!ui.tousEtages)return null;
+  const b=CB();if(!b||b.floors.length<2)return null;
+  const out=[];
+  b.floors.forEach((F,i)=>{if(i===ui.fl)return;out.push({items:F.items,orig:F.items.map(x=>JSON.parse(JSON.stringify(x)))})});
+  return out.length?out:null}
+const grTousEtages=(gs,fn)=>{if(gs&&gs.autres)for(const e of gs.autres)e.items.forEach((it,i)=>fn(it,e.orig[i]))};
+
 /* ---- le geste, pendant qu'on tire ---- */
 function grGeste(gs,m,e){
   const b=gs.b,items=gs.items,orig=gs.orig;
@@ -3830,6 +3855,7 @@ function grGeste(gs,m,e){
     if(!(e&&e.altKey))d=Math.round(d/15)*15;else d=Math.round(d);
     gs.ang=d;
     items.forEach((it,i)=>grTourner(it,orig[i],b.cx,b.cy,rad(d)));
+    grTousEtages(gs,(it,o)=>grTourner(it,o,b.cx,b.cy,rad(d)));
     return}
   const est=gs.h.includes('e'),sud=gs.h.includes('s');
   const ax=est?b.x0:b.x1,ay=sud?b.y0:b.y1;
@@ -3838,7 +3864,8 @@ function grGeste(gs,m,e){
   sx=Math.max(GR_MIN,sx);sy=Math.max(GR_MIN,sy);
   if(!(e&&e.altKey)){const s=Math.abs(lx)>Math.abs(ly)?sx:sy;sx=s;sy=s}
   gs.ech=[sx,sy];
-  items.forEach((it,i)=>grEchelle(it,orig[i],ax,ay,sx,sy))}
+  items.forEach((it,i)=>grEchelle(it,orig[i],ax,ay,sx,sy));
+  grTousEtages(gs,(it,o)=>grEchelle(it,o,ax,ay,sx,sy))}
 
 /* ---- aligner et espacer ---- */
 function grDeplacer(it,dx,dy){
@@ -3888,7 +3915,9 @@ function grPanneau(sel){
     +bt('alH','Bords du haut','⇡ Haut')+bt('alCy','Centres, de haut en bas','↕ Milieu')+bt('alB','Bords du bas','Bas ⇣')+`</div>`
     +`<p class="tag" style="margin:10px 0 4px">Espacer également</p><div class="row">`
     +bt('espX','Mêmes espaces, de gauche à droite','↔ Horizontalement')+bt('espY','Mêmes espaces, de haut en bas','↕ Verticalement')+`</div>`
-    +(n<3?`<p class="hint">Espacer demande au moins trois éléments.</p>`:'')}
+    +(n<3?`<p class="hint">Espacer demande au moins trois éléments.</p>`:'')
+    +(CB()&&CB().floors.length>1?`<div class="row"><label><input type="checkbox" data-ui="tousEtages"${ui.tousEtages?' checked':''}> Changer aussi les autres étages</label></div>`
+      +`<p class="hint">Coché, la taille et la rotation que tu donnes ici s'appliquent de la même façon à tous les étages du bâtiment : ils gardent la même dimension et restent l'un sur l'autre.</p>`:'')}
 
 /* ---- la précision des placements ---- */
 const GR_PAS=[['1','1 m'],['0.5','50 cm'],['0.25','25 cm'],['0.1','10 cm'],['0.01','libre']];
@@ -3902,6 +3931,165 @@ function grPasOk(v){
   return GR_PAS.some(([k])=>+k===n)?n:.5}
 /* le pas fin sert aussi aux objets et aux textes, qui se posaient toujours au quart de mètre */
 const grPasFin=()=>Math.min(.25,ui.snap);
+
+/* ====== un escalier continue d'étage en étage ======
+   Un escalier porte un lien (esc) partagé avec ses jumeaux des étages du dessus. Le plus bas des escaliers du lien
+   commande : les jumeaux marqués « auto » suivent sa place, sa taille et son sens. Décocher « Continue à l'étage du
+   dessus » arrête la suite et retire les jumeaux automatiques au-dessus. « Détacher » rend un jumeau indépendant. */
+const escAuto=it=>it.t==='stair'&&it.auto===true;
+function escSync(b){
+  b=b||CB();
+  if(!b||!Array.isArray(b.floors)||b.floors.length<2)return;
+  const liens=new Map();
+  b.floors.forEach((F,i)=>{for(const it of F.items)if(it.t==='stair'&&typeof it.esc==='string'&&it.esc){
+    const g=liens.get(it.esc)||{src:null,i:-1,auto:[]};
+    if(!escAuto(it)&&(g.i<0||i<g.i)){g.src=it;g.i=i}
+    if(escAuto(it))g.auto.push({F:F,it:it,i:i});
+    liens.set(it.esc,g)}});
+  for(const[id,g]of liens){
+    if(!g.src){                           /* l'escalier d'origine n'est plus là : ses jumeaux s'en vont */
+      for(const a of g.auto){const j=a.F.items.indexOf(a.it);if(j>=0)a.F.items.splice(j,1)}
+      continue}
+    let prev=g.src;
+    for(let i=g.i+1;i<b.floors.length;i++){
+      const F=b.floors[i],jum=F.items.find(x=>x.t==='stair'&&x.esc===id);
+      if(prev.suite===false){
+        /* la suite s'arrête : tous les jumeaux automatiques du dessus s'en vont */
+        for(let j=i;j<b.floors.length;j++){
+          const Fj=b.floors[j],t=Fj.items.find(x=>x.t==='stair'&&x.esc===id);
+          if(t&&escAuto(t))Fj.items.splice(Fj.items.indexOf(t),1)}
+        break}
+      if(jum){
+        jum.x=prev.x;jum.y=prev.y;jum.w=prev.w;jum.h=prev.h;jum.dir=prev.dir;
+        if(escAuto(jum)&&jum.suite===undefined)jum.suite=true;
+        prev=jum;continue}
+      const c={t:'stair',id:uid(),esc:id,auto:true,suite:true,x:prev.x,y:prev.y,w:prev.w,h:prev.h,dir:prev.dir,
+        label:prev.label==='monte'?'descend':(prev.label||'')};
+      F.items.push(c);prev=c}}}
+/* l'étage où se trouve l'escalier qui commande ce lien */
+function escSource(it){
+  const b=CB();if(!b||!it||!it.esc)return null;
+  for(let i=0;i<b.floors.length;i++)for(const x of b.floors[i].items)
+    if(x.t==='stair'&&x.esc===it.esc&&!escAuto(x))return{i:i,it:x};
+  return null}
+/* détacher un jumeau : la chaîne s'arrête juste en dessous de lui */
+function escCouper(it){
+  const b=CB();if(!b||!it||!it.esc)return;
+  let fi=-1;b.floors.forEach((F,i)=>{if(F.items.indexOf(it)>=0)fi=i});
+  for(let i=fi-1;i>=0;i--){
+    const t=b.floors[i].items.find(x=>x.t==='stair'&&x.esc===it.esc);
+    if(t){t.suite=false;return}}}
+function escPanneau(it){
+  const b=CB(),n=b?b.floors.length:1;
+  let h=`<div class="row"><label><input type="checkbox" data-f="suite"${it.suite!==false?' checked':''}> Continue à l’étage du dessus</label></div>`;
+  if(escAuto(it)){
+    const s=escSource(it);
+    h+=`<p class="hint">Cet escalier suit celui de ${s?'l’étage « '+esc(b.floors[s.i].name)+' »':'l’étage du dessous'} : il garde sa place et sa taille. `
+      +`<button type="button" class="btn sm" data-act="escDet">Détacher celui-ci</button></p>`}
+  else if(n>1)h+=`<p class="hint">Coché, le même escalier est posé aux étages du dessus, à la même place. Décoche pour l’arrêter ici.</p>`;
+  return h}
+/* ====== carte du monde : mesurer, cercles de repère, noms lisibles ======
+   Tout est en unités de carte ; w.kmu dit combien de kilomètres fait une unité. */
+
+/* ---- mesurer entre deux points ---- */
+let wmes=null;                       /* {a:[x,y], b:[x,y]} tant qu'on regarde une mesure */
+const wDist=(a,b)=>Math.hypot(b[0]-a[0],b[1]-a[1])*CW().kmu;
+/* le point visé se cale sur un lieu quand on en passe près : une mesure de ville à ville est juste */
+function wViser(m){
+  const w=CW(),t=12/ui.view.k;
+  let best=null,bd=t;
+  for(const c of w.items)if(c.t==='city'){const d=Math.hypot(c.x-m[0],c.y-m[1]);if(d<bd){bd=d;best=c}}
+  return best?[best.x,best.y,best.name||CK[best.k]||'ce lieu']:[fx(m[0]),fx(m[1]),null]}
+function wMesDebut(m){const p=wViser(m);wmes={a:[p[0],p[1]],b:[p[0],p[1]],na:p[2],nb:p[2]}}
+function wMesTirer(m){if(!wmes)return;const p=wViser(m);wmes.b=[p[0],p[1]];wmes.nb=p[2]}
+function wMesTexte(){
+  if(!wmes)return '';
+  const d=wDist(wmes.a,wmes.b);
+  const de=wmes.na&&wmes.nb&&wmes.na!==wmes.nb?wmes.na+' → '+wmes.nb+' : ':'';
+  return de+fmtKm(d)+' km';}
+function wMesSVG(k){
+  if(!wmes)return '';
+  const a=wmes.a,b=wmes.b,d=Math.hypot(b[0]-a[0],b[1]-a[1]);
+  let s=`<circle cx="${fx(a[0])}" cy="${fx(a[1])}" r="${fx(d)}" fill="none" stroke="var(--accent)" stroke-width="${1.2*k}" stroke-dasharray="${4*k} ${4*k}" opacity=".55"/>`;
+  s+=`<line x1="${fx(a[0])}" y1="${fx(a[1])}" x2="${fx(b[0])}" y2="${fx(b[1])}" stroke="var(--accent)" stroke-width="${2.2*k}"/>`;
+  for(const p of[a,b])s+=`<circle cx="${fx(p[0])}" cy="${fx(p[1])}" r="${4*k}" fill="#fff" stroke="var(--accent)" stroke-width="${1.8*k}"/>`;
+  const mx=(a[0]+b[0])/2,my=(a[1]+b[1])/2;
+  s+=`<text x="${fx(mx)}" y="${fx(my-8*k)}" text-anchor="middle" font-family="${FONT}" font-size="${13*k}" font-weight="700" fill="var(--accent)" stroke="${PAPER}" stroke-width="${3.5*k}" paint-order="stroke">${esc(fmtKm(wDist(a,b)))} km</text>`;
+  return s}
+
+/* ---- un cercle de repère gardé sur un lieu : « une ville à tant de kilomètres d'ici » ---- */
+function wCerclesSVG(w,k){
+  let s='';
+  for(const c of w.items){
+    if(c.t!=='city'||!(typeof c.cercle==='number'&&isFinite(c.cercle)&&c.cercle>0))continue;
+    const r=c.cercle/w.kmu;
+    s+=`<circle cx="${fx(c.x)}" cy="${fx(c.y)}" r="${fx(r)}" fill="none" stroke="var(--accent)" stroke-width="${1.4*k}" stroke-dasharray="${6*k} ${4*k}" opacity=".7"/>`
+      +`<text x="${fx(c.x)}" y="${fx(c.y-r-4*k)}" text-anchor="middle" font-family="${FONT}" font-size="${11*k}" font-weight="700" fill="var(--accent)" stroke="${PAPER}" stroke-width="${3*k}" paint-order="stroke">${esc(fmtKm(c.cercle))} km</text>`}
+  return s}
+
+/* ---- les noms des lieux : taille, ce qu'on affiche, et jamais l'un sur l'autre ---- */
+const WN_TAILLES=[['0.8','Petits'],['1','Normaux'],['1.3','Grands'],['1.7','Très grands']];
+const WN_FS={capitale:13,ville:11,village:9.5,hameau:8.5,port:10};
+const WN_OFF={capitale:15,ville:12,village:10,hameau:8.5};
+const WN_RANG={capitale:0,ville:1,port:1,fort:2,temple:2,tour:3,portail:3,village:4,hameau:5,ruine:6,grotte:6};
+const WN_RAYON={capitale:7,ville:5.5,port:5.5,fort:6,temple:5,tour:5,village:4.5,hameau:4,ruine:4.5,grotte:4.5,portail:5};
+function wNomsCfg(w){
+  const o=w&&typeof w.noms==='object'&&w.noms?w.noms:{};
+  const t=typeof o.t==='number'&&isFinite(o.t)?clamp(o.t,.5,2.5):1;
+  const off=o.off&&typeof o.off==='object'&&!Array.isArray(o.off)?o.off:{};
+  return{t:t,off:off}}
+const wNomVisible=(cfg,k)=>!cfg.off[k];
+let W_NOMS_CACHES=0;
+const wChevauche=(a,b)=>a[0]<b[2]&&b[0]<a[2]&&a[1]<b[3]&&b[1]<a[3];
+/* les noms des lieux, posés là où ils tiennent : sous le point, dessus, à droite, à gauche, puis en biais */
+function wNomsSVG(w,halo){
+  const cfg=wNomsCfg(w),cs=w.items.filter(i=>i.t==='city');
+  const pris=[];
+  /* ce qui est déjà sur la carte : les points eux-mêmes, les noms de royaume, les textes libres */
+  for(const c of cs){const r=(WN_RAYON[c.k]||4.5);pris.push([c.x-r,c.y-r,c.x+r,c.y+r])}
+  for(const r of w.items)if(r.t==='realm'&&r.name&&!r.hideName){
+    const fs=clamp(Math.sqrt(polyArea(r.pts))/9,11,34),L=realmLab(r,w),lg=String(r.name).length*fs*.62;
+    pris.push([L[0]-lg/2,L[1]-fs*.8,L[0]+lg/2,L[1]+fs*.4])}
+  for(const l of w.items)if(l.t==='label'&&l.text){
+    const fs=l.size||14,lg=String(l.text).length*fs*.5;
+    pris.push([l.x-lg/2,l.y-fs*.8,l.x+lg/2,l.y+fs*.4])}
+  const ordre=cs.filter(c=>c.name&&c.hideName!==true&&wNomVisible(cfg,c.k))
+    .map((c,i)=>({c:c,i:i}))
+    .sort((a,b)=>(WN_RANG[a.c.k]??4)-(WN_RANG[b.c.k]??4)||String(a.c.name).localeCompare(String(b.c.name),'fr')||a.i-b.i);
+  let s='',caches=0;
+  for(const{c}of ordre){
+    const fs=(WN_FS[c.k]||9)*cfg.t,off=(WN_OFF[c.k]||11)*Math.max(1,cfg.t*.9),r=WN_RAYON[c.k]||4.5;
+    const lg=String(c.name).length*fs*.52,ht=fs*1.06,marge=fs*.12;
+    const essais=[
+      [0,off,'middle'],[0,-(off*.72),'middle'],
+      [r+fs*.3,fs*.34,'start'],[-(r+fs*.3),fs*.34,'end'],
+      [r*.8,off*.9,'start'],[-(r*.8),off*.9,'end'],
+      [r*.8,-(off*.6),'start'],[-(r*.8),-(off*.6),'end'],
+      [0,off*1.9,'middle'],[0,-(off*1.5),'middle']];
+    let mis=null;
+    for(const[dx,dy,an]of essais){
+      const cx=c.x+dx+(an==='start'?lg/2:an==='end'?-lg/2:0);
+      const b=[cx-lg/2-marge,c.y+dy-ht*.82-marge,cx+lg/2+marge,c.y+dy+ht*.24+marge];
+      if(pris.some(q=>wChevauche(b,q)))continue;
+      mis=[dx,dy,an,b];break}
+    if(!mis){caches++;continue}
+    pris.push(mis[3]);
+    s+=`<text class="nl" x="${fx(c.x+mis[0])}" y="${fx(c.y+mis[1])}" font-size="${fx(fs)}" text-anchor="${mis[2]}" ${['capitale','ville','port'].includes(c.k)?'font-weight="700"':'font-style="italic"'} ${halo}>${esc(c.name)}</text>`}
+  W_NOMS_CACHES=caches;
+  return s}
+
+/* ---- les réglages, dans le panneau de la carte ---- */
+function wNomsPanneau(w){
+  const cfg=wNomsCfg(w),cs=w.items.filter(i=>i.t==='city');
+  const genres=Object.keys(CK).filter(k=>cs.some(c=>c.k===k));
+  if(!genres.length)return '';
+  let h=`<h3>Noms des lieux</h3><div class="row"><label>Taille</label><select data-wnom="t">`
+    +WN_TAILLES.map(([v,n])=>`<option value="${v}"${Math.abs(cfg.t-(+v))<.001?' selected':''}>${n}</option>`).join('')+`</select></div>`;
+  h+=`<p class="hint" style="margin:6px 0 2px">À afficher :</p><div class="row" style="flex-wrap:wrap;gap:4px 12px">`
+    +genres.map(k=>`<label style="min-width:0"><input type="checkbox" data-wnomk="${k}"${wNomVisible(cfg,k)?' checked':''}> ${esc(CK[k])} (${cs.filter(c=>c.k===k).length})</label>`).join('')+`</div>`;
+  h+=`<p class="hint">Un nom qui ne tient nulle part sans en recouvrir un autre n'est pas écrit`
+    +(W_NOMS_CACHES?` : ${W_NOMS_CACHES} nom${W_NOMS_CACHES>1?'s':''} de côté en ce moment. Réduis la taille, masque un type de lieu, ou écarte-les.`:'.')+`</p>`;
+  return h}
 /* ============ garder les plans, plan par plan ============
    Chaque bâtiment, chaque village, chaque carte du monde est une pièce qui porte sa date (maj) : la plus récente l'emporte,
    et une suppression laisse une trace datée (supprime) pour ne pas revenir d'un autre appareil. Le même document sert au
@@ -3982,7 +4170,13 @@ function pnItem(genre,it){
         if(q.k!==undefined&&!WK[q.k])q.k='fenetre';pnOrient(q);return q;
       case 'furn':if(!xy()||!FD[q.k])return null;if(q.r!==undefined&&!pnFini(q,'r'))q.r=0;return q;
       case 'stair':if(!(xy()&&pnFini(q,'w')&&pnFini(q,'h')&&q.w>0&&q.h>0))return null;
-        if(q.dir!==undefined&&!['n','s','e','w','spiral'].includes(q.dir))q.dir='n';return q;
+        if(q.dir!==undefined&&!['n','s','e','w','spiral'].includes(q.dir))q.dir='n';
+        /* la suite d'un étage à l'autre : un lien, un jumeau automatique, et s'il continue */
+        if(q.esc!==undefined&&!(typeof q.esc==='string'&&q.esc&&q.esc.length<=40))delete q.esc;
+        if(q.auto!==undefined&&q.auto!==true)delete q.auto;
+        if(q.suite!==undefined&&typeof q.suite!=='boolean')delete q.suite;
+        if(q.auto&&!q.esc)delete q.auto;
+        return q;
       case 'label':if(!xy())return null;if(q.text===undefined)q.text='';if(q.size!==undefined&&!pnFini(q,'size'))q.size=12;return q;
     }
     return q}
@@ -4001,7 +4195,10 @@ function pnItem(genre,it){
     }
     return q}
   switch(q.t){
-    case 'city':if(!xy())return null;if(!CK[q.k])q.k='village';if(typeof q.name!=='string')q.name='';pnLien(q);return q;
+    case 'city':if(!xy())return null;if(!CK[q.k])q.k='village';if(typeof q.name!=='string')q.name='';pnLien(q);
+      /* le cercle de repère, en kilomètres : un nombre raisonnable, ou rien */
+      if(q.cercle!==undefined){if(!pnFini(q,'cercle')||q.cercle<=0)delete q.cercle;else q.cercle=fx(clamp(q.cercle,0,1e6))}
+      return q;
     case 'realm':q.pts=pnPts(q.pts,3);if(!q.pts)return null;if(typeof q.name!=='string')q.name='';pnLien(q);
       if(q.color!==undefined&&typeof q.color!=='string')q.color='';
       if((q.lx!==undefined||q.ly!==undefined)&&!(pnFini(q,'lx')&&pnFini(q,'ly'))){delete q.lx;delete q.ly}return q;
@@ -4043,6 +4240,13 @@ function plansNettoyer(k,p,id){
     if(!pnFini(q,'seed'))q.seed=1;
     if(!['froid','tempere','chaud'].includes(q.climate))q.climate='tempere';
     if(q.glyph!==undefined&&typeof q.glyph!=='boolean')q.glyph=true;
+    /* les réglages des noms de lieux : une taille, et les genres qu'on n'écrit pas */
+    if(q.noms!==undefined){
+      const o=pnObj(q.noms)?q.noms:null;
+      if(!o)delete q.noms;
+      else{const t=typeof o.t==='number'&&isFinite(o.t)?fx(clamp(o.t,.5,2.5)):1,off={};
+        if(pnObj(o.off))for(const kk of Object.keys(o.off))if(CK[kk]&&o.off[kk]===true)off[kk]=true;
+        if(Object.keys(off).length||t!==1)q.noms={t:t,off:off};else delete q.noms}}
     q.gw=Math.round(pnNb(q.gw,WGW,8,400));q.gh=Math.round(pnNb(q.gh,WGH,8,400));
     q.th=pnB64(q.th);q.tm=pnB64(q.tm);q.tv=pnNb(q.tv,0,0,1e15);
     if(q.parent!==null){
@@ -4494,8 +4698,8 @@ document.addEventListener('keydown',e=>{
     closePop();
     if(!typing&&enEditeur(tg)){
       /* rien à annuler, rien de choisi : Échap sort aussi du plein écran (quand le navigateur ne l'a pas déjà fait) */
-      const rien=!menu&&!g&&!vg&&!wg&&!vdraw&&!wdraw&&!bdraw&&!ui.sel.length&&(!ui.edit||ui.tool==='sel');
-      g=null;vg=null;wg=null;vdraw=null;wdraw=null;bdraw=null;
+      const rien=!menu&&!g&&!vg&&!wg&&!vdraw&&!wdraw&&!bdraw&&!wmes&&!ui.sel.length&&(!ui.edit||ui.tool==='sel');
+      g=null;vg=null;wg=null;vdraw=null;wdraw=null;bdraw=null;wmes=null;
       if(ui.edit&&ui.tool!=='sel')setTool('sel');else{ui.sel=[];renderSide()}
       renderOverlay();
       if(rien&&pleinOn())pleinBasculer(false)}

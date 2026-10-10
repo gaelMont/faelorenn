@@ -9,7 +9,7 @@ Huit outils pour jouer à Faelorenn, dans un navigateur :
 - `createur.html` : le Registre du Havre. Création de personnage, liste de tes personnages, impression, export Word, export .json pour la Table.
 - `rencontres.html` : le Registre des Rencontres. Tirage de rencontres, envoi dans la séance, bestiaire maison, familles, tables de butin, traits.
 - `competences.html` : le Registre des Compétences. Retoucher les Pratiques de chaque liste et la caractéristique qui les lance, les compétences et leur caractéristique, les compétences de Bannière. Le créateur et la table s'en servent ; le fichier du dépôt se partage avec les autres joueurs.
-- `plans.html` : le Registre des Plans. Les plans des bâtiments (étage par étage, façade), des villages et des cartes du monde. En mode Consulter, on lit, on zoome et on entre d’une carte dans un village puis dans un bâtiment sans rien risquer de bouger ; en mode Modifier, on dessine. Chaque plan est gardé dans le navigateur, et dans le dépôt une fois relié.
+- `plans.html` : le Registre des Plans. Les plans des bâtiments (étage par étage, façade), des villages et des cartes du monde. En mode Consulter, on lit, on zoome et on entre d’une carte dans un village puis dans un bâtiment sans rien risquer de bouger ; en mode Modifier, on dessine. Chaque plan est gardé dans le navigateur, et dans le dépôt une fois relié. Un plan, un plan avec ceux qui en dépendent, ou tous les plans d’un genre (bâtiments, villages, cartes du monde) s’exportent et se reprennent à part, en .json.
 
 `index.html` est la page d'accueil qui mène aux huit, et où l'on relie la sauvegarde en ligne. `progression.html` ne fait plus que mener à la progression, dans le Registre des Marchefleurs : les anciens liens marchent encore.
 

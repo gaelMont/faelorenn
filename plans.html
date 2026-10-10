@@ -169,6 +169,11 @@ textarea{width:100%;resize:vertical;line-height:1.4}
   #top select{max-width:100%;flex:1 1 100%}
   #top .sep{display:none}
 }
+.genres{margin-top:16px;padding-top:12px;border-top:1px solid var(--rule)}
+.genres h3{margin:0;font:600 14px/1.3 "IBM Plex Sans",system-ui,sans-serif;color:var(--forest)}
+.genre{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;margin-top:10px}
+.genre .gn{flex:0 0 7.5em;font-weight:600}
+.genre .gc{flex:0 0 6.5em;color:var(--muted);font-size:13px;font-variant-numeric:tabular-nums}
 @media print{
   .noprint,#top,#tools,#side,#hud,#floorbar{display:none!important}
   html,body{background:#fff;color:#000}
@@ -250,6 +255,13 @@ textarea{width:100%;resize:vertical;line-height:1.4}
     </div>
     <p class="note" id="plMsg" role="status" hidden></p>
     <p class="note">La sauvegarde .json garde tous les plans ; elle se réimporte ici, sur un autre appareil ou chez Océane, et le plus récent l’emporte, plan par plan. Pour reprendre un projet de l’ancien Atelier des plans : dans l’Atelier, « Projet » puis « Sauvegarder le projet (.json) », puis « Importer un .json » ici.</p>
+    <div class="genres" role="group" aria-labelledby="plGenresT">
+      <h3 id="plGenresT">Un genre à la fois</h3>
+      <p class="note">Exporte ou reprends les bâtiments, les villages ou les cartes du monde sans toucher aux autres. Pour un seul plan, « Exporter » en haut de l’établi propose « Ce plan : fichier .json », avec ou sans les plans qui en dépendent.</p>
+      <div class="genre"><span class="gn">Bâtiments</span><span class="gc" id="plN-b"></span><span class="acts"><button class="btn" id="plExp-b" type="button" aria-label="Exporter tous les bâtiments">Exporter</button><button class="btn" id="plImp-b" type="button" aria-label="Importer des bâtiments">Importer</button></span></div>
+      <div class="genre"><span class="gn">Villages</span><span class="gc" id="plN-v"></span><span class="acts"><button class="btn" id="plExp-v" type="button" aria-label="Exporter tous les villages">Exporter</button><button class="btn" id="plImp-v" type="button" aria-label="Importer des villages">Importer</button></span></div>
+      <div class="genre"><span class="gn">Mondes</span><span class="gc" id="plN-w"></span><span class="acts"><button class="btn" id="plExp-w" type="button" aria-label="Exporter toutes les cartes du monde">Exporter</button><button class="btn" id="plImp-w" type="button" aria-label="Importer des cartes du monde">Importer</button></span></div>
+    </div>
     <div id="ghcPlace"></div>
   </div>
 </section>
@@ -2916,12 +2928,13 @@ $('#bExp').onclick=function(){
     E.push('-');
     E.push({t:'Description : copier (Markdown)',f:()=>copyText(mdVillage(v))});
     E.push({t:'Description : fichier .md',f:()=>saveFile(n+'.md',mdVillage(v),'text/markdown')});}
-  popup(this,E)};
+  plansMenuJson(E);popup(this,E)};
 /* ====== aide ====== */
 $('#bHelp').onclick=()=>modal(`<h2>Registre des Plans</h2>
 <p>Trois établis : <b>Bâtiments</b> (plans par étage, façade), <b>Villages</b> (cartes générées ou dessinées à la main) et <b>Mondes</b> (planisphère, continent, pays, région). Un lieu de la carte du monde ouvre son village, et les bâtisses d’un village ouvrent leurs plans.</p>
 <p class="tag">Consulter ou modifier</p><p>En <b>Consulter</b>, rien ne bouge par erreur : clique un élément pour lire sa fiche, zoome, et entre d’une carte dans un village puis dans un bâtiment (double-clic, ou bouton « Entrer »). Passe en <b>Modifier</b> quand tu veux dessiner.</p>
 <p class="tag">Garder</p><p>Chaque plan est gardé dans ce navigateur dès que tu le touches. Une fois ton dépôt GitHub relié (section « Sauvegarder ou partager », en bas de la page), il l’est aussi dans <b>plans.json</b> et il passe chez Océane : celui qui a retouché un plan en dernier l’emporte, plan par plan.</p>
+<p class="tag">Exporter, importer</p><p>« Exporter », en haut, donne pour le plan affiché un fichier .json : ce plan seul, ce plan avec les plans qui en dépendent (une carte du monde mène à ses villages, un village à ses bâtiments), ou tous les plans du même genre. En bas de la page, « Un genre à la fois » exporte ou reprend les bâtiments, les villages ou les cartes du monde sans toucher aux autres. Une fenêtre dit ce qui entre avant de valider, et le fichier prend la place d’un plan qui existe déjà ici.</p>
 <p class="tag">Dimensions</p><p>Tout est en mètres. Dans un bâtiment, la grille fait 1 m par carreau (traits forts tous les 5 m) et l’aimant se règle à 25 cm, 50 cm ou 1 m. La pièce choisie affiche ses cotes sur le plan et ses valeurs exactes (largeur, hauteur, surface, périmètre) dans le panneau de droite, où tu peux les saisir au centimètre. La case « Dimensions » écrit la taille de chaque pièce sur le plan et dans l’export. Dans un village, tailles et distances sont aussi en mètres, avec une échelle graphique sur l’export.</p>
 <p class="tag">Mondes</p><p>Chaque carte du monde couvre une zone en kilomètres. L’outil <b>Zoom</b> trace un rectangle et crée une carte plus précise (relief affiné, lieux, rivières, routes et royaumes repris). Un <b>lieu</b> (ville, village, hameau) ouvre sa carte de village, dont les bâtisses mènent à leurs plans : monde, continent, pays, région, village, bâtiment. L’outil <b>Relief</b> se peint comme un pinceau (monter, creuser, terre, mer, humide, sec). Le générateur crée continent, archipel, îles ou pangée avec rivières, lieux, routes et royaumes.</p>
 <p class="tag">Raccourcis, partout</p>
@@ -3422,6 +3435,7 @@ function relancerEnLigne(){
   if(ghcPret())GH=ghPlans();
   dessinerEtat()}
 function dessinerEtat(){
+  majGenres();
   const p=$('#etat');
   if(!p)return;
   let cls='pt',t='Gardé dans ce navigateur seulement';
@@ -3472,22 +3486,53 @@ function telecharger(nom,contenu,type,bouton){
   setTimeout(()=>{a.remove();URL.revokeObjectURL(url)},4000);
   dire('Fichier envoyé')}
 const sauvegardeJson=()=>{plansVider();plansSuivre();return plansTexte()};
+const PL_NOM={b:'bâtiment',v:'village',w:'carte du monde'};
+const PL_AUCUN={b:'aucun bâtiment',v:'aucun village',w:'aucune carte du monde'};
+/* ce qui entre, comparé à ce qu'on a ici : des plans propres, sans date (la date sera celle de la reprise) */
+function plansEntrants(lots,rejetes){
+  const entrants={b:[],v:[],w:[]},neufs=[],differents=[];let identiques=0;
+  for(const[k,liste]of lots){
+    for(const q of liste){
+      const loc=META[k][q.id];
+      if(loc&&!loc.del&&SER[k][q.id]===JSON.stringify(q)){identiques++;continue}
+      entrants[k].push(q);
+      (loc&&!loc.del?differents:neufs).push({nom:q.name,k:k})}}
+  const cur={};
+  for(const[k]of PL_GENRES)if(entrants[k].length)cur[k]=entrants[k][0].id;
+  /* un village dont un bâtiment lié n'est ni ici ni dans le fichier : le lien tombera à la première ouverture du village */
+  const la=new Set();
+  plansListe('b').forEach(p=>la.add(p.id));entrants.b.forEach(p=>la.add(p.id));
+  let sansPlan=0;
+  for(const q of entrants.v)if(q.items.some(it=>it.t==='bld'&&it.link&&!la.has(it.link)))sansPlan++;
+  return {entrants:entrants,neufs:neufs,differents:differents,identiques:identiques,rejetes:rejetes,sansPlan:sansPlan,cur:cur}}
 /* un projet de l'ancien Atelier : trois listes de plans, sans date. On montre ce qui entre avant de le faire. */
-function plansLireAtelier(o){
-  const lots=[['b',o.buildings],['v',o.villages],['w',o.worlds]];
-  const entrants={b:[],v:[],w:[]},neufs=[],differents=[];let identiques=0,rejetes=0;
-  for(const[k,arr]of lots){
-    let n=0;
+function plansLireAtelier(o,genre){
+  plansSuivre();
+  const lots=[];let rejetes=0;
+  for(const[k,arr]of [['b',o.buildings],['v',o.villages],['w',o.worlds]]){
+    if(genre&&genre!==k)continue;
+    const liste=[];let n=0;
     for(const p of (Array.isArray(arr)?arr:[])){
       if(n++>=PL_MAX){rejetes++;continue}
       const id=pnObj(p)?p.id:null;
       if(!plansIdOk(id)){rejetes++;continue}
       const q=plansNettoyer(k,p,id);if(!q){rejetes++;continue}
-      const loc=META[k][id];
-      if(loc&&!loc.del&&SER[k][id]===JSON.stringify(q)){identiques++;continue}
-      entrants[k].push(q);
-      (loc&&!loc.del?differents:neufs).push(q.name)}}
-  return {entrants:entrants,neufs:neufs,differents:differents,identiques:identiques,rejetes:rejetes,cur:{b:o.curB,v:o.curV,w:o.curW}}}
+      liste.push(q)}
+    lots.push([k,liste])}
+  const r=plansEntrants(lots,rejetes);
+  if(!genre){
+    const cur={b:o.curB,v:o.curV,w:o.curW};
+    for(const[k]of PL_GENRES)if(cur[k]===undefined&&r.cur[k]!==undefined)cur[k]=r.cur[k];
+    r.cur=cur}
+  return r}
+/* un fichier du Registre qui n'est pas une sauvegarde complète : un plan, un plan et ses plans liés, un genre */
+function plansLireRegistre(o,genre){
+  plansSuivre();
+  const brut=plansLireBrut(o),lots=[];
+  for(const[k]of PL_GENRES){
+    if(genre&&genre!==k)continue;
+    lots.push([k,Object.keys(brut[k]).filter(id=>brut[k][id].plan).map(id=>brut[k][id].plan)])}
+  return plansEntrants(lots,0)}
 function plansAppliquerAtelier(r){
   plansSuivre();
   for(const[k]of PL_GENRES)for(const q of r.entrants[k]){
@@ -3506,39 +3551,122 @@ function plansAppliquerAtelier(r){
   plansGarder();
   if(GH&&GH.actif)GH.planifier();
   renderAll();fit();dessinerEtat()}
-function plansOuvrirFichier(texte){
+/* où l'on regarde après une reprise : le genre des plans qui viennent d'arriver, si l'on n'y était pas */
+function plansAller(r){
+  const ks=PL_GENRES.map(g=>g[0]).filter(k=>r.entrants[k].length);
+  if(ks.length&&!ks.includes(ui.mode)){ui.fromW=null;ui.from=null;setMode(ks[0])}}
+function plansFenetre(r){
+  const tout=r.neufs.length+r.differents.length;
+  const liste=(t,L)=>L.length?'<p>'+esc(t)+'</p><ul>'+L.slice(0,12).map(n=>'<li>'+esc(n.nom)+' <span class="hint">('+PL_NOM[n.k]+')</span></li>').join('')+(L.length>12?'<li>et '+(L.length-12)+' autres</li>':'')+'</ul>':'';
+  modal('<h2>Reprendre ces plans ?</h2>'
+    +(r.neufs.length?'<p><b>'+pluriel(r.neufs.length,'plan nouveau va','plans nouveaux vont')+'</b> s’ajouter.</p>'+liste('Les voici :',r.neufs):'')
+    +(r.differents.length?'<p><b>'+pluriel(r.differents.length,'plan existe déjà ici avec un autre contenu','plans existent déjà ici avec un autre contenu')+'</b> : le fichier prend '+(r.differents.length>1?'leur place':'sa place')+'.</p>'+liste('Remplacés :',r.differents):'')
+    +(r.identiques?'<p class="hint">'+pluriel(r.identiques,'plan est','plans sont')+' déjà ici, tel quel.</p>':'')
+    +(r.sansPlan?'<p class="hint">'+pluriel(r.sansPlan,'village renvoie','villages renvoient')+' à des bâtiments qui ne sont pas ici : ces liens seront perdus. Reprends d’abord les bâtiments, ou exporte le village avec « et ses plans liés ».</p>':'')
+    +(r.rejetes?'<p class="hint">'+pluriel(r.rejetes,'plan illisible a été écarté','plans illisibles ont été écartés')+'.</p>':'')
+    +'<div class="row"><button type="button" class="btn primary" id="plOk">Importer</button><button type="button" class="btn" id="plNon">Annuler</button></div>');
+  $('#plOk').onclick=()=>{closeModal();plansAppliquerAtelier(r);plansAller(r);plDire('Repris : '+pluriel(tout,'plan','plans')+'.',true)};
+  $('#plNon').onclick=closeModal}
+/* genre : ne reprendre que les bâtiments, ou que les villages, ou que les cartes du monde (null : tout ce que le fichier porte) */
+function plansOuvrirFichier(texte,genre){
   let o=null;
   try{o=JSON.parse(texte)}catch(e){plDire('Ce fichier n’est pas lisible.',false);return}
-  if(pnObj(o)&&o.format===PL_FORMAT){
-    if(+o.version>PL_VERSION){plDire('Cette sauvegarde vient d’une version plus récente du Registre : mets d’abord le site à jour.',false);return}
+  const registre=pnObj(o)&&o.format===PL_FORMAT;
+  const atelier=!registre&&pnObj(o)&&Array.isArray(o.buildings)&&Array.isArray(o.villages);
+  if(!registre&&!atelier){plDire('Ce n’est pas une sauvegarde de plans : ni du Registre, ni de l’ancien Atelier des plans.',false);return}
+  if(registre&&+o.version>PL_VERSION){plDire('Cette sauvegarde vient d’une version plus récente du Registre : mets d’abord le site à jour.',false);return}
+  /* la sauvegarde complète du Registre se fond par les dates, comme le fichier du dépôt : le plus récent l'emporte */
+  if(registre&&!genre&&o.portee!=='partiel'){
     const n=plansRecevoir(o,{garder:true});
     if(n&&GH&&GH.actif)GH.planifier();
     plDire(n?'Repris : '+pluriel(n,'plan nouveau ou plus récent','plans nouveaux ou plus récents')+'.':'Rien de neuf dans ce fichier : tout y est déjà, ou en plus récent ici.',true);
     return}
-  if(pnObj(o)&&Array.isArray(o.buildings)&&Array.isArray(o.villages)){
-    const r=plansLireAtelier(o);
-    const tout=r.neufs.length+r.differents.length;
-    if(!tout){plDire(r.identiques?'Rien de neuf dans ce fichier : les '+pluriel(r.identiques,'plan y est','plans y sont')+' déjà ici.':'Ce projet de l’Atelier ne contient aucun plan lisible.',!!r.identiques);return}
-    const liste=(t,L)=>L.length?`<p>${esc(t)}</p><ul>`+L.slice(0,12).map(n=>`<li>${esc(n)}</li>`).join('')+(L.length>12?`<li>et ${L.length-12} autres</li>`:'')+`</ul>`:'';
-    modal(`<h2>Reprendre ce projet ?</h2>`
-      +(r.neufs.length?`<p><b>${pluriel(r.neufs.length,'plan nouveau','plans nouveaux')}</b> vont s’ajouter.</p>`+liste('Les voici :',r.neufs):'')
-      +(r.differents.length?`<p><b>${pluriel(r.differents.length,'plan existe','plans existent')} déjà ici avec un autre contenu</b> : le fichier prend leur place.</p>`+liste('Remplacés :',r.differents):'')
-      +(r.identiques?`<p class="hint">${pluriel(r.identiques,'plan est','plans sont')} déjà ici, tel quel.</p>`:'')
-      +(r.rejetes?`<p class="hint">${pluriel(r.rejetes,'plan illisible a été écarté','plans illisibles ont été écartés')}.</p>`:'')
-      +`<div class="row"><button type="button" class="btn primary" id="plOk">Importer</button><button type="button" class="btn" id="plNon">Annuler</button></div>`);
-    $('#plOk').onclick=()=>{closeModal();plansAppliquerAtelier(r);plDire('Repris : '+pluriel(tout,'plan','plans')+'.',true)};
-    $('#plNon').onclick=closeModal;
+  /* tout le reste (un plan, un genre, un projet de l'Atelier) : on dit ce qui entre, et le fichier prend la place de ce qui existe */
+  const r=registre?plansLireRegistre(o,genre):plansLireAtelier(o,genre);
+  const tout=r.neufs.length+r.differents.length;
+  if(!tout){
+    if(r.identiques)plDire('Rien de neuf dans ce fichier : '+(r.identiques>1?'ses '+r.identiques+' plans sont déjà ici, tels quels.':'son plan est déjà ici, tel quel.'),true);
+    else plDire(genre?'Ce fichier ne contient '+PL_AUCUN[genre]+'.':'Ce fichier ne contient aucun plan lisible.',false);
     return}
-  plDire('Ce n’est pas une sauvegarde de plans : ni du Registre, ni de l’ancien Atelier des plans.',false)}
+  plansFenetre(r)}
+
+/* ---------- exporter à part : un plan, un plan et ceux qui en dépendent, un genre ---------- */
+const plansCourant=k=>k==='b'?CB():k==='v'?CV():CW();
+/* une carte du monde mène à ses villages et à ses cartes plus précises, un village à ses bâtiments */
+function plansDepend(k,p){
+  const out={b:new Set(),v:new Set(),w:new Set()};
+  const va=(kk,q)=>{
+    if(!q||VIRT.has(q.id)||out[kk].has(q.id))return;
+    out[kk].add(q.id);
+    if(kk==='w'){
+      for(const it of q.items){
+        if(it.t==='city'&&it.link)va('v',P.villages.find(x=>x.id===it.link));
+        else if(it.t==='realm'&&it.link)va('w',P.worlds.find(x=>x.id===it.link))}
+      for(const c of P.worlds)if(c.parent&&c.parent.id===q.id)va('w',c)}
+    else if(kk==='v'){for(const it of q.items)if(it.t==='bld'&&it.link)va('b',P.buildings.find(x=>x.id===it.link))}};
+  va(k,p);
+  return out}
+/* le texte d'un fichier qui ne porte que les plans choisis, chacun avec sa date : il se reprend plan par plan */
+function plansTexteChoix(sel){
+  plansVider();plansSuivre();
+  const parts=[];let n=0;
+  for(const[k,nom]of PL_GENRES){
+    const ent=Object.keys(META[k]).sort().filter(id=>sel[k].has(id)&&!META[k][id].del&&!VIRT.has(id)&&SER[k][id]!==undefined)
+      .map(id=>{n++;return JSON.stringify(id)+':{"maj":'+META[k][id].maj+',"plan":'+SER[k][id]+'}'});
+    parts.push('"'+nom+'":{'+ent.join(',')+'}')}
+  return {texte:'{"format":"'+PL_FORMAT+'","version":'+PL_VERSION+',"portee":"partiel",'+parts.join(',')+'}',n:n}}
+const plansVide=()=>({b:new Set(),v:new Set(),w:new Set()});
+function exporterPlan(k,avecLies){
+  const p=plansCourant(k);
+  if(!p||VIRT.has(p.id)){toast('Rien à exporter : cette page est encore blanche');return}
+  const sel=plansVide();
+  if(avecLies){const d=plansDepend(k,p);for(const[kk]of PL_GENRES)d[kk].forEach(id=>sel[kk].add(id))}
+  else sel[k].add(p.id);
+  const r=plansTexteChoix(sel);
+  const nom=({b:'batiment',v:'village',w:'monde'})[k]+'-'+slug(p.name)+(avecLies?'-et-liens':'')+'.json';
+  telecharger(nom,r.texte,'application/json',null);
+  toast('Fichier téléchargé : '+nom+(r.n>1?' ('+r.n+' plans)':''))}
+function exporterGenre(k,bouton){
+  const ids=plansListe(k).filter(p=>!VIRT.has(p.id)).map(p=>p.id);
+  if(!ids.length){const t='Rien à exporter : il n’y a encore '+PL_AUCUN[k]+'.';if(bouton)plDire(t,false);else toast(t);return}
+  const sel=plansVide();ids.forEach(id=>sel[k].add(id));
+  const r=plansTexteChoix(sel);
+  const nom=({b:'batiments',v:'villages',w:'mondes'})[k]+'-faelorenn.json';
+  telecharger(nom,r.texte,'application/json',bouton||null);
+  if(bouton)plDire('Fichier prêt : '+nom+' ('+pluriel(r.n,'plan','plans')+').',true);
+  else toast('Fichier téléchargé : '+nom+' ('+pluriel(r.n,'plan','plans')+')')}
+/* le menu « Exporter » de chaque établi y ajoute ses fichiers .json */
+function plansMenuJson(E){
+  const k=ui.mode,p=plansCourant(k),vide=!p||VIRT.has(p.id);
+  E.push('-');
+  E.push({t:'Ce plan : fichier .json',f:()=>exporterPlan(k,false)});
+  if(!vide){
+    const d=plansDepend(k,p),nb=d.b.size+d.v.size+d.w.size;
+    if(nb>1)E.push({t:'Ce plan et '+(nb>2?'ses '+(nb-1)+' plans liés':'son plan lié')+' : fichier .json',f:()=>exporterPlan(k,true)})}
+  E.push({t:({b:'Tous les bâtiments',v:'Tous les villages',w:'Tous les mondes'})[k]+' : fichier .json',f:()=>exporterGenre(k)})}
+/* le nombre de plans de chaque genre, dans la section « Sauvegarder ou partager » */
+function majGenres(){
+  if(!P)return;
+  for(const[k]of PL_GENRES){
+    const n=plansListe(k).filter(p=>!VIRT.has(p.id)).length;
+    const c=$('#plN-'+k),b=$('#plExp-'+k),t=n?pluriel(n,'plan','plans'):'aucun plan';
+    if(c&&c.textContent!==t)c.textContent=t;
+    if(b)b.disabled=!n}}
+let plGenreImport=null;   /* le genre du bouton « Importer » qu'on vient de presser */
+
 function brancherEnLigne(){
   $('#plEnLigne').onclick=sauverEnLigne;
   $('#plJson').onclick=e=>telecharger('plans-faelorenn.json',sauvegardeJson(),'application/json',e.currentTarget);
-  $('#plImport').onclick=()=>$('#plFichier').click();
+  $('#plImport').onclick=()=>{plGenreImport=null;$('#plFichier').click()};
+  for(const[k]of PL_GENRES){
+    $('#plExp-'+k).onclick=e=>exporterGenre(k,e.currentTarget);
+    $('#plImp-'+k).onclick=()=>{plGenreImport=k;$('#plFichier').click()}}
   $('#plFichier').onchange=e=>{
     const f=e.target.files&&e.target.files[0];
     if(!f)return;
+    const genre=plGenreImport;plGenreImport=null;
     const lecteur=new FileReader();
-    lecteur.onload=()=>{plansOuvrirFichier(String(lecteur.result));e.target.value=''};
+    lecteur.onload=()=>{plansOuvrirFichier(String(lecteur.result),genre);e.target.value=''};
     lecteur.readAsText(f)};
   PANNEAU=ghcPanneau($('#ghcPlace'),{
     etat:()=>GH?{nom:'Les plans',texte:GH.actif?'dernier échange '+ghcIlYA(GH.dernier):'à l’arrêt',erreur:GH.erreur}:null,

@@ -1142,7 +1142,7 @@ function floorExtent(F){let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;for(const it of F.item
 function bldExtent(b){let e=null;for(const F of b.floors){const f=floorExtent(F);if(!f)continue;e=e?{x0:Math.min(e.x0,f.x0),y0:Math.min(e.y0,f.y0),x1:Math.max(e.x1,f.x1),y1:Math.max(e.y1,f.y1)}:f}return e}
 function B_bounds(){const b=CB();const e=bldExtent(b);if(!e)return{x0:0,y0:0,x1:b.gw*BU,y1:b.gh*BU};return{x0:e.x0*BU-40,y0:e.y0*BU-40,x1:e.x1*BU+40,y1:e.y1*BU+40}}
 const scaleBar=(x,y,m=5)=>{const L=m*BU;return `<g stroke="${INK}" stroke-width="2" fill="none"><path d="M${x} ${y}h${L}M${x} ${y-6}v12M${x+L/2} ${y-4}v8M${x+L} ${y-6}v12"/></g><text x="${x}" y="${y+20}" font-family="${FONT}" font-size="11" fill="${INK}">0 · ${m/2} · ${m} m</text>`};
-const northArrow=(x,y)=>`<g font-family="${FONT}" fill="${INK}" text-anchor="middle"><path d="M${x} ${y+36}V${y}M${x-8} ${y+12}L${x} ${y}L${x+8} ${y+12}" stroke="${INK}" stroke-width="2" fill="none"/><text x="${x}" y="${y+54}" font-size="13" font-weight="700">N</text></g>`;
+const northArrow=(x,y,e)=>{e=e||1;return `<g font-family="${FONT}" fill="${INK}" text-anchor="middle"><path d="M${x} ${fx(y+36*e)}V${y}M${fx(x-8*e)} ${fx(y+12*e)}L${x} ${y}L${fx(x+8*e)} ${fx(y+12*e)}" stroke="${INK}" stroke-width="${fx(2*e)}" fill="none"/><text x="${x}" y="${fx(y+54*e)}" font-size="${fx(13*e)}" font-weight="700">N</text></g>`};
 /* plan complet d'un étage, prêt à exporter */
 function planSVG(b,fi,o={}){
   const e=bldExtent(b)||{x0:0,y0:0,x1:10,y1:8};const pad=o.pad??1.5;
@@ -1270,6 +1270,7 @@ const BM={
   if(ui.facade)return false;
   if(t==='sel'){
     const sel=selItems();
+    if(sel.length>1){const gh=grHandleAt(sel,m);if(gh){snap();g={t:'groupe',h:gh,items:sel,orig:sel.map(i=>JSON.parse(JSON.stringify(i))),b:grBoite(sel),m0:m};return true}}
     if(sel.length===1){const h=handleAt(sel[0],m);if(h){if(libreOk(sel[0])){libreDown(sel[0],h,e);return true}snap();g={t:'resize',it:sel[0],h,o:{...sel[0]}};return true}}
     const hit=hitAt(m[0],m[1],F);
     if(!hit){if(!e.shiftKey){ui.sel=[];renderSide();renderOverlay()}return false}
@@ -1284,13 +1285,14 @@ const BM={
   if(t==='wall'){g={t:'wall',m0:[sn(m[0]),sn(m[1])],m:[sn(m[0]),sn(m[1])]};return true}
   if(t==='door'||t==='win'){const w=t==='door'?DW[ui.doorK]:WW[ui.winK];const p=place(m,w,F);snap();
     const it=addItem(t==='door'?{t:'door',k:ui.doorK,x:p.x,y:p.y,o:p.o,...(p.o==='a'?{ang:p.ang}:{}),w,fl:p.fl,hg:1}:{t:'win',k:ui.winK,x:p.x,y:p.y,o:p.o,...(p.o==='a'?{ang:p.ang}:{}),w});ui.sel=[it.id];dirty();renderSide();renderOverlay();return true}
-  if(t==='furn'){snap();const it=addItem({t:'furn',k:ui.furn,x:snapv(m[0],.25),y:snapv(m[1],.25),r:ui.furnRot||0});ui.sel=[it.id];dirty();renderSide();return true}
-  if(t==='label'){snap();const it=addItem({t:'label',x:snapv(m[0],.25),y:snapv(m[1],.25),text:'Texte',size:12});ui.sel=[it.id];setTool('sel');dirty();renderSide();return true}
+  if(t==='furn'){snap();const it=addItem({t:'furn',k:ui.furn,x:snapv(m[0],grPasFin()),y:snapv(m[1],grPasFin()),r:ui.furnRot||0});ui.sel=[it.id];dirty();renderSide();return true}
+  if(t==='label'){snap();const it=addItem({t:'label',x:snapv(m[0],grPasFin()),y:snapv(m[1],grPasFin()),text:'Texte',size:12});ui.sel=[it.id];setTool('sel');dirty();renderSide();return true}
   if(t==='erase'){const h=hitAt(m[0],m[1],F);if(h){snap();F.items=F.items.filter(i=>i!==h);ui.sel=ui.sel.filter(i=>i!==h.id);dirty();renderSide()}return true}
   return false},
  move(e,dragging){
   const m=toM(e),F=CF();ui.hover=m;if(bdraw)bdraw.sh=!!e.shiftKey;
   if(g&&g.t==='pen'){libreTirer(m);return}
+  if(g&&g.t==='groupe'){grGeste(g,m,e);dirty();renderOverlay();return}
   if(g&&g.t==='resize'&&(g.h[0]==='i'||g.h[0]==='o'))g.alt=!!e.altKey;
   if(!g){renderOverlay();return}
   if(g.t==='move'){const dx=snapv(m[0]-g.m0[0]),dy=snapv(m[1]-g.m0[1]);if(!g.moved&&(dx||dy)){snap();g.moved=true}
@@ -1306,18 +1308,22 @@ const BM={
       ui.sel=[it.id];dirty();renderSide()}}
   else if(g.t==='wall'){if(Math.hypot(g.m[0]-g.m0[0],g.m[1]-g.m0[1])>=.5){snap();const it=addItem({t:'wall',x1:g.m0[0],y1:g.m0[1],x2:g.m[0],y2:g.m[1],k:ui.wallK});ui.sel=[it.id];dirty();renderSide()}}
   if(g.t==='pen'){const pen=g;g=null;libreHaut(pen);renderOverlay();return}
+  if(g.t==='groupe'){const gr=g;g=null;renderSide();renderOverlay();
+    if(gr.h==='grot'&&gr.ang&&!grQuart(gr.ang)&&grNePasTourner(gr.items))toast('Les escaliers, les ovales et les anneaux ne tournent que par quarts de tour : le reste a suivi l’angle.');return}
   if(g.t==='resize'&&(libreOk(g.it)||g.it.t==='wall'))renderSide();
   g=null;renderOverlay();renderSideLight()},
  cancel(){g=null;renderOverlay()},
  ctx(e){if(bdrawOk())bRetirer()},
- dbl(e){if(bdrawOk()){if(bdraw.pts.length>=3)bFinish();else{bdraw=null;renderSide();renderOverlay()}return}const F=CF(),m=toM(e);const h=hitAt(m[0],m[1],F);if(h&&h.t==='room'){ui.sel=[h.id];renderSide();const i=$('#side [data-f="name"]');i&&(i.focus(),i.select())}}
+ dbl(e){if(bdrawOk()){if(bdraw.pts.length>=3)bFinish();else{bdraw=null;renderSide();renderOverlay()}return}const F=CF(),m=toM(e);
+  const s1=selItems();if(s1.length===1&&libreOk(s1[0])){const hh=handleAt(s1[0],m);if(hh&&hh[0]==='v'){libreTourner(s1[0],+hh.slice(1));return}}const h=hitAt(m[0],m[1],F);if(h&&h.t==='room'){ui.sel=[h.id];renderSide();const i=$('#side [data-f="name"]');i&&(i.focus(),i.select())}}
 };
 function moveItem(it,o,dx,dy){
   if(it.t==='wall'){it.x1=o.x1+dx;it.x2=o.x2+dx;it.y1=o.y1+dy;it.y2=o.y2+dy}else{it.x=fx(o.x+dx);it.y=fx(o.y+dy);if(o.pts&&it.t==='room')it.pts=o.pts.map(p=>pBouge(p,dx,dy))}}
 function handlesOf(it){
   if(libreOk(it))return libreHandles(it);
+  if(it.t==='furn'){const d=FD[it.k]||{w:1,h:1};return{rot:[it.x,it.y-Math.max(d.w,d.h)/2-Math.max(.6,16/(BU*ui.view.k))]}}
   if(it.t==='room'||it.t==='stair'){const{x,y,w,h}=it;const H={nw:[x,y],n:[x+w/2,y],ne:[x+w,y],e:[x+w,y+h/2],se:[x+w,y+h],s:[x+w/2,y+h],sw:[x,y+h],w:[x,y+h/2]};return H}
-  if(it.t==='wall')return{a:[it.x1,it.y1],b:[it.x2,it.y2],c:murApex(it)};
+  if(it.t==='wall')return murHandles(it);
   if(it.t==='door'||it.t==='win'){const h=it.w/2;if(it.o==='a'){const a=rad(it.ang||0),dx=Math.cos(a)*h,dy=Math.sin(a)*h;return{a:[it.x-dx,it.y-dy],b:[it.x+dx,it.y+dy]}}return it.o==='h'?{a:[it.x-h,it.y],b:[it.x+h,it.y]}:{a:[it.x,it.y-h],b:[it.x,it.y+h]}}
   return{}}
 function handleAt(it,m){const H=handlesOf(it),tol=tolM()*1.3;for(const k in H)if(Math.hypot(H[k][0]-m[0],H[k][1]-m[1])<=tol)return k;return null}
@@ -1327,7 +1333,8 @@ function resizeItem(gs,m){
   else if(it.t==='room'||it.t==='stair'){let x0=o.x,y0=o.y,x1=o.x+o.w,y1=o.y+o.h;
     if(h.includes('w'))x0=Math.min(x,x1-.5);if(h.includes('e'))x1=Math.max(x,x0+.5);if(h.includes('n'))y0=Math.min(y,y1-.5);if(h.includes('s'))y1=Math.max(y,y0+.5);
     it.x=fx(x0);it.y=fx(y0);it.w=fx(x1-x0);it.h=fx(y1-y0)}
-  else if(it.t==='wall'){if(h==='c')murRegler(it,m);else if(h==='a'){it.x1=x;it.y1=y}else{it.x2=x;it.y2=y}}
+  else if(it.t==='wall'){if(h==='ha'||h==='hb')murTirer(it,h,m);else if(h==='c')murRegler(it,m);else if(h==='a'){it.x1=x;it.y1=y}else{it.x2=x;it.y2=y}}
+  else if(it.t==='furn'&&h==='rot'){let d=deg(Math.atan2(m[1]-it.y,m[0]-it.x))+90;if(!gs.alt)d=Math.round(d/15)*15;it.r=fx(((d%360)+360)%360)}
   else if((it.t==='door'||it.t==='win')&&it.o==='a')libreRedim(it,h,m);
   else if(it.t==='door'||it.t==='win'){const H=it.o==='h';const c=H?it.x:it.y;const p=snapv(H?m[0]:m[1],.25);const a=h==='a'?Math.min(p,c+it.w/2-.25):c-it.w/2,b=h==='b'?Math.max(p,c-it.w/2+.25):c+it.w/2;const nw=b-a;if(H)it.x=fx((a+b)/2);else it.y=fx((a+b)/2);it.w=fx(Math.max(.25,nw))}}
 /* ---- surcouche ---- */
@@ -1344,8 +1351,10 @@ function renderOverlay(){
       s+=`<text x="${(it.x+it.w/2)*BU}" y="${it.y*BU-9*k}" ${lab}>${fx(it.w)} m</text><text transform="translate(${it.x*BU-9*k} ${(it.y+it.h/2)*BU}) rotate(-90)" ${lab}>${fx(it.h)} m</text>`}
     if(it.t==='wall'){const L=murLong(it),ap=murApex(it);s+=`<text x="${ap[0]*BU}" y="${ap[1]*BU-8*k}" font-family="${FONT}" font-size="${12*k}" fill="var(--accent)" font-weight="700" stroke="${PAPER}" stroke-width="${3*k}" paint-order="stroke" text-anchor="middle">${fx(L)} m</text>`}
     if(ui.edit&&selItems().length===1){const H=handlesOf(it);for(const q in H)if(libreOk(it))s+=libreHandleSVG(it,q,H[q],k);
-      else if(it.t==='wall'&&q==='c')s+=`<circle cx="${fx(H[q][0]*BU)}" cy="${fx(H[q][1]*BU)}" r="${5*k}" fill="#fff" stroke="var(--accent)" stroke-width="${1.6*k}"/>`;
+      else if(it.t==='wall')s+=murHandleSVG(it,q,H[q],k);
+      else if(q==='rot')s+=grRotSVG(H[q],[it.x,it.y],k);
       else s+=`<rect x="${H[q][0]*BU-4.5*k}" y="${H[q][1]*BU-4.5*k}" width="${9*k}" height="${9*k}" fill="#fff" stroke="var(--accent)" stroke-width="${1.6*k}"/>`}}
+  if(selItems().length>1)s+=grCadreSVG(selItems(),k);
   const m=ui.hover;
   if(bdrawOk())s+=libreTrace(bdraw,k);
   else if(g&&g.t==='draw'){const x=Math.min(g.m0[0],g.m[0]),y=Math.min(g.m0[1],g.m[1]),w=Math.abs(g.m[0]-g.m0[0]),h=Math.abs(g.m[1]-g.m0[1]);
@@ -1392,10 +1401,11 @@ function palette(items,cur,attr){return `<div class="pal">`+items.map(([k,n,w,h]
 function B_side(){
   const b=CB(),F=CF(),sel=selItems();let h='';let selH='';
   // outil / sélection
-  if(sel.length===1)selH+=itemPanel(sel[0]);
-  else if(sel.length>1)selH+=`<h3>${sel.length} éléments</h3><div class="row"><button class="btn sm" data-act="dup">Dupliquer</button><button class="btn sm danger" data-act="del">Supprimer</button></div><p class="hint">Glisse pour déplacer le groupe. Maj+clic ajoute ou retire.</p>`;
+  if(ui.tool==='furn')selH+=toolPanel()+(sel.length===1&&sel[0].t==='furn'?itemPanel(sel[0]):'');
+  else if(sel.length===1)selH+=itemPanel(sel[0]);
+  else if(sel.length>1)selH+=grPanneau(sel);
   else selH+=toolPanel();
-  h+=selH;
+  h+=selH+grPrecision();
   h+=`<h3>Bâtiment</h3>`;
   h+=`<div class="row"><label>Nom</label><input type="text" data-b="name" value="${esc(b.name)}"></div>`;
   h+=`<div class="row"><button class="btn sm primary" data-act="toMap">Placer sur la carte du village</button></div>`;
@@ -1450,7 +1460,7 @@ function itemPanel(it){
   else if(it.t==='furn')h+=`<h3>${esc((FD[it.k]||{}).n||'Objet')}</h3><div class="row"><label>Objet</label><select data-f="k">${FURN.map(f=>`<option value="${f[0]}"${f[0]===it.k?' selected':''}>${f[1]}</option>`).join('')}</select></div><div class="row"><button class="btn sm" data-act="rotL">↺ 90°</button><button class="btn sm" data-act="rotR">↻ 90°</button></div>`+del;
   else if(it.t==='stair')h+=`<h3>Escalier</h3><div class="row"><label>Sens</label><select data-f="dir">${opt({n:'Haut',s:'Bas',e:'Droite',w:'Gauche',spiral:'Colimaçon'},it.dir)}</select></div>`+fld('Étiquette','label',it.label||'')+`<div class="row"><label>Larg. × haut. (m)</label><input type="number" data-f="w" step="0.5" min="0.5" value="${it.w}"><input type="number" data-f="h" step="0.5" min="0.5" value="${it.h}"></div>`+del;
   else if(it.t==='label')h+=`<h3>Texte</h3><textarea data-f="text" rows="2">${esc(it.text)}</textarea>`+fld('Taille','size',it.size||12,'number','min="7" max="40"')+`<div class="row"><label><input type="checkbox" data-f="it"${it.it?' checked':''}> Italique</label></div>`+del;
-  else if(it.t==='wall')h+=`<h3>Mur</h3><div class="row"><label>Type</label><select data-f="k">${opt({mur:'Mur épais',cloison:'Cloison fine'},it.k||'mur')}</select></div>`+`<div class="row"><label>Arrondi (m)</label><input type="number" step="0.25" data-f="arc" value="${fx(murArc(it))}"></div>`+`<p class="hint">Longueur : ${fx(murLong(it))} m. Glisse le rond du milieu pour arrondir le mur, ou tape son creux ici. Zéro : un mur droit.</p>`+del;
+  else if(it.t==='wall')h+=`<h3>Mur</h3><div class="row"><label>Type</label><select data-f="k">${opt({mur:'Mur épais',cloison:'Cloison fine'},it.k||'mur')}</select></div>`+`<div class="row"><label>Arrondi (m)</label><input type="number" step="0.25" data-f="arc" value="${murCreux(it)}"></div>`+`<p class="hint">Longueur : ${fx(murLong(it))} m. Glisse le rond du milieu pour arrondir le mur d’un coup, ou tape son creux ici (zéro le redresse). Une fois courbé, il a une poignée à chaque bout, comme à la plume : tire-les pour une courbe en S, ramène-en une sur son bout pour l’enlever.</p>`+del;
   return h}
 /* ---- événements du panneau ---- */
 const side=$('#side');let editSnap=false;
@@ -1462,7 +1472,7 @@ side.addEventListener('input',e=>{
 side.addEventListener('change',e=>{const el=e.target;if(el.tagName==='SELECT'||el.type==='checkbox'){if(ui.mode==='b')B_input(el,false);else if(ui.mode==='w')W_input(el,false);else V_input(el,false)}});
 function B_input(el,typing){
   const b=CB();const d=el.dataset;
-  if(d.ui){if(el.type==='checkbox')ui[d.ui]=el.checked;else{const v=el.value;ui[d.ui]=isNaN(+v)||['roomK','roomShape','doorK','winK','wallK','stairDir'].includes(d.ui)?v:+v}renderCanvas();renderOverlay();if(d.ui==='roomShape'){bdraw=null;renderSide()}return}
+  if(d.ui){if(el.type==='checkbox')ui[d.ui]=el.checked;else{const v=el.value;ui[d.ui]=isNaN(+v)||['roomK','roomShape','doorK','winK','wallK','stairDir'].includes(d.ui)?v:+v}if(d.ui==='snap'){ui.snap=grPasOk(ui.snap);plansVueBientot()}renderCanvas();renderOverlay();if(d.ui==='roomShape'||d.ui==='snap'){bdraw=null;renderSide()}return}
   if(typing&&el.tagName==='SELECT')return;
   if(d.b){once();let v=numOrStr(el);if(d.b==='gw'||d.b==='gh')v=clamp(+v||30,8,120);b[d.b]=v;save();if(d.b==='name'){fillItemSel()}renderCanvas();return}
   if(d.fn){once();CF().name=el.value;save();renderFloorbar();return}
@@ -1483,6 +1493,8 @@ side.addEventListener('click',e=>{
 function B_act(a,btn){
   const b=CB(),F=CF(),sel=selItems();
   if(a==='del'){snap();F.items=F.items.filter(i=>!ui.sel.includes(i.id));ui.sel=[];dirty();renderSide();return}
+  if(a&&/^al[GDHB]$|^alC[xy]$/.test(a)){grAligner(selItems(),a.slice(2).toLowerCase());return}
+  if(a==='espX'||a==='espY'){grEspacer(selItems(),a==='espX'?'x':'y');return}
   if(a==='dup'){dupSel();return}
   if(a==='bFin'){bFinish();return}if(a==='bBack'){bRetirer();return}if(a==='bAnn'){bdraw=null;renderSide();renderOverlay();return}
   if(a==='bRond'){const it=selItems()[0];if(libreOk(it)){snap();libreArrondir(it,!it.pts.some(pRond));dirty();renderCanvas();renderOverlay();renderSide()}return}
@@ -1506,6 +1518,8 @@ function B_key(e){
   if((k==='c'||k==='C')&&(e.ctrlKey||e.metaKey)){clip=sel.map(i=>JSON.parse(JSON.stringify(i)));toast(clip.length+' élément(s) copié(s)');return true}
   if((k==='v'||k==='V')&&(e.ctrlKey||e.metaKey)){if(clip.length){snap();const out=[];for(const c0 of clip){const c=JSON.parse(JSON.stringify(c0));c.id=uid();if(c.t==='wall'){c.x1+=1;c.x2+=1;c.y1+=1;c.y2+=1}else{c.x+=1;c.y+=1;if(c.pts)c.pts=c.pts.map(p=>pBouge(p,1,1))}F.items.push(c);out.push(c.id)}ui.sel=out;dirty();renderSide();renderOverlay()}return true}
   if((k==='a'||k==='A')&&(e.ctrlKey||e.metaKey)){ui.sel=F.items.map(i=>i.id);renderSide();renderOverlay();return true}
+  if((k==='r'||k==='R')&&sel.length>1){snap();const b=grBoite(sel),o=sel.map(i=>JSON.parse(JSON.stringify(i))),ang=e.shiftKey?-90:90;
+    sel.forEach((it,i)=>grTourner(it,o[i],b.cx,b.cy,rad(ang)));dirty();renderCanvas();renderOverlay();renderSide();return true}
   if(k==='r'||k==='R'){if(sel.length){snap();sel.forEach(i=>{if(i.t==='furn')i.r=((i.r||0)+90)%360;else if(i.t==='stair'){const o=['n','e','s','w'];i.dir=o[(o.indexOf(i.dir)+1)%4]||'n'}else if(i.t==='door'||i.t==='win'){}});dirty();renderOverlay();renderSide()}else if(ui.tool==='furn'){ui.furnRot=((ui.furnRot||0)+90)%360;renderOverlay();renderSide()}return true}
   if(k.startsWith('Arrow')&&sel.length){e.preventDefault();const st=e.shiftKey?1:ui.snap;const dx=k==='ArrowLeft'?-st:k==='ArrowRight'?st:0,dy=k==='ArrowUp'?-st:k==='ArrowDown'?st:0;snap();sel.forEach(i=>{if(i.t==='wall'){i.x1+=dx;i.x2+=dx;i.y1+=dy;i.y2+=dy}else{i.x=fx(i.x+dx);i.y=fx(i.y+dy);if(i.pts)i.pts=i.pts.map(p=>[fx(p[0]+dx),fx(p[1]+dy)])}});dirty();renderOverlay();return true}
   return false}
@@ -1815,27 +1829,32 @@ function villageInner(v,o={}){
   for(const b of it.filter(i=>i.t==='bld'))s+=bldSVG(b,th);
   for(const t of it.filter(i=>i.t==='tree').sort((a,b)=>a.y-b.y))s+=treeSVG(t,th);
   s+=`<g font-family="${FONT}" text-anchor="middle">`;
-  for(const b of it.filter(i=>i.t==='bld'&&i.name&&i.show!==false))s+=`<text x="${fx(b.x*VU)}" y="${fx(b.y*VU+Math.max(b.w,b.h)*VU/2+9)}" font-size="8.5" fill="${INK}" stroke="${th.ground}" stroke-width="2.4" paint-order="stroke" font-style="italic">${esc(b.name)}</text>`;
+  const EV=vEch(v),EN=Math.sqrt(EV);
+  for(const b of it.filter(i=>i.t==='bld'&&i.name&&i.show!==false))s+=`<text x="${fx(b.x*VU)}" y="${fx(b.y*VU+Math.max(b.w,b.h)*VU/2+9*EN)}" font-size="${fx(8.5*EN)}" fill="${INK}" stroke="${th.ground}" stroke-width="2.4" paint-order="stroke" font-style="italic">${esc(b.name)}</text>`;
   for(const l of it.filter(i=>i.t==='label')){
     const st={village:'font-size="'+(l.size||30)+'" font-weight="700" letter-spacing="3"',lieu:'font-size="'+(l.size||12)+'" font-weight="700"',rue:'font-size="'+(l.size||9)+'" font-style="italic"',eau:'font-size="'+(l.size||11)+'" font-style="italic" letter-spacing="2"'}[l.k||'lieu'];
     s+=`<text transform="translate(${fx(l.x*VU)} ${fx(l.y*VU)}) rotate(${l.a||0})" ${st} fill="${l.k==='eau'?th.waterE:INK}" stroke="${th.ground}" stroke-width="3" paint-order="stroke">${esc(l.text)}</text>`}
-  for(const m of it.filter(i=>i.t==='mark'))s+=`<circle cx="${fx(m.x*VU)}" cy="${fx(m.y*VU)}" r="8.5" fill="#8a2f2f" stroke="#fff7ee" stroke-width="1.6"/><text x="${fx(m.x*VU)}" y="${fx(m.y*VU+3.4)}" font-size="10" font-weight="700" fill="#fff7ee">${esc(m.n)}</text>`;
+  for(const m of it.filter(i=>i.t==='mark'))s+=`<circle cx="${fx(m.x*VU)}" cy="${fx(m.y*VU)}" r="${fx(8.5*EV)}" fill="#8a2f2f" stroke="#fff7ee" stroke-width="${fx(1.6*EV)}"/><text x="${fx(m.x*VU)}" y="${fx(m.y*VU+3.4*EV)}" font-size="${fx(10*EV)}" font-weight="700" fill="#fff7ee">${esc(m.n)}</text>`;
   s+='</g></g>';
   s+=`<rect width="${W}" height="${H}" fill="none" stroke="${INK}" stroke-width="3"/>`;
   return s}
 function V_bounds(){const v=CV();return{x0:-30,y0:-30,x1:v.W*VU+30,y1:v.H*VU+30}}
 function V_render(){const v=CV();content.innerHTML=`<rect x="-3000" y="-3000" width="${v.W*VU+6000}" height="${v.H*VU+6000}" fill="rgba(0,0,0,.0)"/>`+villageInner(v)}
 function villageSheet(v){
-  const W=v.W*VU,H=v.H*VU,pad=40,hdr=88,mk=v.items.filter(i=>i.t==='mark').sort((a,b)=>a.n-b.n);const ib=v.items.filter(i=>i.t==='bld'&&linkedB(i)).map(b=>b.name||linkedB(b).name).sort((x,y)=>x.localeCompare(y,'fr')),ibRows=Math.ceil(ib.length/3);const leg=Math.max(0,Math.ceil(mk.length/2))*18+(mk.length?44:0)+(ib.length?ibRows*18+40:0);
-  const TW=W+pad*2,TH_=H+hdr+pad+Math.max(70,leg+20);
+  const E=vEch(v),W=v.W*VU,H=v.H*VU,pad=Math.round(40*E),hdr=Math.round(88*E),lh=18*E;
+  const mk=v.items.filter(i=>i.t==='mark').sort((a,b)=>a.n-b.n);
+  const ib=v.items.filter(i=>i.t==='bld'&&linkedB(i)).map(b=>b.name||linkedB(b).name).sort((x,y)=>x.localeCompare(y,'fr')),ibRows=Math.ceil(ib.length/3);
+  const leg=Math.max(0,Math.ceil(mk.length/2))*lh+(mk.length?44*E:0)+(ib.length?ibRows*lh+40*E:0);
+  const TW=W+pad*2,TH_=Math.round(H+hdr+pad+Math.max(70*E,leg+20*E));
   let s=`<svg xmlns="http://www.w3.org/2000/svg" width="${TW}" height="${TH_}" viewBox="0 0 ${TW} ${TH_}"><rect width="${TW}" height="${TH_}" fill="${PAPER}"/>`;
-  s+=`<g font-family="${FONT}" fill="${INK}"><text x="${pad}" y="52" font-size="28" font-weight="700" letter-spacing="2">${esc(v.name.toUpperCase())}</text><text x="${pad}" y="74" font-size="13" font-style="italic">${v.W} × ${v.H} m · ${v.items.filter(i=>i.t==='bld').length} bâtiments</text></g>`;
+  s+=`<g font-family="${FONT}" fill="${INK}"><text x="${pad}" y="${fx(52*E)}" font-size="${fx(28*E)}" font-weight="700" letter-spacing="${fx(2*E)}">${esc(v.name.toUpperCase())}</text><text x="${pad}" y="${fx(74*E)}" font-size="${fx(13*E)}" font-style="italic">${v.W} × ${v.H} m · ${v.items.filter(i=>i.t==='bld').length} bâtiments</text></g>`;
   s+=`<g transform="translate(${pad} ${hdr})">${villageInner(v,{pid:'x'})}</g>`;
-  const by=hdr+H+30;s+=scaleBar2(pad,by,100)+northArrow(TW-pad-6,12);
-  const lx0=pad+100*VU+40;if(mk.length){s+=`<g font-family="${FONT}" fill="${INK}" font-size="13">`;mk.forEach((m,i)=>{const col=i%2,row=Math.floor(i/2);const x=lx0+col*Math.max(240,(TW-pad-lx0)/2),y=by-4+row*18;s+=`<circle cx="${x}" cy="${y}" r="7.5" fill="#8a2f2f"/><text x="${x}" y="${y+3.3}" font-size="9.5" text-anchor="middle" fill="#fff7ee" font-weight="700">${esc(m.n)}</text><text x="${x+14}" y="${y+4}">${esc(m.text)}</text>`});s+='</g>'}
-  if(ib.length){const y0=by+Math.max(34,Math.ceil(mk.length/2)*18+14),cw=(TW-pad*2)/3;s+=`<g font-family="${FONT}" fill="${INK}"><text x="${pad}" y="${y0}" font-size="14" font-weight="700" letter-spacing="1">INTÉRIEURS CONSTRUITS (${ib.length})</text><path d="M${pad} ${y0+6}H${TW-pad}" stroke="${INK}" stroke-width=".8"/><g font-size="13">`;ib.forEach((n,i)=>{const col=Math.floor(i/ibRows),row=i%ibRows;s+=`<text x="${pad+col*cw}" y="${y0+26+row*18}">▸ ${esc(n)}</text>`});s+='</g></g>'}
+  const by=hdr+H+30*E;s+=scaleBar2(pad,by,100,E)+northArrow(TW-pad-6*E,12*E,E);
+  const lx0=pad+100*VU+40*E;
+  if(mk.length){s+=`<g font-family="${FONT}" fill="${INK}" font-size="${fx(13*E)}">`;mk.forEach((m,i)=>{const col=i%2,row=Math.floor(i/2);const x=lx0+col*Math.max(240*E,(TW-pad-lx0)/2),y=by-4*E+row*lh;s+=`<circle cx="${fx(x)}" cy="${fx(y)}" r="${fx(7.5*E)}" fill="#8a2f2f"/><text x="${fx(x)}" y="${fx(y+3.3*E)}" font-size="${fx(9.5*E)}" text-anchor="middle" fill="#fff7ee" font-weight="700">${esc(m.n)}</text><text x="${fx(x+14*E)}" y="${fx(y+4*E)}">${esc(m.text)}</text>`});s+='</g>'}
+  if(ib.length){const y0=by+Math.max(34*E,Math.ceil(mk.length/2)*lh+14*E),cw=(TW-pad*2)/3;s+=`<g font-family="${FONT}" fill="${INK}"><text x="${pad}" y="${fx(y0)}" font-size="${fx(14*E)}" font-weight="700" letter-spacing="${fx(E)}">INTÉRIEURS CONSTRUITS (${ib.length})</text><path d="M${pad} ${fx(y0+6*E)}H${TW-pad}" stroke="${INK}" stroke-width="${fx(.8*E)}"/><g font-size="${fx(13*E)}">`;ib.forEach((n,i)=>{const col=Math.floor(i/ibRows),row=i%ibRows;s+=`<text x="${fx(pad+col*cw)}" y="${fx(y0+26*E+row*lh)}">▸ ${esc(n)}</text>`});s+='</g></g>'}
   s+='</svg>';return{svg:s,w:TW,h:TH_}}
-function scaleBar2(x,y,m){const L=m*VU;return `<g stroke="${INK}" stroke-width="2" fill="none"><path d="M${x} ${y}h${L}M${x} ${y-6}v12M${x+L/2} ${y-4}v8M${x+L} ${y-6}v12"/></g><text x="${x}" y="${y+20}" font-family="${FONT}" font-size="11" fill="${INK}">0 · ${m/2} · ${m} m</text>`}
+function scaleBar2(x,y,m,e){e=e||1;const L=m*VU;return `<g stroke="${INK}" stroke-width="${fx(2*e)}" fill="none"><path d="M${x} ${fx(y)}h${L}M${x} ${fx(y-6*e)}v${fx(12*e)}M${x+L/2} ${fx(y-4*e)}v${fx(8*e)}M${x+L} ${fx(y-6*e)}v${fx(12*e)}"/></g><text x="${x}" y="${fx(y+20*e)}" font-family="${FONT}" font-size="${fx(11*e)}" fill="${INK}">0 · ${m/2} · ${m} m</text>`}
 /* ====== villages : édition ====== */
 let vg=null,vdraw=null;
 ui.gen={size:'village',river:'riviere',wall:'auto',forest:'moyen',field:'moyen',seed:Math.floor(Math.random()*99999)+1};
@@ -2978,9 +2997,9 @@ $('#bHelp').onclick=()=>modal(`<h2>Registre des Plans</h2>
 <table><tr><td>Molette, ou deux doigts</td><td>Zoomer</td></tr><tr><td>Glisser dans le vide</td><td>Déplacer la vue</td></tr><tr><td><kbd>F</kbd></td><td>Tout voir</td></tr><tr><td><kbd>Maj</kbd>+<kbd>F</kbd></td><td>Plein écran</td></tr><tr><td><kbd>+</kbd> <kbd>-</kbd></td><td>Zoomer, dézoomer (le plan a le focus)</td></tr><tr><td>Flèches</td><td>Déplacer la vue, en mode Consulter</td></tr><tr><td><kbd>Échap</kbd></td><td>Désélectionner</td></tr></table>
 <p class="tag" style="margin-top:10px">Raccourcis, en mode Modifier</p>
 <table><tr><td><kbd>1</kbd> à <kbd>0</kbd></td><td>Changer d’outil</td></tr><tr><td><kbd>Espace</kbd> + glisser</td><td>Déplacer la vue</td></tr><tr><td><kbd>Suppr</kbd></td><td>Supprimer la sélection</td></tr><tr><td><kbd>R</kbd></td><td>Pivoter (meuble, escalier, bâtisse ; <kbd>Maj</kbd>+<kbd>R</kbd> dans l’autre sens)</td></tr><tr><td><kbd>Ctrl</kbd>+<kbd>Z</kbd> / <kbd>Y</kbd></td><td>Annuler / rétablir</td></tr><tr><td><kbd>Ctrl</kbd>+<kbd>D</kbd>, <kbd>C</kbd>, <kbd>V</kbd></td><td>Dupliquer, copier, coller</td></tr><tr><td>Flèches</td><td>Déplacer la sélection (<kbd>Maj</kbd> : grand pas)</td></tr><tr><td><kbd>Entrée</kbd> / double-clic</td><td>Terminer une route, rivière, zone, pièce libre</td></tr><tr><td><kbd>Retour arrière</kbd></td><td>Retirer le dernier point d’un tracé en cours</td></tr></table>
-<p class="tag" style="margin-top:10px">Pièces en forme libre : la plume</p><p>Avec l’outil « Pièce », choisis la forme « Forme libre (la plume) » : la forme se choisit avant de dessiner. Clique pour poser un point ; <b>glisse en posant</b> pour courber le côté, comme une plume de dessin. Ferme en recliquant le premier point (glisse là aussi pour courber le retour), par double-clic ou avec <kbd>Entrée</kbd>. <kbd>Maj</kbd> tient les angles à 45 degrés, <kbd>Retour arrière</kbd> retire le dernier point, <kbd>Échap</kbd> annule le tracé.</p><p>Une pièce libre choisie montre un carré à chaque point, qu’on glisse, un rond plein au bout de chaque poignée de courbe (<kbd>Alt</kbd> pour ne bouger qu’une poignée ; ramène-la sur son point pour retrouver un angle vif) et un petit rond au milieu de chaque côté, qui ajoute un point ; <kbd>Alt</kbd>+clic sur un point le retire. Le bouton « Arrondir la forme » courbe tout d’un coup, et « Tout en angles vifs » défait. Une pièce déjà posée devient libre depuis son panneau (« Forme ») : un ovale garde sa courbe. Les portes et fenêtres se posent aussi sur ses côtés obliques et courbes.</p>
-<p class="tag" style="margin-top:10px">Murs arrondis</p><p>Un mur se courbe aussi : choisis-le, puis glisse le rond du milieu d’un côté ou de l’autre, ou tape son creux (en mètres) dans son panneau. Zéro le redresse. Les portes et fenêtres se posent sur un mur courbe comme sur un mur droit.</p>
-<p class="tag" style="margin-top:10px">Astuces</p><p>Déplacer une pièce emporte ses portes et fenêtres (Alt pour les laisser). La porte s’ouvre du côté où se trouve le curseur. Dans un village, un bâtiment peut être lié à un plan : « Créer un plan de ce bâtiment » en génère un adapté.</p>
+<p class="tag" style="margin-top:10px">Pièces en forme libre : la plume</p><p>Avec l’outil « Pièce », choisis la forme « Forme libre (la plume) » : la forme se choisit avant de dessiner. Clique pour poser un point ; <b>glisse en posant</b> pour courber le côté, comme une plume de dessin. Ferme en recliquant le premier point (glisse là aussi pour courber le retour), par double-clic ou avec <kbd>Entrée</kbd>. <kbd>Maj</kbd> tient les angles à 45 degrés, <kbd>Retour arrière</kbd> retire le dernier point, <kbd>Échap</kbd> annule le tracé.</p><p>Une pièce déjà posée s’arrondit aussi : choisis-la, puis <b>double-clique un de ses points</b> pour l’arrondir, et double-clique encore pour revenir à l’angle vif. Une pièce libre choisie montre un carré à chaque point, qu’on glisse, un rond plein au bout de chaque poignée de courbe (<kbd>Alt</kbd> pour ne bouger que celle-là ; ramenée sur son point, elle s’en va, seule : un côté droit peut suivre un côté arrondi) et un petit rond au milieu de chaque côté, qui ajoute un point ; <kbd>Alt</kbd>+clic sur un point le retire. Le bouton « Arrondir la forme » courbe tout d’un coup, et « Tout en angles vifs » défait. Une pièce déjà posée devient libre depuis son panneau (« Forme ») : un ovale garde sa courbe. Les portes et fenêtres se posent aussi sur ses côtés obliques et courbes.</p>
+<p class="tag" style="margin-top:10px">Murs arrondis</p><p>Un mur se courbe aussi : choisis-le, puis glisse le rond du milieu d’un côté ou de l’autre, ou tape son creux (en mètres) dans son panneau. Zéro le redresse. Une fois courbé, il porte une poignée à chaque bout, comme à la plume : tire-les pour une courbe en S ou pour changer l’angle d’arrivée ; ramenée sur son bout, une poignée s’en va. Les portes et fenêtres se posent sur un mur courbe comme sur un mur droit.</p>
+<p class="tag" style="margin-top:10px">Plusieurs éléments à la fois</p><p>Maj+clic ajoute ou retire de la sélection, <kbd>Ctrl</kbd>+<kbd>A</kbd> prend tout l’étage. Un groupe choisi reçoit un cadre : glisse un de ses coins pour changer la taille de tout l’ensemble (<kbd>Alt</kbd> : sans garder les proportions), et le bouton rond au-dessus pour le tourner (<kbd>Alt</kbd> : au degré près, sinon par pas de 15 degrés ; <kbd>R</kbd> fait un quart de tour, <kbd>Maj</kbd>+<kbd>R</kbd> dans l’autre sens). Les portes et fenêtres gardent leur largeur et restent sur leur mur, les meubles gardent leur taille. Une pièce rectangulaire tournée d’un angle libre devient une pièce en forme libre ; les escaliers, les ovales et les anneaux ne tournent que par quarts de tour, faute d’angle dans le format. Le panneau donne aussi <b>Aligner</b> (les six bords et centres) et <b>Espacer également</b> (mêmes espaces, le premier et le dernier ne bougent pas, trois éléments au moins).</p><p class="tag" style="margin-top:10px">Précision, mobilier</p><p>En bas du panneau, <b>Précision</b> règle le pas de la grille : 1 m, 50 cm, 25 cm, 10 cm, ou libre. Il vaut pour les pièces, les murs et les flèches du clavier ; les objets et les textes se posent au quart de mètre, ou plus fin si tu choisis plus fin. Ce réglage est gardé d’une visite à l’autre. Le catalogue du mobilier reste ouvert quand on pose un objet : on en pose plusieurs à la suite, et la fiche de celui qu’on vient de poser apparaît dessous. Un meuble choisi porte un rond au-dessus de lui : glisse-le pour le tourner sur le plan même (<kbd>Alt</kbd> : au degré).</p><p class="tag" style="margin-top:10px">Astuces</p><p>Déplacer une pièce emporte ses portes et fenêtres (Alt pour les laisser). La porte s’ouvre du côté où se trouve le curseur. Dans un village, un bâtiment peut être lié à un plan : « Créer un plan de ce bâtiment » en génère un adapté.</p>
 <div class="row"><button type="button" class="btn primary" onclick="closeModal()">Fermer</button></div>`);
 const _av=applyView;applyView=function(){_av();const isW=ui.mode==='w',m=ui.view.k*U()/(isW?CW().kmu:1);const L=[.5,1,2,5,10,20,50,100,200,500,1000,2000,5000,10000,20000];let best=L[L.length-1];for(const l of L)if(l*m>=60&&(isW||l>=1)){best=l;break}$('#sbar').style.width=(best*m)+'px';$('#sLbl').textContent=best.toLocaleString('fr-BE')+(isW?' km':' m');if(typeof updEnter==='function')updEnter()};
 /* ====== consulter : lire, zoomer, entrer, sans rien pouvoir déplacer ====== */
@@ -3369,6 +3388,19 @@ function libreArrondir(it,rond){
     const dx=(b[0]-a[0])*.2,dy=(b[1]-a[1])*.2;
     return pNeuf(q[0],q[1],-dx,-dy,dx,dy)});
   libreBoite(it)}
+/* un point d'une pièce déjà posée : du vif à l'arrondi, et retour (double-clic dessus) */
+function libreTourner(it,i){
+  const p=it.pts,n=p.length,q=p[i];
+  if(!q)return;
+  snap();
+  if(pRond(q))p[i]=[q[0],q[1]];
+  else{
+    const a=p[(i-1+n)%n],b=p[(i+1)%n];
+    let dx=(b[0]-a[0])*.2,dy=(b[1]-a[1])*.2;
+    if(!dx&&!dy){dx=.5;dy=0}
+    p[i]=pNeuf(q[0],q[1],-dx,-dy,dx,dy)}
+  libreBoite(it);dirty();renderCanvas();renderOverlay();renderSide()}
+
 /* les cases x, y, largeur, hauteur du panneau : la forme suit, toujours depuis l'état du début de la saisie */
 let libreBase=null;
 side.addEventListener('focusin',()=>{libreBase=null});
@@ -3472,14 +3504,15 @@ function libreDown(it,h,e){
     libreBoite(it);
     g={t:'resize',it,h:'v'+(i+1),o:{...it}};
     dirty();renderSide();renderOverlay();return}
-  if(h[0]==='i'||h[0]==='o'){snap();g={t:'resize',it,h,o:{...it},alt:!!e.altKey};return}
+  if(h[0]==='i'||h[0]==='o'){g={t:'resize',it,h,o:{...it},alt:!!e.altKey,aSnap:true};return}
   if(e.altKey){
     if(n>3){snap();it.pts=it.pts.filter((_,j)=>j!==i);libreBoite(it);dirty();renderSide();renderOverlay()}
     else toast('Une pièce garde au moins trois points');
     return}
-  snap();g={t:'resize',it,h,o:{...it}}}
+  g={t:'resize',it,h,o:{...it},aSnap:true}}
 /* bouger un point, ou une poignée (libre, sans aimant ; l'autre poignée suit, sauf avec Alt) */
 function libreVertex(gs,x,y,m){
+  if(gs.aSnap){snap();gs.aSnap=false}
   const h=gs.h,i=+h.slice(1),pts=gs.o.pts.map(p=>p.slice());
   if(!(i>=0&&i<pts.length))return;
   if(h[0]==='v'){
@@ -3488,8 +3521,14 @@ function libreVertex(gs,x,y,m){
   const p=pts[i],dx=(m?m[0]:x)-p[0],dy=(m?m[1]:y)-p[1];
   let ix=pIn(p)[0],iy=pIn(p)[1],ox=pOut(p)[0],oy=pOut(p)[1];
   const court=Math.hypot(dx,dy)<.12;
-  if(h[0]==='o'){ox=court?0:dx;oy=court?0:dy;if(!gs.alt){ix=-ox;iy=-oy}}
-  else{ix=court?0:dx;iy=court?0:dy;if(!gs.alt){ox=-ix;oy=-iy}}
+  /* l'autre poignée ne suit que si le point est rond des deux côtés : un point peut porter une seule poignée,
+     pour un côté droit suivi d'un côté arrondi. Ramenée sur son point, la poignée tirée s'en va, seule. */
+  if(h[0]==='o'){
+    if(court){ox=0;oy=0}
+    else{ox=dx;oy=dy;if(!gs.alt&&(ix||iy)){ix=-ox;iy=-oy}}}
+  else{
+    if(court){ix=0;iy=0}
+    else{ix=dx;iy=dy;if(!gs.alt&&(ox||oy)){ox=-ix;oy=-iy}}}
   pts[i]=pNeuf(p[0],p[1],ix,iy,ox,oy);
   gs.it.pts=pts;libreBoite(gs.it)}
 /* une porte ou une fenêtre posée sur un côté de la pièce suit la pièce quand on la déplace */
@@ -3500,7 +3539,7 @@ function libreSurBord(r,o){
 function libreInfo(it){
   const n=it.pts.length,rond=it.pts.some(pRond);
   return `<p class="hint">Surface : ${fx(roomAire(it))} m² · périmètre ${fx(librePerim(it.pts))} m · ${n} point${n>1?'s':''}. `
-    +`Glisse un carré pour déplacer un point, un rond plein pour courber (Alt : une poignée seule), un petit rond pour ajouter un point, Alt+clic sur un point pour le retirer.</p>`
+    +`Double-clic sur un point : arrondi ou angle vif. Glisse un carré pour déplacer un point, un rond plein pour régler une courbe (ramené sur son point, il s’en va ; Alt : sans bouger l’autre), un petit rond pour ajouter un point, Alt+clic sur un point pour le retirer.</p>`
     +`<div class="row"><button type="button" class="btn sm" data-act="bRond">${rond?'Tout en angles vifs':'Arrondir la forme'}</button></div>`}
 
 /* ---- tracer une pièce libre, à la plume ---- */
@@ -3607,38 +3646,262 @@ function libreRedim(it,h,m){
   it.x=fx(it.x+ux*mid);it.y=fx(it.y+uy*mid);it.w=fx(Math.max(.25,hi-lo))}
 
 /* ====== murs arrondis ======
-   Un mur garde ses deux bouts (x1, y1, x2, y2) et porte en plus arc : le creux au milieu, en mètres, compté
-   perpendiculairement au segment (positif d'un côté, négatif de l'autre). Sans arc, le mur est droit, comme avant. */
-const murArc=w=>typeof w.arc==='number'&&isFinite(w.arc)&&Math.abs(w.arc)>.004?w.arc:0;
-/* le point de conduite de la courbe : deux fois le creux, pour que le ventre passe juste par le creux */
-function murCtrl(w){
-  const dx=w.x2-w.x1,dy=w.y2-w.y1,L=Math.hypot(dx,dy)||1,a=murArc(w);
-  return[(w.x1+w.x2)/2-dy/L*2*a,(w.y1+w.y2)/2+dx/L*2*a]}
-function murApex(w){const c=murCtrl(w);return[fx(((w.x1+w.x2)/2+c[0])/2),fx(((w.y1+w.y2)/2+c[1])/2)]}
+   Un mur garde ses deux bouts (x1, y1, x2, y2) et peut porter une poignée à chaque bout, h1 et h2 ([dx,dy] en mètres,
+   comptés depuis le bout) : la courbe est alors une Bézier cubique, comme à la plume, courbes en S comprises.
+   Sans poignée, le mur est droit. Le rond du milieu pose d'un coup une courbe simple, symétrique, et fait apparaître
+   les deux poignées. (L'ancien champ arc, d'une version du 10/10, est relu et converti en poignées.) */
+function murH(w,k){
+  const h=w[k];
+  return Array.isArray(h)&&h.length>=2&&typeof h[0]==='number'&&typeof h[1]==='number'&&isFinite(h[0])&&isFinite(h[1])&&(h[0]||h[1])?[h[0],h[1]]:null}
+const murCourbe=w=>!!(murH(w,'h1')||murH(w,'h2'));
+/* les quatre points de conduite, en absolu */
+function murPts(w){
+  const a=murH(w,'h1')||[0,0],b=murH(w,'h2')||[0,0];
+  return[[w.x1,w.y1],[w.x1+a[0],w.y1+a[1]],[w.x2+b[0],w.y2+b[1]],[w.x2,w.y2]]}
 /* le mur déroulé : ce qui mesure, touche et accroche travaille là-dessus */
 function murApl(w){
-  if(!murArc(w))return[[w.x1,w.y1],[w.x2,w.y2]];
-  const c=murCtrl(w),out=[],n=16;
-  for(let i=0;i<=n;i++){const t=i/n,u=1-t;
-    out.push([u*u*w.x1+2*u*t*c[0]+t*t*w.x2,u*u*w.y1+2*u*t*c[1]+t*t*w.y2])}
+  if(!murCourbe(w))return[[w.x1,w.y1],[w.x2,w.y2]];
+  const c=murPts(w),out=[],n=18;
+  for(let i=0;i<=n;i++)out.push(bez(c,i/n));
   return out}
+function murApex(w){
+  const p=murCourbe(w)?bez(murPts(w),.5):[(w.x1+w.x2)/2,(w.y1+w.y2)/2];
+  return[fx(p[0]),fx(p[1])]}
 function murD(w,k){
-  k=k||BU;const c=murCtrl(w);
-  return murArc(w)?`M${fx(w.x1*k)} ${fx(w.y1*k)}Q${fx(c[0]*k)} ${fx(c[1]*k)} ${fx(w.x2*k)} ${fx(w.y2*k)}`
-                  :`M${fx(w.x1*k)} ${fx(w.y1*k)}L${fx(w.x2*k)} ${fx(w.y2*k)}`}
+  k=k||BU;
+  if(!murCourbe(w))return `M${fx(w.x1*k)} ${fx(w.y1*k)}L${fx(w.x2*k)} ${fx(w.y2*k)}`;
+  const c=murPts(w);
+  return `M${fx(c[0][0]*k)} ${fx(c[0][1]*k)}C${fx(c[1][0]*k)} ${fx(c[1][1]*k)},${fx(c[2][0]*k)} ${fx(c[2][1]*k)},${fx(c[3][0]*k)} ${fx(c[3][1]*k)}`}
 function murLong(w){
   const f=murApl(w);let L=0;
   for(let i=0;i+1<f.length;i++)L+=Math.hypot(f[i+1][0]-f[i][0],f[i+1][1]-f[i][1]);
   return L}
-/* tirer le rond du milieu : seule la part perpendiculaire compte, et le mur redevient droit près de zéro */
+/* le creux : du milieu de la courbe à la corde, compté perpendiculairement */
+function murCreux(w){
+  const dx=w.x2-w.x1,dy=w.y2-w.y1,L=Math.hypot(dx,dy)||1;
+  const ap=murApex(w),mx=(w.x1+w.x2)/2,my=(w.y1+w.y2)/2;
+  return fx((-(ap[0]-mx)*dy+(ap[1]-my)*dx)/L)}
+/* poser une courbe simple : les deux poignées tirées pareil, de part et d'autre */
+function murPoser(w,v){
+  const a=typeof v==='number'&&isFinite(v)?clamp(v,-200,200):0;
+  delete w.arc;
+  if(Math.abs(a)<.13){delete w.h1;delete w.h2;return}
+  const dx=w.x2-w.x1,dy=w.y2-w.y1,L=Math.hypot(dx,dy)||1,nx=-dy/L,ny=dx/L;
+  w.h1=[fx(dx/3+nx*4*a/3),fx(dy/3+ny*4*a/3)];
+  w.h2=[fx(-dx/3+nx*4*a/3),fx(-dy/3+ny*4*a/3)]}
+/* glisser le rond du milieu */
 function murRegler(w,m){
   const dx=w.x2-w.x1,dy=w.y2-w.y1,L=Math.hypot(dx,dy)||1;
   const mx=(w.x1+w.x2)/2,my=(w.y1+w.y2)/2;
-  const v=(-(m[0]-mx)*dy+(m[1]-my)*dx)/L;
-  murPoser(w,snapv(v,.25))}
-function murPoser(w,v){
-  const a=typeof v==='number'&&isFinite(v)?clamp(v,-200,200):0;
-  if(Math.abs(a)<.13)delete w.arc;else w.arc=fx(a)}
+  murPoser(w,snapv((-(m[0]-mx)*dy+(m[1]-my)*dx)/L,.25))}
+/* glisser la poignée d'un bout : libre, comme à la plume ; ramenée sur son bout, elle s'en va */
+function murTirer(w,cle,m){
+  const bout=cle==='ha'?'h1':'h2';
+  const x=cle==='ha'?w.x1:w.x2,y=cle==='ha'?w.y1:w.y2;
+  const dx=m[0]-x,dy=m[1]-y;
+  delete w.arc;
+  if(Math.hypot(dx,dy)<.15)delete w[bout];
+  else w[bout]=[fx(dx),fx(dy)]}
+/* les poignées d'un mur : ses deux bouts, le rond du milieu, et les poignées de courbe quand il en a */
+function murHandles(w){
+  const H={},a=murH(w,'h1'),b=murH(w,'h2');
+  if(a)H.ha=[w.x1+a[0],w.y1+a[1]];
+  if(b)H.hb=[w.x2+b[0],w.y2+b[1]];
+  H.a=[w.x1,w.y1];H.b=[w.x2,w.y2];H.c=murApex(w);
+  return H}
+function murHandleSVG(w,q,pos,k){
+  if(q==='ha'||q==='hb'){
+    const x=q==='ha'?w.x1:w.x2,y=q==='ha'?w.y1:w.y2;
+    return `<line x1="${fx(x*BU)}" y1="${fx(y*BU)}" x2="${fx(pos[0]*BU)}" y2="${fx(pos[1]*BU)}" stroke="var(--accent)" stroke-width="${1.2*k}" stroke-opacity=".75"/>`
+      +`<circle cx="${fx(pos[0]*BU)}" cy="${fx(pos[1]*BU)}" r="${4.2*k}" fill="var(--accent)" stroke="#fff" stroke-width="${1.2*k}"/>`}
+  if(q==='c')return `<circle cx="${fx(pos[0]*BU)}" cy="${fx(pos[1]*BU)}" r="${5*k}" fill="#fff" stroke="var(--accent)" stroke-width="${1.6*k}"/>`;
+  return `<rect x="${pos[0]*BU-4.5*k}" y="${pos[1]*BU-4.5*k}" width="${9*k}" height="${9*k}" fill="#fff" stroke="var(--accent)" stroke-width="${1.6*k}"/>`}
+
+/* ====== lisibilité d'un grand village ======
+   Tout ce qui se lit (les points de repère, les noms, la légende sous la carte) était en pixels fixes : sur un village de
+   800 mètres, la feuille fait plus de trois mille pixels de large et tout cela devenait minuscule. Ces tailles suivent
+   maintenant la taille de la carte. */
+const vEch=v=>clamp(Math.max(v.W||0,v.H||0)*VU/800,1,3.4);
+/* ====== agir sur plusieurs éléments : tourner, redimensionner, aligner, espacer ======
+   Tout passe par les mêmes règles : une porte ou une fenêtre garde sa largeur et reste sur son mur, un escalier et un
+   anneau ne tournent que par quarts de tour (ils n'ont pas d'angle dans le format), une pièce rectangulaire qui tourne
+   d'un angle libre devient une pièce en forme libre. */
+const GR_MIN=.05;
+function grBoite(items){
+  let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
+  for(const it of items){const b=itemBounds(it);x0=Math.min(x0,b[0]);y0=Math.min(y0,b[1]);x1=Math.max(x1,b[2]);y1=Math.max(y1,b[3])}
+  if(x1<x0)return null;
+  return{x0:x0,y0:y0,x1:x1,y1:y1,w:x1-x0,h:y1-y0,cx:(x0+x1)/2,cy:(y0+y1)/2}}
+/* les poignées d'un groupe : les quatre coins pour la taille, le bouton au-dessus pour tourner */
+function grHandles(items){
+  const b=grBoite(items);if(!b)return{};
+  return{gnw:[b.x0,b.y0],gne:[b.x1,b.y0],gse:[b.x1,b.y1],gsw:[b.x0,b.y1],grot:[b.cx,b.y0-Math.max(1,18/(BU*ui.view.k))]}}
+function grHandleAt(items,m){
+  const H=grHandles(items),tol=tolM()*1.4;
+  for(const k in H)if(Math.hypot(H[k][0]-m[0],H[k][1]-m[1])<=tol)return k;
+  return null}
+/* le dessin : le cadre en pointillés, les coins, le bouton pour tourner */
+function grCadreSVG(items,k){
+  const b=grBoite(items);if(!b)return '';
+  const H=grHandles(items);
+  let s=`<rect x="${fx(b.x0*BU)}" y="${fx(b.y0*BU)}" width="${fx(b.w*BU)}" height="${fx(b.h*BU)}" fill="none" stroke="var(--accent)" stroke-width="${1.4*k}" stroke-dasharray="${7*k} ${5*k}" opacity=".9"/>`;
+  for(const q of['gnw','gne','gse','gsw'])s+=`<rect x="${fx(H[q][0]*BU-5*k)}" y="${fx(H[q][1]*BU-5*k)}" width="${10*k}" height="${10*k}" fill="#fff" stroke="var(--accent)" stroke-width="${1.8*k}"/>`;
+  s+=grRotSVG(H.grot,[b.cx,b.y0],k);
+  return s}
+function grRotSVG(p,ancre,k){
+  return `<line x1="${fx(ancre[0]*BU)}" y1="${fx(ancre[1]*BU)}" x2="${fx(p[0]*BU)}" y2="${fx(p[1]*BU)}" stroke="var(--accent)" stroke-width="${1.2*k}" stroke-opacity=".8"/>`
+    +`<circle cx="${fx(p[0]*BU)}" cy="${fx(p[1]*BU)}" r="${6*k}" fill="#fff" stroke="var(--accent)" stroke-width="${1.8*k}"/>`
+    +`<path d="M${fx(p[0]*BU-3*k)} ${fx(p[1]*BU)}a${3*k} ${3*k} 0 1 1 ${2*k} ${2.2*k}" fill="none" stroke="var(--accent)" stroke-width="${1.4*k}" stroke-linecap="round"/>`}
+
+/* ---- tourner ---- */
+const grRotV=(v,a)=>[fx(v[0]*Math.cos(a)-v[1]*Math.sin(a)),fx(v[0]*Math.sin(a)+v[1]*Math.cos(a))];
+const grQuart=d=>Math.abs(((d%90)+90)%90)<.01||Math.abs(((d%90)+90)%90-90)<.01;
+/* ramener un angle de porte dans (-90, 90] */
+function grAngOuv(ang){
+  let a=((ang+90)%180+180)%180-90;
+  if(a<=-90)a+=180;
+  return a}
+function grTourner(it,o,cx,cy,a){
+  const co=Math.cos(a),si=Math.sin(a),d=deg(a);
+  const R=(x,y)=>[fx(cx+(x-cx)*co-(y-cy)*si),fx(cy+(x-cx)*si+(y-cy)*co)];
+  const quarts=Math.round(d/90),droit=grQuart(d);
+  if(it.t==='wall'){
+    const a1=R(o.x1,o.y1),a2=R(o.x2,o.y2);
+    it.x1=a1[0];it.y1=a1[1];it.x2=a2[0];it.y2=a2[1];
+    if(o.h1)it.h1=grRotV(o.h1,a);if(o.h2)it.h2=grRotV(o.h2,a);
+    return}
+  if(it.t==='door'||it.t==='win'){
+    const p=R(o.x,o.y);it.x=p[0];it.y=p[1];
+    const ang=grAngOuv((o.o==='a'?(o.ang||0):o.o==='v'?90:0)+d);
+    if(Math.abs(ang)<.02){it.o='h';delete it.ang}
+    else if(Math.abs(Math.abs(ang)-90)<.02){it.o='v';delete it.ang}
+    else{it.o='a';it.ang=fx(ang)}
+    return}
+  if(it.t==='furn'){const p=R(o.x,o.y);it.x=p[0];it.y=p[1];it.r=fx(((o.r||0)+d)%360);return}
+  if(it.t==='label'){const p=R(o.x,o.y);it.x=p[0];it.y=p[1];return}
+  if(it.t==='room'&&o.shape==='poly'){
+    it.pts=o.pts.map(q=>{
+      const p=R(q[0],q[1]);
+      if(q.length<6)return p;
+      const e=grRotV([q[2],q[3]],a),f=grRotV([q[4],q[5]],a);
+      return[p[0],p[1],e[0],e[1],f[0],f[1]]});
+    libreBoite(it);return}
+  if(it.t==='room'&&(o.shape==='rect'||o.shape===undefined)&&!droit){
+    /* un angle libre : le rectangle devient une forme libre, qui, elle, sait tourner */
+    const c=[[o.x,o.y],[o.x+o.w,o.y],[o.x+o.w,o.y+o.h],[o.x,o.y+o.h]];
+    it.shape='poly';it.pts=c.map(q=>R(q[0],q[1]));libreBoite(it);return}
+  /* pièce rectangulaire, ovale, anneau, escalier : quart de tour le plus proche */
+  const cq=rad(quarts*90),cc=Math.cos(cq),ss=Math.sin(cq);
+  const ctr=[cx+(o.x+o.w/2-cx)*cc-(o.y+o.h/2-cy)*ss,cy+(o.x+o.w/2-cx)*ss+(o.y+o.h/2-cy)*cc];
+  const w=quarts%2?o.h:o.w,h=quarts%2?o.w:o.h;
+  it.w=fx(w);it.h=fx(h);it.x=fx(ctr[0]-w/2);it.y=fx(ctr[1]-h/2);
+  if(it.t==='stair'&&quarts%4){
+    const ordre=['n','e','s','w'],i=ordre.indexOf(o.dir);
+    if(i>=0)it.dir=ordre[(i+((quarts%4)+4))%4]}}
+/* vrai si quelque chose n'a pu tourner que par quarts */
+const grNePasTourner=items=>items.some(i=>i.t==='stair'||(i.t==='room'&&(i.shape==='ring'||i.shape==='ellipse')));
+
+/* ---- redimensionner ---- */
+function grEchelle(it,o,ax,ay,sx,sy){
+  const px=v=>fx(ax+(v-ax)*sx),py=v=>fx(ay+(v-ay)*sy);
+  if(it.t==='wall'){
+    it.x1=px(o.x1);it.y1=py(o.y1);it.x2=px(o.x2);it.y2=py(o.y2);
+    if(o.h1)it.h1=[fx(o.h1[0]*sx),fx(o.h1[1]*sy)];
+    if(o.h2)it.h2=[fx(o.h2[0]*sx),fx(o.h2[1]*sy)];
+    return}
+  it.x=px(o.x);it.y=py(o.y);
+  if(it.t==='door'||it.t==='win'||it.t==='furn'||it.t==='label')return;   /* ils gardent leur taille */
+  if(it.t==='room'&&o.shape==='poly'){
+    it.pts=o.pts.map(q=>{
+      const p=[px(q[0]),py(q[1])];
+      if(q.length<6)return p;
+      return[p[0],p[1],fx(q[2]*sx),fx(q[3]*sy),fx(q[4]*sx),fx(q[5]*sy)]});
+    libreBoite(it);return}
+  if(it.t==='room'||it.t==='stair'){
+    it.w=fx(Math.max(.5,o.w*sx));it.h=fx(Math.max(.5,o.h*sy));
+    if(o.thick)it.thick=fx(Math.max(.2,o.thick*Math.min(sx,sy)))}}
+
+/* ---- le geste, pendant qu'on tire ---- */
+function grGeste(gs,m,e){
+  const b=gs.b,items=gs.items,orig=gs.orig;
+  if(gs.h==='grot'){
+    const a0=Math.atan2(gs.m0[1]-b.cy,gs.m0[0]-b.cx),a1=Math.atan2(m[1]-b.cy,m[0]-b.cx);
+    let d=deg(a1-a0);
+    if(!(e&&e.altKey))d=Math.round(d/15)*15;else d=Math.round(d);
+    gs.ang=d;
+    items.forEach((it,i)=>grTourner(it,orig[i],b.cx,b.cy,rad(d)));
+    return}
+  const est=gs.h.includes('e'),sud=gs.h.includes('s');
+  const ax=est?b.x0:b.x1,ay=sud?b.y0:b.y1;
+  const lx=(est?b.x1:b.x0)-ax,ly=(sud?b.y1:b.y0)-ay;
+  let sx=Math.abs(lx)>.01?(m[0]-ax)/lx:1,sy=Math.abs(ly)>.01?(m[1]-ay)/ly:1;
+  sx=Math.max(GR_MIN,sx);sy=Math.max(GR_MIN,sy);
+  if(!(e&&e.altKey)){const s=Math.abs(lx)>Math.abs(ly)?sx:sy;sx=s;sy=s}
+  gs.ech=[sx,sy];
+  items.forEach((it,i)=>grEchelle(it,orig[i],ax,ay,sx,sy))}
+
+/* ---- aligner et espacer ---- */
+function grDeplacer(it,dx,dy){
+  if(!dx&&!dy)return;
+  moveItem(it,JSON.parse(JSON.stringify(it)),dx,dy)}
+function grAligner(items,quoi){
+  const b=grBoite(items);if(!b)return;
+  snap();
+  for(const it of items){
+    const q=itemBounds(it),w=q[2]-q[0],h=q[3]-q[1];
+    let dx=0,dy=0;
+    if(quoi==='g')dx=b.x0-q[0];
+    else if(quoi==='d')dx=b.x1-q[2];
+    else if(quoi==='cx')dx=b.cx-(q[0]+w/2);
+    else if(quoi==='h')dy=b.y0-q[1];
+    else if(quoi==='b')dy=b.y1-q[3];
+    else if(quoi==='cy')dy=b.cy-(q[1]+h/2);
+    grDeplacer(it,fx(dx),fx(dy))}
+  dirty();renderCanvas();renderOverlay();renderSide()}
+/* des espaces égaux entre les éléments, le premier et le dernier ne bougent pas */
+function grEspacer(items,axe){
+  if(items.length<3)return;
+  const L=items.map(it=>({it:it,b:itemBounds(it)})).sort((a,b)=>(axe==='x'?a.b[0]-b.b[0]:a.b[1]-b.b[1]));
+  const i0=axe==='x'?0:1,i1=axe==='x'?2:3;
+  const debut=L[0].b[i0],fin=L[L.length-1].b[i1];
+  let pris=0;for(const q of L)pris+=q.b[i1]-q.b[i0];
+  const trou=(fin-debut-pris)/(L.length-1);
+  snap();
+  let pos=debut;
+  L.forEach((q,i)=>{
+    const taille=q.b[i1]-q.b[i0];
+    if(i>0&&i<L.length-1){
+      const d=fx(pos-q.b[i0]);
+      grDeplacer(q.it,axe==='x'?d:0,axe==='x'?0:d)}
+    pos+=taille+trou});
+  dirty();renderCanvas();renderOverlay();renderSide()}
+
+/* ---- le panneau de plusieurs éléments ---- */
+function grPanneau(sel){
+  const n=sel.length;
+  const bt=(a,t,l)=>`<button type="button" class="btn sm" data-act="${a}" title="${t}">${l}</button>`;
+  return `<h3>${n} éléments</h3>`
+    +`<div class="row"><button class="btn sm" data-act="dup">Dupliquer</button><button class="btn sm danger" data-act="del">Supprimer</button></div>`
+    +`<p class="hint">Glisse pour déplacer le groupe, un coin du cadre pour changer sa taille (Alt : sans garder les proportions), le bouton au-dessus pour le tourner (Alt : au degré). Les portes et fenêtres gardent leur largeur et restent sur leur mur. Maj+clic ajoute ou retire.</p>`
+    +`<p class="tag" style="margin:10px 0 4px">Aligner</p><div class="row">`
+    +bt('alG','Bords gauches','⇤ Gauche')+bt('alCx','Centres, de gauche à droite','↔ Centre')+bt('alD','Bords droits','Droite ⇥')+`</div><div class="row">`
+    +bt('alH','Bords du haut','⇡ Haut')+bt('alCy','Centres, de haut en bas','↕ Milieu')+bt('alB','Bords du bas','Bas ⇣')+`</div>`
+    +`<p class="tag" style="margin:10px 0 4px">Espacer également</p><div class="row">`
+    +bt('espX','Mêmes espaces, de gauche à droite','↔ Horizontalement')+bt('espY','Mêmes espaces, de haut en bas','↕ Verticalement')+`</div>`
+    +(n<3?`<p class="hint">Espacer demande au moins trois éléments.</p>`:'')}
+
+/* ---- la précision des placements ---- */
+const GR_PAS=[['1','1 m'],['0.5','50 cm'],['0.25','25 cm'],['0.1','10 cm'],['0.01','libre']];
+function grPrecision(){
+  const v=String(ui.snap);
+  return `<div class="row"><label>Précision</label><select data-ui="snap">`
+    +GR_PAS.map(([k,n])=>`<option value="${k}"${v===k?' selected':''}>${n}</option>`).join('')
+    +`</select></div>`}
+function grPasOk(v){
+  const n=parseFloat(v);
+  return GR_PAS.some(([k])=>+k===n)?n:.5}
+/* le pas fin sert aussi aux objets et aux textes, qui se posaient toujours au quart de mètre */
+const grPasFin=()=>Math.min(.25,ui.snap);
 /* ============ garder les plans, plan par plan ============
    Chaque bâtiment, chaque village, chaque carte du monde est une pièce qui porte sa date (maj) : la plus récente l'emporte,
    et une suppression laisse une trace datée (supprime) pour ne pas revenir d'un autre appareil. Le même document sert au
@@ -3705,8 +3968,13 @@ function pnItem(genre,it){
         return q;
       case 'wall':if(!(pnFini(q,'x1')&&pnFini(q,'y1')&&pnFini(q,'x2')&&pnFini(q,'y2')))return null;
         if(q.k!==undefined&&!['mur','cloison'].includes(q.k))q.k='mur';
-        /* le creux d'un mur arrondi : un nombre raisonnable, ou rien (le mur est droit) */
-        if(q.arc!==undefined){if(!pnFini(q,'arc')||Math.abs(q.arc)<.13)delete q.arc;else q.arc=fx(clamp(q.arc,-200,200))}
+        /* la courbe d'un mur : une poignée par bout, bornée ; l'ancien creux d'une version du 10/10 devient deux poignées */
+        for(const cle of ['h1','h2']){
+          const h=q[cle];if(h===undefined)continue;
+          if(!(Array.isArray(h)&&h.length>=2&&typeof h[0]==='number'&&typeof h[1]==='number'&&isFinite(h[0])&&isFinite(h[1]))){delete q[cle];continue}
+          const u=[fx(clamp(h[0],-200,200)),fx(clamp(h[1],-200,200))];
+          if(!u[0]&&!u[1])delete q[cle];else q[cle]=u}
+        if(q.arc!==undefined){if(pnFini(q,'arc')&&!q.h1&&!q.h2)murPoser(q,q.arc);delete q.arc}
         return q;
       case 'door':if(!(xy()&&pnFini(q,'w')&&q.w>0))return null;
         if(q.k!==undefined&&!DK[q.k])q.k='porte';pnOrient(q);return q;
@@ -3880,7 +4148,7 @@ function plansGarder(){
   return PL_GARDE}
 let vueT=0;
 function plansVueBientot(){clearTimeout(vueT);vueT=setTimeout(plansGarderVue,400)}
-function plansGarderVue(){try{localStorage.setItem(PL_VUE,JSON.stringify({mode:ui.mode,b:P.curB,v:P.curV,w:P.curW}))}catch(e){}}
+function plansGarderVue(){try{localStorage.setItem(PL_VUE,JSON.stringify({mode:ui.mode,b:P.curB,v:P.curV,w:P.curW,snap:ui.snap}))}catch(e){}}
 function plansLireVue(){try{const v=JSON.parse(localStorage.getItem(PL_VUE)||'null');return pnObj(v)?v:null}catch(e){return null}}
 
 /* ---------- fondre ce qui vient d'ailleurs ---------- */
@@ -4265,7 +4533,8 @@ function demarrer(){
   if(v){
     for(const[k,champ,cle]of [['b','curB','b'],['v','curV','v'],['w','curW','w']])
       if(typeof v[cle]==='string'&&plansListe(k).some(p=>p.id===v[cle]))P[champ]=v[cle];
-    if(['b','v','w'].includes(v.mode))ui.mode=v.mode}
+    if(['b','v','w'].includes(v.mode))ui.mode=v.mode;
+    if(v.snap!==undefined)ui.snap=grPasOk(v.snap)}
   histClear();
   ui.edit=false;
   setEdition(false);              /* trace tout et pose la lecture */

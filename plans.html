@@ -1275,8 +1275,9 @@ const BM={
     if(sel.length===1){const h=handleAt(sel[0],m);if(h){if(libreOk(sel[0])){libreDown(sel[0],h,e);return true}snap();g={t:'resize',it:sel[0],h,o:{...sel[0]},dedans:grContenu(sel[0],e.altKey),autres:(sel[0].t==='room'?grAutresEtages():null),toutLEtage:grToutLEtage([sel[0]])};return true}}
     const hit=hitAt(m[0],m[1],F);
     if(!hit){if(!e.shiftKey){ui.sel=[];renderSide();renderOverlay()}return false}
-    if(e.shiftKey){ui.sel=ui.sel.includes(hit.id)?ui.sel.filter(i=>i!==hit.id):[...ui.sel,hit.id]}
-    else if(!ui.sel.includes(hit.id))ui.sel=[hit.id];
+    const gl=grpEtendre(hit,e.altKey);
+    if(e.shiftKey){ui.sel=ui.sel.includes(hit.id)?ui.sel.filter(i=>gl.indexOf(i)<0):[...new Set([...ui.sel,...gl])]}
+    else if(e.altKey||!ui.sel.includes(hit.id)||gl.some(i=>!ui.sel.includes(i)))ui.sel=gl;
     const items=selItems();const attach=new Set(grAttraper(items,e.altKey));
     g={t:'move',m0:m,items:[...items,...attach],orig:[...items,...attach].map(i=>JSON.parse(JSON.stringify(i))),moved:false,
       base:items,autres:grAutresEtages(),toutLEtage:grToutLEtage(items)};
@@ -1385,13 +1386,14 @@ function renderFloorbar(){
   const b=CB();
   bar.innerHTML=(ui.from&&P.villages.find(v=>v.id===ui.from.v)?`<button class="btn sm primary" data-act="backV">← Retour à la carte</button>`:'')+`<div class="seg"><button data-v="plan" aria-pressed="${!ui.facade}">Plan</button><button data-v="fac" aria-pressed="${ui.facade}">Façade</button></div>`+
    b.floors.map((f,i)=>`<button class="chip" data-fl="${i}" aria-pressed="${i===ui.fl&&!ui.facade}">${esc(f.name)}</button>`).join('')+
-   `<button class="btn sm" data-act="addFloor" title="Nouvel étage vide">＋ Étage</button><button class="btn sm" data-act="dupFloor" title="Copier cet étage dans un nouvel étage">⧉ Copier</button>`;
+   `<button class="btn sm" data-act="addFloor" title="Nouvel étage vide">＋ Étage</button><button class="btn sm danger" data-act="delFloor" title="Retirer cet étage"${b.floors.length<2?' disabled':''}>− Étage</button><button class="btn sm" data-act="dupFloor" title="Copier cet étage dans un nouvel étage">⧉ Copier</button>`;
 }
 $('#floorbar').addEventListener('click',e=>{const t=e.target.closest('button');if(!t||ui.mode!=='b')return;const b=CB();
   if(!ui.edit&&(t.dataset.act==='addFloor'||t.dataset.act==='dupFloor'))return;
   if(t.dataset.v){ui.facade=t.dataset.v==='fac';ui.sel=[];renderAll();return}
   if(t.dataset.fl!=null){ui.fl=+t.dataset.fl;ui.facade=false;ui.sel=[];renderAll();return}
   if(t.dataset.act==='backV'){const f=ui.from;ui.from=null;P.curV=f.v;setMode('v');ui.sel=[f.id];renderSide();renderOverlay();return}
+  if(t.dataset.act==='delFloor'){if(b.floors.length<2)return;if(!armed(t,'Confirmer ?'))return;snap();b.floors.splice(ui.fl,1);ui.fl=Math.max(0,ui.fl-1);ui.sel=[];save();renderAll();return}
   if(t.dataset.act==='addFloor'){snap();b.floors.push({name:floorName(b.floors.length),items:[]});ui.fl=b.floors.length-1;ui.facade=false;ui.sel=[];save();renderAll()}
   if(t.dataset.act==='dupFloor'){snap();const f=JSON.parse(JSON.stringify(CF()));f.name=floorName(b.floors.length);f.items.forEach(i=>i.id=uid());b.floors.splice(ui.fl+1,0,f);ui.fl++;ui.sel=[];save();renderAll()}});
 const floorName=i=>i===0?'Rez-de-chaussée':i===1?'1er étage':i+'e étage';
@@ -1406,7 +1408,7 @@ function B_side(){
   else if(sel.length===1)selH+=itemPanel(sel[0]);
   else if(sel.length>1)selH+=grPanneau(sel);
   else selH+=toolPanel();
-  h+=selH+grPrecision();
+  h+=selH+grPrecision()+grpListe();
   h+=`<h3>Bâtiment</h3>`;
   h+=`<div class="row"><label>Nom</label><input type="text" data-b="name" value="${esc(b.name)}"></div>`;
   h+=`<div class="row"><button class="btn sm primary" data-act="toMap">Placer sur la carte du village</button></div>`;
@@ -1497,6 +1499,8 @@ function B_act(a,btn){
   if(a==='del'){snap();F.items=F.items.filter(i=>!ui.sel.includes(i.id));ui.sel=[];dirty();renderSide();return}
   if(a&&/^al[GDHB]$|^alC[xy]$/.test(a)){grAligner(selItems(),a.slice(2).toLowerCase());return}
   if(a==='espX'||a==='espY'){grEspacer(selItems(),a==='espX'?'x':'y');return}
+  if(a==='grouper'){grpFaire(selItems());return}
+  if(a==='degrouper'){grpDefaire(selItems());return}
   if(a==='escDet'){const it=selItems()[0];if(it&&it.t==='stair'){snap();escCouper(it);delete it.auto;it.esc=uid();dirty();renderCanvas();renderOverlay();renderSide()}return}
   if(a==='dup'){dupSel();return}
   if(a==='bFin'){bFinish();return}if(a==='bBack'){bRetirer();return}if(a==='bAnn'){bdraw=null;renderSide();renderOverlay();return}
@@ -3008,14 +3012,15 @@ $('#bHelp').onclick=()=>modal(`<h2>Registre des Plans</h2>
 <p class="tag">Exporter, importer</p><p>« Exporter », en haut, donne pour le plan affiché un fichier .json : ce plan seul, ce plan avec les plans qui en dépendent (une carte du monde mène à ses villages, un village à ses bâtiments), tous les plans du même genre, ou tous les plans d’un coup. « Importer », juste à côté, reprend un fichier .json : tout ce qu’il porte, ou seulement ses bâtiments, ses villages ou ses cartes du monde, sans toucher aux autres. Une fenêtre dit ce qui entre avant de valider, et le fichier prend la place d’un plan qui existe déjà ici.</p>
 <p class="tag">Plein écran</p><p>Le bouton à droite d’« Exporter » (ou <kbd>Maj</kbd>+<kbd>F</kbd>) donne toute la fenêtre à l’établi. <kbd>Échap</kbd> en sort.</p>
 <p class="tag">Dimensions</p><p>Tout est en mètres. Dans un bâtiment, la grille fait 1 m par carreau (traits forts tous les 5 m) et l’aimant se règle à 25 cm, 50 cm ou 1 m. La pièce choisie affiche ses cotes sur le plan et ses valeurs exactes (largeur, hauteur, surface, périmètre) dans le panneau de droite, où tu peux les saisir au centimètre. La case « Dimensions » écrit la taille de chaque pièce sur le plan et dans l’export. Dans un village, tailles et distances sont aussi en mètres, avec une échelle graphique sur l’export.</p>
+<p class="tag">Étages</p><p>La barre au-dessus du plan tient un onglet par étage. <b>＋ Étage</b> en ajoute un vide, <b>⧉ Copier</b> recopie celui qui est affiché dans un nouvel étage, et <b>− Étage</b> retire l’étage affiché : le bouton demande d’abord « Confirmer ? », un second clic retire. Le panneau du bâtiment propose le même retrait sous <b>Supprimer l’étage</b>, et <b>Vider</b> le garde en l’effaçant. Le dernier étage ne se retire pas, et <kbd>Ctrl</kbd>+<kbd>Z</kbd> rend un étage retiré par erreur.</p>
 <p class="tag">Mondes</p><p>Chaque carte du monde couvre une zone en kilomètres. L’outil <b>Zoom</b> trace un rectangle et crée une carte plus précise (relief affiné, lieux, rivières, routes et royaumes repris). Un <b>lieu</b> (ville, village, hameau) ouvre sa carte de village, dont les bâtisses mènent à leurs plans : monde, continent, pays, région, village, bâtiment. Dans la liste des lieux, à droite du panneau, un clic sur le nom le montre sur la carte, « Ouvrir ▸ » (ou un double-clic sur le nom) ouvre son village. L’outil <b>Relief</b> se peint comme un pinceau (monter, creuser, terre, mer, humide, sec). Le générateur crée continent, archipel, îles ou pangée avec rivières, lieux, routes et royaumes.</p><p>L’outil <b>Mesurer</b> donne la distance en kilomètres : glisse d’un point à un autre, le pointeur se cale sur un lieu quand il en passe près, et un cercle montre cette distance autour du point de départ. <kbd>Échap</kbd> efface la mesure. Pour poser un lieu à une distance précise d’un autre, choisis ce dernier et donne-lui un <b>cercle de repère</b> (en kilomètres, dans son panneau) : il reste affiché tant qu’on dessine, et ne s’imprime pas sur la carte.</p><p>Les <b>noms des lieux</b> se posent tout seuls là où ils tiennent (sous le point, dessus, à côté) : ils ne se recouvrent plus. Un nom qui ne tient nulle part n’est pas écrit, et le panneau de la carte dit combien sont ainsi de côté. Ce même panneau règle leur <b>taille</b> (de petits à très grands) et <b>ce qu’on affiche</b>, type de lieu par type de lieu ; le panneau d’un lieu peut toujours masquer son seul nom.</p>
 <p class="tag">Raccourcis, partout</p>
 <table><tr><td>Molette, ou deux doigts</td><td>Zoomer</td></tr><tr><td>Glisser dans le vide</td><td>Déplacer la vue</td></tr><tr><td><kbd>F</kbd></td><td>Tout voir</td></tr><tr><td><kbd>Maj</kbd>+<kbd>F</kbd></td><td>Plein écran</td></tr><tr><td><kbd>+</kbd> <kbd>-</kbd></td><td>Zoomer, dézoomer (le plan a le focus)</td></tr><tr><td>Flèches</td><td>Déplacer la vue, en mode Consulter</td></tr><tr><td><kbd>Échap</kbd></td><td>Désélectionner</td></tr></table>
 <p class="tag" style="margin-top:10px">Raccourcis, en mode Modifier</p>
-<table><tr><td><kbd>1</kbd> à <kbd>0</kbd></td><td>Changer d’outil</td></tr><tr><td><kbd>Espace</kbd> + glisser</td><td>Déplacer la vue</td></tr><tr><td><kbd>Suppr</kbd></td><td>Supprimer la sélection</td></tr><tr><td><kbd>R</kbd></td><td>Pivoter (meuble, escalier, bâtisse ; <kbd>Maj</kbd>+<kbd>R</kbd> dans l’autre sens)</td></tr><tr><td><kbd>Ctrl</kbd>+<kbd>Z</kbd> / <kbd>Y</kbd></td><td>Annuler / rétablir</td></tr><tr><td><kbd>Ctrl</kbd>+<kbd>D</kbd>, <kbd>C</kbd>, <kbd>V</kbd></td><td>Dupliquer, copier, coller</td></tr><tr><td>Flèches</td><td>Déplacer la sélection (<kbd>Maj</kbd> : grand pas)</td></tr><tr><td><kbd>Entrée</kbd> / double-clic</td><td>Terminer une route, rivière, zone, pièce libre</td></tr><tr><td><kbd>Retour arrière</kbd></td><td>Retirer le dernier point d’un tracé en cours</td></tr></table>
+<table><tr><td><kbd>1</kbd> à <kbd>0</kbd></td><td>Changer d’outil</td></tr><tr><td><kbd>Espace</kbd> + glisser</td><td>Déplacer la vue</td></tr><tr><td><kbd>Suppr</kbd></td><td>Supprimer la sélection</td></tr><tr><td><kbd>R</kbd></td><td>Pivoter (meuble, escalier, bâtisse ; <kbd>Maj</kbd>+<kbd>R</kbd> dans l’autre sens)</td></tr><tr><td><kbd>Ctrl</kbd>+<kbd>Z</kbd> / <kbd>Y</kbd></td><td>Annuler / rétablir</td></tr><tr><td><kbd>Ctrl</kbd>+<kbd>D</kbd>, <kbd>C</kbd>, <kbd>V</kbd></td><td>Dupliquer, copier, coller</td></tr><tr><td><kbd>Ctrl</kbd>+<kbd>G</kbd> / <kbd>Ctrl</kbd>+<kbd>Maj</kbd>+<kbd>G</kbd></td><td>Grouper / dégrouper (dans un bâtiment)</td></tr><tr><td>Flèches</td><td>Déplacer la sélection (<kbd>Maj</kbd> : grand pas)</td></tr><tr><td><kbd>Entrée</kbd> / double-clic</td><td>Terminer une route, rivière, zone, pièce libre</td></tr><tr><td><kbd>Retour arrière</kbd></td><td>Retirer le dernier point d’un tracé en cours</td></tr></table>
 <p class="tag" style="margin-top:10px">Pièces en forme libre : la plume</p><p>Avec l’outil « Pièce », choisis la forme « Forme libre (la plume) » : la forme se choisit avant de dessiner. Clique pour poser un point ; <b>glisse en posant</b> pour courber le côté, comme une plume de dessin. Ferme en recliquant le premier point (glisse là aussi pour courber le retour), par double-clic ou avec <kbd>Entrée</kbd>. <kbd>Maj</kbd> tient les angles à 45 degrés, <kbd>Retour arrière</kbd> retire le dernier point, <kbd>Échap</kbd> annule le tracé.</p><p>Une pièce déjà posée s’arrondit aussi : choisis-la, puis <b>double-clique un de ses points</b> pour l’arrondir, et double-clique encore pour revenir à l’angle vif. Une pièce libre choisie montre un carré à chaque point, qu’on glisse, un rond plein au bout de chaque poignée de courbe (<kbd>Alt</kbd> pour ne bouger que celle-là ; ramenée sur son point, elle s’en va, seule : un côté droit peut suivre un côté arrondi) et un petit rond au milieu de chaque côté, qui ajoute un point ; <kbd>Alt</kbd>+clic sur un point le retire. Le bouton « Arrondir la forme » courbe tout d’un coup, et « Tout en angles vifs » défait. Une pièce déjà posée devient libre depuis son panneau (« Forme ») : un ovale garde sa courbe. Les portes et fenêtres se posent aussi sur ses côtés obliques et courbes.</p>
 <p class="tag" style="margin-top:10px">Murs arrondis</p><p>Un mur se courbe aussi : choisis-le, puis glisse le rond du milieu d’un côté ou de l’autre, ou tape son creux (en mètres) dans son panneau. Zéro le redresse. Une fois courbé, il porte une poignée à chaque bout, comme à la plume : tire-les pour une courbe en S ou pour changer l’angle d’arrivée ; ramenée sur son bout, une poignée s’en va. Les portes et fenêtres se posent sur un mur courbe comme sur un mur droit.</p>
-<p class="tag" style="margin-top:10px">Plusieurs éléments à la fois</p><p>Maj+clic ajoute ou retire de la sélection, <kbd>Ctrl</kbd>+<kbd>A</kbd> prend tout l’étage. Un groupe choisi reçoit un cadre : glisse un de ses coins pour changer la taille de tout l’ensemble (<kbd>Alt</kbd> : sans garder les proportions), et le bouton rond au-dessus pour le tourner (<kbd>Alt</kbd> : au degré près, sinon par pas de 15 degrés ; <kbd>R</kbd> fait un quart de tour, <kbd>Maj</kbd>+<kbd>R</kbd> dans l’autre sens). Les portes et fenêtres gardent leur largeur et restent sur leur mur, les meubles gardent leur taille. Une pièce rectangulaire tournée d’un angle libre devient une pièce en forme libre ; les escaliers, les ovales et les anneaux ne tournent que par quarts de tour, faute d’angle dans le format. Quand le bâtiment a plusieurs étages, coche <b>Changer aussi les autres étages</b> : la taille et la rotation s’appliquent de la même façon partout. Si ce que tu prends tient toute l’emprise de l’étage (<kbd>Ctrl</kbd>+<kbd>A</kbd>, ou simplement la grande pièce qui contient le reste, comme la salle d’une tour), les autres étages prennent en plus la même emprise que celui-ci, calée sur le coin que tu choisis (haut gauche par défaut) : tous les bords tombent ensemble. Au déplacement, c’est pareil ; si tu ne prends qu’un morceau de l’étage, les autres suivent simplement du même décalage. Le panneau donne aussi <b>Aligner</b> (les six bords et centres) et <b>Espacer également</b> (mêmes espaces, le premier et le dernier ne bougent pas, trois éléments au moins).</p><p class="tag" style="margin-top:10px">Une pièce emporte ce qu’elle contient</p><p>Déplacer une pièce, la retailler par ses poignées, tirer un coin d’une forme libre ou taper ses mesures dans le panneau : à chaque fois, ce qu’elle porte suit. Ses portes et fenêtres restent collées à ses murs, à la même largeur (sur une forme libre, elles se recollent au mur même quand il devient oblique) ; ses meubles, ses textes, ses cloisons et les pièces qu’elle contient se replacent dedans sans changer de taille. <kbd>Alt</kbd> pendant le geste ne bouge ou ne retaille que la pièce.</p><p class="tag" style="margin-top:10px">Escaliers</p><p>Un escalier posé se retrouve tout seul aux étages du dessus, à la même place et de la même taille (il y dit « descend ») : le déplacer, le retailler ou changer son sens emporte ses jumeaux. Dans son panneau, décoche <b>Continue à l’étage du dessus</b> pour l’arrêter là, ou, sur un jumeau, <b>Détacher celui-ci</b> pour le rendre indépendant (la suite d’en dessous s’arrête alors). Supprimer l’escalier d’origine emporte ses jumeaux automatiques.</p><p class="tag" style="margin-top:10px">Précision, mobilier</p><p>En bas du panneau, <b>Précision</b> règle le pas de la grille : 1 m, 50 cm, 25 cm, 10 cm, ou libre. Il vaut pour les pièces, les murs et les flèches du clavier ; les objets et les textes se posent au quart de mètre, ou plus fin si tu choisis plus fin. Ce réglage est gardé d’une visite à l’autre. Le catalogue du mobilier reste ouvert quand on pose un objet : on en pose plusieurs à la suite, et la fiche de celui qu’on vient de poser apparaît dessous. Un meuble choisi porte un rond au-dessus de lui : glisse-le pour le tourner sur le plan même (<kbd>Alt</kbd> : au degré).</p><p class="tag" style="margin-top:10px">Astuces</p><p>Déplacer une pièce emporte ses portes et fenêtres (Alt pour les laisser). La porte s’ouvre du côté où se trouve le curseur. Dans un village, un bâtiment peut être lié à un plan : « Créer un plan de ce bâtiment » en génère un adapté.</p>
+<p class="tag" style="margin-top:10px">Plusieurs éléments à la fois</p><p>Maj+clic ajoute ou retire de la sélection, <kbd>Ctrl</kbd>+<kbd>A</kbd> prend tout l’étage. Un groupe choisi reçoit un cadre : glisse un de ses coins pour changer la taille de tout l’ensemble (<kbd>Alt</kbd> : sans garder les proportions), et le bouton rond au-dessus pour le tourner (<kbd>Alt</kbd> : au degré près, sinon par pas de 15 degrés ; <kbd>R</kbd> fait un quart de tour, <kbd>Maj</kbd>+<kbd>R</kbd> dans l’autre sens). Les portes et fenêtres gardent leur largeur et restent sur leur mur, les meubles gardent leur taille. Une pièce rectangulaire tournée d’un angle libre devient une pièce en forme libre ; les escaliers, les ovales et les anneaux ne tournent que par quarts de tour, faute d’angle dans le format. Quand le bâtiment a plusieurs étages, coche <b>Changer aussi les autres étages</b> : la taille et la rotation s’appliquent de la même façon partout. Si ce que tu prends tient toute l’emprise de l’étage (<kbd>Ctrl</kbd>+<kbd>A</kbd>, ou simplement la grande pièce qui contient le reste, comme la salle d’une tour), les autres étages prennent en plus la même emprise que celui-ci, calée sur le coin que tu choisis (haut gauche par défaut) : tous les bords tombent ensemble. Au déplacement, c’est pareil ; si tu ne prends qu’un morceau de l’étage, les autres suivent simplement du même décalage. Le panneau donne aussi <b>Aligner</b> (les six bords et centres) et <b>Espacer également</b> (mêmes espaces, le premier et le dernier ne bougent pas, trois éléments au moins).</p><p class="tag" style="margin-top:10px">Une pièce emporte ce qu’elle contient</p><p>Déplacer une pièce, la retailler par ses poignées, tirer un coin d’une forme libre ou taper ses mesures dans le panneau : à chaque fois, ce qu’elle porte suit. Ses portes et fenêtres restent collées à ses murs, à la même largeur (sur une forme libre, elles se recollent au mur même quand il devient oblique) ; ses meubles, ses textes, ses cloisons et les pièces qu’elle contient se replacent dedans sans changer de taille. La case <b>Une pièce emporte ce qu’elle contient</b>, en bas du panneau, commande tout cela : décochée, une pièce bouge seule, et les objets voisins ne s’accrochent plus à elle. <kbd>Alt</kbd> pendant le geste retourne la case le temps de ce geste, dans un sens comme dans l’autre. Le réglage est gardé d’une visite à l’autre.</p><p class="tag" style="margin-top:10px">Grouper des éléments</p><p>Choisis au moins deux éléments et clique <b>Grouper</b> (ou <kbd>Ctrl</kbd>+<kbd>G</kbd>) : ensuite, un clic sur l’un d’eux prend tout le groupe, et <kbd>Alt</kbd>+clic n’en prend qu’un. Le groupe se retaille, se tourne, s’aligne et s’espace comme une seule pièce. <b>Dégrouper</b> (ou <kbd>Ctrl</kbd>+<kbd>Maj</kbd>+<kbd>G</kbd>) le défait. Le panneau liste les groupes de l’étage, G1, G2, et ainsi de suite : un clic sur le nom choisit le groupe entier, le bouton à droite le défait. Les groupes sont gardés avec le plan, et un élément n’appartient qu’à un groupe à la fois.</p><p class="tag" style="margin-top:10px">Escaliers</p><p>Un escalier posé se retrouve tout seul aux étages du dessus, à la même place et de la même taille : le déplacer, le retailler ou changer son sens emporte ses jumeaux. Aux étages du milieu, il en vient deux, collés l’un à l’autre : l’<b>arrivée</b> de l’étage du dessous, qui dit « descend » et dont la flèche montre le chemin du retour, et à côté le <b>départ</b> vers l’étage du dessus, qui dit « monte » et garde le sens de l’escalier d’origine. Les deux alternent de place d’étage en étage, si bien que la cage reste au même endroit. Le dernier étage n’a que l’arrivée, et un escalier en colimaçon n’en pose qu’une, lui qui tourne sur place. Dans son panneau, décoche <b>Continue à l’étage du dessus</b> pour l’arrêter là, ou, sur un jumeau, <b>Détacher celui-ci</b> pour le rendre indépendant (la suite d’en dessous s’arrête alors). Supprimer l’escalier d’origine emporte ses jumeaux automatiques.</p><p class="tag" style="margin-top:10px">Précision, mobilier</p><p>En bas du panneau, <b>Précision</b> règle le pas de la grille : 1 m, 50 cm, 25 cm, 10 cm, ou libre. Il vaut pour les pièces, les murs et les flèches du clavier ; les objets et les textes se posent au quart de mètre, ou plus fin si tu choisis plus fin. Ce réglage est gardé d’une visite à l’autre. Le catalogue du mobilier reste ouvert quand on pose un objet : on en pose plusieurs à la suite, et la fiche de celui qu’on vient de poser apparaît dessous. Un meuble choisi porte un rond au-dessus de lui : glisse-le pour le tourner sur le plan même (<kbd>Alt</kbd> : au degré).</p><p class="tag" style="margin-top:10px">Astuces</p><p>La porte s’ouvre du côté où se trouve le curseur. Dans un village, un bâtiment peut être lié à un plan : « Créer un plan de ce bâtiment » en génère un adapté.</p>
 <div class="row"><button type="button" class="btn primary" onclick="closeModal()">Fermer</button></div>`);
 const _av=applyView;applyView=function(){_av();const isW=ui.mode==='w',m=ui.view.k*U()/(isW?CW().kmu:1);const L=[.5,1,2,5,10,20,50,100,200,500,1000,2000,5000,10000,20000];let best=L[L.length-1];for(const l of L)if(l*m>=60&&(isW||l>=1)){best=l;break}$('#sbar').style.width=(best*m)+'px';$('#sLbl').textContent=best.toLocaleString('fr-BE')+(isW?' km':' m');if(typeof updEnter==='function')updEnter()};
 /* ====== consulter : lire, zoomer, entrer, sans rien pouvoir déplacer ====== */
@@ -3209,6 +3214,13 @@ function panneauEcrire(html){
   side.innerHTML=html;
   side.querySelectorAll('details').forEach(d=>{const k=tiroirCle(d);if(k in TIROIRS)d.open=TIROIRS[k]});
   side.scrollTop=y}
+
+/* la liste des groupes : choisir un groupe, ou le défaire */
+side.addEventListener('click',e=>{
+  const a=e.target.closest('[data-grp]');
+  if(a){e.preventDefault();const L=grpMembres(a.dataset.grp);if(L.length){ui.sel=L.map(i=>i.id);renderSide();renderOverlay()}return}
+  const o=e.target.closest('[data-grpoff]');
+  if(o){e.preventDefault();grpDefaire(grpMembres(o.dataset.grpoff));return}});
 
 /* la molette au-dessus d'une liste qui a le focus en changeait la valeur (la forme d'une pièce, l'étage) sans qu'on le veuille */
 addEventListener('wheel',()=>{const a=document.activeElement;if(a&&a.tagName==='SELECT')a.blur()},{passive:true,capture:true});
@@ -3760,8 +3772,9 @@ function grSurBord(r,o){
   if(libreOk(r))return libreSurBord(r,o);
   return(Math.abs(o.y-r.y)<.01||Math.abs(o.y-r.y-r.h)<.01)&&o.x>=r.x-.01&&o.x<=r.x+r.w+.01
     ||(Math.abs(o.x-r.x)<.01||Math.abs(o.x-r.x-r.w)<.01)&&o.y>=r.y-.01&&o.y<=r.y+r.h+.01}
+const grEmporte=alt=>(ui.emporter!==false)!==!!alt;   /* la case, qu'Alt retourne le temps d'un geste */
 function grContenu(r,alt,hors){
-  if(alt||!r||r.t!=='room')return null;
+  if(!grEmporte(alt)||!r||r.t!=='room')return null;
   const F=CF(),out=[],bord=[];
   for(const it of F.items){
     if(it===r||(hors&&hors.indexOf(it)>=0))continue;
@@ -3786,10 +3799,10 @@ function grRecoller(r,o){
   else{o.o='a';o.ang=fx(ang)}}
 /* ce qu'une pièce emporte quand on la déplace : les mêmes que lorsqu'on la retaille */
 function grAttraper(items,alt){
-  if(alt)return [];
+  if(!grEmporte(alt))return [];
   const out=[];
   for(const r of items.filter(i=>i.t==='room')){
-    const d=grContenu(r,false,items);
+    const d=grContenu(r,alt,items);
     if(d)for(const q of d.items)if(out.indexOf(q)<0)out.push(q)}
   return out}
 /* la pièce a changé de boîte : ce qu'elle porte suit, sans changer de taille pour les portes, meubles et textes */
@@ -4023,6 +4036,9 @@ function grPanneau(sel){
   const bt=(a,t,l)=>`<button type="button" class="btn sm" data-act="${a}" title="${t}">${l}</button>`;
   return `<h3>${n} éléments</h3>`
     +`<div class="row"><button class="btn sm" data-act="dup">Dupliquer</button><button class="btn sm danger" data-act="del">Supprimer</button></div>`
+    +`<div class="row"><button class="btn sm primary" data-act="grouper">Grouper</button>`
+    +(sel.some(grpDe)?`<button class="btn sm" data-act="degrouper">Dégrouper</button>`:'')+`</div>`
+    +`<p class="hint">Groupés, ils se prennent tous d’un seul clic (Alt+clic pour n’en attraper qu’un). Ils restent ensemble pour déplacer, tourner et changer la taille.</p>`
     +`<p class="hint">Glisse pour déplacer le groupe, un coin du cadre pour changer sa taille (Alt : sans garder les proportions), le bouton au-dessus pour le tourner (Alt : au degré). Les portes et fenêtres gardent leur largeur et restent sur leur mur. Maj+clic ajoute ou retire.</p>`
     +`<p class="tag" style="margin:10px 0 4px">Aligner</p><div class="row">`
     +bt('alG','Bords gauches','⇤ Gauche')+bt('alCx','Centres, de gauche à droite','↔ Centre')+bt('alD','Bords droits','Droite ⇥')+`</div><div class="row">`
@@ -4032,11 +4048,50 @@ function grPanneau(sel){
     +(n<3?`<p class="hint">Espacer demande au moins trois éléments.</p>`:'')
     +grEtagePanneau(true)}
 
+/* ---- grouper des objets, comme des calques ---- */
+const grpDe=it=>it&&typeof it.grp==='string'&&it.grp?it.grp:null;
+function grpMembres(id){const F=CF();return F?F.items.filter(i=>grpDe(i)===id):[]}
+/* cliquer un élément groupé prend tout son groupe ; Alt n'en prend qu'un */
+function grpEtendre(hit,seul){
+  const id=grpDe(hit);
+  if(!id||seul)return [hit.id];
+  const L=grpMembres(id).map(i=>i.id);
+  return L.length?L:[hit.id]}
+function grpFaire(sel){
+  if(!sel||sel.length<2)return;
+  snap();
+  const id=uid();
+  for(const it of sel)it.grp=id;
+  dirty();renderSide();renderOverlay();
+  toast(sel.length+' éléments groupés : un clic les prend tous, Alt+clic n’en prend qu’un.')}
+function grpDefaire(sel){
+  const L=(sel||[]).filter(grpDe);
+  if(!L.length)return;
+  snap();
+  const ids=new Set(L.map(grpDe));
+  for(const it of CF().items)if(ids.has(grpDe(it)))delete it.grp;
+  dirty();renderSide();renderOverlay();
+  toast(ids.size>1?'Groupes défaits':'Groupe défait')}
+/* la liste des groupes de l'étage, comme des calques */
+function grpListe(){
+  const F=CF();if(!F)return '';
+  const vus=[];
+  for(const it of F.items){const id=grpDe(it);if(id&&vus.indexOf(id)<0)vus.push(id)}
+  if(!vus.length)return '';
+  const nom=it=>it.name||(it.t==='room'?'Pièce':it.t==='furn'?((FD[it.k]||{}).n||'Objet'):it.t==='stair'?'Escalier':it.t==='label'?String(it.text||'Texte').slice(0,14):it.t==='wall'?'Mur':it.t==='door'?'Porte':it.t==='win'?'Fenêtre':'Élément');
+  let h=`<h3>Groupes (${vus.length})</h3><ul class="legend">`;
+  vus.forEach((id,i)=>{
+    const L=grpMembres(id),pris=ui.sel.length&&L.every(q=>ui.sel.includes(q.id));
+    h+=`<li class="lieu${pris?' on':''}"><span class="pill">G${i+1}</span><span class="nm"><a href="#" data-grp="${id}">${esc(nom(L[0]||{}))}${L.length>1?' et '+(L.length-1)+' autre'+(L.length>2?'s':''):''}</a><small>${L.length} éléments</small></span>`
+      +`<button type="button" class="btn sm go" data-grpoff="${id}">Dégrouper</button></li>`});
+  return h+`</ul>`}
+
 /* ---- la précision des placements ---- */
 const GR_PAS=[['1','1 m'],['0.5','50 cm'],['0.25','25 cm'],['0.1','10 cm'],['0.01','libre']];
 function grPrecision(){
   const v=String(ui.snap);
-  return `<div class="row"><label>Précision</label><select data-ui="snap">`
+  return `<div class="row"><label><input type="checkbox" data-ui="emporter"${ui.emporter!==false?' checked':''}> Une pièce emporte ce qu’elle contient</label></div>`
+    +`<div class="row"><label>Précision</label><select data-ui="snap">`
     +GR_PAS.map(([k,n])=>`<option value="${k}"${v===k?' selected':''}>${n}</option>`).join('')
     +`</select></div>`}
 function grPasOk(v){
@@ -4050,6 +4105,20 @@ const grPasFin=()=>Math.min(.25,ui.snap);
    commande : les jumeaux marqués « auto » suivent sa place, sa taille et son sens. Décocher « Continue à l'étage du
    dessus » arrête la suite et retire les jumeaux automatiques au-dessus. « Détacher » rend un jumeau indépendant. */
 const escAuto=it=>it.t==='stair'&&it.auto===true;
+const ESC_INV={n:'s',s:'n',e:'w',w:'e',spiral:'spiral'};
+/* la deuxième place du cage d'escalier : juste à côté de la première, dans le sens de la largeur */
+function escCote(src){
+  const d=src.dir||'n';
+  return(d==='n'||d==='s')?[fx(src.x+src.w),fx(src.y)]:[fx(src.x),fx(src.y+src.h)]}
+/* poser (ou remettre d'aplomb) un jumeau d'un étage : « a » l'arrivée qui descend, « m » le départ qui monte */
+function escPoser(F,id,role,src,x,y,dir,label){
+  let q=F.items.find(i=>i.t==='stair'&&i.esc===id&&escAuto(i)&&(i.rl||'a')===role);
+  if(!q){
+    q={t:'stair',id:uid(),esc:id,auto:true,rl:role,suite:true,x:x,y:y,w:src.w,h:src.h,dir:dir,label:label};
+    F.items.push(q);return q}
+  q.x=x;q.y=y;q.w=src.w;q.h=src.h;q.dir=dir;q.rl=role;
+  if(q.label!=='monte'&&q.label!=='descend'&&q.label)return q;
+  q.label=label;return q}
 function escSync(b){
   b=b||CB();
   if(!b||!Array.isArray(b.floors)||b.floors.length<2)return;
@@ -4063,22 +4132,28 @@ function escSync(b){
     if(!g.src){                           /* l'escalier d'origine n'est plus là : ses jumeaux s'en vont */
       for(const a of g.auto){const j=a.F.items.indexOf(a.it);if(j>=0)a.F.items.splice(j,1)}
       continue}
-    let prev=g.src;
+    const src=g.src,spirale=(src.dir||'n')==='spiral';
+    const place=[[src.x,src.y],escCote(src)];
+    let prev=src,slot=0;
     for(let i=g.i+1;i<b.floors.length;i++){
-      const F=b.floors[i],jum=F.items.find(x=>x.t==='stair'&&x.esc===id);
+      const F=b.floors[i];
       if(prev.suite===false){
         /* la suite s'arrête : tous les jumeaux automatiques du dessus s'en vont */
         for(let j=i;j<b.floors.length;j++){
-          const Fj=b.floors[j],t=Fj.items.find(x=>x.t==='stair'&&x.esc===id);
-          if(t&&escAuto(t))Fj.items.splice(Fj.items.indexOf(t),1)}
+          const Fj=b.floors[j];
+          for(let k=Fj.items.length-1;k>=0;k--){const t=Fj.items[k];if(t.t==='stair'&&t.esc===id&&escAuto(t))Fj.items.splice(k,1)}}
         break}
-      if(jum){
-        jum.x=prev.x;jum.y=prev.y;jum.w=prev.w;jum.h=prev.h;jum.dir=prev.dir;
-        if(escAuto(jum)&&jum.suite===undefined)jum.suite=true;
-        prev=jum;continue}
-      const c={t:'stair',id:uid(),esc:id,auto:true,suite:true,x:prev.x,y:prev.y,w:prev.w,h:prev.h,dir:prev.dir,
-        label:prev.label==='monte'?'descend':(prev.label||'')};
-      F.items.push(c);prev=c}}}
+      /* l'arrivée : elle descend, sa flèche montre le chemin du retour */
+      const arr=escPoser(F,id,'a',src,place[slot][0],place[slot][1],spirale?'spiral':ESC_INV[src.dir||'n'],'descend');
+      if(!spirale&&i+1<b.floors.length){
+        /* il reste un étage au-dessus : le départ qui monte, collé à côté */
+        const s2=1-slot;
+        const dep=escPoser(F,id,'m',src,place[s2][0],place[s2][1],src.dir||'n','monte');
+        prev=dep;slot=s2}
+      else{
+        const vieux=F.items.find(i2=>i2.t==='stair'&&i2.esc===id&&escAuto(i2)&&i2.rl==='m');
+        if(vieux)F.items.splice(F.items.indexOf(vieux),1);
+        prev=arr}}}}
 /* l'étage où se trouve l'escalier qui commande ce lien */
 function escSource(it){
   const b=CB();if(!b||!it||!it.esc)return null;
@@ -4251,6 +4326,8 @@ function pnItem(genre,it){
   const q=pnCopie(it);
   if(!plansIdOk(q.id))q.id=uid();
   if(typeof q.t!=='string')return null;
+  /* le groupe d'un élément : un petit nom, ou rien */
+  if(q.grp!==undefined&&!(typeof q.grp==='string'&&q.grp&&q.grp.length<=40))delete q.grp;
   const xy=()=>pnFini(q,'x')&&pnFini(q,'y');
   pnTxt(q,'name',200);pnTxt(q,'note',20000);pnTxt(q,'text',2000);pnTxt(q,'label',200);
   if(genre==='b'){
@@ -4289,6 +4366,7 @@ function pnItem(genre,it){
         if(q.auto!==undefined&&q.auto!==true)delete q.auto;
         if(q.suite!==undefined&&typeof q.suite!=='boolean')delete q.suite;
         if(q.auto&&!q.esc)delete q.auto;
+        if(q.rl!==undefined&&q.rl!=='a'&&q.rl!=='m')delete q.rl;
         return q;
       case 'label':if(!xy())return null;if(q.text===undefined)q.text='';if(q.size!==undefined&&!pnFini(q,'size'))q.size=12;return q;
     }
@@ -4465,7 +4543,7 @@ function plansGarder(){
   return PL_GARDE}
 let vueT=0;
 function plansVueBientot(){clearTimeout(vueT);vueT=setTimeout(plansGarderVue,400)}
-function plansGarderVue(){try{localStorage.setItem(PL_VUE,JSON.stringify({mode:ui.mode,b:P.curB,v:P.curV,w:P.curW,snap:ui.snap}))}catch(e){}}
+function plansGarderVue(){try{localStorage.setItem(PL_VUE,JSON.stringify({mode:ui.mode,b:P.curB,v:P.curV,w:P.curW,snap:ui.snap,emporter:ui.emporter!==false}))}catch(e){}}
 function plansLireVue(){try{const v=JSON.parse(localStorage.getItem(PL_VUE)||'null');return pnObj(v)?v:null}catch(e){return null}}
 
 /* ---------- fondre ce qui vient d'ailleurs ---------- */
@@ -4833,6 +4911,8 @@ document.addEventListener('keydown',e=>{
   if(k===' '&&tg===cv){ui.space=true;cv.classList.add('pan');e.preventDefault();return}
   if(ctrl&&(k==='z'||k==='Z')){e.preventDefault();e.shiftKey?redo():undo();return}
   if(ctrl&&(k==='y'||k==='Y')){e.preventDefault();redo();return}
+  /* grouper, dégrouper : comme dans un logiciel de dessin */
+  if(ctrl&&(k==='g'||k==='G')&&ui.mode==='b'){e.preventDefault();e.shiftKey?grpDefaire(selItems()):grpFaire(selItems());return}
   if(!ctrl&&/^[0-9]$/.test(k)){const L=ui.mode==='b'?BTOOLS:ui.mode==='w'?WTOOLS:VTOOLS;const i=(+k+9)%10;if(L[i]){setTool(L[i][0]);return}}
   const h=ui.mode==='b'?B_key(e):ui.mode==='w'?W_key(e):V_key(e);
   if(h)e.preventDefault()});
@@ -4851,7 +4931,8 @@ function demarrer(){
     for(const[k,champ,cle]of [['b','curB','b'],['v','curV','v'],['w','curW','w']])
       if(typeof v[cle]==='string'&&plansListe(k).some(p=>p.id===v[cle]))P[champ]=v[cle];
     if(['b','v','w'].includes(v.mode))ui.mode=v.mode;
-    if(v.snap!==undefined)ui.snap=grPasOk(v.snap)}
+    if(v.snap!==undefined)ui.snap=grPasOk(v.snap);
+    if(v.emporter!==undefined)ui.emporter=v.emporter!==false}
   histClear();
   ui.edit=false;
   setEdition(false);              /* trace tout et pose la lecture */

@@ -259,6 +259,27 @@ ul.tliste li{display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom
 .rdot.r2{background:var(--sage)} .rdot.r3{background:var(--gold)} .rdot.r4{background:var(--rust)} .rdot.r5{background:var(--plum)}
 .tajout{display:flex;flex-wrap:wrap;gap:6px}
 .tajout input[type=number]{width:62px;padding:5px 7px}
+/* le tour de table : les cartes du round */
+.tour{border-bottom:1px solid var(--rule);padding-bottom:8px;margin-bottom:6px}
+.tour .ctete{margin-bottom:2px}
+ul.prliste{list-style:none;margin:4px 0 0;padding:0}
+.prl{display:flex;align-items:center;gap:6px;padding:3px 0;border-top:1px solid var(--rule);font-size:13px}
+.prl:first-child{border-top:0}
+.prl.prmoi{background:var(--fill);margin-inline:-6px;padding-inline:6px}
+.prl.pra>.prn,.prl.pra>.prnom,.prl.pra>.prcote{opacity:.45}
+.prl.prech{outline:1px dashed var(--sage);outline-offset:1px}
+.prn{flex:0 0 auto;min-width:19px;height:19px;border-radius:2px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--surface);background:var(--forest);font-variant-numeric:tabular-nums}
+.prl.prmoi .prn{background:var(--rust)}
+.prnom{flex:0 1 auto;min-width:0;overflow-wrap:anywhere;line-height:1.3}
+.prnom.prbas{text-decoration:line-through;text-decoration-thickness:1px;color:var(--muted)}
+.prcote{flex:0 0 auto;font-size:9.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);border:1px solid var(--rule);border-radius:2px;padding:0 3px}
+.prcote.ceux{color:var(--rust);border-color:var(--rust)}
+.prx{font-size:12px;padding:1px 4px}
+.prl button{flex:0 0 auto;white-space:nowrap}
+.prbtns{display:flex;align-items:center;gap:4px;flex:0 0 auto}
+.atour{margin-top:6px}
+.cbloc{margin-top:8px;border-top:1px solid var(--rule);padding-top:8px}
+.cbloc .ctete{margin-bottom:2px}
 /* le butin de ceux qui sont tombés */
 .atete .afouiller{align-self:center}
 .cote-butin{margin-top:8px;border-top:1px dashed var(--rule);padding-top:8px}
@@ -1913,6 +1934,18 @@ const TYPES_LIEN = [
   {k:'ennemi', l:'Hostilité', mutuel:true, ex:'veut sa peau'},
   {k:'autre', l:'Autre', mutuel:false, ex:'connaît'}
 ];
+/* ce qu'il faut pour le faire se battre : son rang, sa réduction, ses dés, ses cartes, son attaque.
+   « dans » et « seance » disent s'il est dans le combat qu'on joue en ce moment */
+function normCombatPnj(c){
+  if(!c || typeof c !== 'object') return null;
+  const n = (v, max, def) => (v == null || v === '' || isNaN(+v)) ? def : Math.max(0, Math.min(max, Math.round(+v)));
+  const a2 = c.a2 && typeof c.a2 === 'object' && txtOu(c.a2.n) ? {n:txtOu(c.a2.n).slice(0, 60),
+    t:c.a2.t === 'mag' ? 'mag' : 'phy', p:txtOu(c.a2.p).slice(0, 40), e:txtOu(c.a2.e).slice(0, 300),
+    el:txtOu(c.a2.el), ty:txtOu(c.a2.ty).slice(0, 40)} : null;
+  return {cote:c.cote === 'eux' ? 'eux' : 'nous', rang:Math.min(5, Math.max(1, n(c.rang, 5, 2) || 2)),
+    red:n(c.red, 10, 0), deg:txtOu(c.deg).slice(0, 20), cartes:Math.min(3, Math.max(1, n(c.cartes, 3, 1) || 1)),
+    a2:a2, seance:txtOu(c.seance), dans:!!c.dans};
+}
 function normPnj(o){
   o = o && typeof o === 'object' ? o : {};
   const num = v => (v == null || v === '' || isNaN(+v)) ? null : Math.max(0, Math.round(+v));
@@ -1924,10 +1957,23 @@ function normPnj(o){
     valeurs: Array.isArray(o.valeurs) ? o.valeurs.filter(v => v && txtOu(v.n).trim()).slice(0, 20).map(v => ({n:txtOu(v.n).trim(), v:Math.max(0, Math.round(+v.v || 0))})) : [],
     pvMax:num(o.pvMax), pv:num(o.pv),
     /* un ancien personnage : le personnage d'où il vient */
-    pj:txtOu(o.pj)};
+    pj:txtOu(o.pj),
+    /* ce qu'il faut pour le faire se battre : sa propre date, une retouche de sa fiche ne l'efface pas */
+    combat:normCombatPnj(o.combat), majCombat:+o.majCombat || 0};
   p.pv0 = o.pv0 !== undefined ? num(o.pv0) : p.pv;
   p.vie = normEvts(o.vie, p);
   return recalculerVie(p);
+}
+/* les priorités d'un round : une carte par combattant, de la plus petite à la plus grande.
+   « a » : il a déjà agi ce round */
+function normInit(o){
+  if(!o || typeof o !== 'object') return null;
+  const c = Array.isArray(o.c) ? o.c.filter(x => x && typeof x === 'object').slice(0, 80).map(x => ({
+    k:(x.k === 'perso' || x.k === 'pnj') ? x.k : 'adv', id:txtOu(x.id),
+    n:Math.max(1, Math.round(+x.n) || 1), a:!!x.a})).filter(x => x.id) : [];
+  if(!c.length) return null;
+  c.sort((x, y) => x.n - y.n);
+  return {r:Math.max(1, Math.round(+o.r) || 1), c:c};
 }
 /* une rencontre venue du Registre des Rencontres, et ceux qui la composent */
 function normRencontre(o){
@@ -2145,6 +2191,10 @@ function fusionner(a, b){
       if(k === 'personnages' && (autre.mondeT || 0) > (garde.mondeT || 0)) garde = Object.assign({}, garde, {monde:autre.monde || '', mondeT:autre.mondeT});
       /* le lieu d'une séance a sa propre date : un titre changé ailleurs au même moment ne l'efface pas */
       if(k === 'journal' && (autre.majLieu || 0) > (garde.majLieu || 0)) garde = Object.assign({}, garde, {lieu:autre.lieu || '', majLieu:autre.majLieu});
+      /* les cartes du round : celles du dernier tirage, d'où qu'il vienne */
+      if(k === 'journal' && (autre.majInit || 0) > (garde.majInit || 0)) garde = Object.assign({}, garde, {init:autre.init || null, majInit:autre.majInit});
+      /* ce qu'il faut pour se battre : sa propre date, comme les PV */
+      if(k === 'pnj' && (autre.majCombat || 0) > (garde.majCombat || 0)) garde = Object.assign({}, garde, {combat:autre.combat || null, majCombat:autre.majCombat});
       if(k === 'missions') garde = fondreMission(garde, autre);
       if(k === 'campagnes') garde = fondreCampagneRec(garde, autre);
       /* la campagne d'un personnage ou d'une séance a sa propre date : une retouche faite ailleurs ne la change pas */
@@ -2190,7 +2240,9 @@ function normTable(o){
       /* où l'on est, pour l'oracle : « Un visage connu ? ». Il a sa propre date */
       lieu:String(e.lieu || '').slice(0, 160), majLieu:+e.majLieu || 0,
       /* la campagne dont c'est la séance, avec sa propre date */
-      campagne:String(e.campagne || ''), campagneT:+e.campagneT || 0};
+      campagne:String(e.campagne || ''), campagneT:+e.campagneT || 0,
+      /* les cartes du round en cours, avec leur propre date */
+      init:normInit(e.init), majInit:+e.majInit || 0};
   });
   Object.keys(o.blocs || {}).forEach(id => { const b = normBloc(o.blocs[id]); b.id = id; t.blocs[id] = b; });
   Object.keys(o.pnj || {}).forEach(id => { const p = normPnj(o.pnj[id]); p.id = id; t.pnj[id] = p; });
@@ -4645,7 +4697,8 @@ function ciblesDegats(){
   adversairesEnCombat().filter(a => !aTerre(a)).forEach(a => out.push({id:a.id, nom:a.nom, red:a.red, pv:a.pv, pvMax:a.pvMax, grp:'En face', a:a}));
   /* sa réduction : son armure naturelle, plus ce qu'il porte (Registre des Marchefleurs) */
   persos().forEach(c => out.push({id:c.id, nom:c.nom || 'Sans nom', red:redDe(c), pv:c.pv, pvMax:c.pvMax, grp:'Les personnages', c:c}));
-  pnjs().filter(p => p.pvMax != null && p.statut !== 'mort').forEach(p => out.push({id:p.id, nom:p.nom, red:0, pv:p.pv == null ? p.pvMax : p.pv, pvMax:p.pvMax, grp:'Les PNJ qui se battent'}));
+  pnjs().filter(p => p.pvMax != null && p.statut !== 'mort').forEach(p => out.push({id:p.id, nom:p.nom,
+    red:p.combat ? p.combat.red : 0, pv:p.pv == null ? p.pvMax : p.pv, pvMax:p.pvMax, grp:'Les PNJ qui se battent'}));
   return out;
 }
 /* la contrainte du corps : celle du peuple pour un personnage, « craint le feu » pour un adversaire */
@@ -6406,7 +6459,12 @@ function finirCombat(){
   const l = adversairesEnCombat();
   const bas = l.filter(aTerre).map(a => a.nom), debout = l.filter(a => !aTerre(a)).map(a => a.nom + ' (' + a.pv + '/' + a.pvMax + ' PV)');
   BTN.ouvert = null;
+  const gens = pnjsAuCombat();
+  ECHANGE = null;
   changer(() => {
+    const e = seanceCourante();
+    if(e && T.journal[e.id]) T.journal[e.id] = Object.assign({}, T.journal[e.id], {init:null, majInit:maintenant()});
+    gens.forEach(p => { const x = T.pnj[p.id]; if(x) T.pnj[p.id] = Object.assign({}, x, {combat:Object.assign({}, x.combat, {dans:false}), majCombat:maintenant()}); });
     rs.forEach(r => { T.rencontres[r.id] = Object.assign({}, T.rencontres[r.id], {fini:true, maj:maintenant()}); });
     noterDansSeance('Fin du combat.' + (bas.length ? ' À terre : ' + bas.join(', ') + '.' : '') + (debout.length ? ' Encore debout : ' + debout.join(', ') + '.' : ''), 'note');
   });
@@ -6430,6 +6488,405 @@ function ajouterAuCombat(r, adv){
 }
 function retirerAdversaire(a){
   changer(() => { const x = T.adversaires[a.id]; if(x) T.adversaires[a.id] = Object.assign({}, x, {supprime:true, maj:maintenant()}); });
+}
+
+/* ---------- les priorités : une carte par combattant, à chaque round ----------
+   Le livre : « En début de chaque round, une carte par PJ, PNJ et monstre, numérotées de 1 au nombre de
+   combattants. On agit de la plus petite à la plus grande. » Un exceptionnel en reçoit deux et agit deux fois.
+   Deux combattants qui n'ont pas encore agi peuvent échanger leurs cartes. */
+
+/* debout : à zéro PV on tombe, et on ne reçoit plus de carte */
+const DEBOUT = z => !(z.pvMax > 0 && z.pv <= 0);
+const COTES = [{k:'nous', l:'À nos côtés'}, {k:'eux', l:'Contre nous'}];
+
+/* les PNJ qu'on a fait entrer dans le combat de cette séance */
+function pnjsAuCombat(){
+  const e = seanceCourante(); if(!e) return [];
+  return pnjs().filter(p => p.combat && p.combat.dans && p.combat.seance === e.id && p.statut !== 'mort');
+}
+/* tout le monde, des deux côtés : la compagnie, les PNJ qui se battent, ceux d'en face */
+function ceuxQuiSeBattent(){
+  const out = [];
+  persos().forEach(c => out.push({k:'perso', id:c.id, nom:c.nom || 'Sans nom', cote:'nous', cartes:1,
+    pv:c.pv, pvMax:c.pvMax, x:c}));
+  pnjsAuCombat().forEach(p => out.push({k:'pnj', id:p.id, nom:p.nom || 'Sans nom', cote:p.combat.cote,
+    cartes:Math.max(1, p.combat.cartes || 1), pv:p.pv == null ? p.pvMax : p.pv, pvMax:p.pvMax, x:p}));
+  adversairesEnCombat().forEach(a => out.push({k:'adv', id:a.id, nom:a.nom, cote:'eux',
+    cartes:Math.max(1, a.cartes || 1), pv:a.pv, pvMax:a.pvMax, x:a}));
+  return out;
+}
+const unCombattant = (k, id) => ceuxQuiSeBattent().find(z => z.k === k && z.id === id) || null;
+const priorites = () => { const e = seanceCourante(); return e && e.init ? e.init : null; };
+let ECHANGE = null;          /* la première carte d'un échange, en attendant la seconde */
+/* la carte de ce combattant qui n'a pas encore servi, s'il en a une */
+function indexCarte(k, id){
+  const p = priorites(); if(!p) return -1;
+  return p.c.findIndex(x => x.k === k && x.id === id && !x.a);
+}
+
+function poserInit(init){
+  const e = seanceCourante(); if(!e) return;
+  changer(() => { const x = T.journal[e.id]; if(x) T.journal[e.id] = Object.assign({}, x, {init:init, majInit:maintenant()}); });
+}
+/* le tirage : une carte par combattant (deux pour un exceptionnel), numérotées de 1 au nombre de cartes */
+function tirerPriorites(suivant){
+  const e = seanceCourante(); if(!e){ msgTable('Ouvre une séance d’abord.', false); return; }
+  const l = ceuxQuiSeBattent().filter(DEBOUT);
+  if(!l.length){ msgTable('Personne debout à qui donner une carte.', false); return; }
+  const c = [];
+  l.forEach(z => { for(let i = 0; i < z.cartes; i++) c.push({k:z.k, id:z.id, n:0, a:false}); });
+  const n = c.map((x, i) => i + 1);
+  for(let i = n.length - 1; i > 0; i--){ const j = Math.floor(Math.random() * (i + 1)); const t = n[i]; n[i] = n[j]; n[j] = t; }
+  c.forEach((x, i) => { x.n = n[i]; });
+  c.sort((a, b) => a.n - b.n);
+  const av = priorites();
+  ECHANGE = null;
+  poserInit({r:suivant && av ? av.r + 1 : 1, c:c});
+}
+function fermerPriorites(){ ECHANGE = null; poserInit(null); }
+/* à qui le tour : la plus petite carte qui n'a pas encore agi */
+function aQuiLeTour(){
+  const p = priorites(); if(!p) return -1;
+  const i = p.c.findIndex(x => !x.a);
+  return i;
+}
+function marquerJoue(i, joue){
+  const p = priorites(); if(!p || !p.c[i]) return;
+  poserInit({r:p.r, c:p.c.map((x, j) => j === i ? Object.assign({}, x, {a:!!joue}) : x)});
+}
+/* deux cartes qui n'ont pas encore servi s'échangent : un clic sur l'une, un clic sur l'autre */
+function echangerCarte(i){
+  const p = priorites(); if(!p || !p.c[i] || p.c[i].a) return;
+  if(ECHANGE === i || ECHANGE == null || !p.c[ECHANGE] || p.c[ECHANGE].a){
+    ECHANGE = ECHANGE === i ? null : i;
+    dessinerCombat(true);
+    return;
+  }
+  const j = ECHANGE; ECHANGE = null;
+  const c = p.c.map(x => Object.assign({}, x));
+  const t = c[i].n; c[i].n = c[j].n; c[j].n = t;
+  c.sort((a, b) => a.n - b.n);
+  poserInit({r:p.r, c:c});
+}
+
+/* ---------- un ennemi joue son tour tout seul ----------
+   Il choisit son attaque, tire sa cible au hasard dans le camp d'en face et lance ses dégâts. Il s'arrête là :
+   l'ennemi touche d'office, mais la cible lance encore sa réaction, puis applique les dégâts, ou met zéro. */
+const auHasard = l => l.length ? l[Math.floor(Math.random() * l.length)] : null;
+const aucunDegat = e => /^\s*aucun d[ée]g[âa]t/i.test(e || '');
+/* le genre de dégâts de l'attaque propre d'un PNJ : son élément, sinon ce que disent son nom et son effet */
+function sortePnj(c){
+  if(!c || !c.a2 || c.a2.t !== 'mag') return 'phy';
+  const d = DOMAINES.find(x => x.k === c.a2.el);
+  if(d) return d.sorte;
+  const m = MOTS_ELEMENT.find(x => x[0].test([c.a2.n, c.a2.e, c.a2.p].join(' ')));
+  return m ? m[1] : 'nrj';
+}
+/* ses deux attaques : celle de son rang, et la sienne. Une seule par round */
+function attaquesDe(z){
+  if(z.k === 'adv'){
+    const a = z.x, l = [{n:'Attaque de rang', f:a.deg, s:'phy', propre:false}];
+    if(a.a2) l.push({n:a.a2.n, f:aucunDegat(a.a2.e) ? '' : (formuleDe(a.a2.e) || a.deg), s:sorteAttaque(a, true), propre:true, e:a.a2.e});
+    return l;
+  }
+  if(z.k === 'pnj' && z.x.combat){
+    const c = z.x.combat, l = [{n:'Attaque de rang', f:c.deg, s:'phy', propre:false}];
+    if(c.a2) l.push({n:c.a2.n, f:aucunDegat(c.a2.e) ? '' : (formuleDe(c.a2.e) || c.deg), s:sortePnj(c), propre:true, e:c.a2.e});
+    return l;
+  }
+  return [];
+}
+/* la cible qu'on propose d'office : un des nôtres quand c'est l'ennemi qui frappe, un d'en face sinon */
+function cibleParDefaut(cote){
+  if(cote === 'eux'){
+    if(MOI.perso && perso(MOI.perso)) return MOI.perso;
+    const c = persos()[0]; return c ? c.id : '';
+  }
+  const z = ceuxQuiSeBattent().filter(y => y.cote === 'eux' && DEBOUT(y))[0];
+  return z ? z.id : '';
+}
+/* le compositeur, prêt : qui frappe, avec quoi, sur qui, et les dés déjà lancés */
+function preparerFrappe(nom, atk, cible, cote){
+  choisirQui({k:'mj', id:'', nom:''});
+  COMPO.genre = 'narration';
+  COMPO.panneau = 'jet';
+  COMPO.formule = atk.f;
+  COMPO.sorte = atk.s;
+  COMPO.degats = null; COMPO.perte = null;
+  COMPO.cible = cible ? cible.id : cibleParDefaut(cote);
+  const z = $('coTexte');
+  if(z && !z.value.trim()) z.value = nom + (atk.propre ? ' : ' + atk.n : ' attaque') + (cible ? ', sur ' + cible.nom : '') + '.';
+  dessinerCompositeur(true);
+  if(atk.f) degatsCompo(atk.f);
+  const box = $('seCompo'); if(box) box.scrollIntoView({block:'center', behavior:'smooth'});
+}
+function jouerSonTour(z, i){
+  if(!seanceCourante()){ msgTable('Ouvre une séance d’abord.', false); return; }
+  const atks = attaquesDe(z);
+  if(!atks.length){ msgTable(z.nom + ' n’a pas d’attaque : écris-lui-en une dans sa fiche.', false); return; }
+  const atk = auHasard(atks);
+  const cible = auHasard(ceuxQuiSeBattent().filter(y => y.cote !== z.cote && DEBOUT(y)));
+  preparerFrappe(z.nom, atk, cible, z.cote);
+  if(i != null && i >= 0) marquerJoue(i, true);
+  msgTable(z.nom + ' joue : ' + atk.n + (cible ? ', sur ' + cible.nom : ', personne en face') + '.'
+    + (atk.f ? ' Les dés sont lancés : à la cible de réagir.' : ' Pas de dégâts.'), true);
+}
+
+/* ---------- le tour de table, en haut du panneau ---------- */
+function blocPriorites(){
+  const p = priorites(), l = ceuxQuiSeBattent();
+  const w = el('div','tour');
+  const t = el('div','ctete');
+  t.append(el('p','ctitre', 'Le tour de table'));
+  if(p) t.append(el('span','mini', 'round ' + p.r));
+  t.append(el('span','espace'));
+  if(p){
+    const g = el('div','prbtns');
+    const s = el('button','btn ghost xs','Suivant'); s.type = 'button'; s.id = 'prSuivant';
+    s.setAttribute('aria-label', 'Tirer les cartes du round suivant');
+    s.onclick = () => tirerPriorites(true);
+    const x = el('button','ax','×'); x.type = 'button'; x.id = 'prFermer';
+    x.setAttribute('aria-label', 'Ranger les cartes');
+    x.onclick = () => fermerPriorites();
+    g.append(s, x);
+    t.append(g);
+  } else {
+    const b = el('button','btn sm','Tirer les priorités'); b.type = 'button'; b.id = 'prTirer';
+    b.disabled = !l.filter(DEBOUT).length;
+    b.onclick = () => tirerPriorites(false);
+    t.append(b);
+  }
+  w.append(t);
+  if(!p){
+    w.append(el('p','mini', 'Une carte par combattant à chaque round, de la plus petite à la plus grande. Un exceptionnel en reçoit deux.'));
+    return w;
+  }
+  const tour = aQuiLeTour();
+  const u = el('ul','prliste');
+  p.c.forEach((carte, i) => {
+    const z = unCombattant(carte.k, carte.id);
+    const li = el('li','prl' + (carte.a ? ' pra' : '') + (i === tour ? ' prmoi' : '') + (ECHANGE === i ? ' prech' : ''));
+    li.append(el('span','prn', String(carte.n)));
+    const n = el('span','prnom', z ? z.nom : '(parti)');
+    if(z && !DEBOUT(z)) n.className = 'prnom prbas';
+    li.append(n);
+    li.append(el('span','prcote c' + (z ? z.cote : 'eux'), z && z.cote === 'nous' ? 'nous' : 'eux'));
+    li.append(el('span','espace'));
+    if(z && DEBOUT(z) && z.cote === 'eux' && !carte.a){
+      const j = el('button','btn ghost xs','Son tour'); j.type = 'button';
+      j.setAttribute('aria-label', 'Jouer le tour de ' + z.nom + ' : son attaque, sa cible et ses dégâts');
+      j.onclick = () => jouerSonTour(z, i);
+      li.append(j);
+    }
+    if(!carte.a){
+      const e2 = el('button','ax prx', ECHANGE === i ? 'avec ?' : '⇄'); e2.type = 'button';
+      e2.setAttribute('aria-label', ECHANGE === i ? 'Choisis la carte à échanger avec celle-ci' : 'Échanger cette carte avec une autre');
+      e2.onclick = () => echangerCarte(i);
+      li.append(e2);
+    }
+    const a = el('button','ax prx', carte.a ? '↺' : '✓'); a.type = 'button';
+    a.setAttribute('aria-label', carte.a ? 'Il n’a finalement pas joué' : (z ? z.nom + ' a joué' : 'A joué'));
+    a.onclick = () => marquerJoue(i, !carte.a);
+    li.append(a);
+    u.append(li);
+  });
+  w.append(u);
+  if(tour < 0) w.append(el('p','mini', 'Tout le monde a joué. « Round suivant » retire les cartes et en tire de nouvelles.'));
+  else if(ECHANGE != null) w.append(el('p','mini', 'Clique la seconde carte pour l’échanger, ou la même pour annuler.'));
+  return w;
+}
+
+/* ---------- qui se bat à nos côtés, ou contre nous, sans être du bestiaire ----------
+   Une fiche de PNJ qui a une section « Au combat » : son rang donne ses PV, sa réduction, ses dés et ses cartes,
+   et son attaque propre se tire dans une liste, puis se réécrit. */
+const ATQ_PNJ = {
+  nous: [
+    {n:'Couvrir', ty:'Spécial', t:'phy', p:'contact', e:'aucun dégât, il prend pour un allié la prochaine attaque qui le vise'},
+    {n:'Panser', ty:'Spécial', t:'phy', p:'contact', e:'aucun dégât, un allié récupère 1d6 PV'},
+    {n:'Tir d’appui', ty:'Distance', t:'phy', p:'20 pas', e:'le dé du rang, depuis l’arrière'},
+    {n:'Tenir la porte', ty:'Corps à corps (Contondant)', t:'phy', p:'contact', e:'le dé du rang, et personne ne passe derrière lui ce round'},
+    {n:'Crier l’ouverture', ty:'Spécial', t:'phy', p:'aucune', e:'aucun dégât, un allié a +4 à son prochain jet'},
+    {n:'Relever', ty:'Spécial', t:'phy', p:'contact', e:'aucun dégât, un allié à terre revient à 1 PV'},
+    {n:'Coup d’estoc', ty:'Corps à corps (Perforant)', t:'phy', p:'contact', e:'le dé du rang, et la cible recule de 5 pas'},
+    {n:'Lame prêtée', ty:'Spécial', t:'phy', p:'contact', e:'aucun dégât, un allié fait +1d4 aux dégâts ce round'},
+    {n:'Vieille Pratique', ty:'Magique', t:'mag', p:'10 pas', e:'le dé du rang', el:'seve'},
+    {n:'Chant qui tient debout', ty:'Spécial', t:'phy', p:'aucune', e:'aucun dégât, les alliés à 10 pas récupèrent 1 PV'},
+    {n:'Pied à terre', ty:'Corps à corps (Contondant)', t:'phy', p:'contact', e:'le dé du rang, et la cible tombe'},
+    {n:'Flèche de dégagement', ty:'Distance', t:'phy', p:'20 pas', e:'le dé du rang sur qui est au contact d’un allié'}
+  ],
+  eux: [
+    {n:'Frapper au défaut', ty:'Corps à corps (Perforant)', t:'phy', p:'contact', e:'le dé du rang, et la réduction d’armure ne compte pas'},
+    {n:'Tenir la ligne', ty:'Corps à corps (Tranchant)', t:'phy', p:'contact', e:'le dé du rang, et personne ne passe à côté de lui ce round'},
+    {n:'Sommation', ty:'Spécial', t:'phy', p:'10 pas', e:'aucun dégât, il exige ce que vous portez ; il fuit sous la moitié de ses PV'},
+    {n:'Flèche', ty:'Distance', t:'phy', p:'20 pas', e:'le dé du rang'},
+    {n:'Coup bas', ty:'Corps à corps (Tranchant)', t:'phy', p:'contact', e:'le dé du rang, puis il recule de 10 pas'},
+    {n:'Donner l’alerte', ty:'Spécial', t:'phy', p:'aucune', e:'aucun dégât, d’autres arrivent au round suivant'},
+    {n:'Charge', ty:'Corps à corps (Perforant)', t:'phy', p:'10 pas', e:'le dé du rang, et la cible tombe'},
+    {n:'Donner l’ordre', ty:'Spécial', t:'phy', p:'aucune', e:'aucun dégât, ses alliés gagnent +2 aux dégâts ce round'},
+    {n:'Pratique apprise de travers', ty:'Magique', t:'mag', p:'10 pas', e:'le dé du rang ; s’il rate, elle le touche aussi', el:'feu'},
+    {n:'Filet', ty:'Distance', t:'phy', p:'10 pas', e:'aucun dégât, la cible est prise jusqu’à un jet de FOR'},
+    {n:'Botte', ty:'Corps à corps (Perforant)', t:'phy', p:'contact', e:'le dé du rang, et il pare la prochaine attaque de la cible'},
+    {n:'Détrousser', ty:'Corps à corps (Tranchant)', t:'phy', p:'contact', e:'aucun dégât, il emporte un objet et s’enfuit'}
+  ]
+};
+function tirerAttaquePnj(cote){
+  const l = ATQ_PNJ[cote === 'eux' ? 'eux' : 'nous'];
+  return Object.assign({}, auHasard(l));
+}
+/* un combat tout neuf, aux valeurs du rang */
+function combatNeuf(rang, cote){
+  const r = RANG[rang] || RANG[2];
+  return {cote:cote === 'eux' ? 'eux' : 'nous', rang:r.r, red:r.red, deg:r.deg, cartes:r.cartes,
+    a2:tirerAttaquePnj(cote), seance:'', dans:false};
+}
+/* faire entrer quelqu'un dans le combat, ou l'en sortir */
+function mettreAuCombat(id, dedans){
+  const e = seanceCourante(); if(!e) return;
+  changer(() => {
+    const p = T.pnj[id]; if(!p || p.supprime) return;
+    const c = Object.assign({}, p.combat || combatNeuf(2, 'nous'), {dans:!!dedans, seance:dedans ? e.id : (p.combat ? p.combat.seance : '')});
+    const x = Object.assign({}, p, {combat:c, majCombat:maintenant()});
+    if(dedans && x.pvMax == null){ x.pvMax = (RANG[c.rang] || RANG[2]).pv; baseVie(x, x.pvMax); }
+    T.pnj[id] = x;
+  });
+}
+/* une fiche minimale, écrite à la table : un nom, un côté, un rang, et le reste suit */
+function nouveauCombattant(nom, cote, rang){
+  const e = seanceCourante(); if(!e){ msgTable('Ouvre une séance d’abord.', false); return null; }
+  nom = String(nom || '').replace(/\s+/g, ' ').trim();
+  if(!nom){ msgTable('Il lui faut un nom.', false); return null; }
+  const deja = pnjParNom(nom);
+  if(deja){ mettreAuCombat(deja.id, true); msgTable(deja.nom + ' a déjà une fiche : elle entre dans le combat.', true); return deja.id; }
+  const c = combatNeuf(rang, cote);
+  c.dans = true; c.seance = e.id;
+  const r = RANG[c.rang] || RANG[2];
+  let id = '';
+  changer(() => {
+    const x = normPnj({id:idLibre('n-' + slug(nom), T.pnj), nom:nom, seance:e.id, statut:'vivant',
+      attitude:cote === 'eux' ? 'hostile' : 'amical', pvMax:r.pv, pv:r.pv, combat:c, auteur:MOI.joueur || ''});
+    x.maj = maintenant(); x.majCombat = maintenant();
+    baseVie(x, r.pv);
+    id = x.id;
+    T.pnj[id] = x;
+    noterDansSeance((cote === 'eux' ? 'Contre nous : ' : 'À nos côtés : ') + nom + ' (rang ' + r.r + ', ' + r.pv + ' PV).', 'note');
+  });
+  return id;
+}
+function changerPvPnj(p, n){
+  changer(() => { const x = T.pnj[p.id]; if(x && !x.supprime){ const y = Object.assign({}, x); coup(y, 'pv', n); T.pnj[p.id] = y; } });
+}
+
+/* la ligne d'un PNJ qui se bat : ses PV, ses attaques, et son tour joué tout seul quand il est en face */
+function lignePnjCombat(p){
+  const c = p.combat, pv = p.pv == null ? p.pvMax : p.pv, bas = p.pvMax > 0 && pv <= 0;
+  const z = {k:'pnj', id:p.id, nom:p.nom, cote:c.cote, x:p, pv:pv, pvMax:p.pvMax, cartes:c.cartes};
+  const w = el('div','aligne' + (bas ? ' aterre' : '') + (COMPO.cible === p.id ? ' visee' : ''));
+  w.setAttribute('data-pnjc', p.id);
+  const t = el('div','atete');
+  t.append(el('b','anom', p.nom || 'Sans nom'), el('span','arang', 'rang ' + c.rang));
+  if(!bas){
+    const v = el('button','btn ghost xs aviser', COMPO.cible === p.id ? 'Visé' : 'Viser'); v.type = 'button';
+    v.setAttribute('aria-label', 'Viser ' + p.nom + ' : les dégâts iront à lui');
+    v.onclick = () => { COMPO.cible = p.id; COMPO.perte = null; dessinerCompositeur(true); dessinerCombat(true); };
+    t.append(v);
+  }
+  const x = el('button','ax','×'); x.type = 'button';
+  x.setAttribute('aria-label', 'Sortir ' + p.nom + ' du combat');
+  x.onclick = () => mettreAuCombat(p.id, false);
+  t.append(x);
+  w.append(t);
+  w.append(el('p','mini ainfo', 'réduction ' + c.red + (c.cartes > 1 ? ' · ' + c.cartes + ' cartes' : '')
+    + (p.role ? ' · ' + p.role : '')));
+  const b = el('div','apv');
+  b.append(barrePv(pv, p.pvMax));
+  b.append(el('span','apvn', bas ? 'à terre' : pv + '/' + p.pvMax + ' PV'));
+  const mk = (lab, n) => {
+    const q = el('button', null, lab); q.type = 'button';
+    q.setAttribute('aria-label', (n < 0 ? 'Retirer ' + (-n) : 'Rendre ' + n) + ' PV à ' + p.nom);
+    q.disabled = (n < 0 && pv <= 0) || (n > 0 && pv >= p.pvMax);
+    q.onclick = () => changerPvPnj(p, n);
+    return q;
+  };
+  const cmd = el('div','acmd');
+  cmd.append(mk('−5', -5), mk('−1', -1), mk('+1', 1));
+  b.append(cmd);
+  w.append(b);
+  const at = el('div','aatq');
+  attaquesDe(z).forEach(atk => {
+    const l = el('div','aat');
+    const txt = el('div','aattxt');
+    if(atk.propre && c.a2){ const ty = typeAttaque(c.a2); txt.append(el('span','aty t' + ty.cls, ty.l)); }
+    txt.append(el('b', null, atk.n), document.createTextNode(atk.propre ? (c.a2.p || c.a2.e ? ' · ' + [c.a2.p, c.a2.e].filter(Boolean).join(' · ') : '') : (atk.f ? ' · ' + atk.f : '')));
+    l.append(txt);
+    const f = el('button','btn ghost xs','Frapper'); f.type = 'button';
+    f.setAttribute('aria-label', p.nom + ' frappe : ' + atk.n);
+    f.disabled = bas;
+    f.onclick = () => preparerFrappe(p.nom, atk, null, c.cote);
+    l.append(f);
+    at.append(l);
+  });
+  w.append(at);
+  if(c.cote === 'eux' && !bas){
+    const j = el('button','btn ghost xs','Son tour'); j.type = 'button'; j.style.marginTop = '6px';
+    j.setAttribute('aria-label', 'Jouer le tour de ' + p.nom);
+    j.onclick = () => jouerSonTour(z, null);
+    w.append(j);
+  }
+  return w;
+}
+/* le pavé « À nos côtés » : ceux qui se battent avec nous, et de quoi en ajouter */
+let CBT = {nom:'', cote:'nous', rang:2, ouvert:false};
+function blocCombattants(){
+  const w = el('div','cbloc');
+  const l = pnjsAuCombat();
+  const nous = l.filter(p => p.combat.cote === 'nous');
+  const t = el('div','ctete');
+  t.append(el('p','ctitre', 'À nos côtés'));
+  t.append(el('span','mini', nous.length ? nous.filter(p => DEBOUT({pv:p.pv == null ? p.pvMax : p.pv, pvMax:p.pvMax})).length + ' debout sur ' + nous.length : 'personne'));
+  w.append(t);
+  nous.forEach(p => w.append(lignePnjCombat(p)));
+  const d = el('details','ajoutadv'); d.open = CBT.ouvert;
+  d.ontoggle = () => { CBT.ouvert = d.open; };
+  d.append(el('summary', null, 'Quelqu’un se bat'));
+  const f = el('div','tirage');
+  const g = el('div','tajout');
+  const n = el('input'); n.type = 'text'; n.placeholder = 'Garde du pont'; n.id = 'cbtNom'; n.style.flex = '1 1 140px';
+  n.setAttribute('aria-label', 'Son nom');
+  n.value = CBT.nom;
+  n.oninput = () => { CBT.nom = n.value; };
+  g.append(n);
+  const sc = el('select'); sc.id = 'cbtCote'; sc.setAttribute('aria-label', 'De quel côté');
+  COTES.forEach(x => sc.add(new Option(x.l, x.k)));
+  sc.value = CBT.cote;
+  sc.onchange = () => { CBT.cote = sc.value; };
+  g.append(sc);
+  const sr = el('select'); sr.id = 'cbtRang'; sr.setAttribute('aria-label', 'Son rang');
+  ADV.rangs.forEach(x => sr.add(new Option('Rang ' + x.r + ' · ' + x.nom, x.r)));
+  sr.value = String(CBT.rang);
+  sr.onchange = () => { CBT.rang = +sr.value || 2; };
+  g.append(sr);
+  const ok = el('button','btn sm','Ajouter'); ok.type = 'button'; ok.id = 'cbtOk';
+  ok.onclick = () => { if(nouveauCombattant(CBT.nom, CBT.cote, CBT.rang)) CBT.nom = ''; };
+  g.append(ok);
+  f.append(g);
+  f.append(el('p','mini', 'Une fiche minimale, dans le Registre des Visages : son rang lui donne ses PV, sa réduction, ses dés et une attaque tirée au sort. Tout se réécrit sur sa fiche.'));
+  /* une fiche déjà écrite, qu'on fait entrer */
+  const dispo = pnjs().filter(p => p.statut !== 'mort' && !(p.combat && p.combat.dans && p.combat.seance === (seanceCourante() || {}).id));
+  if(dispo.length){
+    const q = el('div','tajout');
+    const s = el('select'); s.id = 'cbtFiche'; s.setAttribute('aria-label', 'Une fiche déjà écrite');
+    s.add(new Option('une fiche déjà écrite…', ''));
+    dispo.forEach(p => s.add(new Option(p.nom + (p.combat ? ' · rang ' + p.combat.rang : ''), p.id)));
+    s.style.flex = '1 1 160px';
+    q.append(s);
+    const b = el('button','btn ghost sm','Le faire entrer'); b.type = 'button'; b.id = 'cbtEntrer';
+    b.onclick = () => { if(s.value) mettreAuCombat(s.value, true); };
+    q.append(b);
+    f.append(q);
+  }
+  d.append(f);
+  w.append(d);
+  return w;
 }
 
 /* ---------- le panneau « En face », à côté du récit ---------- */
@@ -6499,6 +6956,13 @@ function ligneAdversaire(a){
   attaque(null, 'Attaque de rang', a.deg, false);
   if(a.a2) attaque(a.a2.ty || a.a2.t === 'mag' ? typeAttaque(a.a2) : null, a.a2.n, [a.a2.p, a.a2.e].filter(Boolean).join(' · '), true);
   w.append(at);
+  /* son tour joué tout seul : son attaque, sa cible au hasard, ses dégâts lancés */
+  if(!aTerre(a)){
+    const j = el('button','btn ghost xs atour','Son tour'); j.type = 'button';
+    j.setAttribute('aria-label', 'Jouer le tour de ' + a.nom + ' : son attaque, sa cible au hasard et ses dégâts');
+    j.onclick = () => jouerSonTour({k:'adv', id:a.id, nom:a.nom, cote:'eux', x:a, pv:a.pv, pvMax:a.pvMax, cartes:a.cartes}, indexCarte('adv', a.id));
+    w.append(j);
+  }
   if(a.traits || a.p) w.append(el('p','mini apart', [a.traits, a.p].filter(Boolean).join(' · ')));
   if(aTerre(a)) fouilleSurLigne(a, w);
   return w;
@@ -6510,6 +6974,7 @@ function dessinerCombat(force){
   const e = seanceCourante(), r = combatEnCours();
   box.hidden = !e && !ENVOI.attente;
   if(box.hidden) return;
+  if(e && (r || priorites() || pnjsAuCombat().length)) box.append(blocPriorites());
   if(!r){
     if(ENVOI.attente){
       box.append(el('p','ctitre', 'Une rencontre attend'));
@@ -6522,6 +6987,8 @@ function dessinerCombat(force){
     const t = el('div','ctete');
     t.append(el('p','ctitre', 'En face'), el('span','mini', 'personne'));
     box.append(t);
+    pnjsAuCombat().filter(p => p.combat.cote === 'eux').forEach(p => box.append(lignePnjCombat(p)));
+    box.append(blocCombattants());
     const bt = blocButin(); if(bt) box.append(bt);
     box.append(blocTirage(false));
     box.append(el('p','mini', 'Une rencontre validée dans le Registre des Rencontres arrive aussi ici toute seule.'));
@@ -6543,7 +7010,9 @@ function dessinerCombat(force){
   box.append(t);
   rencontresEnCours().forEach(x => { if(x.pourquoi) box.append(el('p','mini cpourquoi', x.pourquoi)); });
   l.forEach(a => box.append(ligneAdversaire(a)));
+  pnjsAuCombat().filter(p => p.combat.cote === 'eux').forEach(p => box.append(lignePnjCombat(p)));
   box.append(blocTirage(true));
+  box.append(blocCombattants());
   const bt = blocButin(); if(bt) box.append(bt);
 }
 
@@ -7695,6 +8164,89 @@ function ouvrirEditeurPnj(p, nouveau){
   champ(gv, 'PV en combat', pv, 'Laisse vide pour un PNJ qui ne se bat pas.');
   box.append(gv);
 
+  /* ---- au combat : son rang, ses dés, son attaque. La table peut alors jouer son tour ---- */
+  const cb = el('div'); cb.style.marginTop = '12px';
+  const dessinerSonCombat = () => {
+    cb.innerHTML = '';
+    cb.append(el('h3', null, 'Au combat'));
+    const lab = el('label','mini');
+    const ch = el('input'); ch.type = 'checkbox'; ch.id = 'ped-secombat'; ch.checked = !!PNJ_ED.combat;
+    ch.onchange = () => {
+      PNJ_ED.combat = ch.checked ? (PNJ_ED.combat || combatNeuf(2, 'nous')) : null;
+      if(ch.checked && PNJ_ED.pvMax == null){
+        PNJ_ED.pvMax = (RANG[PNJ_ED.combat.rang] || RANG[2]).pv;
+        const z = $('ped-pv'); if(z) z.value = PNJ_ED.pvMax;
+      }
+      dessinerSonCombat();
+    };
+    lab.append(ch, document.createTextNode(' Il se bat'));
+    cb.append(lab);
+    if(!PNJ_ED.combat){
+      cb.append(el('p','mini','Coche pour lui donner un rang, une réduction, des dés et une attaque. Il entre alors dans le tour de table, et la table sait jouer son tour toute seule.'));
+      return;
+    }
+    const c = PNJ_ED.combat;
+    const g = el('div','table'); g.style.marginTop = '8px';
+    const sc = el('select'); sc.id = 'ped-cote';
+    COTES.forEach(x => sc.add(new Option(x.l, x.k)));
+    sc.value = c.cote;
+    sc.onchange = () => { c.cote = sc.value; };
+    champ(g, 'De quel côté', sc);
+    const sr = el('select'); sr.id = 'ped-rang';
+    ADV.rangs.forEach(x => sr.add(new Option('Rang ' + x.r + ' · ' + x.nom + ' · ' + x.pv + ' PV, ' + x.deg, x.r)));
+    sr.value = String(c.rang);
+    sr.onchange = () => {
+      const av = RANG[c.rang] || RANG[2], ap = RANG[+sr.value] || RANG[2];
+      /* ce qu'on n'a pas réécrit soi-même suit le rang */
+      if(c.red === av.red) c.red = ap.red;
+      if(c.deg === av.deg) c.deg = ap.deg;
+      if(c.cartes === av.cartes) c.cartes = ap.cartes;
+      if(PNJ_ED.pvMax == null || PNJ_ED.pvMax === av.pv){
+        PNJ_ED.pvMax = ap.pv;
+        const z = $('ped-pv'); if(z) z.value = PNJ_ED.pvMax;
+      }
+      c.rang = ap.r;
+      dessinerSonCombat();
+    };
+    champ(g, 'Son rang', sr);
+    const rd = nombre(c.red, 0, 10); rd.id = 'ped-red';
+    rd.oninput = () => { c.red = Math.max(0, Math.min(10, parseInt(rd.value, 10) || 0)); };
+    champ(g, 'Réduction', rd);
+    const dg = el('input'); dg.type = 'text'; dg.id = 'ped-deg'; dg.value = c.deg; dg.placeholder = 'd6'; dg.style.width = '90px';
+    dg.oninput = () => { c.deg = dg.value; };
+    champ(g, 'Dés de l’attaque de rang', dg);
+    const ca = nombre(c.cartes, 1, 3); ca.id = 'ped-cartes';
+    ca.oninput = () => { c.cartes = Math.max(1, Math.min(3, parseInt(ca.value, 10) || 1)); };
+    champ(g, 'Cartes par round', ca);
+    cb.append(g);
+    cb.append(el('p','mini', 'Deux cartes pour un exceptionnel : il agit deux fois dans le round.'));
+    if(!c.a2) c.a2 = tirerAttaquePnj(c.cote);
+    const a2 = c.a2;
+    const g2 = el('div','table'); g2.style.marginTop = '8px';
+    const an = el('input'); an.type = 'text'; an.id = 'ped-a2n'; an.value = a2.n; an.style.width = '100%';
+    an.oninput = () => { a2.n = an.value; };
+    champ(g2, 'Son attaque', an);
+    const at = el('select'); at.id = 'ped-a2ty';
+    ADV.types.forEach(x => at.add(new Option(x.l, x.k)));
+    at.value = a2.ty || 'Corps à corps (Tranchant)';
+    at.onchange = () => { a2.ty = at.value; a2.t = (TYPE_ATQ[at.value] || {}).t === 'mag' ? 'mag' : 'phy'; };
+    champ(g2, 'Genre', at);
+    const ap2 = el('input'); ap2.type = 'text'; ap2.id = 'ped-a2p'; ap2.value = a2.p; ap2.placeholder = 'contact'; ap2.style.width = '100%';
+    ap2.oninput = () => { a2.p = ap2.value; };
+    champ(g2, 'Portée', ap2);
+    cb.append(g2);
+    const g3 = el('div'); g3.style.marginTop = '8px';
+    const ae = el('input'); ae.type = 'text'; ae.id = 'ped-a2e'; ae.value = a2.e; ae.placeholder = 'le dé du rang'; ae.style.width = '100%';
+    ae.oninput = () => { a2.e = ae.value; };
+    champ(g3, 'Ce qu’elle fait', ae, 'Les dés s’écrivent comme dans le livre : 2d6, d8+2. « le dé du rang » reprend ses dés, « aucun dégât » n’en lance aucun.');
+    cb.append(g3);
+    const tb = el('button','btn ghost sm','Tirer une autre attaque'); tb.type = 'button'; tb.id = 'ped-tirer';
+    tb.onclick = () => { c.a2 = tirerAttaquePnj(c.cote); dessinerSonCombat(); };
+    cb.append(tb);
+  };
+  dessinerSonCombat();
+  box.append(cb);
+
   const act = el('div','acts'); act.style.marginTop = '12px';
   const ok = el('button','btn', nouveau ? 'Ajouter la fiche' : 'Enregistrer'); ok.type = 'button'; ok.id = 'ped-ok';
   ok.onclick = () => {
@@ -7723,6 +8275,7 @@ function ouvrirEditeurPnj(p, nouveau){
       if(x.pvMax > ancien.pvMax) coup(x, 'pv', x.pvMax - ancien.pvMax);
     }
     x.maj = maintenant();
+    x.majCombat = maintenant();
     if(!x.auteur) x.auteur = MOI.joueur || '';
     const nees = [];
     changer(() => {

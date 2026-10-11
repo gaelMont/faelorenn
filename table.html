@@ -259,6 +259,33 @@ ul.tliste li{display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom
 .rdot.r2{background:var(--sage)} .rdot.r3{background:var(--gold)} .rdot.r4{background:var(--rust)} .rdot.r5{background:var(--plum)}
 .tajout{display:flex;flex-wrap:wrap;gap:6px}
 .tajout input[type=number]{width:62px;padding:5px 7px}
+/* la carte de combat */
+.carte{background:var(--surface);border:1px solid var(--rule);border-radius:2px;padding:10px 12px;box-shadow:var(--shadow);margin-bottom:10px;min-width:0}
+.carte .ctete{margin-bottom:6px}
+.ctzone{position:relative;border:1px solid var(--rule);border-radius:2px;background:var(--paper);overflow:hidden;touch-action:none}
+.ctsvg{display:block;width:100%;height:auto;max-height:52vh;cursor:grab}
+.carte.plein .ctsvg{max-height:none;height:calc(100vh - 230px)}
+.ctj{cursor:grab}
+.ctj.ctbas{opacity:.5}
+.ctj.ctsel circle{stroke:var(--gold);stroke-width:.14}
+.ctnom{fill:var(--ink);stroke:var(--paper);stroke-width:.14;paint-order:stroke;font-family:Spectral,Georgia,serif}
+.ctpas{fill:var(--sage);fill-opacity:.13;stroke:var(--sage);stroke-width:.08}
+.ctportee{fill:none;stroke:var(--rust);stroke-width:.08;stroke-dasharray:.5 .4}
+.ctliste{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:8px}
+.ctl{display:flex;align-items:center;gap:6px;font-size:12.5px;padding:2px 0}
+.ctl.ctlsel{font-weight:600}
+.ctl.ctlbas .ctlnom{text-decoration:line-through;color:var(--muted)}
+.ctpuce{width:10px;height:10px;border-radius:50%;flex:0 0 auto}
+.ctlnom{border:0;background:transparent;font:inherit;color:var(--forest);cursor:pointer;padding:0;text-align:left}
+.ctlnom:hover{text-decoration:underline}
+.ctpasn{color:var(--muted);font-variant-numeric:tabular-nums}
+.ctpasn.trop{color:var(--rust);font-weight:600}
+.ctvit{width:54px;padding:2px 4px;font-size:12px}
+.ctaide{margin-top:6px}
+.ctdist{margin:6px 0 0}
+.ctdist.trop{color:var(--rust);font-weight:600}
+body.carteplein .jeu-cote{display:none}
+@media (max-width:820px){.ctsvg{max-height:46vh}}
 /* le tour de table : les cartes du round */
 .tour{border-bottom:1px solid var(--rule);padding-bottom:8px;margin-bottom:6px}
 .tour .ctete{margin-bottom:2px}
@@ -912,6 +939,7 @@ svg.reseau:active{cursor:grabbing}
     <div id="seTete"></div>
     <div class="jeu">
       <div class="jeu-main">
+        <div id="seCarte" class="carte noprint" hidden></div>
         <div id="seRecit" class="feuille" tabindex="-1"></div>
         <div id="seCompo" class="compo noprint" hidden>
           <div class="qui" id="coQui"></div>
@@ -944,6 +972,7 @@ svg.reseau:active{cursor:grabbing}
             <li><b>La réduction</b> arrête le physique et la matière : Sève, eau, pierre, vent, Mue. Le feu, l’onde, l’ombre et le sacré la traversent.</li>
             <li><b>Un échec consomme le PC</b>, sauf l’attaque de base, qui ne coûte rien.</li>
             <li><b>À 0 PV</b>, on tombe, inconscient. En groupe, sans stabilisation avant la fin du combat, on meurt.</li>
+            <li><b>La carte</b> : « Vers la table », dans le Registre des Plans, envoie l’étage affiché, ou ce qu’on voit d’un village, comme carte de combat. Un pas vaut un mètre. Chacun y a son jeton, qu’on glisse ; le cercle plein montre ce qui lui reste à marcher ce round, le cercle en pointillé sa portée. Dix pas par round d’office, à changer sous la carte. La carte prévient, elle n’empêche rien.</li>
             <li><b>Modificateurs</b> : difficile −20 ou −4 · quasiment impossible −40 ou −8 · les circonstances aident +20 ou +4.</li>
           </ul>
         </details>
@@ -1852,7 +1881,11 @@ function normPerso(o){
   c.vie = normEvts(o.vie, c);
   recalculerVie(c);
   c.red = num(o.red, 0);
-  c.armes = Array.isArray(o.armes) ? o.armes.slice(0, 20).map(a => ({nom:txt(a && a.nom), de:txt(a && a.de), notes:txt(a && a.notes)})).filter(a => a.nom) : [];
+  c.armes = Array.isArray(o.armes) ? o.armes.slice(0, 20).map(a => ({nom:txt(a && a.nom), de:txt(a && a.de), notes:txt(a && a.notes),
+    /* sa portée, en pas : vide, elle se lit sur le nom de l'arme */
+    portee:(a && a.portee != null && a.portee !== '' && isFinite(+a.portee)) ? Math.max(0, Math.min(500, Math.round(+a.portee))) : null})).filter(a => a.nom) : [];
+  /* ce qu'il parcourt en un round, en pas : vide, c'est dix */
+  c.vitesse = (o.vitesse == null || o.vitesse === '' || isNaN(+o.vitesse)) ? null : Math.max(0, Math.min(200, Math.round(+o.vitesse)));
   c.sac = Array.isArray(o.sac) ? o.sac.slice(0, 80).map(txt).filter(Boolean) : [];
   const pg = o.prog && typeof o.prog === 'object' ? o.prog : {};
   /* un achat garde tout ce qu'il faut pour être défait, même après un rechargement */
@@ -1944,6 +1977,7 @@ function normCombatPnj(c){
     el:txtOu(c.a2.el), ty:txtOu(c.a2.ty).slice(0, 40)} : null;
   return {cote:c.cote === 'eux' ? 'eux' : 'nous', rang:Math.min(5, Math.max(1, n(c.rang, 5, 2) || 2)),
     red:n(c.red, 10, 0), deg:txtOu(c.deg).slice(0, 20), cartes:Math.min(3, Math.max(1, n(c.cartes, 3, 1) || 1)),
+    vit:(c.vit == null || c.vit === '' || isNaN(+c.vit)) ? null : Math.max(0, Math.min(200, Math.round(+c.vit))),
     a2:a2, seance:txtOu(c.seance), dans:!!c.dans};
 }
 function normPnj(o){
@@ -1991,6 +2025,7 @@ function normAdversaire(o){
     a2: a2 && txtOu(a2.n) ? {n:txtOu(a2.n), t:a2.t === 'mag' ? 'mag' : 'phy', p:txtOu(a2.p), e:txtOu(a2.e), el:txtOu(a2.el), ty:txtOu(a2.ty).slice(0, 40)} : null,
     tr: Array.isArray(o.tr) ? o.tr.filter(x => typeof x === 'string').slice(0, 20) : [],
     traits:txtOu(o.traits), p:txtOu(o.p), renf:txtOu(o.renf),
+    vit:(o.vit == null || o.vit === '' || isNaN(+o.vit)) ? null : Math.max(0, Math.min(200, Math.round(+o.vit))),
     /* d'où il vient : la créature du livre ou de ton bestiaire, son nom sans numéro, ses familles, ce qu'il laisse */
     cid:txtOu(o.cid), base:txtOu(o.base), fam: Array.isArray(o.fam) ? o.fam.filter(x => typeof x === 'string').slice(0, 20) : [],
     butin:txtOu(o.butin), fouille:normFouille(o.fouille),
@@ -2193,6 +2228,9 @@ function fusionner(a, b){
       if(k === 'journal' && (autre.majLieu || 0) > (garde.majLieu || 0)) garde = Object.assign({}, garde, {lieu:autre.lieu || '', majLieu:autre.majLieu});
       /* les cartes du round : celles du dernier tirage, d'où qu'il vienne */
       if(k === 'journal' && (autre.majInit || 0) > (garde.majInit || 0)) garde = Object.assign({}, garde, {init:autre.init || null, majInit:autre.majInit});
+      /* la carte de combat, et les jetons dessus : chacun sa date */
+      if(k === 'journal' && (autre.majCarte || 0) > (garde.majCarte || 0)) garde = Object.assign({}, garde, {carte:autre.carte || null, majCarte:autre.majCarte});
+      if(k === 'journal' && (autre.majJetons || 0) > (garde.majJetons || 0)) garde = Object.assign({}, garde, {jetons:autre.jetons || {}, majJetons:autre.majJetons});
       /* ce qu'il faut pour se battre : sa propre date, comme les PV */
       if(k === 'pnj' && (autre.majCombat || 0) > (garde.majCombat || 0)) garde = Object.assign({}, garde, {combat:autre.combat || null, majCombat:autre.majCombat});
       if(k === 'missions') garde = fondreMission(garde, autre);
@@ -2242,7 +2280,10 @@ function normTable(o){
       /* la campagne dont c'est la séance, avec sa propre date */
       campagne:String(e.campagne || ''), campagneT:+e.campagneT || 0,
       /* les cartes du round en cours, avec leur propre date */
-      init:normInit(e.init), majInit:+e.majInit || 0};
+      init:normInit(e.init), majInit:+e.majInit || 0,
+      /* la carte de combat et les jetons posés dessus, chacun avec sa propre date */
+      carte:normCarte(e.carte), majCarte:+e.majCarte || 0,
+      jetons:normJetons(e.jetons), majJetons:+e.majJetons || 0};
   });
   Object.keys(o.blocs || {}).forEach(id => { const b = normBloc(o.blocs[id]); b.id = id; t.blocs[id] = b; });
   Object.keys(o.pnj || {}).forEach(id => { const p = normPnj(o.pnj[id]); p.id = id; t.pnj[id] = p; });
@@ -3419,7 +3460,8 @@ function detailPerso(c){
   if(c.armes.length){
     const t = el('table','tab');
     const h = el('tr'); ['Arme','Dé','Notes'].forEach((x, i) => h.append(el('th', i === 1 ? 'n' : null, x))); t.append(h);
-    c.armes.forEach(a => { const tr = el('tr'); tr.append(el('td', null, a.nom), el('td','n', a.de), el('td','mini', a.notes)); t.append(tr); });
+    c.armes.forEach(a => { const tr = el('tr'); const p = porteeArme(a);
+      tr.append(el('td', null, a.nom), el('td','n', a.de), el('td','mini', [p ? p + ' pas' : 'au contact', a.notes].filter(Boolean).join(' · '))); t.append(tr); });
     sc('Armes', t);
   }
   /* ce qu'il porte : son sac et sa bourse vivent dans le Registre des Marchefleurs */
@@ -3598,7 +3640,7 @@ function ouvrirEditeurPerso(c, nouveau){
   const abox = el('div'); abox.id = 'ed-armes';
   box.append(abox);
   const plusA = el('button','btn ghost sm','Ajouter une arme'); plusA.type = 'button';
-  plusA.onclick = () => { PED.armes.push({nom:'', de:'d6', notes:''}); dessinerArmesEditeur(); };
+  plusA.onclick = () => { PED.armes.push({nom:'', de:'d6', notes:'', portee:null}); dessinerArmesEditeur(); };
   box.append(plusA);
 
   if(!nouveau) box.append(el('p','mini', $('ficheBox') ? 'Le sac, la bourse et l’armure portée se tiennent dans l’onglet « Son équipement ».' : 'Le sac, la bourse et l’armure portée se tiennent dans le Registre des Marchefleurs.'));
@@ -3686,6 +3728,10 @@ function dessinerArmesEditeur(){
     const l = el('div','table'); l.style.marginBottom = '6px';
     champ(l, 'Arme', Object.assign(el('input'), {type:'text', value:a.nom, oninput:e => a.nom = e.target.value, style:'width:100%'}));
     champ(l, 'Dé', Object.assign(el('input'), {type:'text', value:a.de, oninput:e => a.de = e.target.value, style:'width:80px'}));
+    /* sa portée, en pas, pour la carte de combat : vide, elle se lit sur le nom de l'arme */
+    champ(l, 'Portée', Object.assign(el('input'), {type:'number', min:'0', max:'500', value:a.portee == null ? '' : a.portee,
+      placeholder:String(porteeArme(Object.assign({}, a, {portee:null})) || 0),
+      oninput:e => a.portee = e.target.value === '' ? null : Math.max(0, parseInt(e.target.value, 10) || 0), style:'width:80px'}), 'En pas. Vide : celle de son nom.');
     champ(l, 'Notes', Object.assign(el('input'), {type:'text', value:a.notes, oninput:e => a.notes = e.target.value, style:'width:100%'}));
     const x = el('button','btn ghost sm','Retirer'); x.type = 'button';
     x.onclick = () => { PED.armes.splice(i, 1); dessinerArmesEditeur(); };
@@ -4162,7 +4208,9 @@ function majCoutAchat(c){
 
 const COMPO = {pret:false, qui:{k:'mj', id:'', nom:''}, genre:'narration', panneau:'',
   jet:null, degats:null, vies:[], quoi:'', quoiPar:{}, mod:'0', libreQuoi:'', libreVal:'',
-  pvId:'', pvQuoi:'pv', pvN:1, formule:'', cible:'', sorte:'phy', perte:null};
+  pvId:'', pvQuoi:'pv', pvN:1, formule:'', cible:'', sorte:'phy', perte:null,
+  /* qui frappe et de quelle portée : la carte de combat s'en sert pour dire la distance */
+  frappeur:null, portee:null};
 let BED = null;              /* {id, texte} : le paragraphe qu'on retouche */
 let BLOC_SUPPR = null;
 let SEANCE_SUPPR = false;
@@ -4993,7 +5041,8 @@ function panneauJet(){
     const arme = el('select'); arme.id = 'coArme'; arme.setAttribute('aria-label', 'Prendre les dés d’une arme');
     arme.add(new Option('ou une arme…', ''));
     c.armes.forEach((x, i) => { const fx = formuleArme(c, x); if(fx) arme.add(new Option(x.nom + ' · ' + fx, String(i))); });
-    arme.onchange = () => { const x = c.armes[+arme.value]; const fx = x && formuleArme(c, x); if(fx){ f.value = fx; COMPO.formule = fx; COMPO.sorte = 'phy'; COMPO.perte = null; } };
+    arme.onchange = () => { const x = c.armes[+arme.value]; const fx = x && formuleArme(c, x); if(fx){ f.value = fx; COMPO.formule = fx; COMPO.sorte = 'phy'; COMPO.perte = null;
+      COMPO.frappeur = {k:'perso', id:c.id}; COMPO.portee = porteeArme(x); dessinerCompositeur(true); } };
     d.append(arme);
   }
   const bd = el('button','btn ghost sm','Lancer les dégâts'); bd.type = 'button'; bd.id = 'coLancerDegats';
@@ -5053,6 +5102,9 @@ function panneauAppliquer(){
   else if(k && k.cible.c && !(j && j.rea)) mots.push('Il peut d’abord tenter une réaction : esquive ou parade.');
   a.append(el('span','mini', mots.filter(Boolean).join(' ')));
   z.append(a);
+  /* la carte de combat : la distance entre les deux jetons, et si c'est à portée */
+  const mp = typeof motPortee === 'function' ? motPortee() : null;
+  if(mp) z.append(el('p','mini ctdist' + (mp.ok ? '' : ' trop'), mp.txt));
   return z;
 }
 function majSeuilCompo(){
@@ -6429,6 +6481,8 @@ function sorteAttaque(a, propre){
 function frapper(a, propre){
   if(!seanceCourante()) return;
   choisirQui({k:'mj', id:'', nom:''});
+  COMPO.frappeur = {k:'adv', id:a.id};
+  COMPO.portee = propre && a.a2 ? porteeTexte(a.a2.p) : 0;
   COMPO.genre = 'narration';
   COMPO.panneau = 'jet';
   /* une attaque qui ne blesse pas (des renforts, un ordre) ne prépare pas de dégâts */
@@ -6449,6 +6503,7 @@ function viser(a){
   if(COMPO.qui.k === 'perso'){ COMPO.genre = 'fait'; if(!COMPO.quoi) COMPO.quoi = 'comp:Combat'; }
   COMPO.panneau = 'jet';
   COMPO.cible = a.id; COMPO.perte = null;
+  if(moi){ COMPO.frappeur = {k:'perso', id:moi.id}; COMPO.portee = porteeDe({k:'perso', id:moi.id, x:moi}); }
   dessinerCompositeur(true);
   dessinerCombat(true);
   msgTable(COMPO.qui.k === 'perso' ? nomDe(COMPO.qui) + ' vise ' + a.nom + ' : lance son attaque, puis ses dégâts.' : 'Les dégâts iront à ' + a.nom + '. Choisis d’abord qui attaque.', true);
@@ -6542,6 +6597,8 @@ function tirerPriorites(suivant){
   const av = priorites();
   ECHANGE = null;
   poserInit({r:suivant && av ? av.r + 1 : 1, c:c});
+  /* les pas repartent de zéro : chacun retrouve toute sa vitesse */
+  if(typeof remettreLesPas === 'function') remettreLesPas();
 }
 function fermerPriorites(){ ECHANGE = null; poserInit(null); }
 /* à qui le tour : la plus petite carte qui n'a pas encore agi */
@@ -6586,12 +6643,12 @@ function sortePnj(c){
 function attaquesDe(z){
   if(z.k === 'adv'){
     const a = z.x, l = [{n:'Attaque de rang', f:a.deg, s:'phy', propre:false}];
-    if(a.a2) l.push({n:a.a2.n, f:aucunDegat(a.a2.e) ? '' : (formuleDe(a.a2.e) || a.deg), s:sorteAttaque(a, true), propre:true, e:a.a2.e});
+    if(a.a2) l.push({n:a.a2.n, f:aucunDegat(a.a2.e) ? '' : (formuleDe(a.a2.e) || a.deg), s:sorteAttaque(a, true), propre:true, e:a.a2.e, p:porteeTexte(a.a2.p)});
     return l;
   }
   if(z.k === 'pnj' && z.x.combat){
     const c = z.x.combat, l = [{n:'Attaque de rang', f:c.deg, s:'phy', propre:false}];
-    if(c.a2) l.push({n:c.a2.n, f:aucunDegat(c.a2.e) ? '' : (formuleDe(c.a2.e) || c.deg), s:sortePnj(c), propre:true, e:c.a2.e});
+    if(c.a2) l.push({n:c.a2.n, f:aucunDegat(c.a2.e) ? '' : (formuleDe(c.a2.e) || c.deg), s:sortePnj(c), propre:true, e:c.a2.e, p:porteeTexte(c.a2.p)});
     return l;
   }
   return [];
@@ -6608,6 +6665,7 @@ function cibleParDefaut(cote){
 /* le compositeur, prêt : qui frappe, avec quoi, sur qui, et les dés déjà lancés */
 function preparerFrappe(nom, atk, cible, cote){
   choisirQui({k:'mj', id:'', nom:''});
+  COMPO.portee = atk.propre && atk.p != null ? atk.p : (atk.propre ? null : 0);
   COMPO.genre = 'narration';
   COMPO.panneau = 'jet';
   COMPO.formule = atk.f;
@@ -6622,6 +6680,7 @@ function preparerFrappe(nom, atk, cible, cote){
 }
 function jouerSonTour(z, i){
   if(!seanceCourante()){ msgTable('Ouvre une séance d’abord.', false); return; }
+  COMPO.frappeur = {k:z.k, id:z.id};
   const atks = attaquesDe(z);
   if(!atks.length){ msgTable(z.nom + ' n’a pas d’attaque : écris-lui-en une dans sa fiche.', false); return; }
   const atk = auHasard(atks);
@@ -6889,6 +6948,375 @@ function blocCombattants(){
   return w;
 }
 
+/* ---------- la carte de combat ----------
+   Une carte vient du Registre des Plans : un étage de bâtiment, ou ce qu'on voit d'un village. Elle arrive
+   comme une rencontre arrive du Registre des Rencontres, par ce navigateur, et se garde avec la séance.
+   Dessus, un jeton par combattant. Un pas vaut un mètre, comme les plans. Chacun a sa vitesse, dix pas par
+   défaut, et la carte compte ce qu'il a déjà parcouru dans le round. Elle prévient, elle n'empêche pas. */
+
+const CT_CLE = 'faelorenn.envoi.carte';
+const CT_MAX = 400000;            /* au-delà, la carte est trop lourde pour la sauvegarde partagée */
+const CT_VIT = 10;                /* dix pas par round, faute de mieux : le livre ne donne pas de vitesse */
+const CT_ENVOI = {attente:null};
+/* la vue : le cadre regardé, en mètres. Dans ce navigateur seulement */
+const CT = {x:0, y:0, k:1, prise:null, plein:false, sel:'', dessin:false};
+
+/* ---------- ce qui arrive du Registre des Plans ---------- */
+function normCarte(o){
+  if(!o || typeof o !== 'object') return null;
+  const n = v => isFinite(+v) ? +v : 0;
+  const svg = typeof o.svg === 'string' ? o.svg : '';
+  if(!svg || svg.length > CT_MAX || !/^\s*<svg[\s>]/i.test(svg)) return null;
+  const x0 = n(o.x0), y0 = n(o.y0), x1 = n(o.x1), y1 = n(o.y1);
+  if(!(x1 > x0) || !(y1 > y0)) return null;
+  return {nom:txtOu(o.nom).slice(0, 120), ref:txtOu(o.ref).slice(0, 60), x0:x0, y0:y0, x1:x1, y1:y1, svg:svg};
+}
+function normJetons(o){
+  if(!o || typeof o !== 'object') return {};
+  const out = {};
+  Object.keys(o).slice(0, 80).forEach(k => {
+    const j = o[k];
+    if(!j || typeof j !== 'object' || !isFinite(+j.x) || !isFinite(+j.y)) return;
+    out[String(k).slice(0, 60)] = {x:+j.x, y:+j.y, d:Math.max(0, +j.d || 0)};
+  });
+  return out;
+}
+function lireEnvoiCarte(){
+  let o = null;
+  try{ o = JSON.parse(localStorage.getItem(CT_CLE) || 'null'); }catch(e){ o = null; }
+  const c = normCarte(o);
+  if(!c){ CT_ENVOI.attente = null; return; }
+  const e = seanceCourante();
+  if(!e){ CT_ENVOI.attente = c; dessinerCarte(true); return; }
+  CT_ENVOI.attente = null;
+  try{ localStorage.removeItem(CT_CLE); }catch(x){}
+  poserCarte(c);
+  msgTable('La carte « ' + c.nom + ' » est arrivée du Registre des Plans.', true);
+}
+function poserCarte(c){
+  const e = seanceCourante(); if(!e) return;
+  changer(() => {
+    const x = T.journal[e.id]; if(!x) return;
+    T.journal[e.id] = Object.assign({}, x, {carte:c, majCarte:maintenant(), jetons:{}, majJetons:maintenant()});
+  });
+  CT.k = 1; CT.x = 0; CT.y = 0; CT.sel = '';
+  dessinerCarte(true);
+}
+function retirerCarte(){
+  const e = seanceCourante(); if(!e) return;
+  changer(() => {
+    const x = T.journal[e.id]; if(!x) return;
+    T.journal[e.id] = Object.assign({}, x, {carte:null, majCarte:maintenant()});
+  });
+}
+const laCarte = () => { const e = seanceCourante(); return e && e.carte ? e.carte : null; };
+const lesJetons = () => { const e = seanceCourante(); return e && e.jetons ? e.jetons : {}; };
+function poserJetons(j){
+  const e = seanceCourante(); if(!e) return;
+  changer(() => {
+    const x = T.journal[e.id]; if(!x) return;
+    T.journal[e.id] = Object.assign({}, x, {jetons:j, majJetons:maintenant()});
+  });
+}
+
+/* ---------- la vitesse, et ce qu'on a déjà parcouru ---------- */
+const cleJeton = z => z.k + ':' + z.id;
+function vitesseDe(z){
+  const v = z.k === 'perso' ? z.x.vitesse : z.k === 'pnj' ? (z.x.combat || {}).vit : z.x.vit;
+  return v == null || v === '' || !isFinite(+v) ? CT_VIT : Math.max(0, Math.round(+v));
+}
+function changerVitesse(z, v){
+  v = v === '' || v == null ? null : Math.max(0, Math.min(200, parseInt(v, 10) || 0));
+  changer(() => {
+    if(z.k === 'perso'){ const c = T.personnages[z.id]; if(c){ const y = Object.assign({}, c, {vitesse:v, maj:maintenant()}); T.personnages[z.id] = y; } }
+    else if(z.k === 'pnj'){ const p = T.pnj[z.id]; if(p && p.combat) T.pnj[z.id] = Object.assign({}, p, {combat:Object.assign({}, p.combat, {vit:v}), majCombat:maintenant()}); }
+    else { const a = T.adversaires[z.id]; if(a) T.adversaires[z.id] = Object.assign({}, a, {vit:v, maj:maintenant()}); }
+  });
+}
+/* les pas repartent de zéro à chaque nouveau round */
+function remettreLesPas(){
+  const j = lesJetons(), out = {};
+  Object.keys(j).forEach(k => { out[k] = {x:j[k].x, y:j[k].y, d:0}; });
+  poserJetons(out);
+}
+
+/* ---------- les portées ----------
+   Le livre ne donne de portée à aucune arme : celles-ci se lisent sur le nom, et chaque arme d'une fiche
+   porte un champ pour en écrire une autre. Zéro veut dire au contact. */
+const CT_PORTEES = [
+  [/arbal/i, 40], [/arc\s+long/i, 40], [/arc\s+de\s+chasse/i, 30], [/arc\s+court|arc\b/i, 20],
+  [/fronde|couteau de jet|\bjet\b|javelot|francisque/i, 10]
+];
+function porteeArme(a){
+  if(a && a.portee != null && a.portee !== '' && isFinite(+a.portee)) return Math.max(0, Math.round(+a.portee));
+  const t = (a && a.nom || '') + ' ' + (a && a.notes || '') + ' ' + (a && a.ex || '');
+  let p = 0;
+  for(const r of CT_PORTEES) if(r[0].test(t)){ p = r[1]; break; }
+  if(p && /port[ée]e[^.]{0,14}doubl|doubl[^.]{0,14}port[ée]e/i.test(t)) p *= 2;
+  return p;
+}
+/* la portée d'une attaque d'en face : « contact », « 10 pas », « à vue » */
+function porteeTexte(t){
+  t = String(t || '');
+  if(!t.trim()) return null;
+  if(/\bcontact\b/i.test(t)) return 0;
+  if(/[àa]\s*vue|aucune/i.test(t)) return -1;      /* -1 : pas de limite utile */
+  const m = /(\d+)\s*(pas|m\b|m[èe]tres?)/i.exec(t);
+  return m ? +m[1] : null;
+}
+const texteDePortee = p => p === 0 ? 'au contact' : p < 0 ? 'à vue' : p + ' pas';
+
+/* ---------- la distance entre deux combattants ---------- */
+function positionDe(z){ const j = lesJetons()[cleJeton(z)]; return j ? [j.x, j.y] : null; }
+function distanceEntre(a, b){
+  const p = positionDe(a), q = positionDe(b);
+  if(!p || !q) return null;
+  return Math.hypot(p[0] - q[0], p[1] - q[1]);
+}
+/* qui frappe, pour la ligne de portée du compositeur */
+function frappeurCompo(){
+  if(COMPO.frappeur){ const z = unCombattant(COMPO.frappeur.k, COMPO.frappeur.id); if(z) return z; }
+  if(COMPO.qui.k === 'perso'){ const z = unCombattant('perso', COMPO.qui.id); if(z) return z; }
+  return null;
+}
+function cibleCompo(){
+  if(!COMPO.cible) return null;
+  return unCombattant('perso', COMPO.cible) || unCombattant('adv', COMPO.cible) || unCombattant('pnj', COMPO.cible);
+}
+/* ce que la carte dit de la portée : rien si l'un des deux n'a pas de jeton */
+function motPortee(){
+  if(!laCarte()) return null;
+  const a = frappeurCompo(), b = cibleCompo();
+  if(!a || !b || a === b) return null;
+  const d = distanceEntre(a, b);
+  if(d == null) return null;
+  const pas = Math.round(d);
+  const p = COMPO.portee == null ? null : COMPO.portee;
+  if(p == null || p < 0) return {ok:true, txt:pas + ' pas entre ' + a.nom + ' et ' + b.nom + '.'};
+  const ok = d <= p + .01;
+  return {ok:ok, txt:pas + ' pas entre ' + a.nom + ' et ' + b.nom + ', ' + (p === 0 ? 'et il frappe au contact' : 'et sa portée est de ' + p + ' pas')
+    + (ok ? '.' : ' : hors de portée.')};
+}
+
+/* ---------- la carte dessinée ---------- */
+const CT_COUL = {nous:'#2f6b46', eux:'#8a2f2f', moi:'#1F3D2B'};
+function cadreCarte(){
+  const c = laCarte();
+  if(!c) return {x:0, y:0, w:10, h:10};
+  const W = (c.x1 - c.x0) / CT.k, H = (c.y1 - c.y0) / CT.k;
+  return {x:c.x0 + CT.x, y:c.y0 + CT.y, w:W, h:H};
+}
+function jetonsDuTour(){
+  return ceuxQuiSeBattent().map(z => {
+    const j = lesJetons()[cleJeton(z)];
+    return {z:z, j:j || null};
+  });
+}
+/* poser d'office ceux qui n'ont pas encore de jeton : les nôtres en bas, les autres en haut */
+function placerCeuxQuiManquent(){
+  const c = laCarte(); if(!c) return false;
+  const j = Object.assign({}, lesJetons());
+  const l = ceuxQuiSeBattent().filter(z => !j[cleJeton(z)]);
+  if(!l.length) return false;
+  const w = c.x1 - c.x0, h = c.y1 - c.y0;
+  const par = {nous:l.filter(z => z.cote === 'nous'), eux:l.filter(z => z.cote === 'eux')};
+  ['nous', 'eux'].forEach(cote => {
+    const n = par[cote].length;
+    par[cote].forEach((z, i) => {
+      j[cleJeton(z)] = {x:c.x0 + w * (i + 1) / (n + 1), y:c.y0 + h * (cote === 'nous' ? .88 : .12), d:0};
+    });
+  });
+  poserJetons(j);
+  return true;
+}
+function bougerJeton(z, x, y){
+  const c = laCarte(); if(!c) return;
+  const j = Object.assign({}, lesJetons()), cle = cleJeton(z);
+  const av = j[cle] || {x:x, y:y, d:0};
+  const d = (av.d || 0) + Math.hypot(x - av.x, y - av.y);
+  j[cle] = {x:Math.max(c.x0, Math.min(c.x1, x)), y:Math.max(c.y0, Math.min(c.y1, y)), d:d};
+  poserJetons(j);
+}
+const svgEl = (tag, attrs) => { const e = document.createElementNS('http://www.w3.org/2000/svg', tag); Object.keys(attrs || {}).forEach(k => e.setAttribute(k, attrs[k])); return e; };
+
+function dessinerCarte(force){
+  const box = $('seCarte'); if(!box) return;
+  if(CT.dessin) return;                       /* poser les jetons qui manquent redessine : pas de dessin dans le dessin */
+  if(!force && occupe(box)){ apresSaisie(box, () => dessinerCarte(true)); return; }
+  if(laCarte() && placerCeuxQuiManquent()) return;
+  CT.dessin = true;
+  try{ dessinerCarteVrai(box, force); } finally { CT.dessin = false; }
+}
+function dessinerCarteVrai(box, force){
+  const c = laCarte(), e = seanceCourante();
+  box.hidden = !c && !CT_ENVOI.attente;
+  if(box.hidden){ document.body.classList.remove('carteplein'); return; }
+  box.innerHTML = '';
+  box.classList.toggle('plein', CT.plein);
+  document.body.classList.toggle('carteplein', CT.plein && !!c);
+  const t = el('div','ctete');
+  t.append(el('p','ctitre', 'La carte'));
+  if(!c){
+    t.append(el('span','espace'));
+    box.append(t);
+    box.append(el('p','mini', 'Une carte attend : « ' + CT_ENVOI.attente.nom + ' ». Elle entre dans la séance en cours.'));
+    const b = el('button','btn sm', e ? 'La poser dans la séance' : 'Commencer une séance et la poser'); b.type = 'button'; b.id = 'ctAttente';
+    b.onclick = () => { if(!seanceCourante()) nouvelleSeance(); lireEnvoiCarte(); };
+    box.append(b);
+    return;
+  }
+  t.append(el('span','mini', c.nom + ' · ' + Math.round(c.x1 - c.x0) + ' × ' + Math.round(c.y1 - c.y0) + ' pas'));
+  t.append(el('span','espace'));
+  const pl = el('button','btn ghost xs', CT.plein ? 'Réduire' : 'En grand'); pl.type = 'button'; pl.id = 'ctPlein';
+  pl.onclick = () => { CT.plein = !CT.plein; dessinerCarte(true); };
+  const rz = el('button','btn ghost xs','Tout voir'); rz.type = 'button'; rz.id = 'ctFit';
+  rz.onclick = () => { CT.k = 1; CT.x = 0; CT.y = 0; dessinerCarte(true); };
+  const x = el('button','ax','×'); x.type = 'button'; x.id = 'ctRetirer';
+  x.setAttribute('aria-label', 'Retirer la carte de la séance');
+  x.onclick = () => retirerCarte();
+  t.append(rz, pl, x);
+  box.append(t);
+
+  const zone = el('div','ctzone');
+  zone.innerHTML = c.svg;
+  const svg = zone.querySelector('svg');
+  if(!svg){ box.append(el('p','mini', 'Cette carte ne se lit pas. Renvoie-la depuis le Registre des Plans.')); return; }
+  const v = cadreCarte();
+  svg.setAttribute('viewBox', fxn(v.x) + ' ' + fxn(v.y) + ' ' + fxn(v.w) + ' ' + fxn(v.h));
+  svg.setAttribute('class', 'ctsvg');
+  svg.removeAttribute('width'); svg.removeAttribute('height');
+  const g = svgEl('g', {'class':'ctjetons'});
+  const r = Math.max(.35, Math.min(1.1, v.w / 44));
+  /* le cercle de déplacement de celui qu'on a choisi, et sa portée */
+  const sel = CT.sel ? jetonsDuTour().find(q => cleJeton(q.z) === CT.sel) : null;
+  if(sel && sel.j){
+    const reste = Math.max(0, vitesseDe(sel.z) - sel.j.d);
+    if(reste > 0) g.append(svgEl('circle', {cx:fxn(sel.j.x), cy:fxn(sel.j.y), r:fxn(reste), 'class':'ctpas'}));
+    const p = porteeDe(sel.z);
+    if(p > 0) g.append(svgEl('circle', {cx:fxn(sel.j.x), cy:fxn(sel.j.y), r:fxn(p), 'class':'ctportee'}));
+  }
+  jetonsDuTour().forEach(q => {
+    if(!q.j) return;
+    const z = q.z, cle = cleJeton(z), bas = !DEBOUT(z);
+    const gr = svgEl('g', {'class':'ctj' + (bas ? ' ctbas' : '') + (CT.sel === cle ? ' ctsel' : ''), 'data-jeton':cle});
+    gr.append(svgEl('circle', {cx:fxn(q.j.x), cy:fxn(q.j.y), r:fxn(r), fill:CT_COUL[z.cote] || CT_COUL.eux, stroke:'#F4F2EA', 'stroke-width':fxn(r * .16)}));
+    const tx = svgEl('text', {x:fxn(q.j.x), y:fxn(q.j.y + r * .34), 'font-size':fxn(r), 'text-anchor':'middle', fill:'#F4F2EA'});
+    tx.textContent = initialesDe(z.nom);
+    gr.append(tx);
+    const nm = svgEl('text', {x:fxn(q.j.x), y:fxn(q.j.y - r * 1.25), 'font-size':fxn(r * .85), 'text-anchor':'middle', 'class':'ctnom'});
+    nm.textContent = z.nom;
+    gr.append(nm);
+    g.append(gr);
+  });
+  svg.append(g);
+  box.append(zone);
+  brancherCarte(svg, zone);
+  box.append(listeJetons());
+  box.append(el('p','mini ctaide', 'Un pas vaut un mètre. Glisse un jeton pour le déplacer : le cercle plein montre ce qui lui reste à marcher ce round, le cercle en pointillé sa portée. La molette zoome, un glissement dans le vide déplace la carte. Les pas repartent de zéro à chaque nouveau round.'));
+}
+const fxn = n => Math.round(n * 1000) / 1000;
+function initialesDe(n){
+  const m = String(n || '').trim().split(/\s+/).filter(Boolean);
+  if(!m.length) return '?';
+  if(m.length === 1) return m[0].slice(0, 2);
+  return (m[0][0] + m[1][0]).toUpperCase();
+}
+/* sa portée la plus longue : son arme pour un personnage, son attaque propre pour les autres */
+function porteeDe(z){
+  if(z.k === 'perso'){
+    const l = (z.x.armes || []).map(porteeArme);
+    return l.length ? Math.max.apply(null, l) : 0;
+  }
+  const a2 = z.k === 'pnj' ? (z.x.combat || {}).a2 : z.x.a2;
+  const p = a2 ? porteeTexte(a2.p) : null;
+  return p == null ? 0 : p;
+}
+
+/* ---------- la souris, le doigt, la molette ---------- */
+function brancherCarte(svg, zone){
+  const enM = ev => {
+    const m = svg.getScreenCTM();
+    if(!m) return null;
+    const p = svg.createSVGPoint(); p.x = ev.clientX; p.y = ev.clientY;
+    const q = p.matrixTransform(m.inverse());
+    return [q.x, q.y];
+  };
+  svg.addEventListener('pointerdown', ev => {
+    const g = ev.target.closest ? ev.target.closest('[data-jeton]') : null;
+    const m = enM(ev); if(!m) return;
+    if(g){
+      CT.sel = g.getAttribute('data-jeton');
+      CT.prise = {cle:CT.sel, m0:m};
+      svg.setPointerCapture(ev.pointerId);
+      dessinerCarte(true);
+      return;
+    }
+    CT.sel = '';
+    CT.prise = {vue:true, m0:m, x0:CT.x, y0:CT.y};
+    svg.setPointerCapture(ev.pointerId);
+    dessinerCarte(true);
+  });
+  svg.addEventListener('pointermove', ev => {
+    if(!CT.prise) return;
+    const m = enM(ev); if(!m) return;
+    if(CT.prise.vue){
+      CT.x = CT.prise.x0 - (m[0] - CT.prise.m0[0]);
+      CT.y = CT.prise.y0 - (m[1] - CT.prise.m0[1]);
+      const v = cadreCarte();
+      svg.setAttribute('viewBox', fxn(v.x) + ' ' + fxn(v.y) + ' ' + fxn(v.w) + ' ' + fxn(v.h));
+      return;
+    }
+    const q = svg.querySelector('[data-jeton="' + CT.prise.cle + '"]');
+    if(q) q.setAttribute('transform', 'translate(' + fxn(m[0] - CT.prise.m0[0]) + ' ' + fxn(m[1] - CT.prise.m0[1]) + ')');
+  });
+  const fin = ev => {
+    if(!CT.prise) return;
+    const p = CT.prise; CT.prise = null;
+    if(p.vue){ dessinerCarte(true); return; }
+    const m = enM(ev);
+    const z = ceuxQuiSeBattent().find(y => cleJeton(y) === p.cle);
+    if(m && z && (Math.abs(m[0] - p.m0[0]) > .05 || Math.abs(m[1] - p.m0[1]) > .05)){
+      const j = lesJetons()[p.cle];
+      bougerJeton(z, (j ? j.x : m[0]) + (m[0] - p.m0[0]), (j ? j.y : m[1]) + (m[1] - p.m0[1]));
+    } else dessinerCarte(true);
+  };
+  svg.addEventListener('pointerup', fin);
+  svg.addEventListener('pointercancel', fin);
+  zone.addEventListener('wheel', ev => {
+    ev.preventDefault();
+    const c = laCarte(); if(!c) return;
+    const av = cadreCarte();
+    CT.k = Math.max(.4, Math.min(12, CT.k * (ev.deltaY < 0 ? 1.15 : 1 / 1.15)));
+    const ap = cadreCarte();
+    CT.x += (av.w - ap.w) / 2; CT.y += (av.h - ap.h) / 2;
+    dessinerCarte(true);
+  }, {passive:false});
+}
+
+/* ---------- sous la carte : qui est où, à quelle vitesse ---------- */
+function listeJetons(){
+  const u = el('div','ctliste');
+  jetonsDuTour().forEach(q => {
+    const z = q.z, cle = cleJeton(z), v = vitesseDe(z), reste = q.j ? Math.max(0, v - q.j.d) : v;
+    const l = el('div','ctl' + (CT.sel === cle ? ' ctlsel' : '') + (DEBOUT(z) ? '' : ' ctlbas'));
+    const pst = el('span','ctpuce'); pst.style.background = CT_COUL[z.cote] || CT_COUL.eux;
+    l.append(pst);
+    const n = el('button','ctlnom', z.nom); n.type = 'button';
+    n.setAttribute('aria-label', 'Choisir ' + z.nom + ' sur la carte');
+    n.onclick = () => { CT.sel = CT.sel === cle ? '' : cle; dessinerCarte(true); };
+    l.append(n);
+    const pas = el('span','ctpasn' + (q.j && q.j.d > v + .01 ? ' trop' : ''), q.j ? Math.round(q.j.d) + ' / ' + v + ' pas' : 'pas posé');
+    l.append(pas);
+    const i = el('input'); i.type = 'number'; i.min = '0'; i.max = '200'; i.className = 'ctvit';
+    i.value = String(v); i.setAttribute('aria-label', 'Vitesse de ' + z.nom + ', en pas par round');
+    i.onchange = () => changerVitesse(z, i.value);
+    l.append(i);
+    u.append(l);
+  });
+  if(!u.children.length) u.append(el('p','mini', 'Personne à poser : la compagnie et ceux d’en face arrivent ici tout seuls.'));
+  return u;
+}
+
 /* ---------- le panneau « En face », à côté du récit ---------- */
 function barrePv(cour, max){
   const b = el('div','abarre');
@@ -7050,6 +7478,7 @@ function lignesRencontre(b){
 }
 
 window.addEventListener('storage', e => { if(e.key === CLE_ENVOI && e.newValue && $('seCombat')) lireEnvoi(); });
+window.addEventListener('storage', e => { if(e.key === CT_CLE && e.newValue && $('seCarte')) lireEnvoiCarte(); });
 
 /* ============ fouiller ceux qui sont tombés ============
    Sa propre table et les tables partagées qu'il porte, écrites dans le Registre des Rencontres ; et le butin
@@ -12576,6 +13005,7 @@ function dessiner(){
     dessinerFiche(false);
   } else if(PAGE === 'table'){
     dessinerSeance(false);
+    dessinerCarte(false);
     dessinerPersos();
     if(HAVRE.ouvert) dessinerHavre();
     dessinerJets();
@@ -12832,8 +13262,9 @@ else DEPART_FAIT = true;
 if(PAGE === 'missions') chargerBestiaire();   /* les familles maison du dépôt, pour la rencontre prévue */
 if(PAGE === 'table'){
   demarrerTirage();   /* le tirage des rencontres, avec ton bestiaire */
-  if(parGithub){ let fait = false; const go = () => { if(!fait){ fait = true; lireEnvoi(); } }; parGithub.then(go, go); setTimeout(go, 6000); }
-  else lireEnvoi();
+  const entrees = () => { lireEnvoi(); if($('seCarte')) lireEnvoiCarte(); };
+  if(parGithub){ let fait = false; const go = () => { if(!fait){ fait = true; entrees(); } }; parGithub.then(go, go); setTimeout(go, 6000); }
+  else entrees();
 }
 setTimeout(suivreAncre, 60);
 setInterval(() => { if(SYNC.poignee || SYNC.etat === 'github') dessinerTable(); }, 10000);

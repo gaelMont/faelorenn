@@ -245,6 +245,7 @@ body.plein #main{min-height:0}
    <button type="button" class="btn" id="bRedo" title="Rétablir (Ctrl+Y)" aria-label="Rétablir">↷</button>
    <button type="button" class="btn" id="bImp" aria-haspopup="menu">Importer ▾</button>
    <button type="button" class="btn primary" id="bExp" aria-haspopup="menu">Exporter ▾</button>
+   <button type="button" class="btn" id="bTable" title="Envoyer cette carte au Registre de la Table, comme carte de combat">Vers la table</button>
    <button type="button" class="btn icone" id="bFull" aria-pressed="false" title="Plein écran (Maj+F)" aria-label="Plein écran"></button>
    <button type="button" class="btn" id="bHelp" aria-label="Aide">?</button>
   </div>
@@ -2951,7 +2952,7 @@ function fillItemSel(){
   const L=m==='w'?mondesEnArbre().map(([w,d])=>[w,'  '.repeat(d)+w.name+' · '+scaleName(w.kmu)]):(m==='b'?P.buildings:P.villages).map(x=>[x,x.name]);
   $('#itemSel').innerHTML=L.map(([x,t])=>`<option value="${esc(x.id)}"${x.id===cur?' selected':''}>${esc(VIRT.has(x.id)?'(aucun pour l’instant)':t)}</option>`).join('')}
 function renderTop(){
-  $('#m-b').setAttribute('aria-pressed',ui.mode==='b');$('#m-v').setAttribute('aria-pressed',ui.mode==='v');$('#m-w').setAttribute('aria-pressed',ui.mode==='w');fillItemSel();updUndo()}
+  $('#m-b').setAttribute('aria-pressed',ui.mode==='b');$('#m-v').setAttribute('aria-pressed',ui.mode==='v');$('#m-w').setAttribute('aria-pressed',ui.mode==='w');fillItemSel();updUndo();majBoutonTable()}
 function renderAll(){renderTop();renderTools();renderFloorbar();renderCanvas();renderSide();renderOverlay();applyView();majVide()}
 function setMode(m){prFermer();isoOublierPiece();ui.mode=m;ui.tool='sel';ui.sel=[];ui.facade=false;ui.iso.on=false;vdraw=null;g=null;vg=null;wdraw=null;wg=null;renderAll();fit();plansVueBientot()}
 $('#m-b').onclick=()=>{ui.fromW=null;setMode('b')};$('#m-v').onclick=()=>{ui.fromW=null;setMode('v')};$('#m-w').onclick=()=>{ui.fromW=null;setMode('w')};
@@ -3030,6 +3031,7 @@ $('#bHelp').onclick=()=>modal(`<h2>Registre des Plans</h2>
 <p class="tag">Murets et garde-corps</p><p>L’outil <b>Mur</b> a un troisième type, <b>Muret, garde-corps</b> : sur le plan, un trait fin en pointillé ; en relief, un mur d’un mètre dix, de quoi border un balcon, une galerie ou une mezzanine sans fermer la vue. En promenade, il arrête comme un autre mur. Tracé sur le bord d’une pièce, un mur prend la place du mur de la pièce à cet endroit : un garde-corps posé au bord d’un balcon laisse voir au-delà, au lieu de se tenir devant un mur plein.</p>
 <p class="tag">Meubles contre les murs</p><p>Un meuble posé ou glissé sur un mur ne reste plus à cheval : il est poussé du côté d’où il vient, contre le mur. <kbd>Alt</kbd> enfoncé pendant la pose ou le déplacement laisse passer, pour une cheminée prise dans l’épaisseur ou un placard encastré. Pour ce qui est déjà en place, <b>Ranger les meubles</b> (panneau de droite, section Étage, en Modifier) pousse d’un coup tout ce qui chevauche un mur de l’étage affiché, et le dit ; <kbd>Ctrl</kbd>+<kbd>Z</kbd> annule. En relief, ce qui dépasse encore est raboté au mur : plus rien ne traverse à l’écran.</p>
 <p class="tag">Promenade</p><p>Le bouton <b>Promenade</b>, à côté d’Isométrie, descend à hauteur d’homme, un mètre septante : on marche dans le plan au lieu de le regarder d’en haut. <kbd>Z</kbd> <kbd>Q</kbd> <kbd>S</kbd> <kbd>D</kbd> ou les flèches pour avancer, reculer et faire un pas de côté, la souris glissée (ou le doigt) pour regarder autour, <kbd>Maj</kbd> pour courir. Les murs arrêtent, les portes laissent passer, les fenêtres non, et les meubles se contournent. Dans un bâtiment, marcher sur un escalier monte ou descend d’un étage, selon le sens où tu vas. Dans un village, tu marches dans les rues ; devant une bâtisse qui a son plan, <kbd>E</kbd> fait entrer dedans, et <kbd>Échap</kbd> ressort au village. <kbd>Échap</kbd> quitte la promenade. On y regarde seulement : rien ne s’y dessine et rien ne s’y déplace.</p>
+<p class="tag">Vers la table, comme carte de combat</p><p>Le bouton <b>Vers la table</b>, en haut à côté d’Exporter, envoie ce plan au Registre de la Table : pour un bâtiment, l’étage affiché en entier ; pour un village, ce qu’on voit à l’écran (zoome sur le coin où ça se passe, la carte est d’autant plus légère). La table la reçoit comme elle reçoit une rencontre, y pose un jeton par combattant, et compte les pas : un pas vaut un mètre. Une carte du monde ne part pas, elle se compte en kilomètres. Si le plan change, renvoie-le : la table garde une copie, pas un lien.</p>
 <p class="tag">Cité depuis les autres registres</p><p>Dans un compte rendu, sur une fiche de PNJ, dans une mission, deux tirets devant un nom (« --Ferpré ») citent un lieu, comme « /Nahya » cite quelqu’un : un bâtiment, un village, une carte du monde, ou un lieu nommé sur une carte. Le nom devient un lien qui ouvre le plan ici. Un lieu qui n’a pas encore de plan reçoit une fiche dans le Registre des Visages, onglet « Les lieux », et « Lui faire un plan » ramène ici pour le dessiner.</p>
 <p class="tag">Plein écran</p><p>Le bouton à droite d’« Exporter » (ou <kbd>Maj</kbd>+<kbd>F</kbd>) donne toute la fenêtre à l’établi. <kbd>Échap</kbd> en sort.</p>
 <p class="tag">Dimensions</p><p>Tout est en mètres. Dans un bâtiment, la grille fait 1 m par carreau (traits forts tous les 5 m) et l’aimant se règle à 25 cm, 50 cm ou 1 m. La pièce choisie affiche ses cotes sur le plan et ses valeurs exactes (largeur, hauteur, surface, périmètre) dans le panneau de droite, où tu peux les saisir au centimètre. La case « Dimensions » écrit la taille de chaque pièce sur le plan et dans l’export. Dans un village, tailles et distances sont aussi en mètres, avec une échelle graphique sur l’export.</p>
@@ -5859,6 +5861,70 @@ function prPanneau(){
 side.addEventListener('click', e => {
   const t = e.target.closest('[data-pro]');
   if(t && t.dataset.pro === 'sortir') prSortir();});
+/* ====== vers la table : une carte de combat ======
+   Le Registre de la Table pose les jetons sur une carte. Elle part d'ici, par ce navigateur, comme une
+   rencontre part du Registre des Rencontres : un étage de bâtiment en entier, ou ce qu'on voit d'un village.
+   La carte est dessinée en mètres (un pas vaut un mètre), pour que la table n'ait qu'à poser ses jetons. */
+const CT_CLE_ENVOI='faelorenn.envoi.carte';
+const CT_POIDS=400000;      /* au-delà, la carte est trop lourde pour la sauvegarde partagée de la table */
+const CT_MAXM=300;          /* au-delà de trois cents mètres de côté, on n'envoie que le milieu */
+
+/* ce qu'on voit de la carte, en mètres */
+function vueEnMetres(){
+  const r=cv.getBoundingClientRect(),u=U()*ui.view.k;
+  if(!(u>0))return null;
+  return {x0:(0-ui.view.x)/u, y0:(0-ui.view.y)/u, x1:(r.width-ui.view.x)/u, y1:(r.height-ui.view.y)/u};
+}
+/* un village découpé : seulement ce qui touche le cadre, ramené à l'origine. Le fond, l'herbe et le
+   découpage suivent, et la carte envoyée pèse ce que pèse le morceau, pas le village entier. */
+function vDecouper(v,x0,y0,x1,y1){
+  const dx=-x0,dy=-y0;
+  const dedans=it=>{const b=vItemBounds(it);return b[2]>=x0-10&&b[0]<=x1+10&&b[3]>=y0-10&&b[1]<=y1+10};
+  const items=v.items.filter(dedans).map(it=>{
+    const q=JSON.parse(JSON.stringify(it));
+    if(Array.isArray(q.pts))q.pts=q.pts.map(p=>[p[0]+dx,p[1]+dy]);
+    if(typeof q.x==='number'){q.x+=dx;q.y+=dy}
+    return q});
+  return Object.assign({},v,{W:fx(x1-x0),H:fx(y1-y0),items:items});
+}
+/* la carte prête à partir : son nom, d'où elle vient, son cadre en mètres et son dessin */
+function carteDeCombat(){
+  if(ui.mode==='b'){
+    const b=CB(),fi=ui.fl,F=b.floors[fi];
+    const e=floorExtent(F);
+    if(!e)return {err:'Cet étage est vide : il n’y a rien à poser sur une carte.'};
+    const x0=Math.floor(e.x0-1),y0=Math.floor(e.y0-1),x1=Math.ceil(e.x1+1),y1=Math.ceil(e.y1+1);
+    const svg=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="${x0} ${y0} ${fx(x1-x0)} ${fx(y1-y0)}">`
+      +`<rect x="${x0}" y="${y0}" width="${fx(x1-x0)}" height="${fx(y1-y0)}" fill="${PAPER}"/>`
+      +`<g transform="scale(${1/BU})">${renderFloor(b,fi,{ghost:false,dims:false})}</g></svg>`;
+    return {nom:b.name+' · '+F.name, ref:'b:'+b.id+':'+fi, x0:x0, y0:y0, x1:x1, y1:y1, svg:svg};
+  }
+  if(ui.mode==='v'){
+    const v=CV(),r=vueEnMetres();
+    if(!r)return {err:'La carte n’est pas encore affichée.'};
+    let x0=Math.max(0,Math.floor(r.x0)),y0=Math.max(0,Math.floor(r.y0));
+    let x1=Math.min(v.W,Math.ceil(r.x1)),y1=Math.min(v.H,Math.ceil(r.y1));
+    if(x1-x0<10||y1-y0<10)return {err:'Zoome un peu moins : il faut au moins dix mètres de côté.'};
+    /* trop grand pour servir de carte de combat : on garde le milieu */
+    if(x1-x0>CT_MAXM){const c=(x0+x1)/2;x0=Math.round(c-CT_MAXM/2);x1=x0+CT_MAXM}
+    if(y1-y0>CT_MAXM){const c=(y0+y1)/2;y0=Math.round(c-CT_MAXM/2);y1=y0+CT_MAXM}
+    const w=vDecouper(v,x0,y0,x1,y1);
+    const svg=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w.W} ${w.H}">`
+      +`<g transform="scale(${1/VU})">${villageInner(w,{pid:'ct'})}</g></svg>`;
+    return {nom:v.name+' · '+(x1-x0)+' × '+(y1-y0)+' m', ref:'v:'+v.id, x0:0, y0:0, x1:w.W, y1:w.H, svg:svg};
+  }
+  return {err:'Une carte du monde se compte en kilomètres : prends un village ou un bâtiment.'};
+}
+function envoyerCarte(){
+  const c=carteDeCombat();
+  if(c.err){toast(c.err);return}
+  if(c.svg.length>CT_POIDS){toast('Cette carte est trop lourde ('+Math.round(c.svg.length/1024)+' ko). Zoome sur le coin où ça se passe, puis renvoie.');return}
+  try{localStorage.setItem(CT_CLE_ENVOI,JSON.stringify(c))}catch(e){toast('Ce navigateur a refusé de garder la carte.');return}
+  toast('« '+c.nom+' » est partie vers le Registre de la Table.');
+}
+$('#bTable').onclick=()=>envoyerCarte();
+/* le bouton ne sert que pour un bâtiment ou un village */
+function majBoutonTable(){const b=$('#bTable');if(b)b.disabled=ui.mode==='w'}
 /* ============ garder les plans, plan par plan ============
    Chaque bâtiment, chaque village, chaque carte du monde est une pièce qui porte sa date (maj) : la plus récente l'emporte,
    et une suppression laisse une trace datée (supprime) pour ne pas revenir d'un autre appareil. Le même document sert au

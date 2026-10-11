@@ -3020,7 +3020,7 @@ $('#bHelp').onclick=()=>modal(`<h2>Registre des Plans</h2>
 <p class="tag">Consulter ou modifier</p><p>En <b>Consulter</b>, rien ne bouge par erreur : clique un élément pour lire sa fiche, zoome, et entre d’une carte dans un village puis dans un bâtiment (double-clic, ou bouton « Entrer »). Passe en <b>Modifier</b> quand tu veux dessiner.</p>
 <p class="tag">Garder</p><p>Chaque plan est gardé dans ce navigateur dès que tu le touches. Une fois ton dépôt GitHub relié (section « Sauvegarder ou partager », en bas de la page), il l’est aussi dans <b>plans.json</b> et il passe chez Océane : celui qui a retouché un plan en dernier l’emporte, plan par plan.</p>
 <p class="tag">Exporter, importer</p><p>« Exporter », en haut, donne pour le plan affiché un fichier .json : ce plan seul, ce plan avec les plans qui en dépendent (une carte du monde mène à ses villages, un village à ses bâtiments), tous les plans du même genre, ou tous les plans d’un coup. « Importer », juste à côté, reprend un fichier .json : tout ce qu’il porte, ou seulement ses bâtiments, ses villages ou ses cartes du monde, sans toucher aux autres. Une fenêtre dit ce qui entre avant de valider, et le fichier prend la place d’un plan qui existe déjà ici.</p>
-<p class="tag">Isométrie</p><p>Dans un bâtiment, la barre du haut donne <b>Plan</b>, <b>Isométrie</b> et <b>Façade</b> ; dans un village, <b>Carte</b> et <b>Isométrie</b>. En relief, on regarde seulement : rien ne s’y dessine, et le plan reste le plan. Les murs montent à 2,9 m, l’étage fait 3,3 m, les portes et les fenêtres se percent dans les murs, les escaliers ont leurs marches et les meubles leur volume. <kbd>R</kbd> tourne la vue d’un quart de tour (<kbd>Maj</kbd>+<kbd>R</kbd> dans l’autre sens), ou les deux boutons du panneau. Dans un bâtiment, <b>Tous les étages, empilés</b> les montre l’un sur l’autre, <b>Murs</b> les garde entiers, les coupe à mi-hauteur ou les enlève (on voit alors dans les pièces, et le toit s’en va avec eux), et <b>Poser le toit</b> coiffe le dernier étage du toit de la façade. Dans un village, chaque bâtisse prend la hauteur de son genre et son toit, l’enceinte et ses tours montent, les arbres aussi. « Exporter ▾ » donne la vue en PNG et en SVG, avec le nom du plan.</p>
+<p class="tag">Isométrie</p><p>Dans un bâtiment, la barre du haut donne <b>Plan</b>, <b>Isométrie</b> et <b>Façade</b> ; dans un village, <b>Carte</b> et <b>Isométrie</b>. En relief, on regarde seulement : rien ne s’y dessine, et le plan reste le plan. Les murs montent à 2,9 m, l’étage fait 3,3 m, les portes et les fenêtres se percent dans les murs, les escaliers ont leurs marches et les meubles leur volume. <kbd>R</kbd> tourne la vue d’un quart de tour (<kbd>Maj</kbd>+<kbd>R</kbd> dans l’autre sens), ou les deux boutons du panneau. Dans un bâtiment, <b>Tous les étages, empilés</b> les montre l’un sur l’autre, et <b>Murs</b> choisit ce qu’on en trace : <b>Ouverts</b> (par défaut) ne garde que les murs du fond de chaque pièce, comme dans une maison de poupée, et l’on voit dedans ; <b>Entiers</b> ferme la maison et la montre de dehors, avec <b>Poser le toit</b> ; <b>À mi-hauteur</b> coupe tous les murs à 1,30 m, ce qui lit bien un plan entier d’un coup ; <b>Aucun</b> ne laisse que les sols, les meubles et les escaliers. Une pièce en anneau (une galerie autour d’une cour) garde son trou : la cour reste à l’air libre. Dans un village, chaque bâtisse prend la hauteur de son genre et son toit, l’enceinte et ses tours montent, les arbres aussi. « Exporter ▾ » donne la vue en PNG et en SVG, avec le nom du plan.</p>
 <p class="tag">Promenade</p><p>Le bouton <b>Promenade</b>, à côté d’Isométrie, descend à hauteur d’homme, un mètre septante : on marche dans le plan au lieu de le regarder d’en haut. <kbd>Z</kbd> <kbd>Q</kbd> <kbd>S</kbd> <kbd>D</kbd> ou les flèches pour avancer, reculer et faire un pas de côté, la souris glissée (ou le doigt) pour regarder autour, <kbd>Maj</kbd> pour courir. Les murs arrêtent, les portes laissent passer, les fenêtres non, et les meubles se contournent. Dans un bâtiment, marcher sur un escalier monte ou descend d’un étage, selon le sens où tu vas. Dans un village, tu marches dans les rues ; devant une bâtisse qui a son plan, <kbd>E</kbd> fait entrer dedans, et <kbd>Échap</kbd> ressort au village. <kbd>Échap</kbd> quitte la promenade. On y regarde seulement : rien ne s’y dessine et rien ne s’y déplace.</p>
 <p class="tag">Cité depuis les autres registres</p><p>Dans un compte rendu, sur une fiche de PNJ, dans une mission, deux tirets devant un nom (« --Ferpré ») citent un lieu, comme « /Nahya » cite quelqu’un : un bâtiment, un village, une carte du monde, ou un lieu nommé sur une carte. Le nom devient un lien qui ouvre le plan ici. Un lieu qui n’a pas encore de plan reçoit une fiche dans le Registre des Visages, onglet « Les lieux », et « Lui faire un plan » ramène ici pour le dessiner.</p>
 <p class="tag">Plein écran</p><p>Le bouton à droite d’« Exporter » (ou <kbd>Maj</kbd>+<kbd>F</kbd>) donne toute la fenêtre à l’établi. <kbd>Échap</kbd> en sort.</p>
@@ -4300,10 +4300,12 @@ const ISO_HE = 3.3;      /* la hauteur d'un étage, comme sur la façade */
 const ISO_HM = 2.9;      /* la hauteur des murs d'une pièce */
 const ISO_MB = 26;       /* pixels par mètre, dans un bâtiment */
 const ISO_MV = 4.2;      /* pixels par mètre, dans un village */
-ui.iso = {on:false, rot:0, tous:false, toit:true, murs:'entiers'};
-const ISO_MURS = [['entiers', 'Entiers'], ['mi', 'À mi-hauteur'], ['aucun', 'Aucun']];
+ui.iso = {on:false, rot:0, tous:false, toit:true, murs:'ouverts'};
+const ISO_MURS = [['ouverts', 'Ouverts, on voit dedans'], ['entiers', 'Entiers, vu de dehors'], ['mi', 'À mi-hauteur'], ['aucun', 'Aucun']];
 /* la hauteur des murs qu'on montre : entiers, coupés à mi-hauteur, ou pas de murs du tout */
 const isoHautMur = () => ui.iso.murs === 'aucun' ? 0 : ui.iso.murs === 'mi' ? ISO_HM * .45 : ISO_HM;
+/* quelles faces d'un mur on trace : celles de devant (vu de dehors), celles du fond (on voit dedans), ou les deux */
+const isoFaces = () => ui.iso.murs === 'entiers' ? 'pres' : ui.iso.murs === 'mi' ? 'toutes' : 'loin';
 const isoOn = () => !!(ui.iso && ui.iso.on) && (ui.mode === 'b' || ui.mode === 'v');
 
 /* ---------- la projection ---------- */
@@ -4329,7 +4331,14 @@ const isoCentre = pts => {let x = 0, y = 0; for(const p of pts){x += p[0]; y += 
 function isoPlat(L, C, pts, z, col, o){
   if(pts.length < 3) return;
   const c = isoCentre(pts);
-  L.push({c:0, d:isoProf(C, c[0], c[1], z), s:isoPoly(pts.map(p => isoPt(C, p[0], p[1], z)), col, (o && o.trait2) || null, o)});}
+  const trou = o && o.trou && o.trou.length > 2 ? o.trou : null;
+  let s;
+  if(trou){
+    const d = q => 'M' + q.map(p => {const e = isoPt(C, p[0], p[1], z); return fx(e[0]) + ' ' + fx(e[1])}).join('L') + 'Z';
+    s = `<path d="${d(pts) + d(trou)}" fill-rule="evenodd" fill="${col}"`
+      + ((o && o.trait2) ? ` stroke="${o.trait2}" stroke-width="${o.trait || .8}" stroke-linejoin="round"` : '') + '/>';
+  } else s = isoPoly(pts.map(p => isoPt(C, p[0], p[1], z)), col, (o && o.trait2) || null, o);
+  L.push({c:0, d:isoProf(C, c[0], c[1], z), s:s});}
 /* une face de mur, avec les portes et fenêtres qui s'y trouvent */
 function isoFace(C, a, b, z0, z1, col, ouv){
   const q = [isoPt(C, a[0], a[1], z1), isoPt(C, b[0], b[1], z1), isoPt(C, b[0], b[1], z0), isoPt(C, a[0], a[1], z0)];
@@ -4353,11 +4362,15 @@ function isoPrisme(L, C, pts, z0, z1, col, o){
   o = o || {};
   if(pts.length < 3) return;
   const c = isoCentre(pts), dc = isoProf(C, c[0], c[1], 0);
+  const quelles = o.faces || 'pres';
   for(let i = 0; i < pts.length; i++){
     const a = pts[i], b = pts[(i + 1) % pts.length];
     const m = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
     const dm = isoProf(C, m[0], m[1], 0);
-    if(dm <= dc + 1e-9) continue;                       /* une face qui tourne le dos : on ne la voit pas */
+    const devant = dm > dc + 1e-9;
+    /* « pres » : la maison vue de dehors. « loin » : les murs du fond seulement, on voit dans les pièces */
+    if(quelles === 'pres' && !devant) continue;
+    if(quelles === 'loin' && devant) continue;
     const ouv = (o.ouv || []).map(x => isoSurFace(a, b, x)).filter(Boolean);
     L.push({c:1, d:dm + (z0 + z1) / 2, s:isoFace(C, a, b, z0, z1, col, ouv)});}
   if(o.dessus !== false)
@@ -4434,11 +4447,18 @@ function isoContour(it){
   if(it.shape === 'poly' && Array.isArray(it.pts) && it.pts.length > 2){
     const p = libreApli(it);
     if(p && p.length > 2) return p.map(q => [q[0], q[1]]);}
-  if(it.shape === 'ellipse' || it.shape === 'ring'){
+  if(it.shape === 'ellipse'){
     const cx = it.x + it.w / 2, cy = it.y + it.h / 2, out = [];
     for(let i = 0; i < 28; i++){const a = i / 28 * Math.PI * 2; out.push([cx + Math.cos(a) * it.w / 2, cy + Math.sin(a) * it.h / 2])}
     return out;}
   return [[it.x, it.y], [it.x + it.w, it.y], [it.x + it.w, it.y + it.h], [it.x, it.y + it.h]];}
+/* le trou d'un anneau : la cour au milieu de la galerie */
+function isoTrou(it){
+  if(it.shape !== 'ring') return null;
+  const t = Math.max(.1, Math.min((it.thick || 1), Math.min(it.w, it.h) / 2 - .1));
+  const x = it.x + t, y = it.y + t, w = it.w - 2 * t, h = it.h - 2 * t;
+  if(w <= .2 || h <= .2) return null;
+  return [[x, y], [x + w, y], [x + w, y + h], [x, y + h]];}
 /* les portes et fenêtres d'un étage, prêtes à se poser sur les murs */
 function isoOuvertures(F){
   const out = [];
@@ -4478,11 +4498,14 @@ function isoEtage(L, C, b, fi, z0, dernier){
   const murs = [];
   for(const it of F.items){
     if(it.t !== 'room') continue;
-    const pts = isoContour(it);
+    const pts = isoContour(it), trou = isoTrou(it);
     const rk = RK[it.kind] || RK.piece;
-    if(rk.f !== 'none') isoPlat(L, C, pts, z0 + .02, shade(rk.f, .98), {trait2:shade(rk.f, .7), trait:.7});
-    if(it.kind !== 'cour' && it.kind !== 'ext') murs.push({pts:pts, h:hm});}
-  if(hm > 0) for(const m of murs) isoPrisme(L, C, m.pts, z0 + .02, z0 + m.h, '#e2d6b8', {dessus:false, ouv:ui.iso.murs === 'mi' ? [] : ouv});
+    if(rk.f !== 'none') isoPlat(L, C, pts, z0 + .02, shade(rk.f, .98), {trait2:shade(rk.f, .7), trait:.7, trou:trou});
+    if(it.kind !== 'cour' && it.kind !== 'ext'){
+      murs.push({pts:pts, h:hm});
+      if(trou) murs.push({pts:trou, h:hm});}}
+  if(hm > 0) for(const m of murs)
+    isoPrisme(L, C, m.pts, z0 + .02, z0 + m.h, '#e2d6b8', {dessus:false, faces:isoFaces(), ouv:ui.iso.murs === 'mi' ? [] : ouv});
   for(const it of F.items){
     if(it.t === 'wall'){
       if(hm <= 0) continue;
@@ -4642,7 +4665,7 @@ side.addEventListener('change', e => {
 side.addEventListener('change', e => {
   const t = e.target.closest('select[data-iso="murs"]');
   if(!t || !isoOn()) return;
-  ui.iso.murs = ISO_MURS.some(m => m[0] === t.value) ? t.value : 'entiers';
+  ui.iso.murs = ISO_MURS.some(m => m[0] === t.value) ? t.value : 'ouverts';
   renderAll(); fit();});
 /* les réglages, dans le panneau */
 function isoPanneau(){
@@ -4655,7 +4678,7 @@ function isoPanneau(){
     h += `<div class="row"><label>Murs</label><select data-iso="murs">`
       + ISO_MURS.map(([v, n]) => `<option value="${v}"${ui.iso.murs === v ? ' selected' : ''}>${n}</option>`).join('') + `</select></div>`;
     if(ui.iso.murs === 'entiers') h += `<div class="row"><label><input type="checkbox" data-iso="toit"${ui.iso.toit ? ' checked' : ''}> Poser le toit</label></div>`;
-    h += `<p class="hint">Murs à mi-hauteur ou enlevés : on voit dans les pièces, et le toit se retire avec eux.</p>`;}
+    h += `<p class="hint">« Ouverts » ne trace que les murs du fond : on voit dans chaque pièce, comme dans une maison de poupée. « Entiers » ferme la maison et pose le toit.</p>`;}
   h += `<p class="hint">${esc(isoLegende())}</p>`;
   return h;}
 /* ====== la promenade : marcher dedans, à hauteur d'homme ======
@@ -4729,13 +4752,20 @@ function prDecorBatiment(b, fi){
   const sol = [];
   for(const it of Fl.items){
     if(it.t !== 'room') continue;
-    const pts = isoContour(it);
+    const pts = isoContour(it), trou = isoTrou(it);
     const rk = RK[it.kind] || RK.piece;
     sol.push(pts);
-    if(rk.f !== 'none') prFace(F, pts.map(p => [p[0], p[1], .01]), prOmbre(rk.f, .96), true);
     const dedans = it.kind !== 'cour' && it.kind !== 'ext';
-    if(dedans) prFace(F, pts.map(p => [p[0], p[1], ISO_HM]), '#cdc3ab');            /* le plafond */
-    if(dedans) for(let i = 0; i < pts.length; i++) prMurPerce(F, M, pts[i], pts[(i + 1) % pts.length], ISO_HM, '#e6dcc2', ouv);}
+    /* un anneau (une galerie autour d'une cour) : quatre bandes, et le trou laissé libre */
+    const bandes = trou ? [[pts[0], [pts[1][0], pts[1][1]], [trou[1][0], trou[1][1]], [trou[0][0], trou[0][1]]],
+        [[pts[1][0], pts[1][1]], [pts[2][0], pts[2][1]], [trou[2][0], trou[2][1]], [trou[1][0], trou[1][1]]],
+        [[pts[2][0], pts[2][1]], [pts[3][0], pts[3][1]], [trou[3][0], trou[3][1]], [trou[2][0], trou[2][1]]],
+        [[pts[3][0], pts[3][1]], [pts[0][0], pts[0][1]], [trou[0][0], trou[0][1]], [trou[3][0], trou[3][1]]]] : [pts];
+    if(rk.f !== 'none') for(const q of bandes) prFace(F, q.map(p => [p[0], p[1], .01]), prOmbre(rk.f, .96), true);
+    if(dedans) for(const q of bandes) prFace(F, q.map(p => [p[0], p[1], ISO_HM]), '#cdc3ab');   /* le plafond */
+    if(dedans){
+      for(let i = 0; i < pts.length; i++) prMurPerce(F, M, pts[i], pts[(i + 1) % pts.length], ISO_HM, '#e6dcc2', ouv);
+      if(trou) for(let i = 0; i < trou.length; i++) prMurPerce(F, M, trou[i], trou[(i + 1) % trou.length], ISO_HM, '#e6dcc2', ouv);}}
   for(const it of Fl.items){
     if(it.t === 'wall'){
       const a = [it.x1, it.y1], c = [it.x2, it.y2];

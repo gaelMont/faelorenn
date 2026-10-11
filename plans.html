@@ -3020,7 +3020,7 @@ $('#bHelp').onclick=()=>modal(`<h2>Registre des Plans</h2>
 <p class="tag">Consulter ou modifier</p><p>En <b>Consulter</b>, rien ne bouge par erreur : clique un élément pour lire sa fiche, zoome, et entre d’une carte dans un village puis dans un bâtiment (double-clic, ou bouton « Entrer »). Passe en <b>Modifier</b> quand tu veux dessiner.</p>
 <p class="tag">Garder</p><p>Chaque plan est gardé dans ce navigateur dès que tu le touches. Une fois ton dépôt GitHub relié (section « Sauvegarder ou partager », en bas de la page), il l’est aussi dans <b>plans.json</b> et il passe chez Océane : celui qui a retouché un plan en dernier l’emporte, plan par plan.</p>
 <p class="tag">Exporter, importer</p><p>« Exporter », en haut, donne pour le plan affiché un fichier .json : ce plan seul, ce plan avec les plans qui en dépendent (une carte du monde mène à ses villages, un village à ses bâtiments), tous les plans du même genre, ou tous les plans d’un coup. « Importer », juste à côté, reprend un fichier .json : tout ce qu’il porte, ou seulement ses bâtiments, ses villages ou ses cartes du monde, sans toucher aux autres. Une fenêtre dit ce qui entre avant de valider, et le fichier prend la place d’un plan qui existe déjà ici.</p>
-<p class="tag">Isométrie</p><p>Dans un bâtiment, la barre du haut donne <b>Plan</b>, <b>Isométrie</b> et <b>Façade</b> ; dans un village, <b>Carte</b> et <b>Isométrie</b>. En relief, on regarde seulement : rien ne s’y dessine, et le plan reste le plan. Les murs montent à 2,9 m, l’étage fait 3,3 m, les portes et les fenêtres se percent dans les murs, les escaliers ont leurs marches et les meubles leur volume. <kbd>R</kbd> tourne la vue d’un quart de tour (<kbd>Maj</kbd>+<kbd>R</kbd> dans l’autre sens), ou les deux boutons du panneau. Dans un bâtiment, <b>Tous les étages, empilés</b> les montre l’un sur l’autre, et <b>Murs</b> choisit ce qu’on en trace : <b>Ouverts</b> (par défaut) ne garde que les murs du fond de chaque pièce, comme dans une maison de poupée, et l’on voit dedans ; <b>Entiers</b> ferme la maison et la montre de dehors, avec <b>Poser le toit</b> ; <b>À mi-hauteur</b> coupe tous les murs à 1,30 m, ce qui lit bien un plan entier d’un coup ; <b>Aucun</b> ne laisse que les sols, les meubles et les escaliers. Une pièce en anneau (une galerie autour d’une cour) garde son trou : la cour reste à l’air libre, avec ses allées, sa fontaine, ses buissons et sa colonnade, comme sur le plan. Quand l’étage a plusieurs pièces, la liste <b>Montrer</b> n’en garde qu’une, avec ce qu’elle contient : de quoi regarder une salle de près. Les tonneaux, les cuves, les tables rondes, les puits, les fontaines et les colonnes sont ronds et non carrés ; une porte double se partage au milieu, une grille a ses barreaux, une ouverture ou une arche ne laissent qu’un trou dans le mur. Dans un village, chaque bâtisse prend la hauteur de son genre et son toit, l’enceinte et ses tours montent, les arbres aussi. « Exporter ▾ » donne la vue en PNG et en SVG, avec le nom du plan.</p>
+<p class="tag">Isométrie</p><p>Dans un bâtiment, la barre du haut donne <b>Plan</b>, <b>Isométrie</b> et <b>Façade</b> ; dans un village, <b>Carte</b> et <b>Isométrie</b>. En relief, on regarde seulement : rien ne s’y dessine, et le plan reste le plan. Les murs montent à 2,9 m, l’étage fait 3,3 m, les portes et les fenêtres se percent dans les murs, les escaliers ont leurs marches et les meubles leur volume. <kbd>R</kbd> tourne la vue d’un quart de tour (<kbd>Maj</kbd>+<kbd>R</kbd> dans l’autre sens), ou les deux boutons du panneau. Dans un bâtiment, <b>Tous les étages, empilés</b> les montre l’un sur l’autre, et <b>Murs</b> choisit ce qu’on en trace : <b>Ouverts</b> (par défaut) ne garde que les murs du fond de chaque pièce, comme dans une maison de poupée, et l’on voit dedans ; <b>Entiers</b> ferme la maison et la montre de dehors, avec <b>Poser le toit</b> ; <b>À mi-hauteur</b> coupe tous les murs à 1,30 m, ce qui lit bien un plan entier d’un coup ; <b>Aucun</b> ne laisse que les sols, les meubles et les escaliers. Une pièce en anneau (une galerie autour d’une cour) garde son trou : la cour reste à l’air libre, avec ses allées, sa fontaine, ses buissons et sa colonnade, comme sur le plan ; aucun fût ne se plante devant une porte. Les pièces que le plan dessine sans contour (couloir, galerie, cour, terrasse) n’ont pas de murs en relief non plus : les murs qu’on veut là se tracent avec l’outil Mur, et se règlent un par un. Quand l’étage a plusieurs pièces, la liste <b>Montrer</b> n’en garde qu’une, avec ce qu’elle contient : de quoi regarder une salle de près. Les tonneaux, les cuves, les tables rondes, les puits, les fontaines et les colonnes sont ronds et non carrés ; une porte double se partage au milieu, une grille a ses barreaux, une ouverture ou une arche ne laissent qu’un trou dans le mur. Dans un village, chaque bâtisse prend la hauteur de son genre et son toit, l’enceinte et ses tours montent, les arbres aussi. « Exporter ▾ » donne la vue en PNG et en SVG, avec le nom du plan.</p>
 <p class="tag">Murets et garde-corps</p><p>L’outil <b>Mur</b> a un troisième type, <b>Muret, garde-corps</b> : sur le plan, un trait fin en pointillé ; en relief, un mur d’un mètre dix, de quoi border un balcon, une galerie ou une mezzanine sans fermer la vue. En promenade, il arrête comme un autre mur.</p>
 <p class="tag">Promenade</p><p>Le bouton <b>Promenade</b>, à côté d’Isométrie, descend à hauteur d’homme, un mètre septante : on marche dans le plan au lieu de le regarder d’en haut. <kbd>Z</kbd> <kbd>Q</kbd> <kbd>S</kbd> <kbd>D</kbd> ou les flèches pour avancer, reculer et faire un pas de côté, la souris glissée (ou le doigt) pour regarder autour, <kbd>Maj</kbd> pour courir. Les murs arrêtent, les portes laissent passer, les fenêtres non, et les meubles se contournent. Dans un bâtiment, marcher sur un escalier monte ou descend d’un étage, selon le sens où tu vas. Dans un village, tu marches dans les rues ; devant une bâtisse qui a son plan, <kbd>E</kbd> fait entrer dedans, et <kbd>Échap</kbd> ressort au village. <kbd>Échap</kbd> quitte la promenade. On y regarde seulement : rien ne s’y dessine et rien ne s’y déplace.</p>
 <p class="tag">Cité depuis les autres registres</p><p>Dans un compte rendu, sur une fiche de PNJ, dans une mission, deux tirets devant un nom (« --Ferpré ») citent un lieu, comme « /Nahya » cite quelqu’un : un bâtiment, un village, une carte du monde, ou un lieu nommé sur une carte. Le nom devient un lien qui ouvre le plan ici. Un lieu qui n’a pas encore de plan reçoit une fiche dans le Registre des Visages, onglet « Les lieux », et « Lui faire un plan » ramène ici pour le dessiner.</p>
@@ -4307,6 +4307,8 @@ const ISO_MURS = [['ouverts', 'Ouverts, on voit dedans'], ['entiers', 'Entiers, 
 /* la hauteur des murs qu'on montre : entiers, coupés à mi-hauteur, ou pas de murs du tout */
 const isoHautMur = () => ui.iso.murs === 'aucun' ? 0 : ui.iso.murs === 'mi' ? ISO_HM * .45 : ISO_HM;
 /* quelles faces d'un mur on trace : celles de devant (vu de dehors), celles du fond (on voit dedans), ou les deux */
+/* les genres de pièce que le plan dessine sans contour : elles n'ont pas de murs en relief non plus */
+const ISO_SANS_MUR = {cour:1, ext:1, couloir:1};
 const isoFaces = () => ui.iso.murs === 'entiers' ? 'pres' : ui.iso.murs === 'mi' ? 'toutes' : 'loin';
 const isoOn = () => !!(ui.iso && ui.iso.on) && (ui.mode === 'b' || ui.mode === 'v');
 /* on quitte la pièce montrée seule dès qu'on change d'étage ou de plan */
@@ -4344,39 +4346,71 @@ function isoPlat(L, C, pts, z, col, o){
   } else s = isoPoly(pts.map(p => isoPt(C, p[0], p[1], z)), col, (o && o.trait2) || null, o);
   L.push({c:0, d:isoProf(C, c[0], c[1], z), s:s});}
 /* une face de mur, avec les portes et fenêtres qui s'y trouvent */
+/* ---------- les murs, en panneaux ----------
+   Chaque pan est découpé en morceaux d'au plus 1,2 m : chacun porte sa propre profondeur, et le tri
+   du peintre devient juste de proche en proche. Sans cela, un meuble posé au bout d'un long mur
+   passait devant le mur entier. */
+const ISO_PAN = 1.2;
+/* la profondeur d'un morceau : son point le plus proche de l'œil */
+function isoProfMax(C, pts3){
+  let d = -1e9;
+  for(const q of pts3) d = Math.max(d, isoProf(C, q[0], q[1], q[2]));
+  return d;}
+function isoPousser(L, C, pts3, fill, trait, o){
+  L.push({c:1, d:isoProfMax(C, pts3), s:isoPoly(pts3.map(q => isoPt(C, q[0], q[1], q[2])), fill, trait, o)});}
 /* un pan de mur, percé pour de bon : le mur s'arrête de part et d'autre d'une ouverture,
    avec son allège sous une fenêtre et son linteau au-dessus. Une arche ne laisse que le trou. */
-function isoFace(C, a, b, z0, z1, col, ouv){
+function isoFace(L, C, a, b, z0, z1, col, ouv){
   const e = isoTourne(b[0] - a[0], b[1] - a[1], C.r);
   const f = Math.abs(e[0]) > Math.abs(e[1]) ? .82 : .66;
   const mc = shade(col, f), mt = shade(col, f * .62);
+  const Lg = Math.hypot(b[0] - a[0], b[1] - a[1]);
   const pt = t => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
-  const quad = (t0, t1, za, zb, fill, trait) => {
-    if(zb <= za + .005 || t1 <= t0 + .0005) return '';
+  /* un panneau : rempli sans contour, puis ses arêtes vraies (haut, bas, et les bouts du pan),
+     pour que la découpe en morceaux ne se voie pas comme une palissade */
+  const quad = (t0, t1, za, zb, fill, trait, debut, fin) => {
+    if(zb <= za + .005 || t1 <= t0 + .0005) return;
     const p0 = pt(t0), p1 = pt(t1);
-    return isoPoly([isoPt(C, p0[0], p0[1], zb), isoPt(C, p1[0], p1[1], zb), isoPt(C, p1[0], p1[1], za), isoPt(C, p0[0], p0[1], za)], fill, trait, {trait:.8});};
-  const L = Math.hypot(b[0] - a[0], b[1] - a[1]);
-  const trous = (L < .2 ? [] : (ouv || []).slice().sort((x, y) => x.t0 - y.t0));
-  if(!trous.length) return quad(0, 1, z0, z1, mc, mt);
-  let s = '', t = 0;
+    /* les panneaux se chevauchent d'un cheveu : sinon un trait clair se voit entre deux remplissages */
+    const eps = Lg > .05 ? .012 / Lg : 0;
+    const q0 = pt(debut ? t0 : t0 - eps), q1 = pt(fin ? t1 : t1 + eps);
+    const c3 = [[p0[0], p0[1], zb], [p1[0], p1[1], zb], [p1[0], p1[1], za], [p0[0], p0[1], za]];
+    const e4 = c3.map(q => isoPt(C, q[0], q[1], q[2]));
+    const f4 = [[q0[0], q0[1], zb], [q1[0], q1[1], zb], [q1[0], q1[1], za], [q0[0], q0[1], za]].map(q => isoPt(C, q[0], q[1], q[2]));
+    const X = i => fx(e4[i][0]) + ' ' + fx(e4[i][1]);
+    let d = 'M' + X(0) + 'L' + X(1) + 'M' + X(3) + 'L' + X(2);
+    if(debut) d += 'M' + X(0) + 'L' + X(3);
+    if(fin) d += 'M' + X(1) + 'L' + X(2);
+    L.push({c:1, d:isoProfMax(C, c3),
+      s:isoPoly(f4, fill, null) + `<path d="${d}" fill="none" stroke="${trait}" stroke-width=".8" stroke-linecap="round"/>`});};
+  /* un pan long se coupe en panneaux : chacun se range tout seul parmi les meubles qui l'entourent */
+  const pans = (t0, t1, za, zb, fill, trait) => {
+    const n = Math.max(1, Math.ceil((t1 - t0) * Lg / ISO_PAN));
+    for(let i = 0; i < n; i++) quad(t0 + (t1 - t0) * i / n, t0 + (t1 - t0) * (i + 1) / n, za, zb, fill, trait, i === 0, i === n - 1);};
+  const trous = (Lg < .2 ? [] : (ouv || []).slice().sort((x, y) => x.t0 - y.t0));
+  if(!trous.length){ pans(0, 1, z0, z1, mc, mt); return; }
+  let t = 0;
   for(const o of trous){
     const t0 = Math.max(0, Math.min(1, o.t0)), t1 = Math.max(0, Math.min(1, o.t1));
     if(t1 <= t) continue;
-    if(t0 > t) s += quad(t, t0, z0, z1, mc, mt);
+    if(t0 > t) pans(t, t0, z0, z1, mc, mt);
     const h0 = z0 + o.h0, h1 = Math.min(z1, z0 + o.h1);
-    s += quad(t0, t1, z0, h0, mc, mt);                 /* l'allège, sous une fenêtre */
-    s += quad(t0, t1, h1, z1, mc, mt);                 /* le linteau */
+    pans(t0, t1, z0, h0, mc, mt);                      /* l'allège, sous une fenêtre */
+    pans(t0, t1, h1, z1, mc, mt);                      /* le linteau */
     if(o.f){
-      s += quad(t0, t1, h0, h1, o.f, o.e || INK);
+      const p0 = pt(t0), p1 = pt(t1);
+      const pts3 = [[p0[0], p0[1], h1], [p1[0], p1[1], h1], [p1[0], p1[1], h0], [p0[0], p0[1], h0]];
+      const r = pts3.map(q => isoPt(C, q[0], q[1], q[2]));
+      let s = isoPoly(r, o.f, o.e || INK, {trait:1});
       /* les traverses : une porte double se partage au milieu, une grille a ses barreaux */
-      const P = (u, v) => {const p = pt(t0 + (t1 - t0) * u); return isoPt(C, p[0], p[1], h0 + (h1 - h0) * v)};
+      const P = (u, v) => {const q = pt(t0 + (t1 - t0) * u); return isoPt(C, q[0], q[1], h0 + (h1 - h0) * v)};
       const ligne = (u0, v0, u1, v1) => {const A = P(u0, v0), B = P(u1, v1); s += `<line x1="${fx(A[0])}" y1="${fx(A[1])}" x2="${fx(B[0])}" y2="${fx(B[1])}" stroke="${o.e || INK}" stroke-width=".9"/>`};
       if(o.trait === 'v' || o.trait === 'croix') ligne(.5, 0, .5, 1);
       if(o.trait === 'h' || o.trait === 'croix') ligne(0, .5, 1, .5);
-      if(o.trait === 'barreaux') for(const u of [.25, .5, .75]) ligne(u, 0, u, 1);}
+      if(o.trait === 'barreaux') for(const u of [.25, .5, .75]) ligne(u, 0, u, 1);
+      L.push({c:1, d:isoProfMax(C, pts3), s:s});}
     t = t1;}
-  if(t < 1) s += quad(t, 1, z0, z1, mc, mt);
-  return s;}
+  if(t < 1) pans(t, 1, z0, z1, mc, mt);}
 /* un volume : un polygone monté, avec ses faces visibles et son dessus */
 function isoPrisme(L, C, pts, z0, z1, col, o){
   o = o || {};
@@ -4392,9 +4426,9 @@ function isoPrisme(L, C, pts, z0, z1, col, o){
     if(quelles === 'pres' && !devant) continue;
     if(quelles === 'loin' && devant) continue;
     const ouv = (o.ouv || []).map(x => isoSurFace(a, b, x)).filter(Boolean);
-    L.push({c:1, d:dm + (z0 + z1) / 2, s:isoFace(C, a, b, z0, z1, col, ouv)});}
+    isoFace(L, C, a, b, z0, z1, col, ouv);}
   if(o.dessus !== false)
-    L.push({c:1, d:dc + z1 + .01, s:isoPoly(pts.map(p => isoPt(C, p[0], p[1], z1)), shade(col, o.clair || 1), shade(col, .6))});}
+    isoPousser(L, C, pts.map(q => [q[0], q[1], z1]), shade(col, o.clair || 1), shade(col, .6));}
 /* une ouverture tombe-t-elle sur cette face ? */
 function isoSurFace(a, b, o){
   const dx = b[0] - a[0], dy = b[1] - a[1], L2 = dx * dx + dy * dy;
@@ -4413,9 +4447,7 @@ function isoToit(L, C, q, z, h, type, col){
   if(type === 'aucun') return;
   const mid = (a, b) => [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
   const P = (p, zz) => isoPt(C, p[0], p[1], zz);
-  const pousse = (pts, zs, f) => {
-    const c = isoCentre(pts), zc = zs.reduce((a, b) => a + b, 0) / zs.length;
-    L.push({c:1, d:isoProf(C, c[0], c[1], 0) + zc + .02, s:isoPoly(pts.map((p, i) => P(p, zs[i])), shade(col, f), shade(col, f * .6))});};
+  const pousse = (pts, zs, f) => isoPousser(L, C, pts.map((p, i) => [p[0], p[1], zs[i]]), shade(col, f), shade(col, f * .6));
   const c = isoCentre(q);
   if(type === 'plat'){
     pousse(q, q.map(() => z + .25), 1);
@@ -4498,7 +4530,7 @@ function isoMeuble(L, C, it, z0){
   if(rond){ isoPrisme(L, C, isoCercle(cx, cy, rx, ry, 14), z0, z0 + h, col); return; }
   isoPrisme(L, C, isoQuad(it.x, it.y, d.w, d.h, it.r || 0), z0, z0 + h, col);}
 /* une cour : ses allées en croix, sa fontaine, ses buissons et sa colonnade, comme sur le plan */
-function isoCour(L, C, r, z0){
+function isoCour(L, C, r, z0, ouv){
   const g = mkrng(hstr(r.id));
   const x = r.x, y = r.y, w = r.w, h = r.h, sol = z0 + .04;
   const bulle = (cx, cy, rr) => isoBulle(L, C, cx, cy, rr, rr, z0 + .04, rr * 2.1, '#8fae6e');
@@ -4521,12 +4553,15 @@ function isoCour(L, C, r, z0){
   /* la colonnade : un fût tous les deux mètres et demi, et non le pointillé serré du plan */
   if(r.arc !== false){
     const pas = 2.5, rc = .21;
+    /* un fût ne se plante jamais devant une porte ou une fenêtre */
+    const libre = (cx, cy) => !(ouv || []).some(o => Math.hypot(o.x - cx, o.y - cy) < o.w / 2 + .5);
     const bord = [[x, y, x + w, y], [x + w, y, x + w, y + h], [x + w, y + h, x, y + h], [x, y + h, x, y]];
     for(const [x1, y1, x2, y2] of bord){
       const L2 = Math.hypot(x2 - x1, y2 - y1), n = Math.max(1, Math.round(L2 / pas));
       for(let i = 0; i < n; i++){
-        const t = (i + .5) / n;
-        isoPrisme(L, C, isoCercle(x1 + (x2 - x1) * t, y1 + (y2 - y1) * t, rc, rc, 8), z0 + .04, z0 + 2.7, '#dbd0b6');}}}}
+        const t = (i + .5) / n, cx = x1 + (x2 - x1) * t, cy = y1 + (y2 - y1) * t;
+        if(!libre(cx, cy)) continue;
+        isoPrisme(L, C, isoCercle(cx, cy, rc, rc, 8), z0 + .04, z0 + 2.7, '#dbd0b6');}}}}
 /* un point est-il dans ce contour ? (pour ne montrer qu'une pièce) */
 function isoDedans(pts, x, y){
   let d = false;
@@ -4608,8 +4643,8 @@ function isoEtage(L, C, b, fi, z0, dernier){
     const pts = isoContour(it), trou = isoTrou(it);
     const rk = RK[it.kind] || RK.piece;
     if(rk.f !== 'none') isoPlat(L, C, pts, z0 + .02, shade(rk.f, .98), {trait2:shade(rk.f, .7), trait:.7, trou:trou});
-    if(it.kind === 'cour') isoCour(L, C, it, z0 + .02);
-    if(it.kind !== 'cour' && it.kind !== 'ext'){
+    if(it.kind === 'cour') isoCour(L, C, it, z0 + .02, ouv);
+    if(!ISO_SANS_MUR[it.kind]){
       murs.push({pts:pts, h:hm});
       if(trou) murs.push({pts:trou, h:hm});}}
   if(hm > 0) for(const m of murs)
@@ -4880,7 +4915,7 @@ function prDecorBatiment(b, fi){
     const pts = isoContour(it), trou = isoTrou(it);
     const rk = RK[it.kind] || RK.piece;
     sol.push(pts);
-    const dedans = it.kind !== 'cour' && it.kind !== 'ext';
+    const dedans = !ISO_SANS_MUR[it.kind];
     /* un anneau (une galerie autour d'une cour) : quatre bandes, et le trou laissé libre */
     const bandes = trou ? [[pts[0], [pts[1][0], pts[1][1]], [trou[1][0], trou[1][1]], [trou[0][0], trou[0][1]]],
         [[pts[1][0], pts[1][1]], [pts[2][0], pts[2][1]], [trou[2][0], trou[2][1]], [trou[1][0], trou[1][1]]],
@@ -4891,7 +4926,7 @@ function prDecorBatiment(b, fi){
     if(dedans){
       for(let i = 0; i < pts.length; i++) prMurPerce(F, M, pts[i], pts[(i + 1) % pts.length], ISO_HM, '#e6dcc2', ouv);
       if(trou) for(let i = 0; i < trou.length; i++) prMurPerce(F, M, trou[i], trou[(i + 1) % trou.length], ISO_HM, '#e6dcc2', ouv);}
-    if(it.kind === 'cour') prCour(F, M, it);}
+    if(it.kind === 'cour') prCour(F, M, it, ouv);}
   for(const it of Fl.items){
     if(it.t === 'wall'){
       const a = [it.x1, it.y1], c = [it.x2, it.y2];
@@ -4931,7 +4966,7 @@ function prDecorBatiment(b, fi){
   return {F:F, M:M, esc:esc};}
 
 /* une cour : ses allées, sa fontaine, ses buissons et sa colonnade, comme sur le plan */
-function prCour(F, M, r){
+function prCour(F, M, r, ouv){
   const g = mkrng(hstr(r.id));
   const x = r.x, y = r.y, w = r.w, h = r.h;
   const buisson = (cx, cy, rr) => { prBoule(F, cx, cy, rr, rr, .04, rr * 2.1, '#8fae6e');
@@ -4957,12 +4992,16 @@ function prCour(F, M, r){
     for(let i = 0; i < n; i++) buisson(x + 16 / BU + g() * (w - 32 / BU), y + 16 / BU + g() * (h - 32 / BU), (8 + g() * 8) / BU);}
   if(r.arc !== false){
     const pas = 2.5, rc = .21;
+    const libre = (cx, cy) => !(ouv || []).some(o => Math.hypot(o.x - cx, o.y - cy) < o.w / 2 + .5);
     const bord = [[x, y, x + w, y], [x + w, y, x + w, y + h], [x + w, y + h, x, y + h], [x, y + h, x, y]];
     for(const [x1, y1, x2, y2] of bord){
       const L2 = Math.hypot(x2 - x1, y2 - y1), n = Math.max(1, Math.round(L2 / pas));
       for(let i = 0; i < n; i++){
         const t = (i + .5) / n, cx = x1 + (x2 - x1) * t, cy = y1 + (y2 - y1) * t;
-        prBoite(F, isoCercle(cx, cy, rc, rc, 8), .04, 2.7, '#dbd0b6');}}}}
+        if(!libre(cx, cy)) continue;
+        prBoite(F, isoCercle(cx, cy, rc, rc, 8), .04, 2.7, '#dbd0b6');
+        M.push([[cx - rc, cy - rc], [cx + rc, cy - rc]], [[cx + rc, cy - rc], [cx + rc, cy + rc]],
+          [[cx + rc, cy + rc], [cx - rc, cy + rc]], [[cx - rc, cy + rc], [cx - rc, cy - rc]]);}}}}
 
 /* ---------- le décor d'un village ---------- */
 function prDecorVillage(v){

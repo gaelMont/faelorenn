@@ -6861,7 +6861,9 @@ const CT_MAX = 400000;            /* au-delà, la carte est trop lourde pour la 
 const CT_VIT = 10;                /* dix pas par round, faute de mieux : le livre ne donne pas de vitesse */
 const CT_ENVOI = {attente:null};
 /* la vue : le cadre regardé, en mètres. Dans ce navigateur seulement */
-const CT = {x:0, y:0, k:1, prise:null, plein:false, sel:'', dessin:false};
+const CT = {x:0, y:0, k:1, prise:null, plein:false, sel:'', dessin:false, plan:'',
+  /* le cadre caché qui va chercher une carte, et la fenêtre où la carte est sortie */
+  cadre:null, attente:null, minuteur:0, fen:null, etage:0, veille:0};
 
 /* ---------- ce qui arrive du Registre des Plans ---------- */
 function normCarte(o){
@@ -7042,23 +7044,47 @@ function bougerJeton(z, x, y){
 const svgEl = (tag, attrs) => { const e = document.createElementNS('http://www.w3.org/2000/svg', tag); Object.keys(attrs || {}).forEach(k => e.setAttribute(k, attrs[k])); return e; };
 
 function dessinerCarte(force){
-  const box = $('seCarte'); if(!box) return;
+  const ici = $('seCarte'); if(!ici) return;
   if(CT.dessin) return;                       /* poser les jetons qui manquent redessine : pas de dessin dans le dessin */
-  if(!force && occupe(box)){ apresSaisie(box, () => dessinerCarte(true)); return; }
+  const dehors = carteDehors();
+  const box = dehors ? CT.fen.document.getElementById('seCarte') : ici;
+  if(!force && !dehors && occupe(ici)){ apresSaisie(ici, () => dessinerCarte(true)); return; }
   if(laCarte() && placerCeuxQuiManquent()) return;
   CT.dessin = true;
-  try{ dessinerCarteVrai(box, force); } finally { CT.dessin = false; }
+  try{
+    if(dehors) dessinerRenvoi(ici);
+    dessinerCarteVrai(box, force, dehors);
+  } finally { CT.dessin = false; }
 }
-function dessinerCarteVrai(box, force){
-  const c = laCarte(), e = seanceCourante();
-  box.hidden = !c && !CT_ENVOI.attente;
-  if(box.hidden){ document.body.classList.remove('carteplein'); return; }
+/* dans la page, pendant que la carte est sur l'autre écran */
+function dessinerRenvoi(box){
+  box.hidden = false;
   box.innerHTML = '';
-  box.classList.toggle('plein', CT.plein);
-  document.body.classList.toggle('carteplein', CT.plein && !!c);
+  box.classList.remove('plein');
+  document.body.classList.remove('carteplein');
   const t = el('div','ctete');
   t.append(el('p','ctitre', 'La carte'));
-  if(!c){
+  t.append(el('span','mini', 'sur l’autre fenêtre'));
+  t.append(el('span','espace'));
+  const b = el('button','btn ghost xs','La ramener ici'); b.type = 'button'; b.id = 'ctRamener';
+  b.onclick = () => ramenerCarte();
+  t.append(b);
+  box.append(t);
+}
+function dessinerCarteVrai(box, force, dehors){
+  const c = laCarte(), e = seanceCourante();
+  /* le pavé se montre dès qu'un combat est en cours : sans lui, rien ne dit d'où vient une carte */
+  const combat = !!e && (!!combatEnCours() || pnjsAuCombat().length > 0);
+  box.hidden = !c && !CT_ENVOI.attente && !combat;
+  if(box.hidden){ document.body.classList.remove('carteplein'); return; }
+  box.innerHTML = '';
+  if(!dehors){
+    box.classList.toggle('plein', CT.plein);
+    document.body.classList.toggle('carteplein', CT.plein && !!c);
+  }
+  const t = el('div','ctete');
+  t.append(el('p','ctitre', 'La carte'));
+  if(!c && CT_ENVOI.attente){
     t.append(el('span','espace'));
     box.append(t);
     box.append(el('p','mini', 'Une carte attend : « ' + CT_ENVOI.attente.nom + ' ». Elle entre dans la séance en cours.'));
@@ -7067,16 +7093,27 @@ function dessinerCarteVrai(box, force){
     box.append(b);
     return;
   }
+  if(!c){ box.append(t); box.append(blocPrendreCarte()); return; }
   t.append(el('span','mini', c.nom + ' · ' + Math.round(c.x1 - c.x0) + ' × ' + Math.round(c.y1 - c.y0) + ' pas'));
   t.append(el('span','espace'));
-  const pl = el('button','btn ghost xs', CT.plein ? 'Réduire' : 'En grand'); pl.type = 'button'; pl.id = 'ctPlein';
-  pl.onclick = () => { CT.plein = !CT.plein; dessinerCarte(true); };
   const rz = el('button','btn ghost xs','Tout voir'); rz.type = 'button'; rz.id = 'ctFit';
   rz.onclick = () => { CT.k = 1; CT.x = 0; CT.y = 0; dessinerCarte(true); };
-  const x = el('button','ax','×'); x.type = 'button'; x.id = 'ctRetirer';
-  x.setAttribute('aria-label', 'Retirer la carte de la séance');
-  x.onclick = () => retirerCarte();
-  t.append(rz, pl, x);
+  t.append(rz);
+  if(dehors){
+    const rm = el('button','btn ghost xs','Ramener dans la table'); rm.type = 'button'; rm.id = 'ctRamener2';
+    rm.onclick = () => ramenerCarte();
+    t.append(rm);
+  } else {
+    const pl = el('button','btn ghost xs', CT.plein ? 'Réduire' : 'En grand'); pl.type = 'button'; pl.id = 'ctPlein';
+    pl.onclick = () => { CT.plein = !CT.plein; dessinerCarte(true); };
+    const so = el('button','btn ghost xs','Autre fenêtre'); so.type = 'button'; so.id = 'ctSortir';
+    so.setAttribute('aria-label', 'Sortir la carte dans une fenêtre à part, pour un second écran');
+    so.onclick = () => sortirCarte();
+    const x = el('button','ax','×'); x.type = 'button'; x.id = 'ctRetirer';
+    x.setAttribute('aria-label', 'Retirer la carte de la séance');
+    x.onclick = () => retirerCarte();
+    t.append(pl, so, x);
+  }
   box.append(t);
 
   const zone = el('div','ctzone');
@@ -7115,6 +7152,142 @@ function dessinerCarteVrai(box, force){
   brancherCarte(svg, zone);
   box.append(listeJetons());
   box.append(el('p','mini ctaide', 'Un pas vaut un mètre. Glisse un jeton pour le déplacer : le cercle plein montre ce qui lui reste à marcher ce round, le cercle en pointillé sa portée. La molette zoome, un glissement dans le vide déplace la carte. Les pas repartent de zéro à chaque nouveau round.'));
+}
+/* ---------- aller chercher une carte, quand il n'y en a pas ----------
+   Elle ne se fabrique pas ici : on ouvre un plan dans le Registre des Plans et on clique « Vers la table ».
+   Le pavé le dit, et mène droit au plan, sans quoi personne ne devine d'où vient une carte. */
+function blocPrendreCarte(){
+  const w = el('div');
+  w.append(el('p','mini', 'Pas de carte pour ce combat. Elle vient du Registre des Plans : ouvre un plan, puis « Vers la table », en haut à côté d’Exporter. Un étage de bâtiment part en entier ; d’un village, c’est ce que tu vois à l’écran qui part.'));
+  const pl = typeof lxPlans === 'function' ? lxPlans() : {b:{}, v:{}};
+  const liste = [];
+  [['b', 'Bâtiment'], ['v', 'Village']].forEach(([k, mot]) => {
+    Object.keys(pl[k] || {}).forEach(id => liste.push({k:k, id:id, nom:pl[k][id].nom, mot:mot}));
+  });
+  liste.sort((a, b) => a.nom.localeCompare(b.nom, 'fr'));
+  const g = el('div','tajout');
+  if(liste.length){
+    const s = el('select'); s.id = 'ctPlan'; s.setAttribute('aria-label', 'Quel plan ouvrir');
+    [['b', 'Les bâtiments'], ['v', 'Les villages']].forEach(([k, lab]) => {
+      const l = liste.filter(x => x.k === k);
+      if(!l.length) return;
+      const og = el('optgroup'); og.label = lab;
+      l.forEach(x => og.append(new Option(x.nom, x.k + ':' + x.id)));
+      s.append(og);
+    });
+    if(CT.plan && liste.some(x => x.k + ':' + x.id === CT.plan)) s.value = CT.plan;
+    else CT.plan = s.value;
+    s.onchange = () => { CT.plan = s.value; };
+    s.style.flex = '1 1 160px';
+    g.append(s);
+  }
+  const b = el('button','btn sm', CT.attente ? 'On va la chercher…' : liste.length ? 'Prendre cette carte' : 'Ouvrir le Registre des Plans');
+  b.type = 'button'; b.id = 'ctPrendre'; b.disabled = !!CT.attente;
+  b.onclick = () => {
+    if(!liste.length || !CT.plan){
+      const q = 'plans.html';
+      if(typeof ouvrirPage === 'function') ouvrirPage(q, typeof ONGLET_PLANS === 'string' ? ONGLET_PLANS : 'faelorenn-plans');
+      else window.open(q, '_blank');
+      return;
+    }
+    prendreCarte(CT.plan + (CT.plan.charAt(0) === 'b' ? ':' + (CT.etage || 0) : ''));
+  };
+  g.append(b);
+  w.append(g);
+  /* quel étage, pour un bâtiment : le Registre des Plans n'en envoie qu'un à la fois */
+  if(liste.length && CT.plan && CT.plan.charAt(0) === 'b'){
+    const e2 = el('div','tajout');
+    e2.append(el('span','mini', 'Étage'));
+    const n = el('input'); n.type = 'number'; n.min = '0'; n.max = '9'; n.id = 'ctEtage'; n.style.width = '70px';
+    n.value = String(CT.etage || 0);
+    n.setAttribute('aria-label', 'Quel étage du bâtiment');
+    n.oninput = () => { CT.etage = Math.max(0, Math.min(9, parseInt(n.value, 10) || 0)); };
+    e2.append(n, el('span','mini', '0 pour le rez-de-chaussée'));
+    w.append(e2);
+  }
+  /* ouvrir le plan soi-même, pour cadrer un village à la main */
+  const a = el('button','btn ghost xs', 'Ouvrir le plan dans le Registre des Plans'); a.type = 'button'; a.id = 'ctOuvrirPlans';
+  a.onclick = () => {
+    const q = liste.length && CT.plan ? 'plans.html#plan=' + encodeURIComponent(CT.plan) : 'plans.html';
+    if(typeof ouvrirPage === 'function') ouvrirPage(q, typeof ONGLET_PLANS === 'string' ? ONGLET_PLANS : 'faelorenn-plans');
+    else window.open(q, '_blank');
+  };
+  w.append(a);
+  if(!liste.length) w.append(el('p','mini', 'Aucun plan connu de ce navigateur pour l’instant. Ouvre le Registre des Plans une fois, ou relie le dépôt, et tes plans paraîtront ici.'));
+  return w;
+}
+/* ---------- aller chercher la carte soi-même ----------
+   Le Registre des Plans est le seul à savoir dessiner un plan. La table l'ouvre donc dans un cadre caché,
+   avec « #carte=b:ID:0 » : il dessine, pose la carte dans ce navigateur et répond. Personne ne quitte la table.
+   Dans ce mode, le Registre des Plans ne garde rien et n'envoie rien au dépôt. */
+function nettoyerCadre(){
+  clearTimeout(CT.minuteur); CT.minuteur = 0;
+  if(CT.cadre){ try{ CT.cadre.remove(); }catch(e){} CT.cadre = null; }
+}
+function prendreCarte(ref){
+  if(!seanceCourante()){ msgTable('Ouvre une séance d’abord.', false); return; }
+  nettoyerCadre();
+  const f = document.createElement('iframe');
+  f.setAttribute('aria-hidden', 'true'); f.tabIndex = -1; f.title = 'Registre des Plans';
+  f.style.cssText = 'position:absolute;left:-20000px;top:0;width:1200px;height:800px;border:0;opacity:0;pointer-events:none';
+  f.src = 'plans.html#carte=' + encodeURIComponent(ref);
+  CT.cadre = f; CT.attente = ref;
+  document.body.append(f);
+  CT.minuteur = setTimeout(() => {
+    if(!CT.attente) return;
+    CT.attente = null; nettoyerCadre();
+    msgTable('Le Registre des Plans n’a pas répondu. Ouvre-le toi-même, puis « Vers la table ».', false);
+    dessinerCarte(true);
+  }, 25000);
+  dessinerCarte(true);
+}
+window.addEventListener('message', ev => {
+  const d = ev.data;
+  if(!d || d.faelorenn !== 'carte' || !CT.attente) return;
+  if(!CT.cadre || ev.source !== CT.cadre.contentWindow) return;   /* seulement notre cadre */
+  CT.attente = null; nettoyerCadre();
+  if(d.ok) lireEnvoiCarte();
+  else msgTable(d.err || 'Le Registre des Plans n’a pas pu faire cette carte.', false);
+  dessinerCarte(true);
+});
+
+/* ---------- la carte sur l'autre écran ----------
+   Une fenêtre à part, qu'on pose où l'on veut. Elle n'a pas de code à elle : la table y dessine, et les
+   gestes faits dedans repassent par la table, donc par la sauvegarde partagée. */
+const carteDehors = () => !!(CT.fen && !CT.fen.closed && CT.fen.document && CT.fen.document.getElementById('seCarte'));
+function sortirCarte(){
+  if(carteDehors()){ try{ CT.fen.focus(); }catch(e){} return; }
+  let w = null;
+  try{ w = window.open('', 'faelorenn-carte', 'width=1200,height=900'); }catch(e){ w = null; }
+  if(!w){ msgTable('Le navigateur a refusé la fenêtre. Autorise les fenêtres pour ce site, puis réessaie.', false); return; }
+  const styles = [].map.call(document.querySelectorAll('style'), s => s.textContent).join('\n');
+  w.document.open();
+  w.document.write('<!doctype html><html lang="fr"><head><meta charset="utf-8">'
+    + '<meta name="viewport" content="width=device-width,initial-scale=1">'
+    + '<title>La carte · Faelorenn</title><style>' + styles
+    + '\nbody{margin:0;padding:10px;background:var(--paper)}#seCarte{margin:0;height:calc(100vh - 20px);display:flex;flex-direction:column}'
+    + '\n#seCarte .ctzone{flex:1 1 auto;display:flex;align-items:center;justify-content:center}'
+    + '\n#seCarte .ctsvg{max-height:100%;width:100%}'
+    + '</style></head><body><div id="seCarte" class="carte"></div></body></html>');
+  w.document.close();
+  CT.fen = w;
+  /* refermée d'un côté ou de l'autre, la carte revient dans la table. Le « beforeunload » d'une fenêtre
+     fille n'arrive pas toujours : on la surveille aussi, une fois par seconde. */
+  try{ w.addEventListener('beforeunload', () => { CT.fen = null; setTimeout(() => dessinerCarte(true), 60); }); }catch(e){}
+  clearInterval(CT.veille);
+  CT.veille = setInterval(() => {
+    if(CT.fen && !CT.fen.closed) return;
+    clearInterval(CT.veille); CT.veille = 0;
+    if(CT.fen){ CT.fen = null; dessinerCarte(true); }
+  }, 1000);
+  setTimeout(() => dessinerCarte(true), 60);
+  dessinerCarte(true);
+}
+function ramenerCarte(){
+  clearInterval(CT.veille); CT.veille = 0;
+  if(CT.fen && !CT.fen.closed){ try{ CT.fen.close(); }catch(e){} }
+  CT.fen = null;
+  dessinerCarte(true);
 }
 const fxn = n => Math.round(n * 1000) / 1000;
 function initialesDe(n){

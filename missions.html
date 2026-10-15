@@ -6406,7 +6406,7 @@ function viser(a){
   if(COMPO.qui.k === 'perso'){ COMPO.genre = 'fait'; if(!COMPO.quoi) COMPO.quoi = 'comp:Combat'; }
   COMPO.panneau = 'jet';
   COMPO.cible = a.id; COMPO.perte = null;
-  if(moi){ COMPO.frappeur = {k:'perso', id:moi.id}; COMPO.portee = porteeDe({k:'perso', id:moi.id, x:moi}); }
+  if(moi){ COMPO.frappeur = {k:'perso', id:moi.id}; COMPO.portee = porteeJeton({k:'perso', id:moi.id, x:moi}); }
   dessinerCompositeur(true);
   dessinerCombat(true);
   msgTable(COMPO.qui.k === 'perso' ? nomDe(COMPO.qui) + ' vise ' + a.nom + ' : lance son attaque, puis ses dégâts.' : 'Les dégâts iront à ' + a.nom + '. Choisis d’abord qui attaque.', true);
@@ -6556,8 +6556,9 @@ function attaquesDe(z){
   }
   return [];
 }
-/* la cible qu'on propose d'office : un des nôtres quand c'est l'ennemi qui frappe, un d'en face sinon */
-function cibleParDefaut(cote){
+/* la cible qu'on propose d'office quand le tour est joué tout seul : un des nôtres quand c'est l'ennemi
+   qui frappe, un d'en face sinon. Ne pas confondre avec cibleParDefaut(l), qui choisit dans la liste des cibles. */
+function cibleDOffice(cote){
   if(cote === 'eux'){
     if(MOI.perso && perso(MOI.perso)) return MOI.perso;
     const c = persos()[0]; return c ? c.id : '';
@@ -6574,7 +6575,7 @@ function preparerFrappe(nom, atk, cible, cote){
   COMPO.formule = atk.f;
   COMPO.sorte = atk.s;
   COMPO.degats = null; COMPO.perte = null;
-  COMPO.cible = cible ? cible.id : cibleParDefaut(cote);
+  COMPO.cible = cible ? cible.id : cibleDOffice(cote);
   const z = $('coTexte');
   if(z && !z.value.trim()) z.value = nom + (atk.propre ? ' : ' + atk.n : ' attaque') + (cible ? ', sur ' + cible.nom : '') + '.';
   dessinerCompositeur(true);
@@ -7095,7 +7096,7 @@ function dessinerCarteVrai(box, force){
   if(sel && sel.j){
     const reste = Math.max(0, vitesseDe(sel.z) - sel.j.d);
     if(reste > 0) g.append(svgEl('circle', {cx:fxn(sel.j.x), cy:fxn(sel.j.y), r:fxn(reste), 'class':'ctpas'}));
-    const p = porteeDe(sel.z);
+    const p = porteeJeton(sel.z);
     if(p > 0) g.append(svgEl('circle', {cx:fxn(sel.j.x), cy:fxn(sel.j.y), r:fxn(p), 'class':'ctportee'}));
   }
   jetonsDuTour().forEach(q => {
@@ -7124,8 +7125,9 @@ function initialesDe(n){
   if(m.length === 1) return m[0].slice(0, 2);
   return (m[0][0] + m[1][0]).toUpperCase();
 }
-/* sa portée la plus longue : son arme pour un personnage, son attaque propre pour les autres */
-function porteeDe(z){
+/* sa portée la plus longue, en pas : son arme pour un personnage, son attaque propre pour les autres.
+   Ne pas confondre avec porteeDe(a2) du bestiaire, qui écrit la portée d'une attaque en toutes lettres. */
+function porteeJeton(z){
   if(z.k === 'perso'){
     const l = (z.x.armes || []).map(porteeArme);
     return l.length ? Math.max.apply(null, l) : 0;

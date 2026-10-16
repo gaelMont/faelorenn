@@ -6494,20 +6494,10 @@ function frapper(a, propre){
   if(!seanceCourante()) return;
   const lui = {k:'adv', id:a.id, nom:a.nom, cote:'eux', x:a, pv:a.pv, pvMax:a.pvMax, cartes:a.cartes};
   if(!peutJouer(lui)){ msgTable(motPasSonTour(lui), false); return; }
-  choisirQui({k:'mj', id:'', nom:''});
+  const l = attaquesDe(lui), atk = (propre ? l[1] : l[0]) || l[0];
+  if(!atk){ msgTable(a.nom + ' n’a pas d’attaque.', false); return; }
   COMPO.frappeur = {k:'adv', id:a.id};
-  COMPO.portee = propre && a.a2 ? porteeTexte(a.a2.p) : 0;
-  COMPO.genre = 'narration';
-  COMPO.panneau = 'jet';
-  /* une attaque qui ne blesse pas (des renforts, un ordre) ne prépare pas de dégâts */
-  COMPO.formule = propre && a.a2 ? (/^\s*aucun dégât/i.test(a.a2.e || '') ? '' : formuleDe(a.a2.e) || a.deg) : a.deg;
-  COMPO.sorte = sorteAttaque(a, propre);
-  COMPO.degats = null; COMPO.perte = null;
-  COMPO.cible = cibleDOffice('eux');
-  const z = $('coTexte');
-  if(z && !z.value.trim()) z.value = a.nom + (propre && a.a2 ? ' : ' + a.a2.n + '.' : ' attaque.');
-  dessinerCompositeur(true);
-  const box = $('seCompo'); if(box) box.scrollIntoView({block:'center', behavior:'smooth'});
+  preparerFrappe(a.nom, atk, null, 'eux', lui);
 }
 /* on le vise : son personnage prépare son attaque, et les dégâts iront à celui-là */
 function viser(a){
@@ -6746,8 +6736,10 @@ function cibleDOffice(cote){
    Un PNJ qui a sa fiche parle en son nom, comme un personnage : ses caractéristiques sont dans le jet,
    et le paragraphe part sous son nom. Ceux d'en face, qui n'ont pas de fiche, restent au MJ. */
 function preparerFrappe(nom, atk, cible, cote, z){
-  const sien = z && z.k === 'pnj' && unPnj(z.id) ? z : null;
-  choisirQui(sien ? {k:'pnj', id:sien.id, nom:sien.nom} : {k:'mj', id:'', nom:''});
+  /* celui qui a une fiche parle avec elle ; un adversaire du bestiaire parle sous son nom, sans fiche */
+  const fiche = z && z.k === 'pnj' ? unPnj(z.id) : null;
+  const sien = z && (fiche || z.k === 'adv') ? z : null;
+  choisirQui(sien ? {k:'pnj', id:fiche ? fiche.id : '', nom:sien.nom} : {k:'mj', id:'', nom:''});
   COMPO.frappeur = z ? {k:z.k, id:z.id} : COMPO.frappeur;
   COMPO.portee = atk.propre && atk.p != null ? atk.p : (atk.propre ? null : 0);
   COMPO.genre = sien ? 'fait' : 'narration';
@@ -6756,7 +6748,7 @@ function preparerFrappe(nom, atk, cible, cote, z){
   COMPO.sorte = atk.s;
   COMPO.degats = null; COMPO.perte = null;
   /* son attaque dit sous quoi elle se lance : la table propose cette caractéristique */
-  COMPO.quoi = sien && atk.j && valCarPnj(sien.x, atk.j) != null ? 'carp:' + atk.j : '';
+  COMPO.quoi = fiche && atk.j && valCarPnj(fiche, atk.j) != null ? 'carp:' + atk.j : '';
   COMPO.cible = cible ? cible.id : cibleDOffice(cote);
   const t = $('coTexte');
   if(t && !t.value.trim()) t.value = (sien ? '' : nom + ' ') + (atk.propre ? (sien ? atk.n : ': ' + atk.n) : 'attaque')

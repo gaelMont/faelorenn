@@ -4587,6 +4587,10 @@ function choisirQui(q){
   COMPO.quoi = c ? (COMPO.quoiPar[c.id] || '') : '';
   if(c) COMPO.pvId = c.id;
   COMPO.jet = null; COMPO.perte = null;
+  /* qui frappe suit qui agit : sans cela, la carte mesurait encore la distance depuis le précédent */
+  const f = (q.k === 'perso' || q.k === 'pnj') ? unCombattant(q.k, q.id) : null;
+  COMPO.frappeur = f ? {k:q.k, id:q.id} : null;
+  COMPO.portee = null;
   /* des dégâts lancés attendent peut-être une réaction : ils gardent leur cible et leur genre */
   if(!COMPO.degats) COMPO.sorte = 'phy';
   sansAuto();
@@ -4960,6 +4964,11 @@ function panneauJet(){
         const m = pr && /(\d*d\d+(?:\s*[+\-]\s*\d+)?)/i.exec(pr.d);
         if(m) COMPO.formule = m[1].replace(/\s+/g, '');
         COMPO.sorte = pr ? sortePratique(c, pr) : 'phy';
+      }
+      /* ce qu'il tente dit aussi jusqu'où ça porte : la carte prévient quand la cible est trop loin */
+      if(s.value.indexOf('rea:') !== 0){
+        COMPO.frappeur = {k:'perso', id:c.id};
+        COMPO.portee = porteeDeQuoi(c, s.value, pr);
       }
       dessinerCompositeur(true);
     };
@@ -6765,9 +6774,10 @@ function preparerFrappe(nom, atk, cible, cote, z){
   /* son attaque dit sous quoi elle se lance : la table propose cette caractéristique */
   COMPO.quoi = fiche && atk.j && valCarPnj(fiche, atk.j) != null ? 'carp:' + atk.j : '';
   COMPO.cible = cible ? cible.id : cibleDOffice(cote);
-  const t = $('coTexte');
-  if(t && !t.value.trim()) t.value = (sien ? '' : nom + ' ') + (atk.propre ? (sien ? atk.n : ': ' + atk.n) : 'attaque')
-    + (cible ? (sien ? ' sur ' + cible.nom : ', sur ' + cible.nom) : '') + '.';
+  const t = $('coTexte'), qui = cible ? cible.nom : '';
+  if(t && !t.value.trim()) t.value = sien
+    ? (atk.propre ? atk.n + (qui ? ' sur ' + qui : '') : 'attaque' + (qui ? ' ' + qui : '')) + '.'
+    : nom + (atk.propre ? ' : ' + atk.n : ' attaque') + (qui ? ', sur ' + qui : '') + '.';
   dessinerCompositeur(true);
   if(atk.f) degatsCompo(atk.f);
   const box = $('seCompo'); if(box) box.scrollIntoView({block:'center', behavior:'smooth'});
@@ -7295,6 +7305,14 @@ function porteeTexte(t){
   return m ? +m[1] : null;
 }
 const texteDePortee = p => p === 0 ? 'au contact' : p < 0 ? 'à vue' : p + ' pas';
+/* jusqu'où porte ce qu'il tente : une Pratique le dit dans son texte (« contact », « à vue », « 10 pas »),
+   le Combat est au contact, le Tir porte à l'arme. Le reste ne dit rien, et la carte se tait. */
+function porteeDeQuoi(c, quoi, prat){
+  if(prat) return porteeTexte(prat.d);
+  if(quoi === 'comp:Combat' || quoi === 'car:Force') return 0;
+  if(quoi === 'comp:Tir') return c ? porteeJeton({k:'perso', id:c.id, x:c}) : null;
+  return null;
+}
 
 /* ---------- la distance entre deux combattants ---------- */
 function positionDe(z){ const j = lesJetons()[cleJeton(z)]; return j ? [j.x, j.y] : null; }

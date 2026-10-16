@@ -1868,18 +1868,64 @@ const TYPES_LIEN = [
   {k:'ennemi', l:'Hostilité', mutuel:true, ex:'veut sa peau'},
   {k:'autre', l:'Autre', mutuel:false, ex:'connaît'}
 ];
-/* ce qu'il faut pour le faire se battre : son rang, sa réduction, ses dés, ses cartes, son attaque.
-   « dans » et « seance » disent s'il est dans le combat qu'on joue en ce moment */
+/* une attaque de PNJ : la sienne, ou celle de base de son espèce. « j » : la caractéristique qui la lance */
+function normAtqPnj(a){
+  if(!a || typeof a !== 'object' || !txtOu(a.n)) return null;
+  return {n:txtOu(a.n).slice(0, 60), t:a.t === 'mag' ? 'mag' : 'phy', p:txtOu(a.p).slice(0, 40),
+    e:txtOu(a.e).slice(0, 300), el:txtOu(a.el), ty:txtOu(a.ty).slice(0, 40),
+    j:CARS.indexOf(a.j) >= 0 ? a.j : ''};
+}
+/* ses sept caractéristiques, d'office selon son rang : du corps, peu de tête, comme les monstres d'ailleurs.
+   La table en tire ses valeurs comme pour un personnage : la caractéristique fois deux, plus le bonus du rang. */
+const CAR_PNJ = {
+  1:{'Force':6, 'Dextérité':8, 'Constitution':6, 'Intelligence':4, 'Sagesse':6, 'Charisme':5, 'Contenance':5},
+  2:{'Force':9, 'Dextérité':9, 'Constitution':9, 'Intelligence':6, 'Sagesse':8, 'Charisme':7, 'Contenance':7},
+  3:{'Force':12, 'Dextérité':11, 'Constitution':11, 'Intelligence':8, 'Sagesse':10, 'Charisme':9, 'Contenance':9},
+  4:{'Force':14, 'Dextérité':12, 'Constitution':13, 'Intelligence':10, 'Sagesse':11, 'Charisme':10, 'Contenance':11},
+  5:{'Force':17, 'Dextérité':14, 'Constitution':16, 'Intelligence':13, 'Sagesse':13, 'Charisme':12, 'Contenance':14}
+};
+const BONUS_PNJ = {1:10, 2:20, 3:30, 4:40, 5:50};
+/* le genre de combattant qu'il est : il décide de son autre attaque. « De son espèce » prend une vraie
+   Pratique de la liste de son peuple, plus forte que celle donnée d'office ; les autres genres tirent dans
+   les attaques de ce genre, pour un peuple qui n'ouvre aucune liste, les Humains, ou pour un soldat
+   qui se bat à l'arme plutôt qu'à la Pratique. */
+const TYPES_PNJ = [
+  {k:'espece', l:'De son espèce, une Pratique de sa liste'},
+  {k:'guerrier', l:'Combattant, au contact'},
+  {k:'brute', l:'Brute, elle renverse'},
+  {k:'archer', l:'Tireur, à distance'},
+  {k:'roublard', l:'Roublard, en traître'},
+  {k:'praticien', l:'Praticien, une Pratique apprise ailleurs'},
+  {k:'meneur', l:'Meneur, il commande'},
+  {k:'soutien', l:'Soutien, il tient les autres debout'}
+];
+const carsPnjDeRang = r => Object.assign({}, CAR_PNJ[r] || CAR_PNJ[2]);
+function normCarPnj(o, rang){
+  const base = CAR_PNJ[rang] || CAR_PNJ[2], out = {};
+  CARS.forEach(x => {
+    const v = o ? o[x] : null;
+    out[x] = (v == null || v === '' || isNaN(+v)) ? base[x] : Math.max(1, Math.min(40, Math.round(+v)));
+  });
+  return out;
+}
+/* la valeur d'une de ses caractéristiques, sur cent : fois deux, plus le bonus de son rang */
+function valCarPnj(p, x){
+  const c = p && p.combat;
+  if(!c || !c.car || c.car[x] == null) return null;
+  return c.car[x] * 2 + (c.bonus || 0);
+}
+/* ce qu'il faut pour le faire se battre : son rang, sa réduction, ses dés, ses cartes, ses caractéristiques,
+   l'attaque de base de son espèce et la sienne. « dans » et « seance » disent s'il est dans le combat du moment */
 function normCombatPnj(c){
   if(!c || typeof c !== 'object') return null;
   const n = (v, max, def) => (v == null || v === '' || isNaN(+v)) ? def : Math.max(0, Math.min(max, Math.round(+v)));
-  const a2 = c.a2 && typeof c.a2 === 'object' && txtOu(c.a2.n) ? {n:txtOu(c.a2.n).slice(0, 60),
-    t:c.a2.t === 'mag' ? 'mag' : 'phy', p:txtOu(c.a2.p).slice(0, 40), e:txtOu(c.a2.e).slice(0, 300),
-    el:txtOu(c.a2.el), ty:txtOu(c.a2.ty).slice(0, 40)} : null;
-  return {cote:c.cote === 'eux' ? 'eux' : 'nous', rang:Math.min(5, Math.max(1, n(c.rang, 5, 2) || 2)),
+  const rang = Math.min(5, Math.max(1, n(c.rang, 5, 2) || 2));
+  return {cote:c.cote === 'eux' ? 'eux' : 'nous', rang:rang,
     red:n(c.red, 10, 0), deg:txtOu(c.deg).slice(0, 20), cartes:Math.min(3, Math.max(1, n(c.cartes, 3, 1) || 1)),
     vit:(c.vit == null || c.vit === '' || isNaN(+c.vit)) ? null : Math.max(0, Math.min(200, Math.round(+c.vit))),
-    a2:a2, seance:txtOu(c.seance), dans:!!c.dans};
+    car:normCarPnj(c.car, rang), bonus:n(c.bonus, 100, BONUS_PNJ[rang] || 20),
+    type:TYPES_PNJ.some(x => x.k === c.type) ? c.type : 'espece',
+    a1:normAtqPnj(c.a1), a1non:!!c.a1non, a2:normAtqPnj(c.a2), seance:txtOu(c.seance), dans:!!c.dans};
 }
 function normPnj(o){
   o = o && typeof o === 'object' ? o : {};
@@ -4107,6 +4153,8 @@ function majCoutAchat(c){
    Un jet, des dégâts ou des PV se joignent au paragraphe et s'écrivent entre
    parenthèses, comme « (jet de tir raté) » dans les comptes rendus d'avant. */
 
+/* « personne » : une attaque qu'on lance sans cible. Aucun identifiant ne prend cette forme. */
+const SANS_CIBLE = '-aucune-';
 const COMPO = {pret:false, qui:{k:'mj', id:'', nom:''}, genre:'narration', panneau:'',
   jet:null, degats:null, vies:[], quoi:'', quoiPar:{}, mod:'0', libreQuoi:'', libreVal:'',
   pvId:'', pvQuoi:'pv', pvN:1, formule:'', cible:'', sorte:'phy', perte:null,
@@ -4531,6 +4579,11 @@ function seuilCompo(){
       if(o.val == null) return {sans:true, quoi:nettoieOption(o.l), prat:prat};
       val = o.val; quoi = nettoieOption(o.l);
     }
+  } else if(COMPO.quoi.indexOf('carp:') === 0 && pnjCompo()){
+    /* un PNJ qui se bat a ses sept caractéristiques : la table lance pour lui comme pour un personnage */
+    const x = COMPO.quoi.slice(5), v = valCarPnj(pnjCompo(), x);
+    if(v == null) return null;
+    val = v; quoi = x;
   } else if(COMPO.quoi.indexOf('val:') === 0 && pnjCompo()){
     const v = pnjCompo().valeurs.find(x => 'val:' + x.n === COMPO.quoi);
     if(!v) return null;
@@ -4679,8 +4732,10 @@ function cibleParDefaut(l){
   const pj = l.find(x => x.id === MOI.perso) || l.find(x => x.grp === 'Les personnages');
   return (pj || l[0]).id;
 }
+/* la cible retenue : celle qu'on a choisie, « personne » quand on l'a dit, sinon celle qu'on propose */
 function cibleActuelle(l){
-  if(!l.length) return '';
+  if(COMPO.cible === SANS_CIBLE) return SANS_CIBLE;
+  if(!l.length) return SANS_CIBLE;
   return l.some(x => x.id === COMPO.cible) ? COMPO.cible : cibleParDefaut(l);
 }
 function calculPerte(){
@@ -4698,7 +4753,8 @@ function calculPerte(){
   return {cible:cible, perte:perte, calcul:bouts.join(', ') + ' : ' + perte + ' PV'};
 }
 function appliquerDegats(n){
-  const k = calculPerte(); if(!k) return;
+  const k = calculPerte();
+  if(!k){ msgTable(COMPO.degats ? 'Choisis une cible : sans elle, les dégâts ne vont nulle part.' : 'Lance d’abord les dégâts.', false); return; }
   const perte = Math.max(0, parseInt(n, 10));
   if(isNaN(perte)){ msgTable('Écris combien de PV il perd.', false); return; }
   COMPO.perte = null;
@@ -4864,16 +4920,27 @@ function panneauJet(){
     champ(g, 'Ce qu’il tente', s);
   } else {
     const fp = pnjCompo();
-    if(fp && fp.valeurs.length){
+    const sesCars = !!(fp && fp.combat && fp.combat.car);
+    if(fp && (fp.valeurs.length || sesCars)){
       const s = el('select'); s.id = 'coQuoi';
       s.add(new Option('Une valeur à donner…', ''));
-      fp.valeurs.forEach(v => s.add(new Option(v.n + ' · ' + v.v, 'val:' + v.n)));
+      if(sesCars){
+        const og = el('optgroup');
+        og.label = 'Ses caractéristiques, fois deux' + (fp.combat.bonus ? ' plus ' + fp.combat.bonus : '');
+        CARS.forEach(x => og.append(new Option(ABBR[x] + ' ' + fp.combat.car[x] + ' · ' + valCarPnj(fp, x), 'carp:' + x)));
+        s.append(og);
+      }
+      if(fp.valeurs.length){
+        const og = el('optgroup'); og.label = 'Ce que sa fiche écrit';
+        fp.valeurs.forEach(v => og.append(new Option(v.n + ' · ' + v.v, 'val:' + v.n)));
+        s.append(og);
+      }
       s.value = COMPO.quoi;
       if(s.value !== COMPO.quoi){ COMPO.quoi = ''; s.value = ''; }
       s.onchange = () => { COMPO.quoi = s.value; COMPO.jet = null; dessinerCompositeur(true); };
       champ(g, 'Ce qu’il tente, d’après sa fiche', s);
     }
-    if(!(fp && COMPO.quoi.indexOf('val:') === 0)){
+    if(!(fp && /^(?:val|carp):/.test(COMPO.quoi))){
       const q = el('input'); q.type = 'text'; q.id = 'coLibreQuoi'; q.value = COMPO.libreQuoi; q.placeholder = 'Perception du chien';
       q.oninput = () => { COMPO.libreQuoi = q.value; };
       champ(g, 'Ce qu’on tente', q);
@@ -4970,6 +5037,8 @@ function panneauAppliquer(){
   const actuelle = cibleActuelle(l);
   const g = el('div','jetform');
   const sc = el('select'); sc.id = 'coCible';
+  /* une attaque peut partir sans cible : une Pratique de zone, un coup dans le vide, un ordre crié */
+  sc.add(new Option('personne (pas de cible)', SANS_CIBLE));
   const grps = {};
   l.forEach(x => {
     let og = grps[x.grp];
@@ -4993,10 +5062,12 @@ function panneauAppliquer(){
   z.append(g);
   const a = el('div','acts'); a.style.marginTop = '8px';
   const ap = el('button','btn sm','Appliquer'); ap.type = 'button'; ap.id = 'coAppliquer';
+  ap.disabled = !k;
+  if(!k) ap.title = 'Choisis une cible d’abord.';
   ap.onclick = () => { if(maintenant() - (COMPO.appliqueA || 0) < 900) return; COMPO.appliqueA = maintenant(); appliquerDegats(n.value); };
   n.onkeydown = ev => { if(ev.key === 'Enter'){ ev.preventDefault(); ap.click(); } };
   a.append(ap);
-  const mots = [k ? k.calcul + '.' : ''];
+  const mots = [k ? k.calcul + '.' : 'Pas de cible : les dégâts ne vont nulle part. Choisis à qui, au-dessus.'];
   const j = COMPO.jet;
   if(j && j.rea && k && k.cible.id === COMPO.qui.id && (j.reussite || (!j.echecCrit && j.marge < 4))) mots.push('Sa réaction l’a protégé : aucun dégât.');
   else if(j && !j.rea && !j.sans && !j.reussite) mots.push('Le jet a raté : d’habitude, rien ne passe.');
@@ -6381,6 +6452,8 @@ function sorteAttaque(a, propre){
 /* un adversaire frappe : il touche d'office. Le compositeur se prépare pour le MJ, avec les dés de l'attaque */
 function frapper(a, propre){
   if(!seanceCourante()) return;
+  const lui = {k:'adv', id:a.id, nom:a.nom, cote:'eux', x:a, pv:a.pv, pvMax:a.pvMax, cartes:a.cartes};
+  if(!peutJouer(lui)){ msgTable(motPasSonTour(lui), false); return; }
   choisirQui({k:'mj', id:'', nom:''});
   COMPO.frappeur = {k:'adv', id:a.id};
   COMPO.portee = propre && a.a2 ? porteeTexte(a.a2.p) : 0;
@@ -6390,7 +6463,7 @@ function frapper(a, propre){
   COMPO.formule = propre && a.a2 ? (/^\s*aucun dégât/i.test(a.a2.e || '') ? '' : formuleDe(a.a2.e) || a.deg) : a.deg;
   COMPO.sorte = sorteAttaque(a, propre);
   COMPO.degats = null; COMPO.perte = null;
-  COMPO.cible = MOI.perso && perso(MOI.perso) ? MOI.perso : (persos()[0] || {}).id || '';
+  COMPO.cible = cibleDOffice('eux');
   const z = $('coTexte');
   if(z && !z.value.trim()) z.value = a.nom + (propre && a.a2 ? ' : ' + a.a2.n + '.' : ' attaque.');
   dessinerCompositeur(true);
@@ -6399,6 +6472,7 @@ function frapper(a, propre){
 /* on le vise : son personnage prépare son attaque, et les dégâts iront à celui-là */
 function viser(a){
   if(!seanceCourante()) return;
+  if(!peutViser()){ msgTable(motPasSonTour(monCombattant()), false); return; }
   const moi = MOI.perso && perso(MOI.perso);
   if(moi && !(COMPO.qui.k === 'perso' && COMPO.qui.id === moi.id)) choisirQui({k:'perso', id:moi.id, nom:moi.nom});
   if(COMPO.qui.k === 'perso'){ COMPO.genre = 'fait'; if(!COMPO.quoi) COMPO.quoi = 'comp:Combat'; }
@@ -6527,29 +6601,81 @@ function echangerCarte(i){
   poserInit({r:p.r, c:c});
 }
 
+/* ---------- le verrou du tour ----------
+   Tant qu'aucune carte n'est tirée, personne n'est tenu : hors combat, chacun se déplace et frappe quand il veut.
+   Dès que les cartes sont là, seul celui de la plus petite carte non jouée bouge son jeton et attaque. */
+function actifCombattant(){
+  const p = priorites(); if(!p) return null;
+  const i = aQuiLeTour(); if(i < 0) return null;
+  return unCombattant(p.c[i].k, p.c[i].id);
+}
+const estActif = z => { const a = actifCombattant(); return !!(a && z && a.k === z.k && a.id === z.id); };
+/* a-t-il une carte dans ce round ? Celui qui arrive au milieu d'un round n'en a pas : il n'est pas tenu par
+   le tour de table, et il reçoit sa carte au tirage suivant. */
+function dansLeTirage(z){
+  const p = priorites();
+  return !!p && !!z && p.c.some(x => x.k === z.k && x.id === z.id);
+}
+/* son droit d'agir : aucune carte tirée, pas de carte à lui ce round, ou c'est son tour */
+const peutJouer = z => !dansLeTirage(z) || estActif(z);
+/* le personnage que suit le joueur : c'est lui qui vise */
+function monCombattant(){
+  const c = MOI.perso && perso(MOI.perso);
+  return c ? unCombattant('perso', c.id) : null;
+}
+/* viser, c'est attaquer : le joueur ne vise que pendant le tour de son personnage. Qui n'en suit aucun,
+   le MJ en général, vise quand il veut : il frappe pour ceux d'en face, chacun à son tour. */
+const peutViser = () => { const z = monCombattant(); return !z || peutJouer(z); };
+function motPasSonTour(z){
+  const a = actifCombattant();
+  return 'Ce n’est pas le tour de ' + (z && z.nom ? z.nom : 'ce combattant') + (a ? ' : c’est à ' + a.nom + '.' : '.');
+}
+/* passer au tour du suivant, et revenir en arrière quand on a passé trop vite */
+function auSuivant(){
+  const p = priorites(); if(!p){ msgTable('Tire d’abord les priorités.', false); return; }
+  const i = aQuiLeTour();
+  if(i < 0){ msgTable('Tout le monde a joué ce round : « Round suivant » tire de nouvelles cartes.', false); return; }
+  marquerJoue(i, true);
+  const z = actifCombattant();
+  msgTable(z ? 'À ' + z.nom + '.' : 'Tout le monde a joué ce round : « Round suivant » tire de nouvelles cartes.', true);
+}
+function revenirAuTour(){
+  const p = priorites(); if(!p) return;
+  const i = aQuiLeTour(), j = i < 0 ? p.c.length - 1 : i - 1;
+  if(j < 0){ msgTable('Personne n’a encore joué ce round.', false); return; }
+  marquerJoue(j, false);
+  const z = unCombattant(p.c[j].k, p.c[j].id);
+  msgTable('On revient' + (z ? ' à ' + z.nom : ' en arrière') + '.', true);
+}
+
 /* ---------- un ennemi joue son tour tout seul ----------
    Il choisit son attaque, tire sa cible au hasard dans le camp d'en face et lance ses dégâts. Il s'arrête là :
    l'ennemi touche d'office, mais la cible lance encore sa réaction, puis applique les dégâts, ou met zéro. */
 const auHasard = l => l.length ? l[Math.floor(Math.random() * l.length)] : null;
 const aucunDegat = e => /^\s*aucun d[ée]g[âa]t/i.test(e || '');
-/* le genre de dégâts de l'attaque propre d'un PNJ : son élément, sinon ce que disent son nom et son effet */
-function sortePnj(c){
-  if(!c || !c.a2 || c.a2.t !== 'mag') return 'phy';
-  const d = DOMAINES.find(x => x.k === c.a2.el);
+/* le genre de dégâts d'une attaque de PNJ : son élément, sinon ce que disent son nom et son effet */
+function sortePnjA(a){
+  if(!a || a.t !== 'mag') return 'phy';
+  const d = DOMAINES.find(x => x.k === a.el);
   if(d) return d.sorte;
-  const m = MOTS_ELEMENT.find(x => x[0].test([c.a2.n, c.a2.e, c.a2.p].join(' ')));
+  const m = MOTS_ELEMENT.find(x => x[0].test([a.n, a.e, a.p].join(' ')));
   return m ? m[1] : 'nrj';
 }
-/* ses deux attaques : celle de son rang, et la sienne. Une seule par round */
+const sortePnj = c => sortePnjA(c && c.a2);
+/* une attaque de sa fiche, prête pour le compositeur */
+const atqDeFiche = (a, deg, s) => ({n:a.n, f:aucunDegat(a.e) ? '' : (formuleDe(a.e) || deg), s:s,
+  propre:true, e:a.e, p:porteeTexte(a.p), j:a.j || '', src:a});
+/* ses attaques : celle de son rang, celle de son espèce, et la sienne. Une seule par round */
 function attaquesDe(z){
   if(z.k === 'adv'){
     const a = z.x, l = [{n:'Attaque de rang', f:a.deg, s:'phy', propre:false}];
-    if(a.a2) l.push({n:a.a2.n, f:aucunDegat(a.a2.e) ? '' : (formuleDe(a.a2.e) || a.deg), s:sorteAttaque(a, true), propre:true, e:a.a2.e, p:porteeTexte(a.a2.p)});
+    if(a.a2) l.push(atqDeFiche(a.a2, a.deg, sorteAttaque(a, true)));
     return l;
   }
   if(z.k === 'pnj' && z.x.combat){
     const c = z.x.combat, l = [{n:'Attaque de rang', f:c.deg, s:'phy', propre:false}];
-    if(c.a2) l.push({n:c.a2.n, f:aucunDegat(c.a2.e) ? '' : (formuleDe(c.a2.e) || c.deg), s:sortePnj(c), propre:true, e:c.a2.e, p:porteeTexte(c.a2.p)});
+    if(c.a1) l.push(atqDeFiche(c.a1, c.deg, sortePnjA(c.a1)));
+    if(c.a2) l.push(atqDeFiche(c.a2, c.deg, sortePnjA(c.a2)));
     return l;
   }
   return [];
@@ -6559,10 +6685,10 @@ function attaquesDe(z){
 function cibleDOffice(cote){
   if(cote === 'eux'){
     if(MOI.perso && perso(MOI.perso)) return MOI.perso;
-    const c = persos()[0]; return c ? c.id : '';
+    const c = persos()[0]; return c ? c.id : SANS_CIBLE;
   }
   const z = ceuxQuiSeBattent().filter(y => y.cote === 'eux' && DEBOUT(y))[0];
-  return z ? z.id : '';
+  return z ? z.id : SANS_CIBLE;
 }
 /* le compositeur, prêt : qui frappe, avec quoi, sur qui, et les dés déjà lancés */
 function preparerFrappe(nom, atk, cible, cote){
@@ -6580,8 +6706,15 @@ function preparerFrappe(nom, atk, cible, cote){
   if(atk.f) degatsCompo(atk.f);
   const box = $('seCompo'); if(box) box.scrollIntoView({block:'center', behavior:'smooth'});
 }
+/* il frappe, à la main, avec l'attaque qu'on a choisie pour lui : seulement pendant son tour */
+function frapperPour(z, atk){
+  if(!peutJouer(z)){ msgTable(motPasSonTour(z), false); return; }
+  COMPO.frappeur = {k:z.k, id:z.id};
+  preparerFrappe(z.nom, atk, null, z.cote);
+}
 function jouerSonTour(z, i){
   if(!seanceCourante()){ msgTable('Ouvre une séance d’abord.', false); return; }
+  if(!peutJouer(z)){ msgTable(motPasSonTour(z), false); return; }
   COMPO.frappeur = {k:z.k, id:z.id};
   const atks = attaquesDe(z);
   if(!atks.length){ msgTable(z.nom + ' n’a pas d’attaque : écris-lui-en une dans sa fiche.', false); return; }
@@ -6589,7 +6722,7 @@ function jouerSonTour(z, i){
   const cible = auHasard(ceuxQuiSeBattent().filter(y => y.cote !== z.cote && DEBOUT(y)));
   preparerFrappe(z.nom, atk, cible, z.cote);
   if(i != null && i >= 0) marquerJoue(i, true);
-  msgTable(z.nom + ' joue : ' + atk.n + (cible ? ', sur ' + cible.nom : ', personne en face') + '.'
+  msgTable(z.nom + ' joue : ' + atk.n + (cible ? ', sur ' + cible.nom : ', personne en face : choisis une cible') + '.'
     + (atk.f ? ' Les dés sont lancés : à la cible de réagir.' : ' Pas de dégâts.'), true);
 }
 
@@ -6603,7 +6736,7 @@ function blocPriorites(){
   t.append(el('span','espace'));
   if(p){
     const g = el('div','prbtns');
-    const s = el('button','btn ghost xs','Suivant'); s.type = 'button'; s.id = 'prSuivant';
+    const s = el('button','btn ghost xs','Round suivant'); s.type = 'button'; s.id = 'prSuivant';
     s.setAttribute('aria-label', 'Tirer les cartes du round suivant');
     s.onclick = () => tirerPriorites(true);
     const x = el('button','ax','×'); x.type = 'button'; x.id = 'prFermer';
@@ -6623,6 +6756,23 @@ function blocPriorites(){
     return w;
   }
   const tour = aQuiLeTour();
+  /* à qui le tour, et de quoi avancer ou revenir : rien ne bouge ni ne frappe hors de son tour */
+  const z0 = actifCombattant();
+  const lig = el('div','prtour');
+  lig.append(el('p','prqui', tour < 0 ? 'Tout le monde a joué ce round.'
+    : z0 ? 'À ' + z0.nom + (z0.cote === 'nous' ? ', de notre côté.' : ', en face.')
+    : 'La carte ' + p.c[tour].n + ' est à quelqu’un qui a quitté le combat : passe au suivant.'));
+  lig.append(el('span','espace'));
+  const su = el('button','btn sm','Au suivant'); su.type = 'button'; su.id = 'prAuSuivant';
+  su.disabled = tour < 0;
+  su.setAttribute('aria-label', 'Passer au tour du combattant suivant');
+  su.onclick = () => auSuivant();
+  const re = el('button','btn ghost xs','Revenir'); re.type = 'button'; re.id = 'prRevenir';
+  re.disabled = !p.c.some(x => x.a);
+  re.setAttribute('aria-label', 'Revenir au tour précédent');
+  re.onclick = () => revenirAuTour();
+  lig.append(su, re);
+  w.append(lig);
   const u = el('ul','prliste');
   p.c.forEach((carte, i) => {
     const z = unCombattant(carte.k, carte.id);
@@ -6635,7 +6785,9 @@ function blocPriorites(){
     li.append(el('span','espace'));
     if(z && DEBOUT(z) && z.cote === 'eux' && !carte.a){
       const j = el('button','btn ghost xs','Son tour'); j.type = 'button';
-      j.setAttribute('aria-label', 'Jouer le tour de ' + z.nom + ' : son attaque, sa cible et ses dégâts');
+      j.disabled = i !== tour;
+      j.setAttribute('aria-label', i === tour ? 'Jouer le tour de ' + z.nom + ' : son attaque, sa cible et ses dégâts' : motPasSonTour(z));
+      if(i !== tour) j.title = motPasSonTour(z);
       j.onclick = () => jouerSonTour(z, i);
       li.append(j);
     }
@@ -6652,8 +6804,9 @@ function blocPriorites(){
     u.append(li);
   });
   w.append(u);
-  if(tour < 0) w.append(el('p','mini', 'Tout le monde a joué. « Round suivant » retire les cartes et en tire de nouvelles.'));
+  if(tour < 0) w.append(el('p','mini', 'Tout le monde a joué. « Round suivant » retire les cartes, en tire de nouvelles et rend à chacun tous ses pas.'));
   else if(ECHANGE != null) w.append(el('p','mini', 'Clique la seconde carte pour l’échanger, ou la même pour annuler.'));
+  else w.append(el('p','mini', 'Hors de son tour, un jeton ne se déplace pas et personne ne frappe. « Au suivant » fait tourner, « Revenir » défait.'));
   return w;
 }
 
@@ -6662,74 +6815,160 @@ function blocPriorites(){
    et son attaque propre se tire dans une liste, puis se réécrit. */
 const ATQ_PNJ = {
   nous: [
-    {n:'Couvrir', ty:'Spécial', t:'phy', p:'contact', e:'aucun dégât, il prend pour un allié la prochaine attaque qui le vise'},
-    {n:'Panser', ty:'Spécial', t:'phy', p:'contact', e:'aucun dégât, un allié récupère 1d6 PV'},
-    {n:'Tir d’appui', ty:'Distance', t:'phy', p:'20 pas', e:'le dé du rang, depuis l’arrière'},
-    {n:'Tenir la porte', ty:'Corps à corps (Contondant)', t:'phy', p:'contact', e:'le dé du rang, et personne ne passe derrière lui ce round'},
-    {n:'Crier l’ouverture', ty:'Spécial', t:'phy', p:'aucune', e:'aucun dégât, un allié a +4 à son prochain jet'},
-    {n:'Relever', ty:'Spécial', t:'phy', p:'contact', e:'aucun dégât, un allié à terre revient à 1 PV'},
-    {n:'Coup d’estoc', ty:'Corps à corps (Perforant)', t:'phy', p:'contact', e:'le dé du rang, et la cible recule de 5 pas'},
-    {n:'Lame prêtée', ty:'Spécial', t:'phy', p:'contact', e:'aucun dégât, un allié fait +1d4 aux dégâts ce round'},
-    {n:'Vieille Pratique', ty:'Magique', t:'mag', p:'10 pas', e:'le dé du rang', el:'seve'},
-    {n:'Chant qui tient debout', ty:'Spécial', t:'phy', p:'aucune', e:'aucun dégât, les alliés à 10 pas récupèrent 1 PV'},
-    {n:'Pied à terre', ty:'Corps à corps (Contondant)', t:'phy', p:'contact', e:'le dé du rang, et la cible tombe'},
-    {n:'Flèche de dégagement', ty:'Distance', t:'phy', p:'20 pas', e:'le dé du rang sur qui est au contact d’un allié'}
+    {n:'Couvrir', ty:'Spécial', t:'phy', p:'contact', g:'soutien', e:'aucun dégât, il prend pour un allié la prochaine attaque qui le vise'},
+    {n:'Panser', ty:'Spécial', t:'phy', p:'contact', g:'soutien', e:'aucun dégât, un allié récupère 1d6 PV'},
+    {n:'Relever', ty:'Spécial', t:'phy', p:'contact', g:'soutien', e:'aucun dégât, un allié à terre revient à 1 PV'},
+    {n:'Lame prêtée', ty:'Spécial', t:'phy', p:'contact', g:'soutien', e:'aucun dégât, un allié fait +1d4 aux dégâts ce round'},
+    {n:'Tir d’appui', ty:'Distance', t:'phy', p:'20 pas', g:'archer', e:'le dé du rang, depuis l’arrière'},
+    {n:'Flèche de dégagement', ty:'Distance', t:'phy', p:'20 pas', g:'archer', e:'le dé du rang sur qui est au contact d’un allié'},
+    {n:'Tenir la porte', ty:'Corps à corps (Contondant)', t:'phy', p:'contact', g:'guerrier', e:'le dé du rang, et personne ne passe derrière lui ce round'},
+    {n:'Coup d’estoc', ty:'Corps à corps (Perforant)', t:'phy', p:'contact', g:'guerrier', e:'le dé du rang, et la cible recule de 5 pas'},
+    {n:'Crier l’ouverture', ty:'Spécial', t:'phy', p:'aucune', g:'meneur', e:'aucun dégât, un allié a +4 à son prochain jet'},
+    {n:'Chant qui tient debout', ty:'Spécial', t:'phy', p:'aucune', g:'meneur', e:'aucun dégât, les alliés à 10 pas récupèrent 1 PV'},
+    {n:'Pied à terre', ty:'Corps à corps (Contondant)', t:'phy', p:'contact', g:'brute', e:'le dé du rang, et la cible tombe'},
+    {n:'Renverser', ty:'Corps à corps (Contondant)', t:'phy', p:'contact', g:'brute', e:'le dé du rang, et la cible recule de 10 pas'},
+    {n:'Croc-en-jambe', ty:'Corps à corps (Contondant)', t:'phy', p:'contact', g:'roublard', e:'aucun dégât, la cible tombe'},
+    {n:'Coup en traître', ty:'Corps à corps (Perforant)', t:'phy', p:'contact', g:'roublard', e:'le dé du rang, le double si un allié est au contact de la cible'},
+    {n:'Vieille Pratique', ty:'Magique', t:'mag', p:'10 pas', g:'praticien', e:'le dé du rang', el:'seve'},
+    {n:'Pratique de bord de route', ty:'Magique', t:'mag', p:'10 pas', g:'praticien', e:'le dé du rang, une fois tous les deux rounds', el:'seve'}
   ],
   eux: [
-    {n:'Frapper au défaut', ty:'Corps à corps (Perforant)', t:'phy', p:'contact', e:'le dé du rang, et la réduction d’armure ne compte pas'},
-    {n:'Tenir la ligne', ty:'Corps à corps (Tranchant)', t:'phy', p:'contact', e:'le dé du rang, et personne ne passe à côté de lui ce round'},
-    {n:'Sommation', ty:'Spécial', t:'phy', p:'10 pas', e:'aucun dégât, il exige ce que vous portez ; il fuit sous la moitié de ses PV'},
-    {n:'Flèche', ty:'Distance', t:'phy', p:'20 pas', e:'le dé du rang'},
-    {n:'Coup bas', ty:'Corps à corps (Tranchant)', t:'phy', p:'contact', e:'le dé du rang, puis il recule de 10 pas'},
-    {n:'Donner l’alerte', ty:'Spécial', t:'phy', p:'aucune', e:'aucun dégât, d’autres arrivent au round suivant'},
-    {n:'Charge', ty:'Corps à corps (Perforant)', t:'phy', p:'10 pas', e:'le dé du rang, et la cible tombe'},
-    {n:'Donner l’ordre', ty:'Spécial', t:'phy', p:'aucune', e:'aucun dégât, ses alliés gagnent +2 aux dégâts ce round'},
-    {n:'Pratique apprise de travers', ty:'Magique', t:'mag', p:'10 pas', e:'le dé du rang ; s’il rate, elle le touche aussi', el:'feu'},
-    {n:'Filet', ty:'Distance', t:'phy', p:'10 pas', e:'aucun dégât, la cible est prise jusqu’à un jet de FOR'},
-    {n:'Botte', ty:'Corps à corps (Perforant)', t:'phy', p:'contact', e:'le dé du rang, et il pare la prochaine attaque de la cible'},
-    {n:'Détrousser', ty:'Corps à corps (Tranchant)', t:'phy', p:'contact', e:'aucun dégât, il emporte un objet et s’enfuit'}
+    {n:'Frapper au défaut', ty:'Corps à corps (Perforant)', t:'phy', p:'contact', g:'guerrier', e:'le dé du rang, et la réduction d’armure ne compte pas'},
+    {n:'Tenir la ligne', ty:'Corps à corps (Tranchant)', t:'phy', p:'contact', g:'guerrier', e:'le dé du rang, et personne ne passe à côté de lui ce round'},
+    {n:'Botte', ty:'Corps à corps (Perforant)', t:'phy', p:'contact', g:'guerrier', e:'le dé du rang, et il pare la prochaine attaque de la cible'},
+    {n:'Charge', ty:'Corps à corps (Perforant)', t:'phy', p:'10 pas', g:'brute', e:'le dé du rang, et la cible tombe'},
+    {n:'Écraser', ty:'Corps à corps (Contondant)', t:'phy', p:'contact', g:'brute', e:'le dé du rang, et la cible lâche ce qu’elle tient'},
+    {n:'Flèche', ty:'Distance', t:'phy', p:'20 pas', g:'archer', e:'le dé du rang'},
+    {n:'Carreau d’arbalète', ty:'Distance', t:'phy', p:'40 pas', g:'archer', e:'le dé du rang, et il recharge le round suivant'},
+    {n:'Coup bas', ty:'Corps à corps (Tranchant)', t:'phy', p:'contact', g:'roublard', e:'le dé du rang, puis il recule de 10 pas'},
+    {n:'Filet', ty:'Distance', t:'phy', p:'10 pas', g:'roublard', e:'aucun dégât, la cible est prise jusqu’à un jet de FOR'},
+    {n:'Détrousser', ty:'Corps à corps (Tranchant)', t:'phy', p:'contact', g:'roublard', e:'aucun dégât, il emporte un objet et s’enfuit'},
+    {n:'Sommation', ty:'Spécial', t:'phy', p:'10 pas', g:'meneur', e:'aucun dégât, il exige ce que vous portez ; il fuit sous la moitié de ses PV'},
+    {n:'Donner l’alerte', ty:'Spécial', t:'phy', p:'aucune', g:'meneur', e:'aucun dégât, d’autres arrivent au round suivant'},
+    {n:'Donner l’ordre', ty:'Spécial', t:'phy', p:'aucune', g:'meneur', e:'aucun dégât, ses alliés gagnent +2 aux dégâts ce round'},
+    {n:'Panser les siens', ty:'Spécial', t:'phy', p:'contact', g:'soutien', e:'aucun dégât, un allié récupère 1d6 PV'},
+    {n:'Faire rempart', ty:'Spécial', t:'phy', p:'contact', g:'soutien', e:'aucun dégât, il prend pour un allié la prochaine attaque qui le vise'},
+    {n:'Pratique apprise de travers', ty:'Magique', t:'mag', p:'10 pas', g:'praticien', e:'le dé du rang ; s’il rate, elle le touche aussi', el:'feu'},
+    {n:'Pratique volée', ty:'Magique', t:'mag', p:'10 pas', g:'praticien', e:'le dé du rang, et il recule d’un pas à chaque fois', el:'feu'}
   ]
 };
-function tirerAttaquePnj(cote){
+/* ---------- une vraie Pratique de la liste de son peuple ----------
+   En plus de l'attaque donnée d'office, un peuple qui ouvre une liste donne de quoi se battre pour de bon :
+   Le dard pour la Sève, Encorner pour la Mue, La Braise Jetée pour le feu. On ne garde que celles qui
+   frappent quelqu'un, ni soin ni bonus, et seulement celles que son rang porte. */
+function pratiqueQuiFrappe(x){
+  const d = String(x && x.d || '');
+  const f = formuleDe(d);
+  if(!f) return false;
+  if(/alli[ée]|\brends? \d|tu r[ée]cup[èe]res|^\s*soin\b/i.test(d)) return false;
+  if(/^\s*(?:si |sur un critique|quand |tant que)/i.test(d)) return false;   /* un supplément, pas une attaque */
+  return !/\+\s*$/.test(d.slice(0, d.indexOf(f)));
+}
+const motPorteeDe = d => /au contact|^\s*contact/i.test(d) ? 'contact'
+  : ((/(\d+)\s*(?:pas|m[èe]tres?)/i.exec(d) || [])[0] || 'à vue');
+/* ce qu'elle fait, en court : ses dés, puis ce que le livre en dit */
+function resumePratique(d){
+  const t = String(d || '').replace(/\s+/g, ' ').trim();
+  const court = t.length > 170 ? t.slice(0, 167).replace(/[,;:·  ]+\S*$/, '') + '…' : t;
+  const f = formuleDe(t);
+  return (f && court.indexOf(f) < 0 ? f + ', ' : '') + court;
+}
+/* les Pratiques de la liste d'un peuple, celles qui frappent : la liste entière, ou seulement celles de base */
+function pratiquesDuPeuple(peuple, base){
+  const dom = domaineDe({peuple:peuple || '', domaine:'', sub:{}});
+  if(!dom) return null;
+  const g = PRATIQUES[dom] || {}, l = [];
+  Object.keys(g).forEach(br => (g[br] || []).forEach(x => { if(!!x.base === !!base) l.push(x); }));
+  return {dom:dom, cle:domaineCle(dom), l:l};
+}
+/* une Pratique en attaque de fiche */
+function atqDePratique(p, cle, base){
+  const d = DOMAINES.find(y => y.k === cle);
+  return {n:p.n, ty:'Magique', t:'mag', p:base ? 'à vue' : motPorteeDe(p.d), el:d ? d.k : '',
+    e:base ? resumeBase(p.d) : resumePratique(p.d), j:CARS.indexOf(p.j) >= 0 ? p.j : ''};
+}
+function pratiqueDEspece(peuple, rang){
+  const q = pratiquesDuPeuple(peuple, false);
+  if(!q) return null;
+  const porte = Math.max(1, rang || 2);
+  const bonnes = q.l.filter(pratiqueQuiFrappe);
+  const sien = bonnes.filter(x => x.pc == null || x.pc <= porte);
+  const p = auHasard(sien.length ? sien : bonnes);
+  return p ? atqDePratique(p, q.cle, false) : null;
+}
+/* son autre attaque : celle de son espèce, ou celle de son genre de combattant */
+function tirerAttaquePnj(cote, rang, peuple, type){
+  const t = TYPES_PNJ.some(x => x.k === type) ? type : (pratiquesDuPeuple(peuple, false) ? 'espece' : 'guerrier');
+  if(t === 'espece'){
+    const a = pratiqueDEspece(peuple, rang);
+    if(a) return a;
+  }
   const l = ATQ_PNJ[cote === 'eux' ? 'eux' : 'nous'];
-  return Object.assign({}, auHasard(l));
+  const par = l.filter(x => x.g === t);
+  const a = Object.assign({}, auHasard(par.length ? par : l));
+  /* une Pratique apprise prend l'élément de son peuple, quand son peuple en ouvre un */
+  if(a.t === 'mag'){ const q = pratiquesDuPeuple(peuple, false); if(q && q.cle) a.el = q.cle; }
+  return a;
 }
-/* un combat tout neuf, aux valeurs du rang */
-function combatNeuf(rang, cote){
+/* ---------- l'attaque de base de son espèce ----------
+   Chaque liste de Pratiques ouvre une attaque donnée d'office, celle que le livre marque « de base ».
+   Un PNJ la reçoit de son peuple, en plus de la sienne : Ortie pour un Écorcien, Saumure ou Galet pour un
+   Nyréen. Un peuple sans liste, les Humains, n'en a pas : son attaque de rang lui suffit. */
+function resumeBase(d){
+  const arm = /l[’']armure n[’']y change rien|traverse l[’']armure/i.test(d) ? 'l’armure n’y change rien'
+    : /r[ée]duction s[’']applique/i.test(d) ? 'la réduction s’applique' : '';
+  return [formuleDe(d) || '1d4', arm].filter(Boolean).join(', ');
+}
+function attaqueDeBase(peuple){
+  const q = pratiquesDuPeuple(peuple, true);
+  if(!q) return null;
+  const b = auHasard(q.l);
+  return b ? atqDePratique(b, q.cle, true) : null;
+}
+/* un combat tout neuf, aux valeurs du rang : ses PV, sa réduction, ses dés, ses cartes, ses caractéristiques,
+   l'attaque de base de son espèce et une attaque à lui */
+function combatNeuf(rang, cote, peuple, type){
   const r = RANG[rang] || RANG[2];
+  const t = TYPES_PNJ.some(x => x.k === type) ? type : (pratiquesDuPeuple(peuple, false) ? 'espece' : 'guerrier');
   return {cote:cote === 'eux' ? 'eux' : 'nous', rang:r.r, red:r.red, deg:r.deg, cartes:r.cartes,
-    a2:tirerAttaquePnj(cote), seance:'', dans:false};
+    car:carsPnjDeRang(r.r), bonus:BONUS_PNJ[r.r] || 20, type:t,
+    a1:attaqueDeBase(peuple), a1non:false, a2:tirerAttaquePnj(cote, r.r, peuple, t), seance:'', dans:false};
 }
-/* faire entrer quelqu'un dans le combat, ou l'en sortir */
+/* faire entrer quelqu'un dans le combat, ou l'en sortir. Une fiche sans section « Au combat » en reçoit une ;
+   celle qui en a déjà une garde la sienne, et reçoit l'attaque de son espèce si elle n'en avait pas encore. */
 function mettreAuCombat(id, dedans){
   const e = seanceCourante(); if(!e) return;
   changer(() => {
     const p = T.pnj[id]; if(!p || p.supprime) return;
-    const c = Object.assign({}, p.combat || combatNeuf(2, 'nous'), {dans:!!dedans, seance:dedans ? e.id : (p.combat ? p.combat.seance : '')});
+    const c = Object.assign({}, p.combat || combatNeuf(2, 'nous', p.peuple), {dans:!!dedans, seance:dedans ? e.id : (p.combat ? p.combat.seance : '')});
+    if(dedans && !c.a1 && !c.a1non) c.a1 = attaqueDeBase(p.peuple);
+    if(dedans && !c.a2) c.a2 = tirerAttaquePnj(c.cote, c.rang, p.peuple, c.type);
     const x = Object.assign({}, p, {combat:c, majCombat:maintenant()});
     if(dedans && x.pvMax == null){ x.pvMax = (RANG[c.rang] || RANG[2]).pv; baseVie(x, x.pvMax); }
     T.pnj[id] = x;
   });
 }
-/* une fiche minimale, écrite à la table : un nom, un côté, un rang, et le reste suit */
-function nouveauCombattant(nom, cote, rang){
+/* une fiche minimale, écrite à la table : un nom, un côté, un rang, un peuple, et le reste suit */
+function nouveauCombattant(nom, cote, rang, peuple, type){
   const e = seanceCourante(); if(!e){ msgTable('Ouvre une séance d’abord.', false); return null; }
   nom = String(nom || '').replace(/\s+/g, ' ').trim();
   if(!nom){ msgTable('Il lui faut un nom.', false); return null; }
   const deja = pnjParNom(nom);
   if(deja){ mettreAuCombat(deja.id, true); msgTable(deja.nom + ' a déjà une fiche : elle entre dans le combat.', true); return deja.id; }
-  const c = combatNeuf(rang, cote);
+  const c = combatNeuf(rang, cote, peuple, type);
   c.dans = true; c.seance = e.id;
   const r = RANG[c.rang] || RANG[2];
   let id = '';
   changer(() => {
-    const x = normPnj({id:idLibre('n-' + slug(nom), T.pnj), nom:nom, seance:e.id, statut:'vivant',
+    const x = normPnj({id:idLibre('n-' + slug(nom), T.pnj), nom:nom, seance:e.id, statut:'vivant', peuple:peuple || '',
       attitude:cote === 'eux' ? 'hostile' : 'amical', pvMax:r.pv, pv:r.pv, combat:c, auteur:MOI.joueur || ''});
     x.maj = maintenant(); x.majCombat = maintenant();
     baseVie(x, r.pv);
     id = x.id;
     T.pnj[id] = x;
-    noterDansSeance((cote === 'eux' ? 'Contre nous : ' : 'À nos côtés : ') + nom + ' (rang ' + r.r + ', ' + r.pv + ' PV).', 'note');
+    const atq = x.combat ? [x.combat.a1, x.combat.a2].filter(Boolean).map(a => a.n) : [];
+    noterDansSeance((cote === 'eux' ? 'Contre nous : ' : 'À nos côtés : ') + nom + ' (rang ' + r.r + ', ' + r.pv + ' PV'
+      + (atq.length ? ', ' + atq.join(' et ') : '') + ').', 'note');
   });
   return id;
 }
@@ -6747,7 +6986,10 @@ function lignePnjCombat(p){
   t.append(el('b','anom', p.nom || 'Sans nom'), el('span','arang', 'rang ' + c.rang));
   if(!bas){
     const v = el('button','btn ghost xs aviser', COMPO.cible === p.id ? 'Visé' : 'Viser'); v.type = 'button';
-    v.setAttribute('aria-label', 'Viser ' + p.nom + ' : les dégâts iront à lui');
+    v.disabled = !peutViser();
+    const moi = monCombattant();
+    v.setAttribute('aria-label', v.disabled ? motPasSonTour(moi) : 'Viser ' + p.nom + ' : les dégâts iront à lui');
+    if(v.disabled) v.title = motPasSonTour(moi);
     v.onclick = () => { COMPO.cible = p.id; COMPO.perte = null; dessinerCompositeur(true); dessinerCombat(true); };
     t.append(v);
   }
@@ -6757,7 +6999,10 @@ function lignePnjCombat(p){
   t.append(x);
   w.append(t);
   w.append(el('p','mini ainfo', 'réduction ' + c.red + (c.cartes > 1 ? ' · ' + c.cartes + ' cartes' : '')
-    + (p.role ? ' · ' + p.role : '')));
+    + (p.peuple ? ' · ' + p.peuple : '') + (p.role ? ' · ' + p.role : '')));
+  /* ses caractéristiques : la table y lance pour lui, caractéristique fois deux plus son bonus */
+  if(c.car) w.append(el('p','mini acars', CARS.map(x => ABBR[x] + ' ' + c.car[x]).join(' · ')
+    + (c.bonus ? ' · +' + c.bonus + ' aux jets' : '')));
   const b = el('div','apv');
   b.append(barrePv(pv, p.pvMax));
   b.append(el('span','apvn', bas ? 'à terre' : pv + '/' + p.pvMax + ' PV'));
@@ -6773,30 +7018,34 @@ function lignePnjCombat(p){
   b.append(cmd);
   w.append(b);
   const at = el('div','aatq');
+  const tour = peutJouer(z);
   attaquesDe(z).forEach(atk => {
     const l = el('div','aat');
     const txt = el('div','aattxt');
-    if(atk.propre && c.a2){ const ty = typeAttaque(c.a2); txt.append(el('span','aty t' + ty.cls, ty.l)); }
-    txt.append(el('b', null, atk.n), document.createTextNode(atk.propre ? (c.a2.p || c.a2.e ? ' · ' + [c.a2.p, c.a2.e].filter(Boolean).join(' · ') : '') : (atk.f ? ' · ' + atk.f : '')));
+    if(atk.src){ const ty = typeAttaque(atk.src); txt.append(el('span','aty t' + ty.cls, ty.l)); }
+    txt.append(el('b', null, atk.n), document.createTextNode(atk.src ? (atk.src.p || atk.src.e ? ' · ' + [atk.src.p, atk.src.e].filter(Boolean).join(' · ') : '') : (atk.f ? ' · ' + atk.f : '')));
     l.append(txt);
     const f = el('button','btn ghost xs','Frapper'); f.type = 'button';
-    f.setAttribute('aria-label', p.nom + ' frappe : ' + atk.n);
-    f.disabled = bas;
-    f.onclick = () => preparerFrappe(p.nom, atk, null, c.cote);
+    f.disabled = bas || !tour;
+    f.setAttribute('aria-label', !tour && !bas ? motPasSonTour(z) : p.nom + ' frappe : ' + atk.n);
+    if(!tour && !bas) f.title = motPasSonTour(z);
+    f.onclick = () => frapperPour(z, atk);
     l.append(f);
     at.append(l);
   });
   w.append(at);
   if(c.cote === 'eux' && !bas){
     const j = el('button','btn ghost xs','Son tour'); j.type = 'button'; j.style.marginTop = '6px';
-    j.setAttribute('aria-label', 'Jouer le tour de ' + p.nom);
-    j.onclick = () => jouerSonTour(z, null);
+    j.disabled = !tour;
+    j.setAttribute('aria-label', tour ? 'Jouer le tour de ' + p.nom : motPasSonTour(z));
+    if(!tour) j.title = motPasSonTour(z);
+    j.onclick = () => jouerSonTour(z, indexCarte('pnj', p.id));
     w.append(j);
   }
   return w;
 }
 /* le pavé « À nos côtés » : ceux qui se battent avec nous, et de quoi en ajouter */
-let CBT = {nom:'', cote:'nous', rang:2, ouvert:false};
+let CBT = {nom:'', cote:'nous', rang:2, peuple:'', type:'', ouvert:false};
 function blocCombattants(){
   const w = el('div','cbloc');
   const l = pnjsAuCombat();
@@ -6826,11 +7075,22 @@ function blocCombattants(){
   sr.value = String(CBT.rang);
   sr.onchange = () => { CBT.rang = +sr.value || 2; };
   g.append(sr);
+  const sp = el('select'); sp.id = 'cbtPeuple'; sp.setAttribute('aria-label', 'Son peuple');
+  sp.add(new Option('peuple inconnu', ''));
+  PEUPLES_LIVRE.forEach(x => sp.add(new Option(x, x)));
+  sp.value = CBT.peuple;
+  sp.onchange = () => { CBT.peuple = sp.value; dessinerCombat(true); };
+  g.append(sp);
+  const st = el('select'); st.id = 'cbtType'; st.setAttribute('aria-label', 'Le genre de combattant qu’il est');
+  TYPES_PNJ.forEach(x => st.add(new Option(x.l, x.k)));
+  st.value = CBT.type || (pratiquesDuPeuple(CBT.peuple, false) ? 'espece' : 'guerrier');
+  st.onchange = () => { CBT.type = st.value; };
+  g.append(st);
   const ok = el('button','btn sm','Ajouter'); ok.type = 'button'; ok.id = 'cbtOk';
-  ok.onclick = () => { if(nouveauCombattant(CBT.nom, CBT.cote, CBT.rang)) CBT.nom = ''; };
+  ok.onclick = () => { if(nouveauCombattant(CBT.nom, CBT.cote, CBT.rang, CBT.peuple, st.value)) CBT.nom = ''; };
   g.append(ok);
   f.append(g);
-  f.append(el('p','mini', 'Une fiche minimale, dans le Registre des Visages : son rang lui donne ses PV, sa réduction, ses dés et une attaque tirée au sort. Tout se réécrit sur sa fiche.'));
+  f.append(el('p','mini', 'Une fiche minimale, dans le Registre des Visages : son rang lui donne ses PV, sa réduction, ses dés et ses sept caractéristiques. Son peuple lui donne l’attaque de base de son espèce, donnée d’office, et son genre lui en donne une seconde : une vraie Pratique de sa liste, ou une attaque de son métier. Tout se réécrit sur sa fiche.'));
   /* une fiche déjà écrite, qu'on fait entrer */
   const dispo = pnjs().filter(p => p.statut !== 'mort' && !(p.combat && p.combat.dans && p.combat.seance === (seanceCourante() || {}).id));
   if(dispo.length){
@@ -6861,7 +7121,7 @@ const CT_MAX = 400000;            /* au-delà, la carte est trop lourde pour la 
 const CT_VIT = 10;                /* dix pas par round, faute de mieux : le livre ne donne pas de vitesse */
 const CT_ENVOI = {attente:null};
 /* la vue : le cadre regardé, en mètres. Dans ce navigateur seulement */
-const CT = {x:0, y:0, k:1, prise:null, plein:false, sel:'', dessin:false, plan:'',
+const CT = {x:0, y:0, k:1, prise:null, plein:false, sel:'', dessin:false, plan:'', poser:'',
   /* le cadre caché qui va chercher une carte, et la fenêtre où la carte est sortie */
   cadre:null, attente:null, minuteur:0, fen:null, etage:0, veille:0};
 
@@ -6903,7 +7163,7 @@ function poserCarte(c){
     const x = T.journal[e.id]; if(!x) return;
     T.journal[e.id] = Object.assign({}, x, {carte:c, majCarte:maintenant(), jetons:{}, majJetons:maintenant()});
   });
-  CT.k = 1; CT.x = 0; CT.y = 0; CT.sel = '';
+  CT.k = 1; CT.x = 0; CT.y = 0; CT.sel = ''; CT.poser = '';
   dessinerCarte(true);
 }
 function retirerCarte(){
@@ -7016,7 +7276,21 @@ function jetonsDuTour(){
     return {z:z, j:j || null};
   });
 }
-/* poser d'office ceux qui n'ont pas encore de jeton : les nôtres en bas, les autres en haut */
+/* poser un jeton à l'endroit choisi : on place soi-même, un clic sur la carte. Poser ne coûte aucun pas. */
+function poserUnJeton(z, x, y){
+  const c = laCarte(); if(!c) return;
+  const j = Object.assign({}, lesJetons());
+  j[cleJeton(z)] = {x:Math.max(c.x0, Math.min(c.x1, x)), y:Math.max(c.y0, Math.min(c.y1, y)), d:0};
+  poserJetons(j);
+}
+function reprendreJeton(z){
+  const j = Object.assign({}, lesJetons());
+  delete j[cleJeton(z)];
+  poserJetons(j);
+}
+/* ceux qui attendent encore d'être posés */
+const aPoser = () => { const j = lesJetons(); return ceuxQuiSeBattent().filter(z => !j[cleJeton(z)]); };
+/* poser d'office tous ceux qui manquent : les nôtres en bas, les autres en haut. Un coup de main, pas la règle */
 function placerCeuxQuiManquent(){
   const c = laCarte(); if(!c) return false;
   const j = Object.assign({}, lesJetons());
@@ -7035,6 +7309,8 @@ function placerCeuxQuiManquent(){
 }
 function bougerJeton(z, x, y){
   const c = laCarte(); if(!c) return;
+  /* un jeton ne se déplace que pendant le tour du sien */
+  if(!peutJouer(z)){ msgTable(motPasSonTour(z), false); dessinerCarte(true); return; }
   const j = Object.assign({}, lesJetons()), cle = cleJeton(z);
   const av = j[cle] || {x:x, y:y, d:0};
   const d = (av.d || 0) + Math.hypot(x - av.x, y - av.y);
@@ -7049,7 +7325,6 @@ function dessinerCarte(force){
   const dehors = carteDehors();
   const box = dehors ? CT.fen.document.getElementById('seCarte') : ici;
   if(!force && !dehors && occupe(ici)){ apresSaisie(ici, () => dessinerCarte(true)); return; }
-  if(laCarte() && placerCeuxQuiManquent()) return;
   CT.dessin = true;
   try{
     if(dehors) dessinerRenvoi(ici);
@@ -7099,6 +7374,13 @@ function dessinerCarteVrai(box, force, dehors){
   const rz = el('button','btn ghost xs','Tout voir'); rz.type = 'button'; rz.id = 'ctFit';
   rz.onclick = () => { CT.k = 1; CT.x = 0; CT.y = 0; dessinerCarte(true); };
   t.append(rz);
+  /* les jetons se posent à la main, un par un ; ce bouton range les manquants en deux rangs */
+  if(aPoser().length){
+    const of = el('button','btn ghost xs','Les poser d’office'); of.type = 'button'; of.id = 'ctOffice';
+    of.setAttribute('aria-label', 'Poser tous les jetons qui manquent : les nôtres en bas, ceux d’en face en haut');
+    of.onclick = () => { CT.poser = ''; placerCeuxQuiManquent(); };
+    t.append(of);
+  }
   if(dehors){
     const rm = el('button','btn ghost xs','Ramener dans la table'); rm.type = 'button'; rm.id = 'ctRamener2';
     rm.onclick = () => ramenerCarte();
@@ -7126,10 +7408,10 @@ function dessinerCarteVrai(box, force, dehors){
   svg.removeAttribute('width'); svg.removeAttribute('height');
   const g = svgEl('g', {'class':'ctjetons'});
   const r = Math.max(.35, Math.min(1.1, v.w / 44));
-  /* le cercle de déplacement de celui qu'on a choisi, et sa portée */
+  /* le cercle de déplacement de celui qu'on a choisi, et sa portée. Les pas ne se montrent que pendant son tour */
   const sel = CT.sel ? jetonsDuTour().find(q => cleJeton(q.z) === CT.sel) : null;
   if(sel && sel.j){
-    const reste = Math.max(0, vitesseDe(sel.z) - sel.j.d);
+    const reste = peutJouer(sel.z) ? Math.max(0, vitesseDe(sel.z) - sel.j.d) : 0;
     if(reste > 0) g.append(svgEl('circle', {cx:fxn(sel.j.x), cy:fxn(sel.j.y), r:fxn(reste), 'class':'ctpas'}));
     const p = porteeJeton(sel.z);
     if(p > 0) g.append(svgEl('circle', {cx:fxn(sel.j.x), cy:fxn(sel.j.y), r:fxn(p), 'class':'ctportee'}));
@@ -7150,8 +7432,18 @@ function dessinerCarteVrai(box, force, dehors){
   svg.append(g);
   box.append(zone);
   brancherCarte(svg, zone);
+  /* qui attend d'être posé, et où en est la pose en cours */
+  const att = aPoser();
+  if(CT.poser){
+    const q = ceuxQuiSeBattent().find(y => cleJeton(y) === CT.poser);
+    box.append(el('p','mini ctposer', q ? 'Clique la carte là où tu poses ' + q.nom + '.' : 'Clique la carte pour poser ce jeton.'));
+  } else if(att.length){
+    box.append(el('p','mini ctposer', att.length === 1
+      ? att[0].nom + ' n’est pas encore posé : « Poser », sous la carte.'
+      : att.length + ' jetons ne sont pas posés : « Poser » sous la carte, un par un, ou « Les poser d’office ».'));
+  }
   box.append(listeJetons());
-  box.append(el('p','mini ctaide', 'Un pas vaut un mètre. Glisse un jeton pour le déplacer : le cercle plein montre ce qui lui reste à marcher ce round, le cercle en pointillé sa portée. La molette zoome, un glissement dans le vide déplace la carte. Les pas repartent de zéro à chaque nouveau round.'));
+  box.append(el('p','mini ctaide', 'Un pas vaut un mètre. Tu poses chaque jeton où tu veux, puis tu le glisses pour le déplacer, pendant son tour seulement : le cercle plein montre ce qui lui reste à marcher ce round, le cercle en pointillé sa portée. La molette zoome, un glissement dans le vide déplace la carte. Les pas repartent de zéro à chaque nouveau round.'));
 }
 /* ---------- aller chercher une carte, quand il n'y en a pas ----------
    Elle ne se fabrique pas ici : on ouvre un plan dans le Registre des Plans et on clique « Vers la table ».
@@ -7303,9 +7595,10 @@ function porteeJeton(z){
     const l = (z.x.armes || []).map(porteeArme);
     return l.length ? Math.max.apply(null, l) : 0;
   }
-  const a2 = z.k === 'pnj' ? (z.x.combat || {}).a2 : z.x.a2;
-  const p = a2 ? porteeTexte(a2.p) : null;
-  return p == null ? 0 : p;
+  const o = z.k === 'pnj' ? (z.x.combat || {}) : z.x;
+  const l = [o.a1, o.a2].filter(Boolean).map(a => porteeTexte(a.p)).filter(p => p != null);
+  if(l.some(p => p < 0)) return -1;              /* à vue : pas de cercle à dessiner */
+  return l.length ? Math.max.apply(null, l) : 0;
 }
 
 /* ---------- la souris, le doigt, la molette ---------- */
@@ -7320,8 +7613,19 @@ function brancherCarte(svg, zone){
   svg.addEventListener('pointerdown', ev => {
     const g = ev.target.closest ? ev.target.closest('[data-jeton]') : null;
     const m = enM(ev); if(!m) return;
+    /* une pose en attente : ce clic la place, où qu'il tombe */
+    if(CT.poser){
+      const q = ceuxQuiSeBattent().find(y => cleJeton(y) === CT.poser);
+      CT.poser = '';
+      if(q){ CT.sel = cleJeton(q); poserUnJeton(q, m[0], m[1]); }
+      else dessinerCarte(true);
+      return;
+    }
     if(g){
       CT.sel = g.getAttribute('data-jeton');
+      const z = ceuxQuiSeBattent().find(y => cleJeton(y) === CT.sel);
+      /* hors de son tour, on peut le choisir pour le voir, pas le déplacer */
+      if(z && !peutJouer(z)){ msgTable(motPasSonTour(z), false); dessinerCarte(true); return; }
       CT.prise = {cle:CT.sel, m0:m};
       svg.setPointerCapture(ev.pointerId);
       dessinerCarte(true);
@@ -7373,23 +7677,35 @@ function brancherCarte(svg, zone){
 function listeJetons(){
   const u = el('div','ctliste');
   jetonsDuTour().forEach(q => {
-    const z = q.z, cle = cleJeton(z), v = vitesseDe(z), reste = q.j ? Math.max(0, v - q.j.d) : v;
-    const l = el('div','ctl' + (CT.sel === cle ? ' ctlsel' : '') + (DEBOUT(z) ? '' : ' ctlbas'));
+    const z = q.z, cle = cleJeton(z), v = vitesseDe(z), son = peutJouer(z);
+    const l = el('div','ctl' + (CT.sel === cle ? ' ctlsel' : '') + (DEBOUT(z) ? '' : ' ctlbas') + (son && priorites() ? ' ctlmoi' : ''));
     const pst = el('span','ctpuce'); pst.style.background = CT_COUL[z.cote] || CT_COUL.eux;
     l.append(pst);
     const n = el('button','ctlnom', z.nom); n.type = 'button';
     n.setAttribute('aria-label', 'Choisir ' + z.nom + ' sur la carte');
     n.onclick = () => { CT.sel = CT.sel === cle ? '' : cle; dessinerCarte(true); };
     l.append(n);
-    const pas = el('span','ctpasn' + (q.j && q.j.d > v + .01 ? ' trop' : ''), q.j ? Math.round(q.j.d) + ' / ' + v + ' pas' : 'pas posé');
-    l.append(pas);
+    if(!q.j){
+      /* on le pose soi-même : un clic ici, un clic sur la carte */
+      const b = el('button','btn ghost xs' + (CT.poser === cle ? ' on' : ''), CT.poser === cle ? 'clique la carte' : 'Poser'); b.type = 'button';
+      b.setAttribute('aria-label', 'Poser le jeton de ' + z.nom + ' : clique ensuite la carte, à l’endroit voulu');
+      b.onclick = () => { CT.poser = CT.poser === cle ? '' : cle; dessinerCarte(true); };
+      l.append(b);
+    } else {
+      /* le compteur de pas ne se montre que pour celui dont c'est le tour */
+      if(son) l.append(el('span','ctpasn' + (q.j.d > v + .01 ? ' trop' : ''), Math.round(q.j.d) + ' / ' + v + ' pas'));
+      const x = el('button','ax','×'); x.type = 'button';
+      x.setAttribute('aria-label', 'Reprendre le jeton de ' + z.nom + ' : il sera à reposer');
+      x.onclick = () => { CT.poser = ''; reprendreJeton(z); };
+      l.append(x);
+    }
     const i = el('input'); i.type = 'number'; i.min = '0'; i.max = '200'; i.className = 'ctvit';
     i.value = String(v); i.setAttribute('aria-label', 'Vitesse de ' + z.nom + ', en pas par round');
     i.onchange = () => changerVitesse(z, i.value);
     l.append(i);
     u.append(l);
   });
-  if(!u.children.length) u.append(el('p','mini', 'Personne à poser : la compagnie et ceux d’en face arrivent ici tout seuls.'));
+  if(!u.children.length) u.append(el('p','mini', 'Personne à poser : la compagnie et ceux d’en face paraissent ici tout seuls.'));
   return u;
 }
 
@@ -7402,13 +7718,17 @@ function barrePv(cour, max){
   return b;
 }
 function ligneAdversaire(a){
+  const z = {k:'adv', id:a.id, nom:a.nom, cote:'eux', x:a, pv:a.pv, pvMax:a.pvMax, cartes:a.cartes};
+  const tour = peutJouer(z);
   const w = el('div','aligne' + (aTerre(a) ? ' aterre' : '') + (COMPO.cible === a.id ? ' visee' : ''));
   w.setAttribute('data-adv', a.id);
   const t = el('div','atete');
   t.append(el('b','anom', a.nom), el('span','arang', 'rang ' + a.rang));
   if(!aTerre(a)){
     const v = el('button','btn ghost xs aviser', COMPO.cible === a.id ? 'Visé' : 'Viser'); v.type = 'button';
-    v.setAttribute('aria-label', 'Viser ' + a.nom + ' : les dégâts iront à lui');
+    v.disabled = !peutViser();
+    v.setAttribute('aria-label', v.disabled ? motPasSonTour(monCombattant()) : 'Viser ' + a.nom + ' : les dégâts iront à lui');
+    if(v.disabled) v.title = motPasSonTour(monCombattant());
     v.onclick = () => viser(a);
     t.append(v);
   } else if(!a.fouille){
@@ -7451,8 +7771,9 @@ function ligneAdversaire(a){
     txt.append(el('b', null, nom), document.createTextNode(detail ? ' · ' + detail : ''));
     l.append(txt);
     const f = el('button','btn ghost xs','Frapper'); f.type = 'button';
-    f.setAttribute('aria-label', a.nom + ' frappe : ' + nom);
-    f.disabled = aTerre(a);
+    f.disabled = aTerre(a) || !tour;
+    f.setAttribute('aria-label', !tour && !aTerre(a) ? motPasSonTour(z) : a.nom + ' frappe : ' + nom);
+    if(!tour && !aTerre(a)) f.title = motPasSonTour(z);
     f.onclick = () => frapper(a, propre);
     l.append(f);
     at.append(l);
@@ -7463,8 +7784,10 @@ function ligneAdversaire(a){
   /* son tour joué tout seul : son attaque, sa cible au hasard, ses dégâts lancés */
   if(!aTerre(a)){
     const j = el('button','btn ghost xs atour','Son tour'); j.type = 'button';
-    j.setAttribute('aria-label', 'Jouer le tour de ' + a.nom + ' : son attaque, sa cible au hasard et ses dégâts');
-    j.onclick = () => jouerSonTour({k:'adv', id:a.id, nom:a.nom, cote:'eux', x:a, pv:a.pv, pvMax:a.pvMax, cartes:a.cartes}, indexCarte('adv', a.id));
+    j.disabled = !tour;
+    j.setAttribute('aria-label', tour ? 'Jouer le tour de ' + a.nom + ' : son attaque, sa cible au hasard et ses dégâts' : motPasSonTour(z));
+    if(!tour) j.title = motPasSonTour(z);
+    j.onclick = () => jouerSonTour(z, indexCarte('adv', a.id));
     w.append(j);
   }
   if(a.traits || a.p) w.append(el('p','mini apart', [a.traits, a.p].filter(Boolean).join(' · ')));
@@ -8677,7 +9000,7 @@ function ouvrirEditeurPnj(p, nouveau){
     const lab = el('label','mini');
     const ch = el('input'); ch.type = 'checkbox'; ch.id = 'ped-secombat'; ch.checked = !!PNJ_ED.combat;
     ch.onchange = () => {
-      PNJ_ED.combat = ch.checked ? (PNJ_ED.combat || combatNeuf(2, 'nous')) : null;
+      PNJ_ED.combat = ch.checked ? (PNJ_ED.combat || combatNeuf(2, 'nous', PNJ_ED.peuple)) : null;
       if(ch.checked && PNJ_ED.pvMax == null){
         PNJ_ED.pvMax = (RANG[PNJ_ED.combat.rang] || RANG[2]).pv;
         const z = $('ped-pv'); if(z) z.value = PNJ_ED.pvMax;
@@ -8687,7 +9010,7 @@ function ouvrirEditeurPnj(p, nouveau){
     lab.append(ch, document.createTextNode(' Il se bat'));
     cb.append(lab);
     if(!PNJ_ED.combat){
-      cb.append(el('p','mini','Coche pour lui donner un rang, une réduction, des dés et une attaque. Il entre alors dans le tour de table, et la table sait jouer son tour toute seule.'));
+      cb.append(el('p','mini','Coche pour lui donner un rang, une réduction, des dés, ses sept caractéristiques, l’attaque de base de son espèce et une autre attaque. Il entre alors dans le tour de table, et la table sait jouer son tour toute seule.'));
       return;
     }
     const c = PNJ_ED.combat;
@@ -8706,6 +9029,9 @@ function ouvrirEditeurPnj(p, nouveau){
       if(c.red === av.red) c.red = ap.red;
       if(c.deg === av.deg) c.deg = ap.deg;
       if(c.cartes === av.cartes) c.cartes = ap.cartes;
+      const avc = CAR_PNJ[av.r] || CAR_PNJ[2];
+      if(c.car && CARS.every(x => c.car[x] === avc[x])) c.car = carsPnjDeRang(ap.r);
+      if(c.bonus === (BONUS_PNJ[av.r] || 20)) c.bonus = BONUS_PNJ[ap.r] || 20;
       if(PNJ_ED.pvMax == null || PNJ_ED.pvMax === av.pv){
         PNJ_ED.pvMax = ap.pv;
         const z = $('ped-pv'); if(z) z.value = PNJ_ED.pvMax;
@@ -8723,14 +9049,70 @@ function ouvrirEditeurPnj(p, nouveau){
     const ca = nombre(c.cartes, 1, 3); ca.id = 'ped-cartes';
     ca.oninput = () => { c.cartes = Math.max(1, Math.min(3, parseInt(ca.value, 10) || 1)); };
     champ(g, 'Cartes par round', ca);
+    const st = el('select'); st.id = 'ped-type';
+    TYPES_PNJ.forEach(x => st.add(new Option(x.l, x.k)));
+    st.value = c.type || 'espece';
+    st.onchange = () => { c.type = st.value; };
+    champ(g, 'Le genre qu’il est', st);
     cb.append(g);
     cb.append(el('p','mini', 'Deux cartes pour un exceptionnel : il agit deux fois dans le round.'));
-    if(!c.a2) c.a2 = tirerAttaquePnj(c.cote);
+    /* ses sept caractéristiques : la table y lance pour lui, comme pour un personnage */
+    if(!c.car) c.car = carsPnjDeRang(c.rang);
+    const lv = el('p','mini');
+    const majVals = () => { lv.textContent = 'Sur cent : ' + CARS.map(x => ABBR[x] + ' ' + (c.car[x] * 2 + (c.bonus || 0))).join(' · ')
+      + '. La table lance là-dessus quand il agit dans la séance.'; };
+    const gc = el('div','table'); gc.style.marginTop = '8px';
+    CARS.forEach(x => {
+      const i = nombre(c.car[x], 1, 40); i.id = 'ped-car-' + ABBR[x]; i.style.width = '70px';
+      i.oninput = () => { c.car[x] = Math.max(1, Math.min(40, parseInt(i.value, 10) || 1)); majVals(); };
+      champ(gc, ABBR[x], i);
+    });
+    const bn = nombre(c.bonus, 0, 100); bn.id = 'ped-bonus'; bn.style.width = '70px';
+    bn.oninput = () => { c.bonus = Math.max(0, Math.min(100, parseInt(bn.value, 10) || 0)); majVals(); };
+    champ(gc, 'Bonus', bn);
+    cb.append(gc);
+    majVals();
+    cb.append(lv);
+    /* l'attaque de base de son espèce, celle que son peuple donne d'office */
+    const g1 = el('div','table'); g1.style.marginTop = '8px';
+    if(c.a1){
+      const a1 = c.a1;
+      const n1 = el('input'); n1.type = 'text'; n1.id = 'ped-a1n'; n1.value = a1.n; n1.style.width = '100%';
+      n1.oninput = () => { a1.n = n1.value; };
+      champ(g1, 'L’attaque de son espèce', n1);
+      const p1 = el('input'); p1.type = 'text'; p1.id = 'ped-a1p'; p1.value = a1.p; p1.placeholder = 'à vue'; p1.style.width = '100%';
+      p1.oninput = () => { a1.p = p1.value; };
+      champ(g1, 'Portée', p1);
+      const e1 = el('input'); e1.type = 'text'; e1.id = 'ped-a1e'; e1.value = a1.e; e1.placeholder = '1d4'; e1.style.width = '100%';
+      e1.oninput = () => { a1.e = e1.value; };
+      champ(g1, 'Ce qu’elle fait', e1);
+      const j1 = el('select'); j1.id = 'ped-a1j';
+      j1.add(new Option('aucune', ''));
+      CARS.forEach(x => j1.add(new Option(x, x)));
+      j1.value = a1.j || '';
+      j1.onchange = () => { a1.j = j1.value; };
+      champ(g1, 'Elle se lance sous', j1);
+      cb.append(g1);
+      const x1 = el('button','btn ghost sm','Il n’a pas d’attaque d’espèce'); x1.type = 'button'; x1.id = 'ped-a1non';
+      x1.onclick = () => { c.a1 = null; c.a1non = true; dessinerSonCombat(); };
+      cb.append(x1);
+    } else {
+      cb.append(el('p','mini', 'Pas d’attaque d’espèce. Chaque liste de Pratiques en ouvre une, donnée d’office : Ortie pour la Sève, Escarbille pour le feu. Les Humains n’en ont pas.'));
+      const b1 = el('button','btn ghost sm','Celle de son peuple'); b1.type = 'button'; b1.id = 'ped-a1';
+      b1.onclick = () => {
+        const a = attaqueDeBase(PNJ_ED.peuple);
+        if(!a){ msgTable('Son peuple n’ouvre pas de liste de Pratiques : écris « Ilvès », « Écorciens », « Nyréens », et reclique.', false); return; }
+        c.a1 = a; c.a1non = false;
+        dessinerSonCombat();
+      };
+      cb.append(b1);
+    }
+    if(!c.a2) c.a2 = tirerAttaquePnj(c.cote, c.rang, PNJ_ED.peuple, c.type);
     const a2 = c.a2;
     const g2 = el('div','table'); g2.style.marginTop = '8px';
     const an = el('input'); an.type = 'text'; an.id = 'ped-a2n'; an.value = a2.n; an.style.width = '100%';
     an.oninput = () => { a2.n = an.value; };
-    champ(g2, 'Son attaque', an);
+    champ(g2, 'Son autre attaque', an);
     const at = el('select'); at.id = 'ped-a2ty';
     ADV.types.forEach(x => at.add(new Option(x.l, x.k)));
     at.value = a2.ty || 'Corps à corps (Tranchant)';
@@ -8746,8 +9128,9 @@ function ouvrirEditeurPnj(p, nouveau){
     champ(g3, 'Ce qu’elle fait', ae, 'Les dés s’écrivent comme dans le livre : 2d6, d8+2. « le dé du rang » reprend ses dés, « aucun dégât » n’en lance aucun.');
     cb.append(g3);
     const tb = el('button','btn ghost sm','Tirer une autre attaque'); tb.type = 'button'; tb.id = 'ped-tirer';
-    tb.onclick = () => { c.a2 = tirerAttaquePnj(c.cote); dessinerSonCombat(); };
+    tb.onclick = () => { c.a2 = tirerAttaquePnj(c.cote, c.rang, PNJ_ED.peuple, c.type); dessinerSonCombat(); };
     cb.append(tb);
+    cb.append(el('p','mini', 'Elle suit son genre : « de son espèce » prend une vraie Pratique de la liste de son peuple, que son rang porte. Les Humains n’ouvrent aucune liste : leur autre attaque vient de leur genre.'));
   };
   dessinerSonCombat();
   box.append(cb);

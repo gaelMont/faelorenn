@@ -7136,7 +7136,7 @@ const CT_MAX = 400000;            /* au-delà, la carte est trop lourde pour la 
 const CT_VIT = 10;                /* dix pas par round, faute de mieux : le livre ne donne pas de vitesse */
 const CT_ENVOI = {attente:null};
 /* la vue : le cadre regardé, en mètres. Dans ce navigateur seulement */
-const CT = {x:0, y:0, k:1, prise:null, plein:false, sel:'', dessin:false, plan:'', poser:'',
+const CT = {x:0, y:0, k:1, prise:null, plein:false, sel:'', dessin:false, plan:'', poser:'', choix:'',
   /* le cadre caché qui va chercher une carte, et la fenêtre où la carte est sortie */
   cadre:null, attente:null, minuteur:0, fen:null, etage:0, veille:0};
 
@@ -7465,63 +7465,125 @@ function dessinerCarteVrai(box, force, dehors){
    Le pavé le dit, et mène droit au plan, sans quoi personne ne devine d'où vient une carte. */
 function blocPrendreCarte(){
   const w = el('div');
-  w.append(el('p','mini', 'Pas de carte pour ce combat. Elle vient du Registre des Plans : ouvre un plan, puis « Vers la table », en haut à côté d’Exporter. Un étage de bâtiment part en entier ; d’un village, c’est ce que tu vois à l’écran qui part.'));
-  const pl = typeof lxPlans === 'function' ? lxPlans() : {b:{}, v:{}};
-  const liste = [];
-  [['b', 'Bâtiment'], ['v', 'Village']].forEach(([k, mot]) => {
-    Object.keys(pl[k] || {}).forEach(id => liste.push({k:k, id:id, nom:pl[k][id].nom, mot:mot}));
-  });
-  liste.sort((a, b) => a.nom.localeCompare(b.nom, 'fr'));
+  const pl = lesPlansConnus();
+  w.append(el('p','mini', pl.rien
+    ? 'Pas de carte pour ce combat, et aucun plan connu de ce navigateur pour l’instant. Ouvre le Registre des Plans une fois, ou relie le dépôt, et tes plans paraîtront ici.'
+    : 'Pas de carte pour ce combat. Choisis un lieu : la carte du village, ou l’étage d’un de ses bâtiments.'));
   const g = el('div','tajout');
-  if(liste.length){
-    const s = el('select'); s.id = 'ctPlan'; s.setAttribute('aria-label', 'Quel plan ouvrir');
-    [['b', 'Les bâtiments'], ['v', 'Les villages']].forEach(([k, lab]) => {
-      const l = liste.filter(x => x.k === k);
-      if(!l.length) return;
-      const og = el('optgroup'); og.label = lab;
-      l.forEach(x => og.append(new Option(x.nom, x.k + ':' + x.id)));
-      s.append(og);
-    });
-    if(CT.plan && liste.some(x => x.k + ':' + x.id === CT.plan)) s.value = CT.plan;
-    else CT.plan = s.value;
-    s.onchange = () => { CT.plan = s.value; };
-    s.style.flex = '1 1 160px';
-    g.append(s);
-  }
-  const b = el('button','btn sm', CT.attente ? 'On va la chercher…' : liste.length ? 'Prendre cette carte' : 'Ouvrir le Registre des Plans');
-  b.type = 'button'; b.id = 'ctPrendre'; b.disabled = !!CT.attente;
-  b.onclick = () => {
-    if(!liste.length || !CT.plan){
-      const q = 'plans.html';
-      if(typeof ouvrirPage === 'function') ouvrirPage(q, typeof ONGLET_PLANS === 'string' ? ONGLET_PLANS : 'faelorenn-plans');
-      else window.open(q, '_blank');
-      return;
-    }
-    prendreCarte(CT.plan + (CT.plan.charAt(0) === 'b' ? ':' + (CT.etage || 0) : ''));
-  };
+  const b = el('button','btn sm', CT.attente ? 'On va la chercher…' : pl.rien ? 'Ouvrir le Registre des Plans' : 'Choisir une carte');
+  b.type = 'button'; b.id = 'ctChoisir'; b.disabled = !!CT.attente;
+  b.onclick = () => { if(pl.rien) ouvrirLesPlans(''); else ouvrirChoixCarte(); };
   g.append(b);
   w.append(g);
-  /* quel étage, pour un bâtiment : le Registre des Plans n'en envoie qu'un à la fois */
-  if(liste.length && CT.plan && CT.plan.charAt(0) === 'b'){
-    const e2 = el('div','tajout');
-    e2.append(el('span','mini', 'Étage'));
-    const n = el('input'); n.type = 'number'; n.min = '0'; n.max = '9'; n.id = 'ctEtage'; n.style.width = '70px';
-    n.value = String(CT.etage || 0);
-    n.setAttribute('aria-label', 'Quel étage du bâtiment');
-    n.oninput = () => { CT.etage = Math.max(0, Math.min(9, parseInt(n.value, 10) || 0)); };
-    e2.append(n, el('span','mini', '0 pour le rez-de-chaussée'));
-    w.append(e2);
-  }
-  /* ouvrir le plan soi-même, pour cadrer un village à la main */
-  const a = el('button','btn ghost xs', 'Ouvrir le plan dans le Registre des Plans'); a.type = 'button'; a.id = 'ctOuvrirPlans';
-  a.onclick = () => {
-    const q = liste.length && CT.plan ? 'plans.html#plan=' + encodeURIComponent(CT.plan) : 'plans.html';
-    if(typeof ouvrirPage === 'function') ouvrirPage(q, typeof ONGLET_PLANS === 'string' ? ONGLET_PLANS : 'faelorenn-plans');
-    else window.open(q, '_blank');
-  };
-  w.append(a);
-  if(!liste.length) w.append(el('p','mini', 'Aucun plan connu de ce navigateur pour l’instant. Ouvre le Registre des Plans une fois, ou relie le dépôt, et tes plans paraîtront ici.'));
+  /* ouvrir le plan soi-même, pour cadrer une ruelle au doigt */
+  const a = el('button','btn ghost xs', 'Ouvrir le Registre des Plans'); a.type = 'button'; a.id = 'ctOuvrirPlans';
+  a.onclick = () => ouvrirLesPlans(CT.plan);
+  if(!pl.rien) w.append(a);
   return w;
+}
+function ouvrirLesPlans(ref){
+  const q = ref ? 'plans.html#plan=' + encodeURIComponent(ref) : 'plans.html';
+  if(typeof ouvrirPage === 'function') ouvrirPage(q, typeof ONGLET_PLANS === 'string' ? ONGLET_PLANS : 'faelorenn-plans');
+  else window.open(q, '_blank');
+}
+/* ---------- choisir une carte : les lieux, puis ce qu'on prend dedans ----------
+   Un village d'abord, puis sa carte entière ou l'étage d'une de ses bâtisses. Les bâtiments qu'aucun village
+   ne porte sont rangés à part : une tour isolée, une ruine, un plan dessiné pour lui-même. */
+function lesPlansConnus(){
+  const pl = typeof lxPlans === 'function' ? lxPlans() : {b:{}, v:{}};
+  const bat = pl.b || {}, vil = pl.v || {};
+  const pris = {};
+  const villages = Object.keys(vil).map(id => {
+    const v = vil[id];
+    const l = (v.bati || []).filter(x => bat[x.lien]).map(x => { pris[x.lien] = 1; return {id:x.lien, nom:x.nom || bat[x.lien].nom || 'Sans nom'}; });
+    l.sort((a, b) => a.nom.localeCompare(b.nom, 'fr'));
+    return {id:id, nom:v.nom || 'Village sans nom', bati:l};
+  });
+  villages.sort((a, b) => a.nom.localeCompare(b.nom, 'fr'));
+  const seuls = Object.keys(bat).filter(id => !pris[id]).map(id => ({id:id, nom:bat[id].nom || 'Sans nom'}));
+  seuls.sort((a, b) => a.nom.localeCompare(b.nom, 'fr'));
+  return {villages:villages, seuls:seuls, bat:bat, rien:!villages.length && !seuls.length};
+}
+const etagesDe = (bat, id) => { const b = bat[id]; return b && b.etages && b.etages.length ? b.etages : ['Rez-de-chaussée']; };
+function ouvrirChoixCarte(){ CT.choix = ''; dessinerChoixCarte(); }
+function fermerChoixCarte(){
+  const f = $('ctFen'); if(f) f.remove();
+  document.removeEventListener('keydown', ctEchap, true);
+  const b = $('ctChoisir'); if(b) b.focus();
+}
+function ctEchap(ev){ if(ev.key === 'Escape'){ ev.preventDefault(); fermerChoixCarte(); } }
+/* une ligne de la fenêtre : un nom, ce que c'est, et ce qu'elle fait */
+function ligneChoix(nom, quoi, faire, gras){
+  const b = el('button','ctlig'); b.type = 'button';
+  b.append(el('b', null, nom));
+  if(quoi) b.append(el('span','mini', quoi));
+  b.onclick = faire;
+  if(gras) b.classList.add('ctliggras');
+  return b;
+}
+/* un bâtiment dans la liste : sa ligne seule s'il n'a qu'un étage, son nom puis ses étages sinon */
+function lignesBatiment(liste, bat, q){
+  const et = etagesDe(bat, q.id);
+  if(et.length === 1){ liste.append(ligneChoix(q.nom, '', () => prendreEtFermer('b:' + q.id + ':0'), true)); return; }
+  liste.append(el('p','ctsous', q.nom));
+  et.forEach((nom, i) => {
+    const l = ligneChoix(nom, '', () => prendreEtFermer('b:' + q.id + ':' + i));
+    l.classList.add('ctetg');
+    liste.append(l);
+  });
+}
+function dessinerChoixCarte(){
+  const avant = $('ctFen'); if(avant) avant.remove();
+  const pl = lesPlansConnus();
+  const fen = el('div','ctfen'); fen.id = 'ctFen';
+  fen.onclick = ev => { if(ev.target === fen) fermerChoixCarte(); };
+  const box = el('div','ctfenin'); box.setAttribute('role', 'dialog'); box.setAttribute('aria-modal', 'true');
+  box.setAttribute('aria-label', 'Choisir une carte de combat');
+  const t = el('div','ctete');
+  t.append(el('p','ctitre', 'Choisir une carte'));
+  t.append(el('span','espace'));
+  const x = el('button','ax','×'); x.type = 'button'; x.id = 'ctFenFermer';
+  x.setAttribute('aria-label', 'Fermer');
+  x.onclick = () => fermerChoixCarte();
+  t.append(x);
+  box.append(t);
+  const v = CT.choix ? pl.villages.find(q => q.id === CT.choix) : null;
+  const liste = el('div','ctchoix');
+  if(!v){
+    box.append(el('p','mini', 'Un village, ou un bâtiment qui n’est dans aucun village.'));
+    if(pl.villages.length) liste.append(el('p','ctgrp', 'Les villages'));
+    pl.villages.forEach(q => liste.append(ligneChoix(q.nom,
+      q.bati.length ? q.bati.length + (q.bati.length > 1 ? ' bâtiments' : ' bâtiment') : 'aucun bâtiment',
+      () => { CT.choix = q.id; dessinerChoixCarte(); }, true)));
+    if(pl.seuls.length) liste.append(el('p','ctgrp', 'Les bâtiments à part'));
+    pl.seuls.forEach(q => lignesBatiment(liste, pl.bat, q));
+  } else {
+    const r = el('button','btn ghost xs','← Tous les lieux'); r.type = 'button'; r.id = 'ctFenRetour';
+    r.onclick = () => { CT.choix = ''; dessinerChoixCarte(); };
+    box.append(r);
+    box.append(el('p','ctitre2', v.nom));
+    liste.append(ligneChoix('La carte du village', 'ce que la carte montre, trois cents pas de côté au plus',
+      () => prendreEtFermer('v:' + v.id), true));
+    if(v.bati.length) liste.append(el('p','ctgrp', 'Les bâtiments de ce village'));
+    v.bati.forEach(q => lignesBatiment(liste, pl.bat, q));
+    if(!v.bati.length) liste.append(el('p','mini', 'Aucune bâtisse de ce village n’a son plan. Dans le Registre des Plans, une bâtisse reçoit le sien par « Plan lié ».'));
+  }
+  box.append(liste);
+  const pied = el('div','acts'); pied.style.marginTop = '10px';
+  const o = el('button','btn ghost xs','Ouvrir le Registre des Plans'); o.type = 'button'; o.id = 'ctFenPlans';
+  o.onclick = () => { const r = v ? 'v:' + v.id : ''; fermerChoixCarte(); ouvrirLesPlans(r); };
+  pied.append(o, el('span','mini', 'Pour cadrer une ruelle au doigt : ouvre le plan, zoome, puis « Vers la table ».'));
+  box.append(pied);
+  fen.append(box);
+  document.body.append(fen);
+  document.addEventListener('keydown', ctEchap, true);
+  const prem = box.querySelector('.ctlig') || x;
+  if(prem) prem.focus();
+}
+function prendreEtFermer(ref){
+  CT.plan = ref.slice(0, ref.charAt(0) === 'b' ? ref.lastIndexOf(':') : ref.length);
+  fermerChoixCarte();
+  prendreCarte(ref);
 }
 /* ---------- aller chercher la carte soi-même ----------
    Le Registre des Plans est le seul à savoir dessiner un plan. La table l'ouvre donc dans un cadre caché,
@@ -10007,14 +10069,24 @@ function lxLirePlans(o){
       if(!rec || typeof rec !== 'object') return;
       n++;
       const maj = +rec.maj || 0;
-      if(rec.supprime || !rec.plan || typeof rec.plan !== 'object'){ out[k][id] = {maj:maj, del:true, nom:'', villes:[]}; return; }
-      const p = rec.plan, villes = [];
+      if(rec.supprime || !rec.plan || typeof rec.plan !== 'object'){ out[k][id] = {maj:maj, del:true, nom:'', villes:[], bati:[], etages:[]}; return; }
+      const p = rec.plan, villes = [], bati = [], etages = [];
       if(k === 'w' && Array.isArray(p.items)) p.items.forEach(it => {
         if(!it || it.t !== 'city' || typeof it.name !== 'string' || !it.name.trim()) return;
         if(!LX_ID.test(String(it.id || ''))) return;
         villes.push({id:String(it.id), nom:it.name.trim().slice(0, 90), lien:typeof it.link === 'string' ? it.link : ''});
       });
-      out[k][id] = {maj:maj, nom:String(p.name || '').trim().slice(0, 120), villes:villes};
+      /* les bâtisses d'un village qui ont leur plan : la table s'en sert pour choisir une carte de combat */
+      if(k === 'v' && Array.isArray(p.items)) p.items.forEach(it => {
+        if(!it || it.t !== 'bld' || !it.link || !LX_ID.test(String(it.link))) return;
+        if(bati.length >= 200 || bati.some(x => x.lien === String(it.link))) return;
+        bati.push({lien:String(it.link), nom:(typeof it.name === 'string' ? it.name.trim() : '').slice(0, 90)});
+      });
+      /* les étages d'un bâtiment : un seul part à la fois vers la table */
+      if(k === 'b' && Array.isArray(p.floors)) p.floors.slice(0, 20).forEach((f, i) => {
+        etages.push(String((f && f.name) || ('Étage ' + i)).trim().slice(0, 60));
+      });
+      out[k][id] = {maj:maj, nom:String(p.name || '').trim().slice(0, 120), villes:villes, bati:bati, etages:etages};
     });
   });
   return out;

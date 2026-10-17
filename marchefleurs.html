@@ -8765,7 +8765,10 @@ function dessinerHub(){
   jeu.style.setProperty('--lg', r.larg.g + 'px');
   jeu.style.setProperty('--ld', r.larg.d + 'px');
   jeu.setAttribute('data-rails', r.rails);
+  const avant = document.body.classList.contains('hubplein');
   document.body.classList.toggle('hubplein', !!r.plein);
+  document.documentElement.classList.toggle('hubplein', !!r.plein);
+  if(r.plein && !avant) window.scrollTo(0, 0);
   g.hidden = !g.children.length;
   d.hidden = !d.children.length;
   const plein = c => [].slice.call(c.children).some(x => x.children.length);

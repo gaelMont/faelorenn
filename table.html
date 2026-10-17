@@ -225,16 +225,19 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-vis
 .hbtir{margin-top:12px;border-top:1px dashed var(--rule);padding-top:10px}
 
 /* le hub en plein écran : la page disparaît, le récit défile, le reste tient en place */
-body.hubplein{overflow:hidden}
+body.hubplein,html.hubplein{overflow:hidden}
 body.hubplein .fae-site,body.hubplein .wrap>header,body.hubplein #secTable,body.hubplein #secPerso,
 body.hubplein #secJets,body.hubplein #secSeance>h2,body.hubplein #secSeance>.hint{display:none!important}
-body.hubplein .wrap{padding-block:8px 6px}
-body.hubplein .card.seance{background:none;border:0;box-shadow:none;padding:0}
-body.hubplein .jeu{height:calc(100vh - 86px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));margin-top:8px}
-body.hubplein .hbcote{position:static;height:100%}
-body.hubplein .hbrail{max-height:100%;height:100%}
-body.hubplein .jeu-main{display:flex;flex-direction:column;min-height:0;height:100%}
-body.hubplein .hbhaut{flex:0 0 auto}
+body.hubplein .wrap{position:fixed;inset:0;height:auto;max-width:none;display:flex;flex-direction:column;
+  padding:8px clamp(14px,2.2vw,44px) calc(8px + env(safe-area-inset-bottom,0px));background:var(--paper);z-index:3}
+body.hubplein #secSeance{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;margin-bottom:0}
+body.hubplein .card.seance{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;background:none;border:0;box-shadow:none;padding:0}
+body.hubplein #seTete{flex:0 0 auto}
+body.hubplein .jeu{flex:1 1 auto;min-height:0;height:auto;margin-top:8px;align-items:stretch}
+body.hubplein .hbcote{position:static;min-height:0}
+body.hubplein .hbrail{max-height:100%}
+body.hubplein .jeu-main{display:flex;flex-direction:column;min-height:0}
+body.hubplein .hbhaut{flex:0 1 auto;max-height:42%;overflow:auto;margin-bottom:8px}
 body.hubplein .feuille{flex:1 1 auto;min-height:0;overflow:auto}
 body.hubplein .compo{flex:0 0 auto}
 body.hubplein .hbbarre{flex:0 0 auto;margin-bottom:0}
@@ -8994,7 +8997,10 @@ function dessinerHub(){
   jeu.style.setProperty('--lg', r.larg.g + 'px');
   jeu.style.setProperty('--ld', r.larg.d + 'px');
   jeu.setAttribute('data-rails', r.rails);
+  const avant = document.body.classList.contains('hubplein');
   document.body.classList.toggle('hubplein', !!r.plein);
+  document.documentElement.classList.toggle('hubplein', !!r.plein);
+  if(r.plein && !avant) window.scrollTo(0, 0);
   g.hidden = !g.children.length;
   d.hidden = !d.children.length;
   const plein = c => [].slice.call(c.children).some(x => x.children.length);

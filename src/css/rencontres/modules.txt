@@ -1,4 +1,5 @@
-rencontres/jetons.css
+commun/jetons.css
+rencontres/couleurs.css
 rencontres/base.css
 rencontres/groupe-et-intensite.css
 rencontres/composition.css

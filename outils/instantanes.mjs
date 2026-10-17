@@ -7,7 +7,7 @@
 // avec le hasard et l'horloge figés : deux instantanés du même code sont identiques.
 // On garde, page par page : les erreurs JavaScript et les ressources introuvables, le DOM une fois
 // les scripts passés, et les styles calculés de chaque élément sur écran large, sur téléphone
-// et à l'impression. Le stockage du navigateur part vide et se remplit de page en page, dans l'ordre.
+// et à l'impression, en thème clair et en thème sombre. Le stockage du navigateur part vide et se remplit de page en page, dans l'ordre.
 //
 // Chrome est cherché aux endroits habituels ; sinon, donner son chemin dans la variable CHROME.
 // Usage type : prendre un instantané avant, modifier, relancer le build, en prendre un après, comparer.
@@ -61,7 +61,11 @@ function stylesDeLaPage() {
   });
   return out.join('\n');
 }
-const MODES = [['écran large', 1400, 1000, 'screen', false], ['téléphone', 420, 900, 'screen', true], ['impression', 1000, 1000, 'print', false]];
+// Le thème est forcé : sans cela, Chrome sans fenêtre suit le réglage du système (souvent sombre).
+const MODES = [
+  ['écran large, clair', 1400, 1000, 'screen', false, 'light'], ['écran large, sombre', 1400, 1000, 'screen', false, 'dark'],
+  ['téléphone, clair', 420, 900, 'screen', true, 'light'], ['téléphone, sombre', 420, 900, 'screen', true, 'dark'],
+  ['impression', 1000, 1000, 'print', false, 'light']];
 
 async function prendre(sortie) {
   const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json', '.svg': 'image/svg+xml', '.png': 'image/png' };
@@ -122,9 +126,9 @@ async function prendre(sortie) {
       };
       const dom = await lire(domDeLaPage);
       let styles = '';
-      for (const [nom, largeur, hauteur, media, mobile] of MODES) {
+      for (const [nom, largeur, hauteur, media, mobile, theme] of MODES) {
         await cdp('Emulation.setDeviceMetricsOverride', { width: largeur, height: hauteur, deviceScaleFactor: 1, mobile }, sessionId);
-        await cdp('Emulation.setEmulatedMedia', { media }, sessionId);
+        await cdp('Emulation.setEmulatedMedia', { media, features: [{ name: 'prefers-color-scheme', value: theme }] }, sessionId);
         await new Promise(ok => setTimeout(ok, 300));
         styles += `### ${nom}\n${await lire(stylesDeLaPage)}\n`;
       }

@@ -1,26 +1,37 @@
 /* Fichier généré par outils/build.mjs depuis src/css/plans/ : ne pas le modifier, modifier les modules. */
 
-/* ── plans/jetons.css ── */
+/* ── commun/jetons.css ── */
 :root{
   --paper:#F4F2EA; --surface:#FFFFFF; --fill:#E9EFE8; --ink:#1B1C18; --muted:#646D62;
   --forest:#1F3D2B; --sage:#4A6B52; --rule:#CBD6C9; --rust:#9A4A28; --gold:#7E6226;
   --shadow:0 1px 2px rgba(31,61,43,.07);
-  --bureau:#DCE4DA;
-  /* le trait de sélection se dessine sur du parchemin, du vert ou de l'eau, en clair comme en sombre : il ne change pas */
-  --accent:#A23B2A;
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
     --paper:#131713; --surface:#1B211C; --fill:#212A22; --ink:#E6E7DF; --muted:#94A08F;
     --forest:#9DC2A6; --sage:#7FA88A; --rule:#2E3A30; --rust:#D98A63; --gold:#C9A758;
     --shadow:0 1px 2px rgba(0,0,0,.4);
-    --bureau:#0D110D;
   }
 }
 :root[data-theme="dark"]{
   --paper:#131713; --surface:#1B211C; --fill:#212A22; --ink:#E6E7DF; --muted:#94A08F;
   --forest:#9DC2A6; --sage:#7FA88A; --rule:#2E3A30; --rust:#D98A63; --gold:#C9A758;
   --shadow:0 1px 2px rgba(0,0,0,.4);
+}
+
+/* ── plans/couleurs.css ── */
+/* les couleurs propres à ce registre, par-dessus commun/jetons.css */
+:root{
+  --bureau:#DCE4DA;
+  /* le trait de sélection se dessine sur du parchemin, du vert ou de l'eau, en clair comme en sombre : il ne change pas */
+  --accent:#A23B2A;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bureau:#0D110D;
+  }
+}
+:root[data-theme="dark"]{
   --bureau:#0D110D;
 }
 

@@ -1080,7 +1080,7 @@ function dessinerGensSeance(){
 /* ---------- vers Google Docs ---------- */
 const ech = s => String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 function blocHtml(b){
-  const gris = t => '<span style="color:#6B7469">' + ech(t) + '</span>';
+  const gris = t => '<span style="color:#646D62">' + ech(t) + '</span>';
   const br = t => ech(t).replace(/\n/g, '<br>');
   const j = joints(b), ph = sansMarques(phrase(b));
   const suite = !j.length ? '' : ph ? ' ' + gris('(' + j.join(' · ') + ')') : gris(majuscule(j.join(' · ')));

@@ -1,0 +1,14 @@
+/* les couleurs propres à ce registre, par-dessus commun/jetons.css */
+:root{
+  --bureau:#DCE4DA;
+  /* le trait de sélection se dessine sur du parchemin, du vert ou de l'eau, en clair comme en sombre : il ne change pas */
+  --accent:#A23B2A;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bureau:#0D110D;
+  }
+}
+:root[data-theme="dark"]{
+  --bureau:#0D110D;
+}

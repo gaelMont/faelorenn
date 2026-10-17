@@ -1,6 +1,6 @@
 :root{
-  --paper:#F4F2EA; --surface:#FFFFFF; --fill:#E9EFE8; --ink:#1B1C18; --muted:#6B7469;
-  --forest:#1F3D2B; --sage:#4A6B52; --rule:#CBD6C9; --rust:#9A4A28; --gold:#8A6D2F;
+  --paper:#F4F2EA; --surface:#FFFFFF; --fill:#E9EFE8; --ink:#1B1C18; --muted:#646D62;
+  --forest:#1F3D2B; --sage:#4A6B52; --rule:#CBD6C9; --rust:#9A4A28; --gold:#7E6226;
   --shadow:0 1px 2px rgba(31,61,43,.07);
 }
 @media (prefers-color-scheme: dark){

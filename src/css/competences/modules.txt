@@ -1,4 +1,4 @@
-competences/jetons.css
+commun/jetons.css
 competences/base.css
 competences/listes.css
 competences/editeur.css

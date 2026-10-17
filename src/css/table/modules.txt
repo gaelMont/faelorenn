@@ -2,7 +2,8 @@
 # en propre (src/css/table/) : la disposition du hub, la tête de la compagnie, la carte de combat,
 # le tour et ses blocs, l'écran moyen. table/partie, table/tour-et-blocs et table/ecran-moyen
 # remplacent leurs homonymes de registre/ (mêmes règles de départ, version du hub).
-registre/jetons.css
+commun/jetons.css
+registre/couleurs.css
 registre/base.css
 registre/barre-de-table.css
 registre/personnages.css

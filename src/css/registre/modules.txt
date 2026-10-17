@@ -1,6 +1,7 @@
 # Les modules de registre/ servent aussi au paquet table, sauf partie, tour-et-blocs et ecran-moyen
 # (le paquet table a les siens, dans src/css/table/).
-registre/jetons.css
+commun/jetons.css
+registre/couleurs.css
 registre/base.css
 registre/barre-de-table.css
 registre/personnages.css

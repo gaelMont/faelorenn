@@ -1,6 +1,6 @@
 /* Fichier généré par outils/build.mjs depuis src/css/competences/ : ne pas le modifier, modifier les modules. */
 
-/* ── competences/jetons.css ── */
+/* ── commun/jetons.css ── */
 :root{
   --paper:#F4F2EA; --surface:#FFFFFF; --fill:#E9EFE8; --ink:#1B1C18; --muted:#646D62;
   --forest:#1F3D2B; --sage:#4A6B52; --rule:#CBD6C9; --rust:#9A4A28; --gold:#7E6226;

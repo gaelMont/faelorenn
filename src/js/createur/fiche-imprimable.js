@@ -176,7 +176,7 @@ function drawFiche(){
   cols(ts, ['23%','9%','9%','9%','23%','9%','9%','9%']);
   const hr = el('tr');
   ['Compétence','Bonus','Total','d20','Compétence','Bonus','Total','d20'].forEach((h, i) => {
-    const th = el('th', i % 4 ? 'c' : null, h); ts.append; hr.append(th);
+    const th = el('th', i % 4 ? 'c' : null, h); hr.append(th);
   });
   ts.append(hr);
   const side = (e, tr) => {

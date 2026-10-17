@@ -1,0 +1,12 @@
+/* les couleurs propres à ce registre, par-dessus commun/jetons.css */
+:root{
+  --r1:#7C8B78; --r2:#5E7F63; --r3:#8A6D2F; --r4:#9A4A28; --r5:#6B2F3A;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --r1:#93A18E; --r2:#7FB489; --r3:#C9A758; --r4:#D98A63; --r5:#C97182;
+  }
+}
+:root[data-theme="dark"]{
+  --r1:#93A18E; --r2:#7FB489; --r3:#C9A758; --r4:#D98A63; --r5:#C97182;
+}

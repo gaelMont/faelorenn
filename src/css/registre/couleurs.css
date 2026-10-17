@@ -1,0 +1,12 @@
+/* les couleurs propres à ce registre, par-dessus commun/jetons.css */
+:root{
+  --plum:#6B2F3A;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --plum:#C97182;
+  }
+}
+:root[data-theme="dark"]{
+  --plum:#C97182;
+}

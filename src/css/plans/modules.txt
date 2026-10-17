@@ -1,4 +1,5 @@
-plans/jetons.css
+commun/jetons.css
+plans/couleurs.css
 plans/base.css
 plans/etabli.css
 plans/panneau.css

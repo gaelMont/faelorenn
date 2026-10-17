@@ -26,8 +26,8 @@
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 body{background:var(--paper);color:var(--ink);font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:15px;line-height:1.5;margin:0}
-.wrap{max-width:980px;margin:0 auto;padding-inline:18px;padding-block:26px 40px}
-.wrap.large{max-width:1260px}
+.wrap{max-width:none;margin:0 auto;padding-inline:clamp(14px,2.2vw,44px);padding-block:26px 40px}
+.wrap.large{max-width:none}
 h1{font-family:Spectral,Georgia,serif;font-weight:700;font-size:clamp(27px,5vw,38px);color:var(--forest);margin:0;letter-spacing:-.01em;text-wrap:balance}
 .sub{font-family:Spectral,Georgia,serif;font-style:italic;color:var(--sage);margin:2px 0 0}
 header{border-bottom:2px solid var(--forest);padding-bottom:12px;margin-bottom:14px}
@@ -64,7 +64,7 @@ input:focus-visible,button:focus-visible,a:focus-visible{outline:2px solid var(-
 .sbul{display:inline-block;margin-left:6px;font-size:11px;font-weight:600;color:var(--paper);background:var(--sage);border-radius:9px;padding:0 5px;vertical-align:1px}
 
 /* le texte du livre */
-.lvtexte{font-family:Spectral,Georgia,serif;font-size:16.5px;line-height:1.62;max-width:72ch}
+.lvtexte{font-family:Spectral,Georgia,serif;font-size:16.5px;line-height:1.62;max-width:72ch;min-width:0;margin-inline:auto}
 .lvtexte p{margin:0 0 .72em}
 .lvtexte ul{margin:0 0 .9em;padding-left:1.1em}
 .lvtexte li{margin:0 0 .3em}
@@ -105,7 +105,8 @@ mark.ici{outline:2px solid var(--rust);outline-offset:1px}
   .lvbarre input{flex:1 1 100%}
 }
 @media (max-width:899px){
-  .lvcol{grid-template-columns:minmax(0,1fr);gap:10px}
+  .lvcol{display:block}
+  .lvaside{margin-bottom:10px}
   .lvaside{position:static;max-height:none}
   .lvtiroir{border:1px solid var(--rule);border-radius:3px;background:var(--surface)}
   .lvtiroir>summary{display:list-item;cursor:pointer;padding:9px 12px;font-size:13px;color:var(--forest);font-weight:600}
@@ -122,7 +123,7 @@ mark.ici{outline:2px solid var(--rust);outline-offset:1px}
 </style>
 </head>
 <body>
-<nav class="fae-site" aria-label="Les registres de Faelorenn" style="max-width:1260px">
+<nav class="fae-site" aria-label="Les registres de Faelorenn">
   <a class="fae-accueil" href="./">Faelorenn</a>
   <a href="livre.html" aria-current="page">Le Livre</a>
   <a href="missions.html">Registre des Missions</a>
@@ -136,7 +137,7 @@ mark.ici{outline:2px solid var(--rust);outline-offset:1px}
   <a href="tirages.html">Registre des Tirages</a>
 </nav>
 <style>
-.fae-site{display:flex;flex-wrap:wrap;gap:4px 18px;align-items:baseline;max-width:980px;margin:0 auto;padding:12px 18px 0;font:13px/1.4 "IBM Plex Sans",system-ui,sans-serif}
+.fae-site{display:flex;flex-wrap:wrap;gap:4px 18px;align-items:baseline;max-width:none;margin:0 auto;padding:12px clamp(14px,2.2vw,44px) 0;font:13px/1.4 "IBM Plex Sans",system-ui,sans-serif}
 .fae-site a{color:var(--sage,#4A6B52);text-decoration:none;border-bottom:1px solid transparent;padding-bottom:1px}
 .fae-site a:hover,.fae-site a:focus-visible{border-bottom-color:currentColor}
 .fae-site a[aria-current]{color:var(--forest,#1F3D2B);font-weight:600}

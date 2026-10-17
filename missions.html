@@ -26,8 +26,8 @@
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 body{background:var(--paper);color:var(--ink);font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:15px;line-height:1.5}
-.wrap{max-width:980px;margin:0 auto;padding-inline:18px;padding-block:26px 40px}
-.wrap.large{max-width:1260px}
+.wrap{max-width:none;margin:0 auto;padding-inline:clamp(14px,2.2vw,44px);padding-block:26px 40px}
+.wrap.large{max-width:none}
 h1{font-family:Spectral,Georgia,serif;font-weight:700;font-size:clamp(27px,5vw,38px);color:var(--forest);margin:0;letter-spacing:-.01em;text-wrap:balance}
 .sub{font-family:Spectral,Georgia,serif;font-style:italic;color:var(--sage);margin:2px 0 0}
 header{border-bottom:2px solid var(--forest);padding-bottom:12px;margin-bottom:18px}
@@ -855,7 +855,7 @@ svg.reseau:active{cursor:grabbing}
   <a href="tirages.html">Registre des Tirages</a>
 </nav>
 <style>
-.fae-site{display:flex;flex-wrap:wrap;gap:4px 18px;align-items:baseline;max-width:980px;margin:0 auto;padding:12px 18px 0;font:13px/1.4 "IBM Plex Sans",system-ui,sans-serif}
+.fae-site{display:flex;flex-wrap:wrap;gap:4px 18px;align-items:baseline;max-width:none;margin:0 auto;padding:12px clamp(14px,2.2vw,44px) 0;font:13px/1.4 "IBM Plex Sans",system-ui,sans-serif}
 .fae-site a{color:var(--sage,#4A6B52);text-decoration:none;border-bottom:1px solid transparent;padding-bottom:1px}
 .fae-site a:hover,.fae-site a:focus-visible{border-bottom-color:currentColor}
 .fae-site a[aria-current]{color:var(--forest,#1F3D2B);font-weight:600}
@@ -4938,11 +4938,6 @@ function dessinerCompositeur(force){
   });
 
   $('coTexte').placeholder = PLACEHOLDERS[COMPO.genre] || '';
-  [['coOutilJet','jet'], ['coOutilPv','pv']].forEach(([id, k]) => {
-    const b = $(id);
-    b.setAttribute('aria-pressed', COMPO.panneau === k ? 'true' : 'false');
-    b.classList.toggle('on', COMPO.panneau === k);
-  });
 
   /* le panneau vit dans la fenêtre « Action » : s'il doit s'ouvrir, c'est elle qui s'ouvre */
   if(typeof ouvrirAction === 'function' && $('hbBarre')){
@@ -8655,6 +8650,8 @@ const HUB_LISTE = [
 const HUB_CLES = {};
 HUB_LISTE.forEach(w => { HUB_CLES[w.k] = w; });
 const HUB_RAILS = [{k:'gd', l:'Un à gauche, un à droite'}, {k:'dd', l:'Les deux à droite'}, {k:'gg', l:'Les deux à gauche'}];
+/* les quatre places : au-dessus du récit, le rail 1, le rail 2, et les éteints */
+const HUB_PLACES = ['h', 'g', 'd', 'off'];
 const HUB_LARG = {min:210, max:520, def:300};
 /* ce que la fenêtre a emprunté, et ce qu'on est en train de glisser dans les options */
 const HUB = {fen:'', prete:'', glisse:null, cherche:'', tir:'', sorti:null};
@@ -8669,10 +8666,10 @@ function reglageHub(){
   const out = {
     rails: HUB_RAILS.some(x => x.k === r.rails) ? r.rails : 'gd',
     larg: {g: largeurHub((r.larg || {}).g), d: largeurHub((r.larg || {}).d)},
-    g: [], d: [], off: []
+    h: [], g: [], d: [], off: []
   };
   const vus = {};
-  ['g', 'd', 'off'].forEach(c => (Array.isArray(r[c]) ? r[c] : []).forEach(k => {
+  HUB_PLACES.forEach(c => (Array.isArray(r[c]) ? r[c] : []).forEach(k => {
     if(HUB_CLES[k] && !vus[k]){ vus[k] = 1; out[c].push(k); }
   }));
   HUB_LISTE.forEach(w => { if(!vus[w.k]) out[w.on ? w.ou : 'off'].push(w.k); });
@@ -8681,7 +8678,8 @@ function reglageHub(){
 function poserReglageHub(r){
   changer(() => {
     if(!T.hub) T.hub = {};
-    T.hub[cleHub()] = {maj:maintenant(), rails:r.rails, larg:{g:r.larg.g, d:r.larg.d}, g:r.g.slice(), d:r.d.slice(), off:r.off.slice()};
+    T.hub[cleHub()] = {maj:maintenant(), rails:r.rails, larg:{g:r.larg.g, d:r.larg.d},
+      h:r.h.slice(), g:r.g.slice(), d:r.d.slice(), off:r.off.slice()};
   });
 }
 /* remettre comme au départ : on écrit un oubli daté, parce qu'effacer la ligne la ferait revenir
@@ -8689,7 +8687,7 @@ function poserReglageHub(r){
 function oublierReglageHub(){
   changer(() => {
     if(!T.hub) T.hub = {};
-    T.hub[cleHub()] = {maj:maintenant(), supprime:true, rails:'gd', larg:{g:HUB_LARG.def, d:HUB_LARG.def}, g:[], d:[], off:[]};
+    T.hub[cleHub()] = {maj:maintenant(), supprime:true, rails:'gd', larg:{g:HUB_LARG.def, d:HUB_LARG.def}, h:[], g:[], d:[], off:[]};
   });
 }
 const hubAllume = k => reglageHub().off.indexOf(k) < 0;
@@ -8698,7 +8696,7 @@ function allumerWidget(k, ou){
   const r = reglageHub();
   if(!HUB_CLES[k] || r.off.indexOf(k) < 0) return false;
   r.off = r.off.filter(x => x !== k);
-  (ou === 'g' ? r.g : r.d).push(k);
+  (HUB_PLACES.indexOf(ou) >= 0 && ou !== 'off' ? r[ou] : r.d).push(k);
   poserReglageHub(r);
   return true;
 }
@@ -8750,7 +8748,10 @@ function dessinerHub(){
   /* la carte « en grand » quitte son rail et prend toute la largeur, sous le récit */
   const grand = document.body.classList.contains('carteplein');
   rangerRail(g, grand ? r.g.filter(k => k !== 'carte') : r.g);
+  if(grand && $('hbH')) rangerRail($('hbH'), r.h.filter(k => k !== 'carte'));
   rangerRail(d, grand ? r.d.filter(k => k !== 'carte') : r.d);
+  const haut = $('hbH');
+  if(haut){ rangerRail(haut, r.h); haut.hidden = !haut.children.length; }
   const bc = $('hbW-carte'), main = document.querySelector('.jeu-main');
   if(grand && bc && main && bc.parentNode !== main) main.insertBefore(bc, main.firstChild);
   r.off.forEach(k => { const b = $('hbW-' + k); if(b && b.parentNode !== $('hbReserve')) $('hbReserve').append(b); });
@@ -8770,7 +8771,7 @@ function normHub(o){
   return {maj:+o.maj || 0, supprime:!!o.supprime,
     rails: HUB_RAILS.some(x => x.k === o.rails) ? o.rails : 'gd',
     larg: {g:largeurHub((o.larg || {}).g), d:largeurHub((o.larg || {}).d)},
-    g:li('g'), d:li('d'), off:li('off')};
+    h:li('h'), g:li('g'), d:li('d'), off:li('off')};
 }
 
 /* ---------- les fenêtres ---------- */
@@ -8804,7 +8805,7 @@ function ouvrirFen(cle, titre, remplir){
   HUB.fen = cle;
   const f = el('div','hbfen'); f.id = 'hbFen';
   f.onclick = ev => { if(ev.target === f) fermerFen(); };
-  const b = el('div','hbfenin');
+  const b = el('div','hbfenin' + (cle === 'options' ? ' hblarge' : ''));
   b.setAttribute('role', 'dialog'); b.setAttribute('aria-modal', 'true'); b.setAttribute('aria-label', titre);
   const t = el('div','ctete');
   t.append(el('p','ctitre', titre), el('span','espace'));
@@ -9048,7 +9049,8 @@ function dessinerOptions(corps){
   box.append(lg);
   /* les trois colonnes */
   const gr = el('div','hbgrille');
-  [['g', r.rails === 'gd' ? 'À gauche' : 'Rail 1'], ['d', r.rails === 'gd' ? 'À droite' : 'Rail 2'], ['off', 'Éteints']].forEach(([c, nom]) => {
+  [['h', 'Au-dessus du récit'], ['g', r.rails === 'gd' ? 'À gauche' : 'Rail 1'],
+   ['d', r.rails === 'gd' ? 'À droite' : 'Rail 2'], ['off', 'Éteints']].forEach(([c, nom]) => {
     const col = el('div','hbcol'); col.setAttribute('data-col', c); col.id = 'hbCol-' + c;
     col.append(el('p','lab', nom));
     const liste = el('div','hbchips'); liste.setAttribute('data-col', c);
@@ -9069,9 +9071,10 @@ function puceHub(k, col, r){
   const b = el('button','hbchip'); b.type = 'button';
   b.setAttribute('data-chip', k); b.setAttribute('data-col', col);
   b.append(el('span','hbgrip','⠿'), el('span', null, w ? w.n : k));
-  b.setAttribute('aria-label', (w ? w.n : k) + ', ' + (col === 'off' ? 'éteint' : 'dans le rail ' + (col === 'g' ? '1' : '2')) + '. Les flèches le déplacent.');
+  const ouNom = {h:'au-dessus du récit', g:'dans le rail 1', d:'dans le rail 2', off:'éteint'};
+  b.setAttribute('aria-label', (w ? w.n : k) + ', ' + ouNom[col] + '. Les flèches le déplacent.');
   b.onkeydown = ev => {
-    const ordre = ['g', 'd', 'off'];
+    const ordre = HUB_PLACES;
     const i = r[col].indexOf(k);
     if(ev.key === 'ArrowUp' || ev.key === 'ArrowDown'){
       ev.preventDefault();
@@ -15063,8 +15066,7 @@ if(PAGE === 'table'){
     if(ev.ctrlKey || ev.metaKey){ ev.preventDefault(); ajouterDepuisCompo(); return; }
     if(!ev.shiftKey && COMPO.genre !== 'encadre'){ ev.preventDefault(); ajouterDepuisCompo(); }
   };
-  sur('coOutilJet', () => { if(HUB.fen === 'action' && COMPO.panneau === 'jet'){ fermerFen(); return; } ouvrirAction('jet'); });
-  sur('coOutilPv', () => { if(HUB.fen === 'action' && COMPO.panneau === 'pv'){ fermerFen(); return; } ouvrirAction('pv'); });
+
   sur('coAjouter', ajouterDepuisCompo);
 
   /* l'historique des jets */

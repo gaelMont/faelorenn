@@ -26,8 +26,8 @@
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 body{background:var(--paper);color:var(--ink);font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:15px;line-height:1.5}
-.wrap{max-width:980px;margin:0 auto;padding-inline:18px;padding-block:26px 40px}
-.wrap.large{max-width:1260px}
+.wrap{max-width:none;margin:0 auto;padding-inline:clamp(14px,2.2vw,44px);padding-block:26px 40px}
+.wrap.large{max-width:none}
 h1{font-family:Spectral,Georgia,serif;font-weight:700;font-size:clamp(27px,5vw,38px);color:var(--forest);margin:0;letter-spacing:-.01em;text-wrap:balance}
 .sub{font-family:Spectral,Georgia,serif;font-style:italic;color:var(--sage);margin:2px 0 0}
 header{border-bottom:2px solid var(--forest);padding-bottom:12px;margin-bottom:18px}
@@ -184,13 +184,16 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-vis
 #hbG{flex:0 0 var(--lg,300px);width:var(--lg,300px)}
 #hbD{flex:0 0 var(--ld,300px);width:var(--ld,300px)}
 .hbw{min-width:0}
+.hbhaut{margin-bottom:12px;max-height:none;overflow:visible}
 .hbw>*{margin-bottom:0!important}
 
 /* la barre du bas : ce qu'on fait, à portée de pouce */
-.hbbarre{position:sticky;bottom:0;z-index:4;display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:12px;
-  padding:10px 0 calc(10px + env(safe-area-inset-bottom, 0px));background:var(--paper);border-top:1px solid var(--rule)}
-.hbbarre .btn{font-size:15px;padding:9px 15px}
-.hbbarre .espace{flex:1 1 auto}
+.hbbarre{position:sticky;bottom:calc(8px + env(safe-area-inset-bottom, 0px));z-index:4;display:flex;flex-wrap:wrap;gap:4px;align-items:center;
+  margin-top:12px;padding:6px;background:var(--surface);border:1px solid var(--rule);border-radius:4px;box-shadow:0 3px 12px rgba(0,0,0,.16)}
+.hbbarre .btn{font-size:14.5px;padding:8px 14px;border-radius:3px}
+.hbbarre .btn.ghost{border-color:transparent;color:var(--ink)}
+.hbbarre .btn.ghost:hover,.hbbarre .btn.ghost:focus-visible{border-color:var(--rule);background:var(--fill);color:var(--forest)}
+.hbbarre .espace{flex:1 1 auto;min-width:0}
 
 /* les ennemis, un bouton chacun */
 .hbeux{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
@@ -210,6 +213,7 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-vis
 .hbfenin{background:var(--surface);border:1px solid var(--rule);border-radius:3px;padding:14px 16px;width:100%;max-width:620px;
   max-height:86vh;overflow:auto;box-shadow:0 10px 40px rgba(0,0,0,.35)}
 .hbfenin .ctete{margin-bottom:6px}
+.hbfenin.hblarge{max-width:900px}
 .hbcorps{min-width:0}
 .hbcorps>.cote{border:0;box-shadow:none;padding:0;background:none}
 .hbcorps .panneau{margin-top:8px}
@@ -221,7 +225,8 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-vis
 .hbtir{margin-top:12px;border-top:1px dashed var(--rule);padding-top:10px}
 
 /* les options : trois colonnes qu'on remplit à la main */
-.hbgrille{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:12px}
+.hbgrille{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:12px}
+@media (max-width:720px){.hbgrille{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .hbcol{border:1px solid var(--rule);border-radius:3px;padding:8px;min-width:0;background:var(--paper)}
 .hbchips{display:flex;flex-direction:column;gap:5px;min-height:46px}
 .hbchip{display:flex;align-items:center;gap:7px;padding:6px 8px;border:1px solid var(--rule);border-radius:2px;background:var(--surface);
@@ -968,7 +973,7 @@ svg.reseau:active{cursor:grabbing}
 </head>
 <body>
 <script>try{ if(/^faelorenn-(table|visages|progression|missions|marchefleurs)$/.test(window.name)) window.name = ''; }catch(e){}</script>
-<nav class="fae-site" aria-label="Les registres de Faelorenn" style="max-width:1260px">
+<nav class="fae-site" aria-label="Les registres de Faelorenn">
   <a class="fae-accueil" href="./">Faelorenn</a>
   <a href="livre.html">Le Livre</a>
   <a href="missions.html">Registre des Missions</a>
@@ -982,7 +987,7 @@ svg.reseau:active{cursor:grabbing}
   <a href="tirages.html">Registre des Tirages</a>
 </nav>
 <style>
-.fae-site{display:flex;flex-wrap:wrap;gap:4px 18px;align-items:baseline;max-width:980px;margin:0 auto;padding:12px 18px 0;font:13px/1.4 "IBM Plex Sans",system-ui,sans-serif}
+.fae-site{display:flex;flex-wrap:wrap;gap:4px 18px;align-items:baseline;max-width:none;margin:0 auto;padding:12px clamp(14px,2.2vw,44px) 0;font:13px/1.4 "IBM Plex Sans",system-ui,sans-serif}
 .fae-site a{color:var(--sage,#4A6B52);text-decoration:none;border-bottom:1px solid transparent;padding-bottom:1px}
 .fae-site a:hover,.fae-site a:focus-visible{border-bottom-color:currentColor}
 .fae-site a[aria-current]{color:var(--forest,#1F3D2B);font-weight:600}
@@ -1042,6 +1047,7 @@ svg.reseau:active{cursor:grabbing}
     <div class="jeu" id="seJeu" data-rails="gd">
       <aside class="hbcote noprint" id="hbCoteG" aria-label="Tes outils, premier rail"><div class="hbrail" id="hbG"></div></aside>
       <div class="jeu-main">
+        <div class="hbrail hbhaut" id="hbH" hidden></div>
         <div id="seRecit" class="feuille" tabindex="-1"></div>
         <div id="seCompo" class="compo noprint" hidden>
           <div class="qui" id="coQui"></div>
@@ -1049,8 +1055,6 @@ svg.reseau:active{cursor:grabbing}
           <textarea id="coTexte" rows="3" aria-label="Le paragraphe"></textarea>
           <div class="joint" id="coJoint" hidden></div>
           <div class="acts outils">
-            <button class="btn ghost sm" id="coOutilJet" type="button" aria-pressed="false">Jet et dégâts</button>
-            <button class="btn ghost sm" id="coOutilPv" type="button" aria-pressed="false">PV et PC</button>
             <span class="espace"></span>
             <button class="btn" id="coAjouter" type="button">Ajouter</button>
           </div>
@@ -5155,11 +5159,6 @@ function dessinerCompositeur(force){
   });
 
   $('coTexte').placeholder = PLACEHOLDERS[COMPO.genre] || '';
-  [['coOutilJet','jet'], ['coOutilPv','pv']].forEach(([id, k]) => {
-    const b = $(id);
-    b.setAttribute('aria-pressed', COMPO.panneau === k ? 'true' : 'false');
-    b.classList.toggle('on', COMPO.panneau === k);
-  });
 
   /* le panneau vit dans la fenêtre « Action » : s'il doit s'ouvrir, c'est elle qui s'ouvre */
   if(typeof ouvrirAction === 'function' && $('hbBarre')){
@@ -8872,6 +8871,8 @@ const HUB_LISTE = [
 const HUB_CLES = {};
 HUB_LISTE.forEach(w => { HUB_CLES[w.k] = w; });
 const HUB_RAILS = [{k:'gd', l:'Un à gauche, un à droite'}, {k:'dd', l:'Les deux à droite'}, {k:'gg', l:'Les deux à gauche'}];
+/* les quatre places : au-dessus du récit, le rail 1, le rail 2, et les éteints */
+const HUB_PLACES = ['h', 'g', 'd', 'off'];
 const HUB_LARG = {min:210, max:520, def:300};
 /* ce que la fenêtre a emprunté, et ce qu'on est en train de glisser dans les options */
 const HUB = {fen:'', prete:'', glisse:null, cherche:'', tir:'', sorti:null};
@@ -8886,10 +8887,10 @@ function reglageHub(){
   const out = {
     rails: HUB_RAILS.some(x => x.k === r.rails) ? r.rails : 'gd',
     larg: {g: largeurHub((r.larg || {}).g), d: largeurHub((r.larg || {}).d)},
-    g: [], d: [], off: []
+    h: [], g: [], d: [], off: []
   };
   const vus = {};
-  ['g', 'd', 'off'].forEach(c => (Array.isArray(r[c]) ? r[c] : []).forEach(k => {
+  HUB_PLACES.forEach(c => (Array.isArray(r[c]) ? r[c] : []).forEach(k => {
     if(HUB_CLES[k] && !vus[k]){ vus[k] = 1; out[c].push(k); }
   }));
   HUB_LISTE.forEach(w => { if(!vus[w.k]) out[w.on ? w.ou : 'off'].push(w.k); });
@@ -8898,7 +8899,8 @@ function reglageHub(){
 function poserReglageHub(r){
   changer(() => {
     if(!T.hub) T.hub = {};
-    T.hub[cleHub()] = {maj:maintenant(), rails:r.rails, larg:{g:r.larg.g, d:r.larg.d}, g:r.g.slice(), d:r.d.slice(), off:r.off.slice()};
+    T.hub[cleHub()] = {maj:maintenant(), rails:r.rails, larg:{g:r.larg.g, d:r.larg.d},
+      h:r.h.slice(), g:r.g.slice(), d:r.d.slice(), off:r.off.slice()};
   });
 }
 /* remettre comme au départ : on écrit un oubli daté, parce qu'effacer la ligne la ferait revenir
@@ -8906,7 +8908,7 @@ function poserReglageHub(r){
 function oublierReglageHub(){
   changer(() => {
     if(!T.hub) T.hub = {};
-    T.hub[cleHub()] = {maj:maintenant(), supprime:true, rails:'gd', larg:{g:HUB_LARG.def, d:HUB_LARG.def}, g:[], d:[], off:[]};
+    T.hub[cleHub()] = {maj:maintenant(), supprime:true, rails:'gd', larg:{g:HUB_LARG.def, d:HUB_LARG.def}, h:[], g:[], d:[], off:[]};
   });
 }
 const hubAllume = k => reglageHub().off.indexOf(k) < 0;
@@ -8915,7 +8917,7 @@ function allumerWidget(k, ou){
   const r = reglageHub();
   if(!HUB_CLES[k] || r.off.indexOf(k) < 0) return false;
   r.off = r.off.filter(x => x !== k);
-  (ou === 'g' ? r.g : r.d).push(k);
+  (HUB_PLACES.indexOf(ou) >= 0 && ou !== 'off' ? r[ou] : r.d).push(k);
   poserReglageHub(r);
   return true;
 }
@@ -8967,7 +8969,10 @@ function dessinerHub(){
   /* la carte « en grand » quitte son rail et prend toute la largeur, sous le récit */
   const grand = document.body.classList.contains('carteplein');
   rangerRail(g, grand ? r.g.filter(k => k !== 'carte') : r.g);
+  if(grand && $('hbH')) rangerRail($('hbH'), r.h.filter(k => k !== 'carte'));
   rangerRail(d, grand ? r.d.filter(k => k !== 'carte') : r.d);
+  const haut = $('hbH');
+  if(haut){ rangerRail(haut, r.h); haut.hidden = !haut.children.length; }
   const bc = $('hbW-carte'), main = document.querySelector('.jeu-main');
   if(grand && bc && main && bc.parentNode !== main) main.insertBefore(bc, main.firstChild);
   r.off.forEach(k => { const b = $('hbW-' + k); if(b && b.parentNode !== $('hbReserve')) $('hbReserve').append(b); });
@@ -8987,7 +8992,7 @@ function normHub(o){
   return {maj:+o.maj || 0, supprime:!!o.supprime,
     rails: HUB_RAILS.some(x => x.k === o.rails) ? o.rails : 'gd',
     larg: {g:largeurHub((o.larg || {}).g), d:largeurHub((o.larg || {}).d)},
-    g:li('g'), d:li('d'), off:li('off')};
+    h:li('h'), g:li('g'), d:li('d'), off:li('off')};
 }
 
 /* ---------- les fenêtres ---------- */
@@ -9021,7 +9026,7 @@ function ouvrirFen(cle, titre, remplir){
   HUB.fen = cle;
   const f = el('div','hbfen'); f.id = 'hbFen';
   f.onclick = ev => { if(ev.target === f) fermerFen(); };
-  const b = el('div','hbfenin');
+  const b = el('div','hbfenin' + (cle === 'options' ? ' hblarge' : ''));
   b.setAttribute('role', 'dialog'); b.setAttribute('aria-modal', 'true'); b.setAttribute('aria-label', titre);
   const t = el('div','ctete');
   t.append(el('p','ctitre', titre), el('span','espace'));
@@ -9265,7 +9270,8 @@ function dessinerOptions(corps){
   box.append(lg);
   /* les trois colonnes */
   const gr = el('div','hbgrille');
-  [['g', r.rails === 'gd' ? 'À gauche' : 'Rail 1'], ['d', r.rails === 'gd' ? 'À droite' : 'Rail 2'], ['off', 'Éteints']].forEach(([c, nom]) => {
+  [['h', 'Au-dessus du récit'], ['g', r.rails === 'gd' ? 'À gauche' : 'Rail 1'],
+   ['d', r.rails === 'gd' ? 'À droite' : 'Rail 2'], ['off', 'Éteints']].forEach(([c, nom]) => {
     const col = el('div','hbcol'); col.setAttribute('data-col', c); col.id = 'hbCol-' + c;
     col.append(el('p','lab', nom));
     const liste = el('div','hbchips'); liste.setAttribute('data-col', c);
@@ -9286,9 +9292,10 @@ function puceHub(k, col, r){
   const b = el('button','hbchip'); b.type = 'button';
   b.setAttribute('data-chip', k); b.setAttribute('data-col', col);
   b.append(el('span','hbgrip','⠿'), el('span', null, w ? w.n : k));
-  b.setAttribute('aria-label', (w ? w.n : k) + ', ' + (col === 'off' ? 'éteint' : 'dans le rail ' + (col === 'g' ? '1' : '2')) + '. Les flèches le déplacent.');
+  const ouNom = {h:'au-dessus du récit', g:'dans le rail 1', d:'dans le rail 2', off:'éteint'};
+  b.setAttribute('aria-label', (w ? w.n : k) + ', ' + ouNom[col] + '. Les flèches le déplacent.');
   b.onkeydown = ev => {
-    const ordre = ['g', 'd', 'off'];
+    const ordre = HUB_PLACES;
     const i = r[col].indexOf(k);
     if(ev.key === 'ArrowUp' || ev.key === 'ArrowDown'){
       ev.preventDefault();
@@ -15280,8 +15287,7 @@ if(PAGE === 'table'){
     if(ev.ctrlKey || ev.metaKey){ ev.preventDefault(); ajouterDepuisCompo(); return; }
     if(!ev.shiftKey && COMPO.genre !== 'encadre'){ ev.preventDefault(); ajouterDepuisCompo(); }
   };
-  sur('coOutilJet', () => { if(HUB.fen === 'action' && COMPO.panneau === 'jet'){ fermerFen(); return; } ouvrirAction('jet'); });
-  sur('coOutilPv', () => { if(HUB.fen === 'action' && COMPO.panneau === 'pv'){ fermerFen(); return; } ouvrirAction('pv'); });
+
   sur('coAjouter', ajouterDepuisCompo);
 
   /* l'historique des jets */

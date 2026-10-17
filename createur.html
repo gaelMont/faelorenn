@@ -25,7 +25,7 @@
 }
 *{box-sizing:border-box}
 body{background:var(--paper);color:var(--ink);font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:15px;line-height:1.5}
-.wrap{max-width:940px;margin:0 auto;padding-inline:18px;padding-block:28px 140px}
+.wrap{max-width:none;margin:0 auto;padding-inline:clamp(14px,2.2vw,44px);padding-block:28px 140px}
 h1{font-family:Spectral,Georgia,serif;font-weight:700;font-size:clamp(28px,5vw,40px);color:var(--forest);margin:0;letter-spacing:-.01em;text-wrap:balance}
 .sub{font-family:Spectral,Georgia,serif;font-style:italic;color:var(--sage);margin:2px 0 0}
 header{border-bottom:2px solid var(--forest);padding-bottom:12px;margin-bottom:26px}
@@ -196,7 +196,7 @@ tr.grp td{background:var(--fill);font-family:Spectral,Georgia,serif;font-style:i
   <a href="tirages.html">Registre des Tirages</a>
 </nav>
 <style>
-.fae-site{display:flex;flex-wrap:wrap;gap:4px 18px;align-items:baseline;max-width:980px;margin:0 auto;padding:12px 18px 0;font:13px/1.4 "IBM Plex Sans",system-ui,sans-serif}
+.fae-site{display:flex;flex-wrap:wrap;gap:4px 18px;align-items:baseline;max-width:none;margin:0 auto;padding:12px clamp(14px,2.2vw,44px) 0;font:13px/1.4 "IBM Plex Sans",system-ui,sans-serif}
 .fae-site a{color:var(--sage,#4A6B52);text-decoration:none;border-bottom:1px solid transparent;padding-bottom:1px}
 .fae-site a:hover,.fae-site a:focus-visible{border-bottom-color:currentColor}
 .fae-site a[aria-current]{color:var(--forest,#1F3D2B);font-weight:600}

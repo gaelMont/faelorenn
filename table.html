@@ -26,8 +26,8 @@
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 body{background:var(--paper);color:var(--ink);font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:15px;line-height:1.5}
-.wrap{max-width:980px;margin:0 auto;padding-inline:18px;padding-block:26px 40px}
-.wrap.large{max-width:1260px}
+.wrap{max-width:none;margin:0 auto;padding-inline:clamp(14px,2.2vw,44px);padding-block:26px 40px}
+.wrap.large{max-width:none}
 h1{font-family:Spectral,Georgia,serif;font-weight:700;font-size:clamp(27px,5vw,38px);color:var(--forest);margin:0;letter-spacing:-.01em;text-wrap:balance}
 .sub{font-family:Spectral,Georgia,serif;font-style:italic;color:var(--sage);margin:2px 0 0}
 header{border-bottom:2px solid var(--forest);padding-bottom:12px;margin-bottom:18px}
@@ -176,10 +176,88 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-vis
 .pcarte.eclaire{box-shadow:0 0 0 2px var(--sage)}
 
 /* la partie : le récit au milieu, ce qu'il faut sous la main à côté */
-.jeu{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:14px;align-items:start;margin-top:12px}
-.jeu-main{min-width:0}
+.jeu{display:flex;gap:14px;align-items:flex-start;margin-top:12px}
+.jeu-main{flex:1 1 auto;min-width:0}
 .jeu .feuille{margin-top:0}
-.jeu-cote{position:sticky;top:calc(12px + env(safe-area-inset-top, 0px));display:flex;flex-direction:column;gap:10px;max-height:calc(100vh - 24px);overflow-y:auto;overscroll-behavior:contain}
+.hbcote{display:flex;gap:10px;align-items:flex-start;position:sticky;top:calc(12px + env(safe-area-inset-top, 0px));flex:0 0 auto}
+.hbrail{display:flex;flex-direction:column;gap:10px;max-height:calc(100vh - 24px);overflow-y:auto;overscroll-behavior:contain;min-width:0}
+#hbG{flex:0 0 var(--lg,300px);width:var(--lg,300px)}
+#hbD{flex:0 0 var(--ld,300px);width:var(--ld,300px)}
+.hbw{min-width:0}
+.hbhaut{margin-bottom:12px;max-height:none;overflow:visible}
+.hbw>*{margin-bottom:0!important}
+
+/* la barre du bas : ce qu'on fait, à portée de pouce */
+.hbbarre{display:flex;flex-wrap:wrap;gap:4px;align-items:center;margin-top:12px;padding:6px;
+  background:var(--surface);border:1px solid var(--rule);border-radius:4px}
+.hbbarre .btn{font-size:14.5px;padding:8px 14px;border-radius:3px}
+.hbbarre .btn.ghost{border-color:transparent;color:var(--ink)}
+.hbbarre .btn.ghost:hover,.hbbarre .btn.ghost:focus-visible{border-color:var(--rule);background:var(--fill);color:var(--forest)}
+.hbbarre .espace{flex:1 1 auto;min-width:0}
+
+/* les ennemis, un bouton chacun */
+.hbeux{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.hbe{flex:1 1 130px;min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:8px 10px;
+  border:1px solid var(--rule);border-radius:3px;background:var(--surface);color:var(--ink);font:inherit;text-align:left;cursor:pointer}
+.hbe:hover{border-color:var(--sage)}
+.hbe.tour{border-color:var(--forest);background:var(--fill);box-shadow:inset 3px 0 0 var(--forest)}
+.hbe.visee{outline:2px solid var(--rust);outline-offset:1px}
+.hbe.bas{opacity:.5}
+.hben{font-family:Spectral,Georgia,serif;font-weight:600;font-size:14.5px;overflow-wrap:anywhere;line-height:1.25}
+.hbev{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.hbe .abarre{width:100%;margin-top:3px}
+.cie.tour{background:var(--fill);box-shadow:inset 3px 0 0 var(--forest)}
+
+/* les fenêtres du hub */
+.hbfen{position:fixed;inset:0;background:rgba(20,18,14,.5);display:flex;align-items:center;justify-content:center;padding:16px;z-index:60}
+.hbfenin{background:var(--surface);border:1px solid var(--rule);border-radius:3px;padding:14px 16px;width:100%;max-width:620px;
+  max-height:86vh;overflow:auto;box-shadow:0 10px 40px rgba(0,0,0,.35)}
+.hbfenin .ctete{margin-bottom:6px}
+.hbfenin.hblarge{max-width:900px}
+.hbcorps{min-width:0}
+.hbcorps>.cote{border:0;box-shadow:none;padding:0;background:none}
+.hbcorps .panneau{margin-top:8px}
+.hbliste{display:flex;flex-direction:column;gap:4px;margin-top:8px;max-height:52vh;overflow:auto}
+.hbpnj{display:flex;flex-direction:column;align-items:flex-start;gap:1px;padding:7px 10px;border:1px solid var(--rule);border-radius:2px;
+  background:var(--surface);color:var(--ink);font:inherit;text-align:left;cursor:pointer}
+.hbpnj:hover{border-color:var(--sage)}
+#hbPnjQ{width:100%}
+.hbtir{margin-top:12px;border-top:1px dashed var(--rule);padding-top:10px}
+
+/* le hub en plein écran : la page disparaît, le récit défile, le reste tient en place */
+body.hubplein,html.hubplein{overflow:hidden}
+body.hubplein .fae-site,body.hubplein .wrap>header,body.hubplein #secTable,body.hubplein #secPerso,
+body.hubplein #secJets,body.hubplein #secSeance>h2,body.hubplein #secSeance>.hint{display:none!important}
+body.hubplein .wrap{position:fixed;inset:0;height:auto;max-width:none;display:flex;flex-direction:column;
+  padding:8px clamp(14px,2.2vw,44px) calc(8px + env(safe-area-inset-bottom,0px));background:var(--paper);z-index:3}
+body.hubplein #secSeance{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;margin-bottom:0}
+body.hubplein .card.seance{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;background:none;border:0;box-shadow:none;padding:0}
+body.hubplein #seTete{flex:0 0 auto}
+body.hubplein .jeu{flex:1 1 auto;min-height:0;height:auto;margin-top:8px;align-items:stretch}
+body.hubplein .hbcote{position:static;min-height:0}
+body.hubplein .hbrail{max-height:100%}
+body.hubplein .jeu-main{display:flex;flex-direction:column;min-height:0}
+body.hubplein .hbhaut{flex:0 1 auto;max-height:42%;overflow:auto;margin-bottom:8px}
+body.hubplein .feuille{flex:1 1 auto;min-height:0;overflow:auto}
+body.hubplein .compo{flex:0 0 auto}
+body.hubplein .hbbarre{flex:0 0 auto;margin-bottom:0}
+@media (max-width:1080px){ body.hubplein{overflow:auto} body.hubplein .jeu{height:auto} body.hubplein .feuille{overflow:visible} }
+
+/* les options : quatre colonnes qu'on remplit à la main */
+.hbgrille{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:12px}
+@media (max-width:720px){.hbgrille{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.hbcol{border:1px solid var(--rule);border-radius:3px;padding:8px;min-width:0;background:var(--paper)}
+.hbchips{display:flex;flex-direction:column;gap:5px;min-height:46px}
+.hbchip{display:flex;align-items:center;gap:7px;padding:6px 8px;border:1px solid var(--rule);border-radius:2px;background:var(--surface);
+  color:var(--ink);font:inherit;font-size:13px;text-align:left;cursor:grab;touch-action:none;overflow-wrap:anywhere}
+.hbchip:hover{border-color:var(--sage)}
+.hbchip.hbpris{opacity:.35}
+.hbgrip{color:var(--muted);font-size:11px;letter-spacing:-1px}
+.hbvole{position:fixed;z-index:70;pointer-events:none;box-shadow:0 6px 18px rgba(0,0,0,.3);opacity:.95;width:160px}
+.hbtrou{height:30px;border:1px dashed var(--sage);border-radius:2px;background:var(--fill)}
+.hblarg{display:flex;flex-wrap:wrap;gap:10px 18px;margin-top:10px}
+.hblargl{display:flex;flex-direction:column;gap:2px;flex:1 1 160px}
+.hblargl input{width:100%;accent-color:var(--forest)}
 .cote{background:var(--surface);border:1px solid var(--rule);border-radius:2px;padding:10px 12px;box-shadow:var(--shadow);min-width:0}
 .ctete{display:flex;align-items:baseline;gap:6px 8px;flex-wrap:wrap;margin-bottom:4px}
 .ctitre{font-family:Spectral,Georgia,serif;font-size:15.5px;font-weight:700;color:var(--forest);margin:0}
@@ -189,6 +267,9 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-vis
 .cie{display:flex;flex-wrap:wrap;align-items:center;gap:3px 12px;padding:6px 0;border-top:1px solid var(--rule)}
 .cie-liste .ctitre{margin-bottom:2px}
 .cie-liste .cie:first-of-type{border-top:0}
+.cietete{flex:1 0 100%;display:flex;flex-wrap:wrap;align-items:baseline;gap:3px 8px}
+.cietete .cnom{flex:1 1 auto}
+.cietete .ax{margin-left:auto}
 .cnom{flex:1 0 100%;font-family:Spectral,Georgia,serif;font-size:15px;color:var(--forest);font-weight:600;overflow-wrap:anywhere}
 .cie.moi .cnom{text-decoration:underline;text-decoration-color:var(--rule);text-underline-offset:3px}
 .cie.tombe .cnom{color:var(--rust)}
@@ -318,7 +399,7 @@ ul.tliste li{display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom
 .ctaide{margin-top:6px}
 .ctdist{margin:6px 0 0}
 .ctdist.trop{color:var(--rust);font-weight:600}
-body.carteplein .jeu-cote{display:none}
+body.carteplein .hbcote{display:none}
 @media (max-width:820px){.ctsvg{max-height:46vh}}
 /* le tour de table : les cartes du round */
 .tour{border-bottom:1px solid var(--rule);padding-bottom:8px;margin-bottom:6px}
@@ -346,6 +427,11 @@ ul.prliste{list-style:none;margin:4px 0 0;padding:0}
 .acars{font-variant-numeric:tabular-nums;letter-spacing:.01em}
 .atour{margin-top:6px}
 .cbloc{margin-top:8px;border-top:1px solid var(--rule);padding-top:8px}
+/* seul dans son widget, un bloc n'a pas besoin de son trait : la carte en a déjà un */
+.cote>.cbloc:first-child{margin-top:0;border-top:0;padding-top:0}
+/* la case des jours : sans les flèches, « jours » tient dedans */
+.lejour input[type=number]{appearance:textfield;-moz-appearance:textfield}
+.lejour input[type=number]::-webkit-outer-spin-button,.lejour input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 .cbloc .ctete{margin-bottom:2px}
 /* le butin de ceux qui sont tombés */
 .atete .afouiller{align-self:center}
@@ -686,9 +772,15 @@ svg.reseau:active{cursor:grabbing}
 .ligne4{display:grid;grid-template-columns:90px 160px 1fr;gap:8px}
 .ligne4 input{width:100%}
 @media (max-width:1080px){
+  /* en une colonne, le récit passe devant : les rails le suivent, dans l'ordre choisi */
   .jeu{display:flex;flex-direction:column;gap:12px}
-  .jeu-main,.jeu-cote{display:contents}
-  #seEtat{order:1} #seRecit{order:2} #seCombat{order:3} #seCompo{order:4;margin-top:0} #seOracle{order:5} #seMission{order:6} #seGens{order:7} #seAide{order:8}
+  .jeu-main{order:1}
+  #hbCoteG{order:2}
+  #hbCoteD{order:3}
+  .hbcote{position:static;display:block}
+  .hbrail{max-height:none;overflow:visible;margin-bottom:12px}
+  #hbG,#hbD{flex:none;width:auto}
+  .hbgrille{grid-template-columns:minmax(0,1fr)}
   .cnom{flex:1 1 150px}
   .cj{flex:1 1 170px}
 }
@@ -908,8 +1000,9 @@ svg.reseau:active{cursor:grabbing}
 </head>
 <body>
 <script>try{ if(/^faelorenn-(table|visages|progression|missions|marchefleurs)$/.test(window.name)) window.name = ''; }catch(e){}</script>
-<nav class="fae-site" aria-label="Les registres de Faelorenn" style="max-width:1260px">
+<nav class="fae-site" aria-label="Les registres de Faelorenn">
   <a class="fae-accueil" href="./">Faelorenn</a>
+  <a href="livre.html">Le Livre</a>
   <a href="missions.html">Registre des Missions</a>
   <a href="table.html" aria-current="page">Registre de la Table</a>
   <a href="pnj.html">Registre des Visages</a>
@@ -918,10 +1011,10 @@ svg.reseau:active{cursor:grabbing}
   <a href="rencontres.html">Registre des Rencontres</a>
   <a href="competences.html">Registre des Compétences</a>
   <a href="plans.html">Registre des Plans</a>
-  <a href="tables.html">Registre des Tables</a>
+  <a href="tirages.html">Registre des Tirages</a>
 </nav>
 <style>
-.fae-site{display:flex;flex-wrap:wrap;gap:4px 18px;align-items:baseline;max-width:980px;margin:0 auto;padding:12px 18px 0;font:13px/1.4 "IBM Plex Sans",system-ui,sans-serif}
+.fae-site{display:flex;flex-wrap:wrap;gap:4px 18px;align-items:baseline;max-width:none;margin:0 auto;padding:12px clamp(14px,2.2vw,44px) 0;font:13px/1.4 "IBM Plex Sans",system-ui,sans-serif}
 .fae-site a{color:var(--sage,#4A6B52);text-decoration:none;border-bottom:1px solid transparent;padding-bottom:1px}
 .fae-site a:hover,.fae-site a:focus-visible{border-bottom-color:currentColor}
 .fae-site a[aria-current]{color:var(--forest,#1F3D2B);font-weight:600}
@@ -978,9 +1071,10 @@ svg.reseau:active{cursor:grabbing}
   <p class="hint">Le compte rendu s’écrit ici, comme dans le Doc : le MJ raconte, chacun écrit ce que son personnage fait et dit, et les jets se joignent au paragraphe. Une rencontre validée dans le Registre des Rencontres arrive toute seule, et le combat se suit à côté du récit. L’oracle, sous la main, répond par oui ou non et s’écrit dans le récit.</p>
   <div class="card seance">
     <div id="seTete"></div>
-    <div class="jeu">
+    <div class="jeu" id="seJeu" data-rails="gd">
+      <aside class="hbcote noprint" id="hbCoteG" aria-label="Tes outils, premier rail"><div class="hbrail" id="hbG"></div></aside>
       <div class="jeu-main">
-        <div id="seCarte" class="carte noprint" hidden></div>
+        <div class="hbrail hbhaut" id="hbH" hidden></div>
         <div id="seRecit" class="feuille" tabindex="-1"></div>
         <div id="seCompo" class="compo noprint" hidden>
           <div class="qui" id="coQui"></div>
@@ -988,41 +1082,36 @@ svg.reseau:active{cursor:grabbing}
           <textarea id="coTexte" rows="3" aria-label="Le paragraphe"></textarea>
           <div class="joint" id="coJoint" hidden></div>
           <div class="acts outils">
-            <button class="btn ghost sm" id="coOutilJet" type="button" aria-pressed="false">Jet et dégâts</button>
-            <button class="btn ghost sm" id="coOutilPv" type="button" aria-pressed="false">PV et PC</button>
             <span class="espace"></span>
             <button class="btn" id="coAjouter" type="button">Ajouter</button>
           </div>
           <div id="coPanneau"></div>
         </div>
+        <div class="hbbarre noprint" id="hbBarre">
+          <button class="btn" id="hbAction" type="button">Action</button>
+          <button class="btn ghost" id="hbVisage" type="button">Un visage connu ?</button>
+          <button class="btn ghost" id="hbOracle" type="button">Oracle</button>
+          <button class="btn ghost" id="prTirer" type="button" hidden>Tirer les priorités</button>
+          <button class="btn ghost" id="hbJets" type="button">Les jets</button>
+          <span class="espace"></span>
+          <button class="btn ghost" id="hbOptions" type="button">Options</button>
+        </div>
       </div>
-      <aside class="jeu-cote noprint" aria-label="Sous la main pendant la partie">
+      <aside class="hbcote noprint" id="hbCoteD" aria-label="Tes outils, second rail"><div class="hbrail" id="hbD"></div></aside>
+    </div>
+    <div id="hbReserve" hidden>
+        <div id="seCarte" class="carte noprint" hidden></div>
+        <div id="seRepos" class="cote" hidden></div>
+        <div id="seJour" class="cote" hidden></div>
         <div id="seOracle" class="cote oracle" hidden></div>
+        <div id="seVisage" class="cote" hidden></div>
         <div id="seMission" class="cote mission" hidden></div>
         <div id="seEtat" class="cote cie-liste" hidden></div>
+        <div id="seTour" class="cote" hidden></div>
         <div id="seCombat" class="cote combat" hidden></div>
+        <div id="seTirage" class="cote" hidden></div>
+        <div id="seButin" class="cote" hidden></div>
         <div id="seGens" class="cote" hidden></div>
-        <details class="cote aide" id="seAide">
-          <summary>Ce que dit le livre, en combat</summary>
-          <ul>
-            <li><b>L’initiative</b> : une carte par combattant à chaque round, on agit de la plus petite à la plus grande. Un exceptionnel en reçoit deux.</li>
-            <li><b>Chacun son tour</b> : les cartes tirées, le tour de table dit à qui c’est. Hors de son tour, un jeton ne se déplace pas, personne ne frappe et personne ne vise. « Au suivant » fait tourner, « Revenir » défait. Qui entre au milieu d’un round n’a pas de carte : il agit librement et reçoit la sienne au tirage suivant.</li>
-            <li><b>Une attaque veut une cible</b> : « personne (pas de cible) » existe pour un coup dans le vide ou une Pratique de zone, mais tant qu’aucune cible n’est choisie, les dégâts ne s’appliquent à personne.</li>
-            <li><b>Un PNJ qui se bat</b> a ses PV, sa réduction, ses dés, ses cartes et ses sept caractéristiques, d’office selon son rang ; la table lance pour lui, caractéristique fois deux plus le bonus du rang. Son peuple lui donne l’attaque de base de son espèce, donnée d’office, et son genre une seconde attaque : une vraie Pratique de sa liste, ou l’attaque de son métier.</li>
-            <li><b>Attaquer</b> : d20 sous la valeur divisée par cinq. 1 naturel, dégâts doublés ; 20 naturel, quelque chose se passe mal.</li>
-            <li><b>L’ennemi touche d’office</b>, sans jet du MJ. Une seule réaction par round : esquive sous Acrobatie, parade sous Combat, au d20.</li>
-            <li><b>Réaction ratée de moins de 4</b> : aucun dégât, mais pas d’attaque au prochain round. De 4 ou plus : les dégâts passent.</li>
-            <li><b>Les dégâts</b> : on retire d’abord la réduction, puis la contrainte du corps, et on arrondit vers le bas.</li>
-            <li><b>La réduction</b> arrête le physique et la matière : Sève, eau, pierre, vent, Mue. Le feu, l’onde, l’ombre et le sacré la traversent.</li>
-            <li><b>Un échec consomme le PC</b>, sauf l’attaque de base, qui ne coûte rien.</li>
-            <li><b>À 0 PV</b>, on tombe, inconscient, et la table ouvre ses jets de mort : un par round, sous 11 au d20 (ou sous sa Constitution fois deux divisée par cinq, si c’est plus haut). Trois réussites, il est stabilisé ; trois échecs, il meurt. Un 1 le relève à 1 PV, un 20 compte double. Un soin, une fiole ou un jet de Médecine le stabilisent sans jet.</li>
-            <li><b>Ce qu’il subit</b> se pose en puces sous lui, dans la compagnie comme en face : « À terre », « Pris », « −10 à ses jets ». Chacune dit combien de rounds elle tient ; un nouveau round les fait descendre, un repos long efface celles qui tenaient jusque-là.</li>
-            <li><b>Le repos</b>, sous la compagnie : court, une heure, 1d6 PV et 1d4 PC ; long, une nuit, tout, et le jour avance. Le repos ne rend rien d’autre. Le jour de jeu se compte comme le Livre I, en années de la Réunion, et chaque campagne a le sien : l’âge des PNJ se lit là-dessus.</li>
-            <li><b>La carte</b> : pendant un combat, le pavé « La carte », en haut du récit, a un bouton « Choisir une carte » ; une fenêtre liste tes villages, et dans un village tu prends sa carte entière ou l’étage d’une de ses bâtisses. La table va la chercher dans le Registre des Plans sans que tu quittes la table. Pour cadrer une ruelle, ouvre plutôt le plan, zoome, et clique « Vers la table ». <b>Autre fenêtre</b> sort la carte à part, pour un second écran : elle suit la table, et ce qu’on y déplace revient dans la table. Un pas vaut un mètre. Tu poses chaque jeton où tu veux : « Poser », sous la carte, puis un clic à l’endroit voulu ; « Les poser d’office » range les manquants en deux rangs, et le « × » d’une ligne reprend un jeton. Ensuite on le glisse, pendant son tour seulement ; le cercle plein montre ce qui lui reste à marcher ce round, le cercle en pointillé sa portée, et le compteur de pas ne s’affiche que pour celui qui joue. Dix pas par round d’office, à changer sous la carte. Pour les portées, la carte prévient seulement : elle n’empêche pas de frapper de trop loin.</li>
-            <li><b>Modificateurs</b> : difficile −20 ou −4 · quasiment impossible −40 ou −8 · les circonstances aident +20 ou +4.</li>
-          </ul>
-        </details>
-      </aside>
     </div>
   </div>
 </section>
@@ -1721,18 +1810,18 @@ let T = videTable();
 const MOI = {joueur:'', perso:'', seance:'', seanceFixee:false, campagne:'', mode:'d100', vuePnj:'fiches', des:'site'};
 const SYNC = {poignee:null, nom:'', vu:0, dernier:0, etat:'local', erreur:'', ecrit:null, boucle:null};
 
-function videTable(){ return {format:'faelorenn-table', version:1, nom:'', maj:0, campagnes:{}, personnages:{}, journal:{}, blocs:{}, pnj:{}, lieux:{}, liens:{}, positions:{}, rencontres:{}, adversaires:{}, missions:{}, objets:{}, argent:{}, tables:{}, oracle:null, jets:[], viderAvant:0}; }
+function videTable(){ return {format:'faelorenn-table', version:1, nom:'', maj:0, campagnes:{}, personnages:{}, journal:{}, blocs:{}, pnj:{}, lieux:{}, liens:{}, positions:{}, rencontres:{}, adversaires:{}, missions:{}, objets:{}, argent:{}, tables:{}, hub:{}, oracle:null, jets:[], viderAvant:0}; }
 /* objets : ce que chacun porte dans son sac, pièce par pièce. argent : chaque pièce qui entre ou sort de sa bourse.
    Chacun sa ligne, datée : deux joueurs qui achètent en même temps, les deux achats comptent.
    campagnes : plusieurs parties dans le même monde, chacune avec sa compagnie et ses séances */
-const CLES_FUSION = ['campagnes','personnages','journal','blocs','pnj','lieux','liens','positions','rencontres','adversaires','missions','objets','argent','tables'];
+const CLES_FUSION = ['campagnes','personnages','journal','blocs','pnj','lieux','liens','positions','rencontres','adversaires','missions','objets','argent','tables','hub'];
 function nouvelId(p){ return (p || 'x') + '-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 6); }
 /* un nom donne son identifiant : deux joueurs qui créent « Nahya » chacun de leur côté créent la même fiche */
 function slug(s){ return String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'x'; }
 function idLibre(base, table){ return !table[base] || table[base].supprime ? base : base + '-' + Math.random().toString(36).slice(2, 6); }
 const maintenant = () => Date.now();
 /* le Registre de la Table et le Registre des Visages s'ouvrent chacun dans son onglet, toujours le même */
-const ONGLET_TABLES = 'faelorenn-tables';
+const ONGLET_TIRAGES = 'faelorenn-tirages';
 const ONGLET_TABLE = 'faelorenn-table', ONGLET_VISAGES = 'faelorenn-visages', ONGLET_PROGRESSION = 'faelorenn-progression', ONGLET_MISSIONS = 'faelorenn-missions', ONGLET_FICHE = 'faelorenn-marchefleurs';
 function ouvrirPage(url, onglet){
   let w = null;
@@ -2427,6 +2516,7 @@ function normTable(o){
   Object.keys(o.rencontres || {}).forEach(id => { const r = normRencontre(o.rencontres[id]); r.id = id; t.rencontres[id] = r; });
   Object.keys(o.adversaires || {}).forEach(id => { const a = normAdversaire(o.adversaires[id]); a.id = id; t.adversaires[id] = a; });
   Object.keys(o.missions || {}).forEach(id => { const m = normMission(o.missions[id]); m.id = id; t.missions[id] = m; });
+  Object.keys(o.hub || {}).forEach(k => { const x = normHub(o.hub[k]); if(x) t.hub[k] = x; });
   Object.keys(o.lieux || {}).forEach(id => { const x = normLieu(o.lieux[id]); x.id = id; t.lieux[id] = x; });
   t.oracle = normReglagesOracle(o.oracle);
   Object.keys(o.objets || {}).forEach(id => { const x = normObjet(o.objets[id]); x.id = id; t.objets[id] = x; });
@@ -4667,11 +4757,13 @@ function dessinerEtatSeance(){
   const box = $('seEtat'); if(!box) return;
   box.innerHTML = '';
   const l = persos();
-  box.hidden = !l.length;
-  if(!l.length) return;
-  box.append(el('p','ctitre', 'La compagnie'));
+  box.hidden = !l.length && !seanceCourante();
+  poserReposJour(box.hidden ? null : box);
+  if(box.hidden) return;
+  if(l.length) box.append(el('p','ctitre', 'La compagnie'));
   l.forEach(c => {
-    const r = el('div','cie' + (MOI.perso === c.id ? ' moi' : '') + (c.pvMax && c.pv <= 0 ? ' tombe' : ''));
+    const z0 = zPerso(c);
+    const r = el('div','cie' + (MOI.perso === c.id ? ' moi' : '') + (c.pvMax && c.pv <= 0 ? ' tombe' : '') + (estActif(z0) ? ' tour' : ''));
     r.setAttribute('data-cie', c.id);
     r.append(el('b','cnom', c.nom || 'Sans nom'));
     [['pv','PV','pvMax'], ['pcc','PC','pcMax']].forEach(([k, lab, max]) => {
@@ -4687,12 +4779,20 @@ function dessinerEtatSeance(){
       r.append(j);
     });
     /* ce qu'il subit, et ses jets de mort quand il est tombé */
-    const z = zPerso(c);
-    const m = blocMort(z); if(m) r.append(m);
-    r.append(blocEtats(z));
+    const m = blocMort(z0); if(m) r.append(m);
+    r.append(blocEtats(z0));
     box.append(r);
   });
-  box.append(blocRepos());
+  /* ceux qui se battent à nos côtés suivent la compagnie, pas les ennemis */
+  if(seanceCourante()) box.append(blocCombattants());
+}
+/* le repos et le jour ont chacun leur widget ; sans hub, ils retombent sous la compagnie */
+function poserReposJour(repli){
+  const r = $('seRepos'), j = $('seJour');
+  if(r){ r.innerHTML = ''; r.append(blocRepos()); r.hidden = false; }
+  else if(repli) repli.append(blocRepos());
+  if(j){ j.innerHTML = ''; j.append(blocJour()); j.hidden = false; }
+  else if(repli) repli.append(blocJour());
 }
 
 /* ---------- la zone d'écriture ---------- */
@@ -5033,25 +5133,15 @@ function dessinerCompositeur(force){
     };
     lq.append(chip('MJ', {k:'mj', id:'', nom:''}, COMPO.qui.k === 'mj'));
     persos().forEach(c => lq.append(chip(c.nom || 'Sans nom', {k:'perso', id:c.id, nom:c.nom}, COMPO.qui.k === 'perso' && COMPO.qui.id === c.id)));
-    const pnj = el('input'); pnj.type = 'text'; pnj.id = 'coPnj'; pnj.placeholder = 'un PNJ, Nahya';
-    pnj.setAttribute('list', 'coPnjs'); pnj.setAttribute('aria-label', 'Faire parler ou agir un PNJ');
-    pnj.value = COMPO.qui.k === 'pnj' ? nomDe(COMPO.qui) : '';
-    if(COMPO.qui.k === 'pnj') pnj.className = 'actif';
-    const dl = el('datalist'); dl.id = 'coPnjs';
-    const vus = {};
-    pnjs().forEach(p => { if(p.nom) vus[p.nom] = 1; });
-    Object.keys(T.blocs).map(k => T.blocs[k]).filter(b => b && !b.supprime && b.qui && b.qui.k === 'pnj' && b.qui.nom && !b.qui.id)
-      .sort((x, y) => y.ordre - x.ordre).forEach(b => { if(!vus[b.qui.nom] && !pnjParNom(b.qui.nom)) vus[b.qui.nom] = 1; });
-    Object.keys(vus).slice(0, 80).forEach(n => dl.append(new Option(n, n)));
-    const prendre = () => {
-      const v = pnj.value.trim(); if(!v) return;
-      const f = pnjParNom(v);
-      if(COMPO.qui.k === 'pnj' && cleNom(nomDe(COMPO.qui)) === cleNom(v)) return;
-      choisirQui({k:'pnj', id:f ? f.id : '', nom:f ? f.nom : v});
-    };
-    pnj.onchange = prendre;
-    pnj.onkeydown = ev => { if(ev.key === 'Enter'){ ev.preventDefault(); prendre(); $('coTexte').focus(); } };
-    lq.append(pnj, dl);
+    /* ceux qui se battent à nos côtés se choisissent comme les personnages */
+    const allies = pnjsAuCombat().filter(p => p.combat.cote === 'nous');
+    allies.forEach(p => lq.append(chip(p.nom || 'Sans nom', {k:'pnj', id:p.id, nom:p.nom}, COMPO.qui.k === 'pnj' && COMPO.qui.id === p.id)));
+    const ailleurs = COMPO.qui.k === 'pnj' && !allies.some(p => p.id === COMPO.qui.id);
+    const ch = el('button', ailleurs ? 'actif' : null, ailleurs ? nomDe(COMPO.qui) : 'Un PNJ ?'); ch.type = 'button'; ch.id = 'coPnjCherche';
+    ch.setAttribute('aria-pressed', ailleurs ? 'true' : 'false');
+    ch.setAttribute('aria-label', 'Choisir un visage qui parle ou qui agit');
+    ch.onclick = () => ouvrirChoixPnj();
+    lq.append(ch);
   }
 
   /* comment */
@@ -5065,12 +5155,13 @@ function dessinerCompositeur(force){
   });
 
   $('coTexte').placeholder = PLACEHOLDERS[COMPO.genre] || '';
-  [['coOutilJet','jet'], ['coOutilPv','pv']].forEach(([id, k]) => {
-    const b = $(id);
-    b.setAttribute('aria-pressed', COMPO.panneau === k ? 'true' : 'false');
-    b.classList.toggle('on', COMPO.panneau === k);
-  });
 
+  /* le panneau vit dans la fenêtre « Action » : s'il doit s'ouvrir, c'est elle qui s'ouvre */
+  if(typeof ouvrirAction === 'function' && $('hbBarre')){
+    if(COMPO.panneau && HUB.fen !== 'action'){ ouvrirAction(COMPO.panneau); return; }
+    if(!COMPO.panneau && HUB.fen === 'action') fermerFen();
+  }
+  dessinerBarre();
   /* le panneau ouvert */
   const pn = $('coPanneau');
   if(force || !occupe(pn)){
@@ -5080,7 +5171,7 @@ function dessinerCompositeur(force){
     majSeuilCompo();
   }
   majApercuCompo();
-  if(force && focus && focus !== 'coPnj' && $(focus) && document.activeElement !== $(focus)) $(focus).focus();
+  if(force && focus && $(focus) && document.activeElement !== $(focus)) $(focus).focus();
 }
 
 /* les dés : le site les lance, ou l'on écrit ceux qu'on a lancés sur la table. Les deux sont toujours là */
@@ -6976,17 +7067,10 @@ function blocPriorites(){
     x.onclick = () => fermerPriorites();
     g.append(s, x);
     t.append(g);
-  } else {
-    const b = el('button','btn sm','Tirer les priorités'); b.type = 'button'; b.id = 'prTirer';
-    b.disabled = !l.filter(DEBOUT).length;
-    b.onclick = () => tirerPriorites(false);
-    t.append(b);
   }
+  /* rien de tiré : le pavé ne sert à rien, « Tirer les priorités » vit dans la barre du bas */
+  if(!p) return null;
   w.append(t);
-  if(!p){
-    w.append(el('p','mini', 'Une carte par combattant à chaque round, de la plus petite à la plus grande. Un exceptionnel en reçoit deux.'));
-    return w;
-  }
   const tour = aQuiLeTour();
   /* à qui le tour, et de quoi avancer ou revenir : rien ne bouge ni ne frappe hors de son tour */
   const z0 = actifCombattant();
@@ -7209,9 +7293,41 @@ function changerPvPnj(p, n){
 }
 
 /* la ligne d'un PNJ qui se bat : ses PV, ses attaques, et son tour joué tout seul quand il est en face */
+/* un allié se tient comme un joueur dans la compagnie : son nom, ses PV, ses puces.
+   Ce qu'il fait passe par « PNJ ? » et la fenêtre « Action », où ses attaques l'attendent. */
+function ligneAllie(p, z, pv, bas){
+  const r = el('div','cie' + (bas ? ' tombe' : '') + (estActif(z) ? ' tour' : '') + (COMPO.cible === p.id ? ' visee' : ''));
+  r.setAttribute('data-pnjc', p.id);
+  const h = el('div','cietete');
+  h.append(el('b','cnom', p.nom || 'Sans nom'), el('span','arang', 'rang ' + p.combat.rang));
+  r.append(h);
+  const j = el('div','cj');
+  j.append(el('span','cjt', 'PV ' + Math.max(0, pv) + '/' + p.pvMax), barrePv(pv, p.pvMax));
+  [['−', -1], ['+', 1]].forEach(([sg, d]) => {
+    const b = el('button', null, sg); b.type = 'button';
+    b.setAttribute('aria-label', (d < 0 ? 'Retirer 1 PV à ' : 'Rendre 1 PV à ') + (p.nom || 'ce PNJ'));
+    b.disabled = (d < 0 && pv <= 0) || (d > 0 && pv >= p.pvMax);
+    b.onclick = () => changerPvPnj(p, d);
+    j.append(b);
+  });
+  r.append(j);
+  const v = el('button','btn ghost xs aviser', COMPO.cible === p.id ? 'Visé' : 'Viser'); v.type = 'button';
+  v.disabled = !peutViser();
+  v.setAttribute('aria-label', v.disabled ? motPasSonTour(monCombattant()) : 'Viser ' + p.nom);
+  if(v.disabled) v.title = motPasSonTour(monCombattant());
+  v.onclick = () => { COMPO.cible = p.id; COMPO.perte = null; dessinerCompositeur(true); dessinerCombat(true); };
+  const x = el('button','ax','×'); x.type = 'button';
+  x.setAttribute('aria-label', 'Sortir ' + p.nom + ' du combat');
+  x.onclick = () => mettreAuCombat(p.id, false);
+  h.append(v, x);
+  const mo = blocMort(z); if(mo) r.append(mo);
+  r.append(blocEtats(z));
+  return r;
+}
 function lignePnjCombat(p){
   const c = p.combat, pv = p.pv == null ? p.pvMax : p.pv, bas = p.pvMax > 0 && pv <= 0;
   const z = {k:'pnj', id:p.id, nom:p.nom, cote:c.cote, x:p, pv:pv, pvMax:p.pvMax, cartes:c.cartes};
+  if(c.cote === 'nous') return ligneAllie(p, z, pv, bas);
   const w = el('div','aligne' + (bas ? ' aterre' : '') + (COMPO.cible === p.id ? ' visee' : ''));
   w.setAttribute('data-pnjc', p.id);
   const t = el('div','atete');
@@ -7629,7 +7745,7 @@ function dessinerCarteVrai(box, force, dehors){
     t.append(rm);
   } else {
     const pl = el('button','btn ghost xs', CT.plein ? 'Réduire' : 'En grand'); pl.type = 'button'; pl.id = 'ctPlein';
-    pl.onclick = () => { CT.plein = !CT.plein; dessinerCarte(true); };
+    pl.onclick = () => { CT.plein = !CT.plein; dessinerCarte(true); if(typeof dessinerHub === 'function') dessinerHub(); };
     const so = el('button','btn ghost xs','Autre fenêtre'); so.type = 'button'; so.id = 'ctSortir';
     so.setAttribute('aria-label', 'Sortir la carte dans une fenêtre à part, pour un second écran');
     so.onclick = () => sortirCarte();
@@ -7685,7 +7801,6 @@ function dessinerCarteVrai(box, force, dehors){
       : att.length + ' jetons ne sont pas posés : « Poser » sous la carte, un par un, ou « Les poser d’office ».'));
   }
   box.append(listeJetons());
-  box.append(el('p','mini ctaide', 'Un pas vaut un mètre. Tu poses chaque jeton où tu veux, puis tu le glisses pour le déplacer, pendant son tour seulement : le cercle plein montre ce qui lui reste à marcher ce round, le cercle en pointillé sa portée. La molette zoome, un glissement dans le vide déplace la carte. Les pas repartent de zéro à chaque nouveau round.'));
 }
 /* ---------- aller chercher une carte, quand il n'y en a pas ----------
    Elle ne se fabrique pas ici : on ouvre un plan dans le Registre des Plans et on clique « Vers la table ».
@@ -8337,27 +8452,39 @@ function reposer(long){
 /* le pavé du repos et du jour, sous la compagnie */
 function blocRepos(){
   const w = el('div','cbloc repos');
-  const c = laCampagne();
   const t = el('div','ctete');
-  t.append(el('p','ctitre', 'Le repos et le jour'));
+  t.append(el('p','ctitre', 'Le repos'));
   t.append(el('span','espace'));
   w.append(t);
   const g = el('div','tajout');
   const court = el('button','btn ghost sm','Repos court'); court.type = 'button'; court.id = 'repCourt';
   court.setAttribute('aria-label', 'Repos court, une heure : 1d6 PV et 1d4 PC à chacun');
+  court.title = 'Une heure : 1d6 PV et 1d4 PC à chacun.';
   court.onclick = () => reposer(false);
   const long = el('button','btn ghost sm','Repos long'); long.type = 'button'; long.id = 'repLong';
   long.setAttribute('aria-label', 'Repos long, une nuit complète : tout, et le jour avance');
+  long.title = 'Une nuit : tout revient, le jour avance, et ce qui tenait « jusqu’au repos » s’efface.';
   long.onclick = () => reposer(true);
   g.append(court, long);
   w.append(g);
-  w.append(el('p','mini', 'Court, une heure : 1d6 PV et 1d4 PC. Long, une nuit : tout, le jour avance, et ce qui tenait « jusqu’au repos » s’efface. Le repos ne rend rien d’autre.'));
+  return w;
+}
+/* le jour de jeu, son propre widget : l'âge des PNJ se lit dessus */
+function blocJour(){
+  const w = el('div','cbloc lejour');
+  const c = laCampagne();
+  const t = el('div','ctete');
+  t.append(el('p','ctitre', 'Le jour'));
+  t.append(el('span','espace'));
+  if(c) t.append(el('span','jourj', texteDuJour(c)));
+  w.append(t);
+  if(!c) w.append(el('p','mini', 'Pas encore de campagne.'));
   if(c){
     const d = el('div','tajout');
-    d.append(el('span','jourj', texteDuJour(c)));
     const un = el('button','btn ghost xs','+ 1 jour'); un.type = 'button'; un.id = 'repJour';
+    un.title = 'Le lendemain.';
     un.onclick = () => { avancerJours(1); dessiner(); };
-    const n = el('input'); n.type = 'number'; n.min = '1'; n.max = '3600'; n.placeholder = 'jours'; n.style.width = '62px';
+    const n = el('input'); n.type = 'number'; n.min = '1'; n.max = '3600'; n.placeholder = 'jours'; n.style.width = '58px';
     n.setAttribute('aria-label', 'Combien de jours passent');
     const ok = el('button','btn ghost xs','Passer'); ok.type = 'button'; ok.id = 'repPasser';
     ok.onclick = () => { const v = parseInt(n.value, 10); if(v > 0){ avancerJours(v); n.value = ''; dessiner(); } };
@@ -8742,6 +8869,623 @@ function blocColonne(t, c, i){
   return w;
 }
 
+/* ============ le hub : chaque outil de la table est un widget, et chacun range le sien ============
+   Les panneaux gardent leurs identifiants d'avant (seEtat, seCombat, seOracle…) : le hub ne fait que
+   les poser dans un rail, les éteindre, ou les prêter à une fenêtre. Le réglage voyage dans le fichier
+   de la table, sous le nom du joueur : changer d'ordinateur ne le perd pas. */
+
+const HUB_LISTE = [
+  {k:'repos', id:'seRepos',  n:'Le repos',      ou:'g', on:true},
+  {k:'jour',  id:'seJour',   n:'Le jour',       ou:'g', on:true},
+  {k:'carte', id:'seCarte',  n:'La carte',      ou:'g', on:true},
+  {k:'cie',   id:'seEtat',   n:'La compagnie',  ou:'d', on:true},
+  {k:'tour',  id:'seTour',   n:'Le tour',       ou:'d', on:true},
+  {k:'eux',   id:'seCombat', n:'Les ennemis',   ou:'d', on:true}
+];
+/* ce qui n'est pas un widget mais qu'une fenêtre emprunte le temps de s'en servir */
+const HUB_PRETS = {oracle:'seOracle', visage:'seVisage', jets:'secJets', tirage:'seTirage', butin:'seButin'};
+const idPanneau = k => (HUB_CLES[k] ? HUB_CLES[k].id : HUB_PRETS[k]) || '';
+const HUB_CLES = {};
+HUB_LISTE.forEach(w => { HUB_CLES[w.k] = w; });
+const HUB_RAILS = [{k:'gd', l:'Un à gauche, un à droite'}, {k:'dd', l:'Les deux à droite'}, {k:'gg', l:'Les deux à gauche'}];
+/* les quatre places : au-dessus du récit, le rail 1, le rail 2, et les éteints */
+const HUB_PLACES = ['h', 'g', 'd', 'off'];
+const HUB_LARG = {min:210, max:520, def:300};
+/* ce que la fenêtre a emprunté, et ce qu'on est en train de glisser dans les options */
+const HUB = {fen:'', prete:'', glisse:null, cherche:'', tir:'', sorti:null};
+
+const cleHub = () => cleNom(MOI.joueur) || 'moi';
+const largeurHub = v => Math.max(HUB_LARG.min, Math.min(HUB_LARG.max, parseInt(v, 10) || HUB_LARG.def));
+
+/* le réglage, complété : tout widget inconnu du fichier retombe à sa place d'origine */
+function reglageHub(){
+  const sien = (T.hub || {})[cleHub()];
+  const r = sien && !sien.supprime ? sien : {};
+  const out = {
+    rails: HUB_RAILS.some(x => x.k === r.rails) ? r.rails : 'gd',
+    plein: !!r.plein,
+    larg: {g: largeurHub((r.larg || {}).g), d: largeurHub((r.larg || {}).d)},
+    h: [], g: [], d: [], off: []
+  };
+  const vus = {};
+  HUB_PLACES.forEach(c => (Array.isArray(r[c]) ? r[c] : []).forEach(k => {
+    if(HUB_CLES[k] && !vus[k]){ vus[k] = 1; out[c].push(k); }
+  }));
+  HUB_LISTE.forEach(w => { if(!vus[w.k]) out[w.on ? w.ou : 'off'].push(w.k); });
+  return out;
+}
+function poserReglageHub(r){
+  changer(() => {
+    if(!T.hub) T.hub = {};
+    T.hub[cleHub()] = {maj:maintenant(), rails:r.rails, plein:!!r.plein, larg:{g:r.larg.g, d:r.larg.d},
+      h:r.h.slice(), g:r.g.slice(), d:r.d.slice(), off:r.off.slice()};
+  });
+}
+/* remettre comme au départ : on écrit un oubli daté, parce qu'effacer la ligne la ferait revenir
+   à la première fusion avec la copie gardée à côté (même piège que « Revenir au livre ») */
+function oublierReglageHub(){
+  changer(() => {
+    if(!T.hub) T.hub = {};
+    T.hub[cleHub()] = {maj:maintenant(), supprime:true, rails:'gd', plein:false, larg:{g:HUB_LARG.def, d:HUB_LARG.def}, h:[], g:[], d:[], off:[]};
+  });
+}
+const hubAllume = k => reglageHub().off.indexOf(k) < 0;
+/* allumer un outil sans passer par les options : au bout d'un combat, la fouille s'invite */
+function allumerWidget(k, ou){
+  const r = reglageHub();
+  if(!HUB_CLES[k] || r.off.indexOf(k) < 0) return false;
+  r.off = r.off.filter(x => x !== k);
+  (HUB_PLACES.indexOf(ou) >= 0 && ou !== 'off' ? r[ou] : r.d).push(k);
+  poserReglageHub(r);
+  return true;
+}
+/* le petit mot qui propose d'allumer un outil éteint, là où il manque */
+function proposerWidget(k, mot){
+  if(hubAllume(k)) return null;
+  const w = el('p','mini');
+  const b = el('button','btn ghost xs', mot); b.type = 'button'; b.id = 'hbAllumer-' + k;
+  b.onclick = () => allumerWidget(k);
+  w.append(b);
+  return w;
+}
+
+/* ---------- poser les widgets ---------- */
+
+/* une fois pour toutes : chaque panneau reçoit sa boîte, qui est sa place dans le rail */
+function batirHub(){
+  if(!$('hbG') || !$('hbReserve')) return;
+  HUB_LISTE.forEach(w => {
+    const e = $(w.id);
+    if(!e || $('hbW-' + w.k)) return;
+    const box = el('div','hbw');
+    box.id = 'hbW-' + w.k;
+    box.setAttribute('data-hbw', w.k);
+    e.parentNode.insertBefore(box, e);
+    box.append(e);
+  });
+  dessinerHub();
+}
+/* ranger un rail sans rien bouger quand c'est déjà bon : déplacer un nœud ferait perdre le curseur */
+function rangerRail(rail, cles){
+  const veut = cles.map(k => $('hbW-' + k)).filter(Boolean);
+  const avant = [].slice.call(rail.children);
+  if(avant.length === veut.length && avant.every((e, i) => e === veut[i])) return;
+  veut.forEach(e => rail.append(e));
+  avant.forEach(e => { if(veut.indexOf(e) < 0) $('hbReserve').append(e); });
+}
+function dessinerHub(){
+  const jeu = $('seJeu'), g = $('hbG'), d = $('hbD'), cg = $('hbCoteG'), cd = $('hbCoteD');
+  if(!jeu || !g || !d) return;
+  const r = reglageHub();
+  /* les deux rails du même côté : le rail de gauche déménage dans le côté droit, ou l'inverse */
+  const dans = r.rails === 'dd' ? cd : cg;
+  if(g.parentNode !== dans) dans.append(g);
+  const dans2 = r.rails === 'gg' ? cg : cd;
+  if(d.parentNode !== dans2) dans2.append(d);
+  if(r.rails === 'dd' && g.nextSibling !== d && d.parentNode === cd) cd.insertBefore(g, d);
+  if(r.rails === 'gg' && g.nextSibling !== d && d.parentNode === cg) cg.append(d);
+  /* la carte « en grand » quitte son rail et prend toute la largeur, sous le récit */
+  const grand = document.body.classList.contains('carteplein');
+  rangerRail(g, grand ? r.g.filter(k => k !== 'carte') : r.g);
+  if(grand && $('hbH')) rangerRail($('hbH'), r.h.filter(k => k !== 'carte'));
+  rangerRail(d, grand ? r.d.filter(k => k !== 'carte') : r.d);
+  const haut = $('hbH');
+  if(haut){ rangerRail(haut, r.h); haut.hidden = !haut.children.length; }
+  const bc = $('hbW-carte'), main = document.querySelector('.jeu-main');
+  if(grand && bc && main && bc.parentNode !== main) main.insertBefore(bc, main.firstChild);
+  r.off.forEach(k => { const b = $('hbW-' + k); if(b && b.parentNode !== $('hbReserve')) $('hbReserve').append(b); });
+  jeu.style.setProperty('--lg', r.larg.g + 'px');
+  jeu.style.setProperty('--ld', r.larg.d + 'px');
+  jeu.setAttribute('data-rails', r.rails);
+  const avant = document.body.classList.contains('hubplein');
+  document.body.classList.toggle('hubplein', !!r.plein);
+  document.documentElement.classList.toggle('hubplein', !!r.plein);
+  if(r.plein && !avant) window.scrollTo(0, 0);
+  g.hidden = !g.children.length;
+  d.hidden = !d.children.length;
+  const plein = c => [].slice.call(c.children).some(x => x.children.length);
+  cg.hidden = !plein(cg);
+  cd.hidden = !plein(cd);
+}
+/* le réglage relu du fichier : on ne garde que des noms d'outils qu'on connaît */
+function normHub(o){
+  if(!o || typeof o !== 'object') return null;
+  const li = c => (Array.isArray(o[c]) ? o[c] : []).filter(k => HUB_CLES[k]).map(String);
+  return {maj:+o.maj || 0, supprime:!!o.supprime, plein:!!o.plein,
+    rails: HUB_RAILS.some(x => x.k === o.rails) ? o.rails : 'gd',
+    larg: {g:largeurHub((o.larg || {}).g), d:largeurHub((o.larg || {}).d)},
+    h:li('h'), g:li('g'), d:li('d'), off:li('off')};
+}
+
+/* ---------- les fenêtres ---------- */
+
+function fermerFen(){
+  /* le panneau du jet retourne sous le texte, et le compositeur oublie qu'il était ouvert */
+  if(HUB.fen === 'action'){
+    HUB.fen = '';
+    COMPO.panneau = '';
+    rendreLePanneau();
+    dessinerCompositeur(true);
+  }
+  rendreLePrete();
+  const f = $('hbFen');
+  if(f) f.remove();
+  HUB.fen = '';
+  if(HUB.sorti && document.contains(HUB.sorti)){ try{ HUB.sorti.focus(); }catch(e){} }
+  HUB.sorti = null;
+}
+/* un panneau prêté à la fenêtre retourne dans sa boîte, allumée ou non */
+function rendreLePrete(){
+  if(!HUB.prete) return;
+  const e = $(idPanneau(HUB.prete)), box = $('hbW-' + HUB.prete) || $('hbReserve');
+  if(e && box) box.append(e);
+  HUB.prete = '';
+}
+function ouvrirFen(cle, titre, remplir){
+  const sorti = HUB.sorti || (document.activeElement && document.activeElement.id && !$('hbFen') ? document.activeElement : null);
+  fermerFen();
+  HUB.sorti = sorti;
+  HUB.fen = cle;
+  const f = el('div','hbfen'); f.id = 'hbFen';
+  f.onclick = ev => { if(ev.target === f) fermerFen(); };
+  const b = el('div','hbfenin' + (cle === 'options' ? ' hblarge' : ''));
+  b.setAttribute('role', 'dialog'); b.setAttribute('aria-modal', 'true'); b.setAttribute('aria-label', titre);
+  const t = el('div','ctete');
+  t.append(el('p','ctitre', titre), el('span','espace'));
+  const x = el('button','ax','×'); x.type = 'button'; x.id = 'hbFenFermer';
+  x.setAttribute('aria-label', 'Fermer');
+  x.onclick = () => fermerFen();
+  t.append(x);
+  b.append(t);
+  const corps = el('div','hbcorps'); corps.id = 'hbCorps';
+  b.append(corps);
+  f.append(b);
+  document.body.append(f);
+  remplir(corps);
+  const prem = b.querySelector('input,select,textarea,button:not(#hbFenFermer)');
+  if(prem && !/^hbW-/.test(prem.id)) { try{ prem.focus(); }catch(e){} }
+}
+/* prêter un panneau du hub à la fenêtre ouverte */
+function preter(k, corps){
+  const e = $(idPanneau(k));
+  if(!e) return false;
+  rendreLePrete();
+  HUB.prete = k;
+  e.hidden = false;
+  corps.append(e);
+  return true;
+}
+document.addEventListener('keydown', e => {
+  if(e.key !== 'Escape' || $('ctFen')) return;
+  if($('hbFen')){ e.preventDefault(); fermerFen(); return; }
+  if(document.body.classList.contains('hubplein')){
+    e.preventDefault();
+    const r = reglageHub(); r.plein = false; poserReglageHub(r);
+  }
+});
+
+/* ---------- Action : le jet, les dégâts, les PV, pour qui est choisi ---------- */
+
+function ouvrirAction(quoi){
+  ouvrirFen('action', 'Ce qu’il fait', corps => {
+    COMPO.panneau = quoi === 'pv' ? 'pv' : 'jet';
+    const seg = el('div','seg'); seg.setAttribute('role', 'group'); seg.setAttribute('aria-label', 'Jet ou PV');
+    [['jet','Jet et dégâts','hbActJet'], ['pv','PV et PC','hbActPv']].forEach(([k, l, id]) => {
+      const b = el('button', null, l); b.type = 'button'; b.id = id;
+      b.setAttribute('aria-pressed', COMPO.panneau === k ? 'true' : 'false');
+      b.onclick = () => { COMPO.panneau = k; dessinerCompositeur(true); ouvrirAction(k); };
+      seg.append(b);
+    });
+    corps.append(el('p','mini', 'Pour ' + nomCompo() + '. Le paragraphe se joint au récit comme avant.'));
+    const fr = blocFrappes(); if(fr) corps.append(fr);
+    corps.append(seg);
+    const pn = $('coPanneau');
+    if(pn) corps.append(pn);
+    dessinerCompositeur(true);
+  });
+}
+const nomCompo = () => COMPO.qui.k === 'mj' ? 'le MJ' : (nomDe(COMPO.qui) || 'personne');
+/* le panneau vit dans la fenêtre : il y retourne quand on le rouvre, et revient sous le texte à la fermeture */
+function rendreLePanneau(){
+  const pn = $('coPanneau'), c = $('seCompo');
+  if(pn && c && pn.parentNode !== c) c.append(pn);
+}
+
+/* ---------- Un visage connu ?, l'oracle, les tirages ---------- */
+
+function ouvrirVisage(){
+  ouvrirFen('visage', 'Un visage connu ?', corps => {
+    if(!preter('visage', corps)) corps.append(el('p','mini', 'L’oracle n’est pas là.'));
+    dessinerOracle(true);
+  });
+}
+function ouvrirOracle(){
+  ouvrirFen('oracle', 'L’oracle', corps => {
+    if(!preter('oracle', corps)) corps.append(el('p','mini', 'L’oracle n’est pas là.'));
+    dessinerOracle(true);
+    corps.append(blocTirerUneTable());
+  });
+}
+/* les tables du Registre des Tirages, tirées d'ici, et écrites dans le récit si on veut */
+function blocTirerUneTable(){
+  const w = el('div','cbloc hbtir');
+  const l = typeof tablesToutes === 'function' ? tablesToutes() : [];
+  w.append(el('p','lab', 'Tirer dans une table'));
+  if(!l.length){ w.append(el('p','mini', 'Aucune table : le Registre des Tirages en garde.')); return w; }
+  const g = el('div','tajout');
+  const s = el('select'); s.id = 'hbTabQuoi'; s.setAttribute('aria-label', 'Quelle table');
+  l.forEach(t => s.add(new Option(t.nom, t.id)));
+  if(l.some(t => t.id === HUB.tir)) s.value = HUB.tir; else HUB.tir = s.value;
+  const t0 = () => uneTable(s.value);
+  const col = el('select'); col.id = 'hbTabCol'; col.setAttribute('aria-label', 'Dans quelle colonne');
+  const majCol = () => {
+    const t = t0();
+    col.innerHTML = '';
+    col.hidden = !t || t.mode !== 'une';
+    if(t && t.mode === 'une') t.cols.forEach(c => col.add(new Option(c.n, c.n)));
+  };
+  s.onchange = () => { HUB.tir = s.value; HUB.sort = null; majCol(); ouvrirOracle(); };
+  majCol();
+  const b = el('button','btn sm','Tirer'); b.type = 'button'; b.id = 'hbTabTirer';
+  b.onclick = () => {
+    const t = t0(); if(!t) return;
+    HUB.sort = tirerTable(t, t.mode === 'une' ? col.value : null);
+    ouvrirOracle();
+  };
+  g.append(s, col, b);
+  w.append(g);
+  if(HUB.sort){
+    const r = el('div','tbsort');
+    r.append(el('p','tbsortt', texteTirage(HUB.sort)));
+    r.append(el('p','mini', HUB.sort.r.map(q => (HUB.sort.r.length > 1 ? q.col + ' ' : '') + q.n).join(' · ')));
+    const a = el('div','acts');
+    const ec = el('button','btn ghost xs','Écrire dans le récit'); ec.type = 'button'; ec.id = 'hbTabEcrire';
+    ec.disabled = !seanceCourante();
+    ec.onclick = () => {
+      changer(() => noterDansSeance(HUB.sort.table + ' : ' + texteTirage(HUB.sort), 'note'));
+      msgTable('Le tirage est dans le récit.', true);
+      fermerFen();
+    };
+    a.append(ec);
+    r.append(a);
+    w.append(r);
+  }
+  return w;
+}
+
+/* l'historique des jets, et le tirage d'une rencontre : des fenêtres, plus des pavés */
+function ouvrirJets(){
+  ouvrirFen('jets', 'Les jets', corps => {
+    if(!preter('jets', corps)){ corps.append(el('p','mini', 'Rien à montrer.')); return; }
+    dessinerJets();
+  });
+}
+function ouvrirTirage(){
+  ouvrirFen('tirage', 'Tirer une rencontre', corps => {
+    if(!preter('tirage', corps)){ corps.append(el('p','mini', 'Rien à tirer.')); return; }
+    dessinerCombat(true);
+  });
+}
+
+/* ---------- les ennemis en boutons ---------- */
+
+function blocEnnemis(l, pnjs){
+  const w = el('div','hbeux');
+  l.forEach(a => w.append(boutonEnnemi({k:'adv', id:a.id, nom:a.nom, pv:a.pv, pvMax:a.pvMax, bas:aTerre(a), rang:a.rang})));
+  (pnjs || []).forEach(p => {
+    const pv = p.pv == null ? p.pvMax : p.pv;
+    w.append(boutonEnnemi({k:'pnj', id:p.id, nom:p.nom || 'Sans nom', pv:pv, pvMax:p.pvMax, bas:p.pvMax > 0 && pv <= 0, rang:p.combat.rang}));
+  });
+  return w;
+}
+function boutonEnnemi(e){
+  const z = unCombattant(e.k, e.id);
+  const actif = z && estActif(z);
+  const b = el('button','hbe' + (e.bas ? ' bas' : '') + (actif ? ' tour' : '') + (COMPO.cible === e.id ? ' visee' : ''));
+  b.type = 'button';
+  b.setAttribute('data-eux', e.id);
+  b.setAttribute('aria-label', e.nom + (actif ? ', à lui de jouer' : '') + (e.bas ? ', à terre' : ', ' + e.pv + ' PV sur ' + e.pvMax));
+  b.append(el('span','hben', e.nom));
+  b.append(el('span','hbev', e.bas ? 'à terre' : e.pv + '/' + e.pvMax));
+  if(e.pvMax > 0 && !e.bas) b.append(barrePv(e.pv, e.pvMax));
+  b.onclick = () => ouvrirEnnemi(e.k, e.id);
+  return b;
+}
+function ouvrirEnnemi(k, id){
+  const a0 = k === 'adv' ? unAdversaire(id) : unPnj(id);
+  /* tombé : on l'ouvre sur sa fouille */
+  if(a0 && k === 'adv' && aTerre(a0) && !a0.fouille) FOU.id = id;
+  ouvrirFen('eux:' + id, (a0 || {}).nom || 'En face', corps => remplirEnnemi(corps, k, id));
+}
+function remplirEnnemi(corps, k, id){
+  const a = k === 'adv' ? unAdversaire(id) : unPnj(id);
+  if(!a){ corps.append(el('p','mini', 'Il n’est plus là.')); return; }
+  corps.append(k === 'adv' ? ligneAdversaire(a) : lignePnjCombat(a));
+  if(k === 'adv' && aTerre(a)){
+    const bt = blocButin();
+    if(bt) corps.append(bt);
+  }
+}
+/* la fenêtre d'un ennemi suit ce qui change : les PV, les états, le tour */
+function majFenEnnemi(){
+  if(HUB.fen.indexOf('eux:') !== 0) return;
+  const id = HUB.fen.slice(4), corps = $('hbCorps');
+  if(!corps) return;
+  const a = unAdversaire(id), p = a ? null : unPnj(id);
+  if(!a && !p){ fermerFen(); return; }
+  if(occupe(corps)) return;
+  corps.innerHTML = '';
+  remplirEnnemi(corps, a ? 'adv' : 'pnj', id);
+}
+
+/* ---------- qui parle : chercher un PNJ plutôt que taper son nom ---------- */
+
+function ouvrirChoixPnj(){
+  ouvrirFen('pnj', 'Qui parle, qui agit', corps => {
+    const q = el('input'); q.type = 'search'; q.id = 'hbPnjQ'; q.value = HUB.cherche;
+    q.placeholder = 'Chercher un visage'; q.setAttribute('aria-label', 'Chercher un visage');
+    q.oninput = () => { HUB.cherche = q.value; majListePnj(); };
+    corps.append(q);
+    const l = el('div','hbliste'); l.id = 'hbPnjListe';
+    corps.append(l);
+    majListePnj();
+  });
+}
+/* ceux de la séance d'abord, puis tous les autres visages */
+function visagesAPortee(){
+  const e = seanceCourante();
+  const vus = {}, out = [];
+  const pousser = (p, ici) => { if(!p || vus[p.id]) return; vus[p.id] = 1; out.push({p:p, ici:ici}); };
+  pnjsAuCombat().forEach(p => pousser(p, true));
+  if(e) gensDeLaSeance(e.id).forEach(p => pousser(p, true));
+  pnjs().filter(p => p.statut !== 'mort').forEach(p => pousser(p, false));
+  return out;
+}
+function majListePnj(){
+  const l = $('hbPnjListe'); if(!l) return;
+  l.innerHTML = '';
+  const q = cleNom(HUB.cherche);
+  const tout = visagesAPortee().filter(x => !q || cleNom(x.p.nom).indexOf(q) >= 0 || cleNom(x.p.role || '').indexOf(q) >= 0);
+  const brut = (HUB.cherche || '').trim();
+  if(brut && !tout.some(x => cleNom(x.p.nom) === cleNom(brut))){
+    const nb = el('button','hbpnj'); nb.type = 'button'; nb.id = 'hbPnjInconnu';
+    nb.append(el('b', null, 'Parler au nom de « ' + brut + ' »'));
+    nb.append(el('span','mini', 'un inconnu, sans fiche'));
+    nb.onclick = () => { choisirQui({k:'pnj', id:'', nom:brut}); fermerFen(); const t = $('coTexte'); if(t) t.focus(); };
+    l.append(nb);
+  }
+  if(!tout.length){
+    if(!brut) l.append(el('p','mini', 'Personne pour l’instant : écris un nom pour un inconnu.'));
+    return;
+  }
+  let titre = '';
+  tout.slice(0, 60).forEach(x => {
+    const t = x.ici ? 'Dans la séance' : 'Les autres visages';
+    if(t !== titre){ titre = t; l.append(el('p','lab', t)); }
+    const b = el('button','hbpnj'); b.type = 'button'; b.setAttribute('data-pnjchoix', x.p.id);
+    b.append(el('b', null, x.p.nom || 'Sans nom'));
+    const s = [x.p.role, x.p.lieu].filter(Boolean).join(', ');
+    if(s) b.append(el('span','mini', s));
+    b.onclick = () => {
+      choisirQui({k:'pnj', id:x.p.id, nom:x.p.nom});
+      fermerFen();
+      const t2 = $('coTexte'); if(t2) t2.focus();
+    };
+    l.append(b);
+  });
+}
+
+/* ---------- les options : allumer, éteindre, ranger ---------- */
+
+function ouvrirOptions(){
+  ouvrirFen('options', 'Ton hub', corps => dessinerOptions(corps));
+}
+function dessinerOptions(corps){
+  const box = corps || $('hbCorps'); if(!box) return;
+  const r = reglageHub();
+  box.innerHTML = '';
+  box.append(el('p','mini', 'Glisse un outil d’une colonne à l’autre, ou sers-toi des flèches du clavier. Le réglage est à toi : il suit ton nom de joueur dans la sauvegarde, d’un ordinateur à l’autre.'));
+  /* les rails */
+  const seg = el('div','seg'); seg.setAttribute('role', 'group'); seg.setAttribute('aria-label', 'Où sont les rails');
+  HUB_RAILS.forEach(x => {
+    const b = el('button', null, x.l); b.type = 'button'; b.id = 'hbRail-' + x.k;
+    b.setAttribute('aria-pressed', r.rails === x.k ? 'true' : 'false');
+    b.onclick = () => { r.rails = x.k; poserReglageHub(r); dessinerOptions(); };
+    seg.append(b);
+  });
+  const pl = el('button','btn ghost sm' + (r.plein ? ' on' : ''), r.plein ? 'Quitter le plein écran' : 'Le hub en plein écran');
+  pl.type = 'button'; pl.id = 'hbPlein';
+  pl.setAttribute('aria-pressed', r.plein ? 'true' : 'false');
+  pl.title = 'La page s’efface : il ne reste que le récit, la zone d’écriture et tes rails. Échap pour en sortir.';
+  pl.onclick = () => { r.plein = !r.plein; poserReglageHub(r); dessinerOptions(); };
+  seg.append(pl);
+  box.append(seg);
+  /* les largeurs */
+  const lg = el('div','hblarg');
+  [['g','Rail 1'], ['d','Rail 2']].forEach(([c, nom]) => {
+    const d = el('label','hblargl');
+    d.append(el('span','mini', nom + ' : ' + r.larg[c] + ' px'));
+    const i = el('input'); i.type = 'range'; i.id = 'hbLarg-' + c;
+    i.min = String(HUB_LARG.min); i.max = String(HUB_LARG.max); i.step = '10'; i.value = String(r.larg[c]);
+    i.setAttribute('aria-label', 'Largeur du ' + nom.toLowerCase());
+    i.oninput = () => { r.larg[c] = largeurHub(i.value); const j = $('seJeu'); if(j) j.style.setProperty(c === 'g' ? '--lg' : '--ld', r.larg[c] + 'px'); };
+    i.onchange = () => { poserReglageHub(r); dessinerOptions(); };
+    d.append(i);
+    lg.append(d);
+  });
+  box.append(lg);
+  /* les trois colonnes */
+  const gr = el('div','hbgrille');
+  [['h', 'Au-dessus du récit'], ['g', r.rails === 'gd' ? 'À gauche' : 'Rail 1'],
+   ['d', r.rails === 'gd' ? 'À droite' : 'Rail 2'], ['off', 'Éteints']].forEach(([c, nom]) => {
+    const col = el('div','hbcol'); col.setAttribute('data-col', c); col.id = 'hbCol-' + c;
+    col.append(el('p','lab', nom));
+    const liste = el('div','hbchips'); liste.setAttribute('data-col', c);
+    r[c].forEach(k => liste.append(puceHub(k, c, r)));
+    if(!r[c].length) liste.append(el('p','mini vide', 'rien ici'));
+    col.append(liste);
+    gr.append(col);
+  });
+  box.append(gr);
+  const a = el('div','acts');
+  const z = el('button','btn ghost sm','Remettre comme au départ'); z.type = 'button'; z.id = 'hbRaz';
+  z.onclick = () => { oublierReglageHub(); dessinerOptions(); };
+  a.append(z);
+  box.append(a);
+}
+function puceHub(k, col, r){
+  const w = HUB_CLES[k];
+  const b = el('button','hbchip'); b.type = 'button';
+  b.setAttribute('data-chip', k); b.setAttribute('data-col', col);
+  b.append(el('span','hbgrip','⠿'), el('span', null, w ? w.n : k));
+  const ouNom = {h:'au-dessus du récit', g:'dans le rail 1', d:'dans le rail 2', off:'éteint'};
+  b.setAttribute('aria-label', (w ? w.n : k) + ', ' + ouNom[col] + '. Les flèches le déplacent.');
+  b.onkeydown = ev => {
+    const ordre = HUB_PLACES;
+    const i = r[col].indexOf(k);
+    if(ev.key === 'ArrowUp' || ev.key === 'ArrowDown'){
+      ev.preventDefault();
+      const j = i + (ev.key === 'ArrowUp' ? -1 : 1);
+      if(j < 0 || j >= r[col].length) return;
+      r[col].splice(i, 1); r[col].splice(j, 0, k);
+      poserReglageHub(r); dessinerOptions(); viserPuce(k);
+    }
+    if(ev.key === 'ArrowLeft' || ev.key === 'ArrowRight'){
+      ev.preventDefault();
+      const j = ordre.indexOf(col) + (ev.key === 'ArrowLeft' ? -1 : 1);
+      if(j < 0 || j >= ordre.length) return;
+      r[col].splice(i, 1); r[ordre[j]].push(k);
+      poserReglageHub(r); dessinerOptions(); viserPuce(k);
+    }
+  };
+  b.onpointerdown = ev => prendreLaPuce(ev, b, k, col, r);
+  return b;
+}
+function viserPuce(k){
+  const b = document.querySelector('[data-chip="' + k + '"]');
+  if(b) try{ b.focus(); }catch(e){}
+}
+/* le glissé-déposé, au doigt comme à la souris */
+function prendreLaPuce(ev, b, k, col, r){
+  if(ev.button != null && ev.button !== 0) return;
+  ev.preventDefault();
+  const depart = {x:ev.clientX, y:ev.clientY};
+  let parti = false, fantome = null;
+  const trou = el('div','hbtrou');
+  const bouger = e2 => {
+    if(!parti){
+      if(Math.abs(e2.clientX - depart.x) + Math.abs(e2.clientY - depart.y) < 8) return;
+      parti = true;
+      HUB.glisse = k;
+      fantome = b.cloneNode(true);
+      fantome.className = 'hbchip hbvole';
+      document.body.append(fantome);
+      b.classList.add('hbpris');
+    }
+    fantome.style.left = (e2.clientX - 40) + 'px';
+    fantome.style.top = (e2.clientY - 14) + 'px';
+    const sous = document.elementFromPoint(e2.clientX, e2.clientY);
+    const liste = sous && sous.closest ? sous.closest('.hbchips') : null;
+    if(!liste){ if(trou.parentNode) trou.remove(); return; }
+    const voisin = sous.closest('.hbchip');
+    if(voisin && voisin !== b){
+      const re = voisin.getBoundingClientRect();
+      liste.insertBefore(trou, e2.clientY < re.top + re.height / 2 ? voisin : voisin.nextSibling);
+    } else if(!trou.parentNode || trou.parentNode !== liste) liste.append(trou);
+  };
+  const lacher = e2 => {
+    document.removeEventListener('pointermove', bouger);
+    document.removeEventListener('pointerup', lacher);
+    document.removeEventListener('pointercancel', lacher);
+    if(fantome) fantome.remove();
+    b.classList.remove('hbpris');
+    HUB.glisse = null;
+    if(!parti || !trou.parentNode){ trou.remove(); return; }
+    const vers = trou.parentNode.getAttribute('data-col');
+    const place = [].slice.call(trou.parentNode.children).filter(x => x.classList.contains('hbchip') || x === trou).indexOf(trou);
+    trou.remove();
+    const i = r[col].indexOf(k);
+    if(i >= 0) r[col].splice(i, 1);
+    const n = Math.max(0, Math.min(r[vers].length, place));
+    r[vers].splice(n, 0, k);
+    poserReglageHub(r);
+    dessinerOptions();
+    viserPuce(k);
+  };
+  document.addEventListener('pointermove', bouger);
+  document.addEventListener('pointerup', lacher);
+  document.addEventListener('pointercancel', lacher);
+}
+
+/* ---------- la barre du bas ---------- */
+
+function brancherBarre(){
+  const b = (id, fn) => { const e = $(id); if(e) e.onclick = fn; };
+  b('hbAction', () => ouvrirAction(COMPO.panneau || 'jet'));
+  b('hbVisage', () => ouvrirVisage());
+  b('hbOracle', () => ouvrirOracle());
+  b('hbOptions', () => ouvrirOptions());
+  b('prTirer', () => tirerPriorites(false));
+  b('hbJets', () => ouvrirJets());
+  /* le lien « Les jets » du haut de page ouvre la fenêtre */
+  const aj = document.querySelector('a[href="#secJets"]');
+  if(aj) aj.onclick = ev => { ev.preventDefault(); ouvrirJets(); };
+}
+function dessinerBarre(){
+  const a = $('hbAction');
+  if(a) a.textContent = COMPO.qui.k === 'mj' ? 'Action' : 'Action de ' + (nomDe(COMPO.qui) || '').split(' ')[0];
+  const v = $('hbVisage');
+  if(v) v.disabled = !seanceCourante();
+  /* les cartes du round se tirent d'ici tant qu'aucune n'est posée */
+  const t = $('prTirer');
+  if(t){
+    const debout = ceuxQuiSeBattent().filter(DEBOUT).length;
+    t.hidden = !!priorites() || !debout || !seanceCourante();
+  }
+}
+/* ses attaques, dans la fenêtre « Action » : un PNJ se joue comme un personnage */
+function blocFrappes(){
+  const q = COMPO.qui;
+  if(!q || (q.k !== 'pnj' && q.k !== 'adv')) return null;
+  const z = unCombattant(q.k, q.id);
+  if(!z) return null;
+  const l = attaquesDe(z);
+  if(!l.length) return null;
+  const w = el('div','hbfrappes');
+  w.append(el('p','lab', 'Ce qu’il sait faire'));
+  const g = el('div','pact');
+  l.forEach(atk => {
+    const b = el('button','btn ghost xs', atk.n); b.type = 'button';
+    b.disabled = !peutJouer(z);
+    b.setAttribute('aria-label', b.disabled ? motPasSonTour(z) : (z.nom + ' frappe : ' + atk.n));
+    if(b.disabled) b.title = motPasSonTour(z);
+    b.onclick = () => { frapperPour(z, atk); ouvrirAction('jet'); };
+    g.append(b);
+  });
+  w.append(g);
+  return w;
+}
+
 /* ---------- le panneau « En face », à côté du récit ---------- */
 function barrePv(cour, max){
   const b = el('div','abarre');
@@ -8834,9 +9578,10 @@ function dessinerCombat(force){
   if(!force && occupe(box)){ apresSaisie(box, () => dessinerCombat(true)); return; }
   box.innerHTML = '';
   const e = seanceCourante(), r = combatEnCours();
+  ['seTour','seTirage','seButin'].forEach(id => { const b = $(id); if(b){ b.innerHTML = ''; b.hidden = true; } });
   box.hidden = !e && !ENVOI.attente;
-  if(box.hidden) return;
-  if(e && (r || priorites() || pnjsAuCombat().length)) box.append(blocPriorites());
+  if(box.hidden){ majFenEnnemi(); return; }
+  if(e && (r || priorites() || pnjsAuCombat().length)) poserAutour('seTour', blocPriorites(), box);
   if(!r){
     if(ENVOI.attente){
       box.append(el('p','ctitre', 'Une rencontre attend'));
@@ -8846,14 +9591,15 @@ function dessinerCombat(force){
       box.append(b);
       return;
     }
+    const eux0 = pnjsAuCombat().filter(p => p.combat.cote === 'eux');
     const t = el('div','ctete');
-    t.append(el('p','ctitre', 'En face'), el('span','mini', 'personne'));
+    t.append(el('p','ctitre', 'En face'), el('span','mini', eux0.length ? eux0.length + (eux0.length > 1 ? ' en face' : ' en face') : 'personne'));
     box.append(t);
-    pnjsAuCombat().filter(p => p.combat.cote === 'eux').forEach(p => box.append(lignePnjCombat(p)));
-    box.append(blocCombattants());
-    const bt = blocButin(); if(bt) box.append(bt);
-    box.append(blocTirage(false));
+    if(eux0.length) box.append(blocEnnemis([], eux0));
+    poserAutour('seTirage', blocTirage(false), box);
+    box.append(boutonTirage('Tirer une rencontre'));
     box.append(el('p','mini', 'Une rencontre validée dans le Registre des Rencontres arrive aussi ici toute seule.'));
+    majFenEnnemi();
     return;
   }
   const t = el('div','ctete');
@@ -8871,11 +9617,23 @@ function dessinerCombat(force){
   t.append(fin);
   box.append(t);
   rencontresEnCours().forEach(x => { if(x.pourquoi) box.append(el('p','mini cpourquoi', x.pourquoi)); });
-  l.forEach(a => box.append(ligneAdversaire(a)));
-  pnjsAuCombat().filter(p => p.combat.cote === 'eux').forEach(p => box.append(lignePnjCombat(p)));
-  box.append(blocTirage(true));
-  box.append(blocCombattants());
-  const bt = blocButin(); if(bt) box.append(bt);
+  box.append(blocEnnemis(l, pnjsAuCombat().filter(p => p.combat.cote === 'eux')));
+  poserAutour('seTirage', blocTirage(true), box);
+  box.append(boutonTirage('Des renforts : en tirer'));
+  poserAutour('seButin', blocButin(), box);
+  majFenEnnemi();
+}
+/* tirer une rencontre : un bouton sous les ennemis, la table se tire dans sa fenêtre */
+function boutonTirage(mot){
+  const b = el('button','btn ghost xs','' + mot); b.type = 'button'; b.id = 'hbTirage';
+  b.onclick = () => ouvrirTirage();
+  return b;
+}
+/* un morceau du combat dans son widget, ou sous les ennemis quand le widget n'existe pas */
+function poserAutour(id, bloc, repli){
+  const b = $(id);
+  if(b){ b.innerHTML = ''; b.hidden = !bloc; if(bloc) b.append(bloc); return; }
+  if(bloc && repli) repli.append(bloc);
 }
 
 /* ---------- dans le récit et dans le Doc ---------- */
@@ -14340,7 +15098,17 @@ function dessinerOracle(force){
   }
   if(!e) box.append(el('p','mini', 'Pas encore de séance : l’oracle répond ici, sans rien écrire.'));
 
-  /* un visage connu */
+  /* les seuils */
+  box.append(reglagesOracle());
+  if(focus && $(focus)) $(focus).focus({preventScroll:true});
+  dessinerVisageConnu();
+}
+/* « Un visage connu ? » : son propre widget, et son bouton dans la barre du bas */
+function dessinerVisageConnu(){
+  const sien = $('seVisage'), box = sien || $('seOracle');
+  if(!box) return;
+  if(sien){ sien.innerHTML = ''; sien.hidden = false; }
+  const e = seanceCourante();
   const v = el('div','tbloc ovisage');
   v.append(el('p','lab', 'Un visage connu ?'));
   const lieu = el('input'); lieu.type = 'text'; lieu.id = 'oraLieu'; lieu.value = ORA.lieu != null ? ORA.lieu : lieuActuel(); lieu.maxLength = 160;
@@ -14384,10 +15152,6 @@ function dessinerOracle(force){
     v.append(w);
   }
   box.append(v);
-
-  /* les seuils */
-  box.append(reglagesOracle());
-  if(focus && $(focus)) $(focus).focus({preventScroll:true});
 }
 
 /* ---------- les seuils de la table ----------
@@ -14476,7 +15240,7 @@ function reglagesOracle(){
    Le Registre de la Table, celui des Visages, celui des Marchefleurs et celui des Missions partagent ce code et
    le même fichier : la page ouverte se reconnaît à ce qu'elle contient. */
 
-const PAGE = $('ficheBox') ? 'fiche' : $('secSeance') ? 'table' : $('progBox') ? 'progression' : $('misBox') ? 'missions' : $('tabBox') ? 'tables' : 'visages';
+const PAGE = $('ficheBox') ? 'fiche' : $('secSeance') ? 'table' : $('progBox') ? 'progression' : $('misBox') ? 'missions' : $('tabBox') ? 'tirages' : 'visages';
 let PANNEAU = null;   /* le panneau de la sauvegarde en ligne */
 /* l'onglet se nomme : « Faire parler » ou une fiche ouverte depuis l'autre page viennent ici, sans ouvrir d'onglet de plus */
 try{ window.name = PAGE === 'table' ? ONGLET_TABLE : PAGE === 'fiche' ? ONGLET_FICHE : PAGE === 'progression' ? ONGLET_PROGRESSION : PAGE === 'missions' ? ONGLET_MISSIONS : ONGLET_VISAGES; }catch(e){}
@@ -14539,6 +15303,7 @@ function dessiner(){
     dessinerFiche(false);
   } else if(PAGE === 'table'){
     dessinerSeance(false);
+    dessinerHub();
     dessinerCarte(false);
     dessinerPersos();
     if(HAVRE.ouvert) dessinerHavre();
@@ -14547,7 +15312,7 @@ function dessiner(){
     dessinerProg();
   } else if(PAGE === 'missions'){
     dessinerMissions(false);
-  } else if(PAGE === 'tables'){
+  } else if(PAGE === 'tirages'){
     dessinerTables(false);
   } else {
     dessinerPnj(false);
@@ -14613,8 +15378,7 @@ if(PAGE === 'table'){
     if(ev.ctrlKey || ev.metaKey){ ev.preventDefault(); ajouterDepuisCompo(); return; }
     if(!ev.shiftKey && COMPO.genre !== 'encadre'){ ev.preventDefault(); ajouterDepuisCompo(); }
   };
-  sur('coOutilJet', () => { COMPO.panneau = COMPO.panneau === 'jet' ? '' : 'jet'; dessinerCompositeur(true); });
-  sur('coOutilPv', () => { COMPO.panneau = COMPO.panneau === 'pv' ? '' : 'pv'; dessinerCompositeur(true); });
+
   sur('coAjouter', ajouterDepuisCompo);
 
   /* l'historique des jets */
@@ -14788,6 +15552,7 @@ window.addEventListener('hashchange', suivreAncre);
 
 /* ---------- démarrage ---------- */
 chargerLocal();
+if(PAGE === 'table'){ batirHub(); brancherBarre(); }
 if(PAGE === 'fiche') lireChoixFiche();   /* le personnage et l'onglet de la dernière fois, dans ce navigateur */
 const parGithub = ghReprendre();
 dessiner();

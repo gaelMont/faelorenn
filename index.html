@@ -27,20 +27,21 @@
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
 body{margin:0;background:var(--paper);color:var(--ink);font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:15.5px;line-height:1.55}
-.wrap{max-width:760px;margin:0 auto;padding-inline:20px;padding-block:44px 56px}
+.wrap{max-width:none;margin:0 auto;padding-inline:clamp(14px,2.2vw,44px);padding-block:44px 56px}
 .sur{font-family:Spectral,Georgia,serif;font-style:italic;color:var(--sage);margin:0;font-size:17px}
 h1{font-family:Spectral,Georgia,serif;font-weight:700;font-size:clamp(32px,6vw,46px);line-height:1.08;color:var(--forest);margin:2px 0 10px;letter-spacing:-.01em;text-wrap:balance}
-.intro{max-width:58ch;margin:0;color:var(--ink)}
+.intro{max-width:76ch;margin:0;color:var(--ink)}
 header{border-bottom:2px solid var(--forest);padding-bottom:22px;margin-bottom:28px}
 h2{font-family:Spectral,Georgia,serif;font-size:21px;color:var(--forest);margin:34px 0 8px;text-wrap:balance}
 p{margin:0 0 10px;max-width:65ch}
-.registres{display:flex;flex-direction:column;gap:0;border-top:1px solid var(--rule)}
-.registre{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 18px;align-items:baseline;padding:16px 4px;border-bottom:1px solid var(--rule);text-decoration:none;color:inherit}
+.registres{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:14px;border-top:1px solid var(--rule);padding-top:14px}
+.registre{display:grid;grid-template-columns:minmax(0,1fr);gap:1px;align-content:start;padding:14px 16px;border:1px solid var(--rule);border-radius:3px;background:var(--surface);box-shadow:var(--shadow);text-decoration:none;color:inherit}
+.registre:hover{border-color:var(--sage)}
 .registre:hover .rnom,.registre:focus-visible .rnom{text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:4px}
 .registre:focus-visible{outline:2px solid var(--sage);outline-offset:2px}
-.rnom{font-family:Spectral,Georgia,serif;font-size:22px;font-weight:600;color:var(--forest)}
-.rquoi{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--sage);white-space:nowrap}
-.rdesc{grid-column:1 / -1;color:var(--muted);font-size:14.5px;max-width:62ch}
+.rnom{font-family:Spectral,Georgia,serif;font-size:20px;font-weight:600;color:var(--forest);line-height:1.2}
+.rquoi{font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--sage);margin-bottom:6px}
+.rdesc{color:var(--muted);font-size:14px;line-height:1.45}
 ol{padding-left:22px;margin:6px 0 12px}
 ol li{margin:6px 0;max-width:62ch}
 .chemins li b{color:var(--forest)}
@@ -69,11 +70,16 @@ footer{margin-top:44px;padding-top:12px;border-top:1px solid var(--rule);font-si
 <div class="wrap">
 <header>
   <p class="sur">Faelorenn</p>
-  <h1>Les registres de la table</h1>
-  <p class="intro">Huit outils pour jouer, solo avec l’Oracle ou à plusieurs : choisir une mission au tableau du Havre, créer ses Marchefleurs, tenir la partie séance après séance, garder trace de ceux qu’on croise, tenir la fiche, le sac et la bourse de chacun, tirer ce qui se dresse sur la route, retoucher à sa main les compétences et les Pratiques, dessiner et garder les plans des bâtiments, des villages et du monde.</p>
+  <h1>Le livre, et les registres de la table</h1>
+  <p class="intro">Le livre du jeu, et neuf outils pour le jouer, solo avec l’Oracle ou à plusieurs : choisir une mission au tableau du Havre, créer ses Marchefleurs, tenir la partie séance après séance, garder trace de ceux qu’on croise, tenir la fiche, le sac et la bourse de chacun, tirer ce qui se dresse sur la route, retoucher à sa main les compétences et les Pratiques, dessiner et garder les plans des bâtiments, des villages et du monde.</p>
 </header>
 
 <nav class="registres" aria-label="Les registres">
+  <a class="registre" href="livre.html">
+    <span class="rnom">Le Livre de Faelorenn</span>
+    <span class="rquoi">le monde et les règles</span>
+    <span class="rdesc">Le livre entier, à lire ici : le monde, les règles, les huit peuples, les Pratiques, le marché, le butin, les adversaires, et de quoi jouer sans maître de jeu. Un sommaire qui suit la lecture, une recherche dans tout le texte, et un lien pour chaque section.</span>
+  </a>
   <a class="registre" href="missions.html">
     <span class="rnom">Registre des Missions</span>
     <span class="rquoi">le tableau du Havre</span>
@@ -114,8 +120,8 @@ footer{margin-top:44px;padding-top:12px;border-top:1px solid var(--rule);font-si
     <span class="rquoi">les lieux</span>
     <span class="rdesc">Garder, lire et retoucher les plans des bâtiments, des villages et des cartes du monde : on entre d’une carte dans un village, puis dans un bâtiment. Océane les reçoit par le dépôt.</span>
   </a>
-  <a class="registre" href="tables.html">
-    <span class="rnom">Registre des Tables</span>
+  <a class="registre" href="tirages.html">
+    <span class="rnom">Registre des Tirages</span>
     <span class="rquoi">tirer sans MJ</span>
     <span class="rdesc">Les tables du Livre VIII, telles que le livre les écrit : un inconnu qui arrive, les noms par peuple, la réaction sur le vif, la table d’inspiration. Tout se réécrit, on en ajoute, et chaque ligne peut porter une rareté tirée en cascade. La table de jeu y puise.</span>
   </a>

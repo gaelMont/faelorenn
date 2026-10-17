@@ -424,6 +424,11 @@ ul.prliste{list-style:none;margin:4px 0 0;padding:0}
 .acars{font-variant-numeric:tabular-nums;letter-spacing:.01em}
 .atour{margin-top:6px}
 .cbloc{margin-top:8px;border-top:1px solid var(--rule);padding-top:8px}
+/* seul dans son widget, un bloc n'a pas besoin de son trait : la carte en a déjà un */
+.cote>.cbloc:first-child{margin-top:0;border-top:0;padding-top:0}
+/* la case des jours : sans les flèches, « jours » tient dedans */
+.lejour input[type=number]{appearance:textfield;-moz-appearance:textfield}
+.lejour input[type=number]::-webkit-outer-spin-button,.lejour input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 .cbloc .ctete{margin-bottom:2px}
 /* le butin de ceux qui sont tombés */
 .atete .afouiller{align-self:center}

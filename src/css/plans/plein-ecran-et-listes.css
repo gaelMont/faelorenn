@@ -1,0 +1,19 @@
+/* les listes du panneau : la ligne choisie se voit, et chaque lieu s'ouvre depuis sa ligne */
+.legend li{min-width:0}
+.legend li a[data-wsel]{min-width:0;overflow-wrap:anywhere;color:inherit}
+.legend li.on{background:var(--fill);border-radius:2px;box-shadow:0 0 0 3px var(--fill)}
+.legend li .go{margin-left:auto;flex:none;align-self:center}
+/* le bouton plein écran : une icône, de la même hauteur que les autres boutons */
+.btn.icone{display:inline-flex;align-items:center;justify-content:center;padding:5px 8px}
+.btn.icone svg{display:block}
+/* plein écran : l'établi couvre toute la fenêtre, le reste de la page s'efface derrière */
+body.plein{overflow:hidden}
+body.plein #app{position:fixed;inset:0;z-index:15;height:auto;border:0;border-radius:0;box-shadow:none;overflow:auto}
+body.plein #main{min-height:0}
+@media (min-width:861px){body.plein #app{overflow:hidden}}
+/* la barre : les boutons de droite restent ensemble, à droite, sur la ligne où ils tiennent */
+#top .grp{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-left:auto}
+/* une ligne de la liste des lieux : un repère, le nom (avec sa position quand il n'en a pas), le bouton */
+.legend li.lieu{align-items:center}
+.legend li .nm{display:flex;flex-direction:column;align-items:flex-start;flex:1 1 auto;min-width:0}
+.legend li .nm small{font-size:11.5px;color:var(--muted);line-height:1.25}

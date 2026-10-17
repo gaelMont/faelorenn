@@ -1,0 +1,106 @@
+<!--@ inclure tete-debut titre="Les registres de Faelorenn" -->
+<meta name="description" content="Les outils de Faelorenn : créer ses personnages, tenir la campagne à plusieurs, tirer les rencontres.">
+<!--@ inclure polices -->
+<!--@ css index -->
+</head>
+<body>
+<div class="wrap">
+<header>
+  <p class="sur">Faelorenn</p>
+  <h1>Le livre, et les registres de la table</h1>
+  <p class="intro">Le livre du jeu, et neuf outils pour le jouer, solo avec l’Oracle ou à plusieurs : choisir une mission au tableau du Havre, créer ses Marchefleurs, tenir la partie séance après séance, garder trace de ceux qu’on croise, tenir la fiche, le sac et la bourse de chacun, tirer ce qui se dresse sur la route, retoucher à sa main les compétences et les Pratiques, dessiner et garder les plans des bâtiments, des villages et du monde.</p>
+</header>
+
+<nav class="registres" aria-label="Les registres">
+  <a class="registre" href="livre.html">
+    <span class="rnom">Le Livre de Faelorenn</span>
+    <span class="rquoi">le monde et les règles</span>
+    <span class="rdesc">Le livre entier, à lire ici : le monde, les règles, les huit peuples, les Pratiques, le marché, le butin, les adversaires, et de quoi jouer sans maître de jeu. Un sommaire qui suit la lecture, une recherche dans tout le texte, et un lien pour chaque section.</span>
+  </a>
+  <a class="registre" href="missions.html">
+    <span class="rnom">Registre des Missions</span>
+    <span class="rquoi">le tableau du Havre</span>
+    <span class="rdesc">Les missions que le Havre affiche, avec leur paie et leurs points annoncés avant le départ. « Partir » la lance dans la table : la séance s’ouvre sur son annonce, ses visages et sa rencontre sont prêts. Écris les tiennes, ou tire-les au d20 dans le générateur du livre.</span>
+  </a>
+  <a class="registre" href="table.html">
+    <span class="rnom">Registre de la Table</span>
+    <span class="rquoi">la partie</span>
+    <span class="rdesc">Pendant la séance, tout au même endroit : le compte rendu avec les jets, les dégâts et les PV dedans, les dés lancés ici ou sur la table, l’oracle et ses visages connus, le combat et le butin à côté du récit, la compagnie. À plusieurs, chacun sur son ordinateur.</span>
+  </a>
+  <a class="registre" href="pnj.html">
+    <span class="rnom">Registre des Visages</span>
+    <span class="rquoi">les PNJ</span>
+    <span class="rdesc">Une fiche pour chaque personne croisée, ses liens avec les autres et avec les personnages, le réseau qu’ils dessinent et l’histoire de ces liens. Chaque fiche regroupe ce que les comptes rendus disent d’elle.</span>
+  </a>
+  <a class="registre" href="marchefleurs.html">
+    <span class="rnom">Registre des Marchefleurs</span>
+    <span class="rquoi">les fiches</span>
+    <span class="rdesc">La fiche de chaque personnage, comme un écran de personnage : ses PV et ses PC, ce qu’il porte, son sac et sa bourse, le marché du Livre V, sa progression, son histoire. L’impression rend la fiche du Word. Quand la campagne s’arrête, il entre dans le monde comme PNJ, avec ses liens.</span>
+  </a>
+  <a class="registre" href="createur.html">
+    <span class="rnom">Registre du Havre</span>
+    <span class="rquoi">les personnages</span>
+    <span class="rdesc">Créer un personnage selon le livre et le garder dans tes personnages, l’imprimer, l’exporter en Word, ou l’enregistrer en .json pour le faire entrer dans la Table.</span>
+  </a>
+  <a class="registre" href="rencontres.html">
+    <span class="rnom">Registre des Rencontres</span>
+    <span class="rquoi">les adversaires</span>
+    <span class="rdesc">Tirer une rencontre à la mesure du groupe et la mettre dans la séance en un clic, tenir le bestiaire maison, ses familles et ses tables de butin, retoucher les entrées du livre.</span>
+  </a>
+  <a class="registre" href="competences.html">
+    <span class="rnom">Registre des Compétences</span>
+    <span class="rquoi">les règles de la maison</span>
+    <span class="rdesc">Retoucher soi-même les Pratiques de chaque liste et la caractéristique qui les lance, les compétences et leur caractéristique, les compétences de Bannière. Le créateur et la table s’en servent, et Océane les reçoit par le dépôt.</span>
+  </a>
+  <a class="registre" href="plans.html">
+    <span class="rnom">Registre des Plans</span>
+    <span class="rquoi">les lieux</span>
+    <span class="rdesc">Garder, lire et retoucher les plans des bâtiments, des villages et des cartes du monde : on entre d’une carte dans un village, puis dans un bâtiment. Océane les reçoit par le dépôt.</span>
+  </a>
+  <a class="registre" href="tirages.html">
+    <span class="rnom">Registre des Tirages</span>
+    <span class="rquoi">tirer sans MJ</span>
+    <span class="rdesc">Les tables du Livre VIII, telles que le livre les écrit : un inconnu qui arrive, les noms par peuple, la réaction sur le vif, la table d’inspiration. Tout se réécrit, on en ajoute, et chaque ligne peut porter une rareté tirée en cascade. La table de jeu y puise.</span>
+  </a>
+</nav>
+
+<h2 id="sauvegarde">Tout garder en ligne</h2>
+<p>Sans rien relier, chaque registre garde ce que tu fais dans ce navigateur, et seulement là : un nettoyage du navigateur, un autre ordinateur, et tout est à refaire. Relie une fois un dépôt GitHub privé : la table et ses PNJ, tes personnages, ton bestiaire, tes retouches des règles et tes plans y partent tout seuls, et tu les retrouves partout où le dépôt est relié.</p>
+<div id="ghcPlace"></div>
+<div class="inventaire" id="inventaire" hidden>
+  <p class="lab">Dans le dépôt</p>
+  <ul class="inv" id="invListe"></ul>
+  <p class="note" id="invNote"></p>
+</div>
+
+<h2>Mettre le dépôt en place</h2>
+<ol>
+  <li>Sur GitHub, crée un dépôt <b>privé</b>, <code>faelorenn-table</code> par exemple, et coche « Add a README file » pour qu’il ne soit pas vide.</li>
+  <li>Crée un jeton : Settings, Developer settings, Personal access tokens, <a href="https://github.com/settings/personal-access-tokens/new" rel="noopener">Fine-grained tokens</a>, Generate new token. Dans <i>Repository access</i>, choisis seulement ce dépôt. Dans les permissions du dépôt, mets <i>Contents</i> en <i>Read and write</i>. Donne-lui une date d’expiration.</li>
+  <li>Colle le dépôt et le jeton ci-dessus, puis « Relier ». Les registres de ce navigateur s’en servent aussitôt.</li>
+  <li>Donne le même dépôt et le même jeton à ceux qui jouent avec toi, par un message privé. Un jeton à accès fin ne sert que pour les dépôts de son propriétaire : les autres ne peuvent pas s’en faire un pour le tien.</li>
+</ol>
+<div class="encart">
+  <p>Le jeton n’ouvre que ce dépôt-là, et il reste dans le navigateur où on l’a collé. S’il se perd, supprime-le sur GitHub et crée-en un autre : rien de ce qui est dans le dépôt n’en souffre.</p>
+  <p class="note">Chaque enregistrement devient une version dans l’historique du dépôt. Les registres regroupent les changements et n’écrivent jamais deux fois en moins de quinze secondes : GitHub en accepte 500 par heure et par jeton, ce qui laisse de la marge même à plusieurs pendant une séance chargée.</p>
+</div>
+
+<h2>Jouer à plusieurs</h2>
+<p>Pour la table, trois chemins :</p>
+<ol class="chemins">
+  <li><b>Par la sauvegarde en ligne.</b> Chacun relie le même dépôt. Chaque changement y part tout seul, et les autres le reçoivent dans les dix à trente secondes.</li>
+  <li><b>Par un dossier partagé.</b> Le fichier de table posé dans Drive, OneDrive ou Dropbox, synchronisé sur chaque ordinateur. Il faut Chrome ou Edge, et le fichier posé sur l’ordinateur plutôt que le site.</li>
+  <li><b>Par un .json.</b> On l’enregistre, on l’envoie, l’autre l’importe. Tout se fusionne sans rien écraser.</li>
+</ol>
+
+<h2>Ce que ce site montre</h2>
+<p>Le site est public : avec un compte GitHub gratuit, le dépôt qui l’héberge doit l’être, et n’importe qui peut lire le code des registres, avec ce qu’il contient du livre (peuples, Pratiques, bestiaire).</p>
+<p>Vos personnages, vos séances, votre bestiaire et vos retouches des règles et vos plans ne sont jamais dans ce dépôt-là. Ils restent dans vos navigateurs, et dans votre dépôt privé si vous reliez la sauvegarde en ligne.</p>
+
+<footer>Faelorenn · mis à jour le 9 octobre 2026</footer>
+</div>
+<!--@ js site -->
+<!--@ js sync-github -->
+<!--@ js index -->
+</body>
+</html>

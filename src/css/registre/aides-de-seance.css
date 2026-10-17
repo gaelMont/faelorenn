@@ -1,0 +1,29 @@
+/* les visages de la séance */
+ul.gens{list-style:none;margin:4px 0 0;padding:0}
+ul.gens li{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 8px;padding:4px 0;border-top:1px solid var(--rule)}
+ul.gens li:first-child{border-top:0}
+.nomlien{border:0;background:transparent;padding:0;font:inherit;font-family:Spectral,Georgia,serif;font-size:15px;color:var(--forest);cursor:pointer;text-decoration:underline;text-decoration-color:var(--rule);text-underline-offset:3px}
+.nomlien:hover{text-decoration-color:var(--forest)}
+ul.gens .fiche{margin-left:auto}
+ul.gens li.mort .nomlien{color:var(--muted)}
+/* ce que dit le livre */
+.aide summary{cursor:pointer;font-family:Spectral,Georgia,serif;font-size:15px;font-weight:700;color:var(--forest)}
+.aide ul{margin:8px 0 0;padding-left:16px;font-size:12.5px;line-height:1.45}
+.aide li{margin-bottom:5px}
+.aide b{font-weight:600;color:var(--forest)}
+/* la rencontre, dans le récit */
+.rencontre{border:1px solid var(--rule);border-radius:2px;padding:8px 12px;background:var(--paper);font-family:"IBM Plex Sans",sans-serif;font-size:14px;line-height:1.5}
+.rencontre .rt{margin:0 0 4px;color:var(--forest)}
+.rencontre ul{margin:0;padding-left:18px}
+.rencontre li.aterre{color:var(--muted);text-decoration:line-through;text-decoration-thickness:1px}
+.rencontre .rp{font-style:italic;color:var(--muted);margin-top:4px}
+.rencontre .btn{margin-top:6px}
+/* les dés, les dégâts, et à qui ils vont */
+.desmode{display:flex;align-items:center;gap:6px 10px;flex-wrap:wrap;margin-bottom:10px}
+.desmode .lab,.acts .lab{margin:0}
+.desmode .seg button{font-size:13px;padding:4px 10px;background:var(--surface)}
+.appli{margin-top:10px;padding:10px 12px;border:1px solid var(--rule);border-radius:2px;background:var(--surface)}
+/* le message du moment, là où on regarde */
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom, 0px));z-index:60;width:max-content;max-width:min(560px, calc(100vw - 32px));margin:0;padding:10px 14px;background:var(--surface);color:var(--ink);border:1px solid var(--rule);border-radius:3px;box-shadow:0 6px 24px rgba(0,0,0,.18);font-size:13.5px;line-height:1.45;cursor:pointer}
+.toast.ok{border-color:var(--sage)}
+.toast.err{border-color:var(--rust);color:var(--rust)}

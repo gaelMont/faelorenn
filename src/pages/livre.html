@@ -1,0 +1,36 @@
+<!--@ inclure en-tete titre="Le Livre de Faelorenn" feuille="livre" -->
+<body>
+<!--@ inclure nav-registres -->
+<!--@ css site -->
+
+<div class="wrap large">
+<header>
+  <h1>Le Livre de Faelorenn</h1>
+  <p class="sub">Le monde, les règles, les huit peuples, et de quoi jouer sans maître de jeu</p>
+</header>
+
+<div class="lvbarre">
+  <input type="search" id="lvQ" placeholder="Chercher dans le livre" aria-label="Chercher dans le livre" autocomplete="off" spellcheck="false">
+  <button type="button" class="btn ghost sm" id="lvPrec" disabled>Précédent</button>
+  <button type="button" class="btn ghost sm" id="lvSuiv" disabled>Suivant</button>
+  <button type="button" class="btn ghost sm" id="lvVider" hidden>Vider</button>
+  <span class="note" id="lvCompte" role="status"></span>
+  <span class="note" id="lvOu"></span>
+</div>
+
+<div class="lvcol">
+  <aside class="lvaside">
+    <details class="lvtiroir" id="lvTiroir">
+      <summary>Le sommaire</summary>
+      <nav class="lvsom" id="lvSom" aria-label="Sommaire du livre"></nav>
+    </details>
+  </aside>
+  <main class="lvtexte" id="lvTexte"></main>
+</div>
+</div>
+
+<button type="button" class="btn ghost sm lvhaut" id="lvHaut" title="Revenir en haut">Haut</button>
+
+<!--@ js livre -->
+</body>
+</html>

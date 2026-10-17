@@ -1,0 +1,875 @@
+/* Fichier généré par outils/build.mjs depuis src/css/registre/ : ne pas le modifier, modifier les modules. */
+
+/* ── registre/jetons.css ── */
+:root{
+  --paper:#F4F2EA; --surface:#FFFFFF; --fill:#E9EFE8; --ink:#1B1C18; --muted:#6B7469;
+  --forest:#1F3D2B; --sage:#4A6B52; --rule:#CBD6C9; --rust:#9A4A28; --gold:#8A6D2F; --plum:#6B2F3A;
+  --shadow:0 1px 2px rgba(31,61,43,.07);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#131713; --surface:#1B211C; --fill:#212A22; --ink:#E6E7DF; --muted:#94A08F;
+    --forest:#9DC2A6; --sage:#7FA88A; --rule:#2E3A30; --rust:#D98A63; --gold:#C9A758; --plum:#C97182;
+    --shadow:0 1px 2px rgba(0,0,0,.4);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#131713; --surface:#1B211C; --fill:#212A22; --ink:#E6E7DF; --muted:#94A08F;
+  --forest:#9DC2A6; --sage:#7FA88A; --rule:#2E3A30; --rust:#D98A63; --gold:#C9A758; --plum:#C97182;
+  --shadow:0 1px 2px rgba(0,0,0,.4);
+}
+
+/* ── registre/base.css ── */
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--paper);color:var(--ink);font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:15px;line-height:1.5}
+.wrap{max-width:none;margin:0 auto;padding-inline:clamp(14px,2.2vw,44px);padding-block:26px 40px}
+.wrap.large{max-width:none}
+h1{font-family:Spectral,Georgia,serif;font-weight:700;font-size:clamp(27px,5vw,38px);color:var(--forest);margin:0;letter-spacing:-.01em;text-wrap:balance}
+.sub{font-family:Spectral,Georgia,serif;font-style:italic;color:var(--sage);margin:2px 0 0}
+header{border-bottom:2px solid var(--forest);padding-bottom:12px;margin-bottom:18px}
+.saut{display:flex;flex-wrap:wrap;gap:4px 18px;margin-top:10px;font-size:13px}
+.saut a{color:var(--sage);text-decoration:none;border-bottom:1px solid transparent;padding-bottom:1px}
+.saut a:hover,.saut a:focus-visible{border-bottom-color:var(--sage)}
+section{margin-bottom:24px}
+h2{font-family:Spectral,Georgia,serif;font-size:19px;color:var(--forest);margin:0 0 2px;display:flex;align-items:baseline;gap:10px;text-wrap:balance}
+h2 .num{font-size:12px;font-weight:600;letter-spacing:.14em;color:var(--sage);font-family:"IBM Plex Sans",sans-serif;border:1px solid var(--rule);border-radius:2px;padding:1px 6px}
+h3{font-family:Spectral,Georgia,serif;font-size:16px;color:var(--forest);margin:14px 0 6px}
+.hint{color:var(--muted);font-size:13px;margin:0 0 12px}
+.card{background:var(--surface);border:1px solid var(--rule);border-radius:3px;padding:14px 16px;box-shadow:var(--shadow)}
+.lab{display:block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:0 0 4px}
+.note{font-size:12.5px;color:var(--muted);margin:8px 0 0;line-height:1.45}
+.note.ok{color:var(--forest)} .note.err{color:var(--rust)}
+.btn{font:inherit;font-size:14px;padding:8px 13px;border:1px solid var(--forest);background:var(--forest);color:var(--paper);border-radius:2px;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--forest)}
+.btn.sm{font-size:13px;padding:5px 10px}
+.btn.xs{font-size:12px;padding:3px 8px}
+.btn.danger{border-color:var(--rust);color:var(--rust);background:transparent}
+.btn:disabled{opacity:.4;cursor:default}
+.acts{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+input,select,textarea{font:inherit;font-size:14.5px;padding:7px 9px;border:1px solid var(--rule);border-radius:2px;background:var(--surface);color:var(--ink);max-width:100%}
+textarea{width:100%;resize:vertical;line-height:1.45}
+input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-visible{outline:2px solid var(--sage);outline-offset:1px}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button{padding:6px 11px;border:1px solid var(--rule);background:transparent;color:var(--muted);border-radius:2px;cursor:pointer;font-size:14px}
+.seg button[aria-pressed=true]{border-color:var(--forest);background:var(--fill);color:var(--forest);font-weight:600}
+.vide{color:var(--muted);font-style:italic;font-family:Spectral,Georgia,serif}
+
+/* ── registre/barre-de-table.css ── */
+/* la barre de table */
+.table{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:flex-end}
+.table>div{flex:1 1 200px;min-width:0}
+.etatsync{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);margin-top:10px;flex-wrap:wrap}
+/* les campagnes : la liste dans la barre de table, ses boutons dessous ; dans les autres pages, une ligne sous l'en-tête */
+.campagnes .acts{margin-top:8px}
+.campagnes .cresume{margin:8px 0 0}
+.cform{margin-top:10px;max-width:520px}
+.cform .acts{margin-top:8px}
+.cbarre{display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap}
+.cbarre[hidden]{display:none}
+.cbarre .lab{margin:0}
+.cbarre select{min-width:180px;font-size:13.5px;padding:5px 7px}
+.pastille{width:8px;height:8px;border-radius:50%;background:var(--muted);flex:0 0 auto}
+.pastille.on{background:var(--sage)}
+.pastille.off{background:var(--rust)}
+
+/* ── registre/personnages.css ── */
+/* personnages */
+.pgrille{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+.pcarte{border:1px solid var(--rule);border-radius:3px;padding:11px 13px;background:var(--surface);box-shadow:var(--shadow)}
+.pcarte.moi{border-color:var(--forest)}
+.pnom{font-family:Spectral,Georgia,serif;font-size:18px;font-weight:600;line-height:1.2}
+.pqui{font-size:12.5px;color:var(--muted)}
+/* deux jauges côte à côte, alignées ligne à ligne même quand un titre passe sur deux lignes */
+.jauges{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:14px;margin-top:8px}
+.jauge{display:grid;grid-row:span 4;grid-template-rows:subgrid;row-gap:0;min-width:0}
+.jauge .t{font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);align-self:end}
+.jauge .v{font-family:Spectral,serif;font-size:22px;font-weight:700;color:var(--forest);font-variant-numeric:tabular-nums}
+.jauge .v small{font-size:12px;color:var(--muted);font-weight:400}
+.jauge .cmd{display:flex;gap:4px;margin-top:3px}
+.jauge button{width:28px;height:26px;border:1px solid var(--rule);background:var(--surface);color:var(--forest);border-radius:2px;cursor:pointer;font-size:12px;line-height:1}
+.jauge button:hover:not(:disabled){background:var(--fill)}
+.jauge input{width:52px;padding:3px 5px;font-size:13px;text-align:center}
+.barre{height:4px;background:var(--fill);border-radius:2px;margin-top:4px;overflow:hidden}
+.barre i{display:block;height:100%;background:var(--sage)}
+.barre i.bas{background:var(--rust)}
+.pact{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.detail{border-top:1px solid var(--rule);margin-top:10px;padding-top:8px}
+.tab{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;font-size:13px}
+.tab th{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--sage);text-align:left;font-weight:600;padding:4px 6px;background:var(--fill);border-bottom:1px solid var(--rule)}
+.tab td{padding:3px 6px;border-bottom:1px solid var(--rule)}
+.tab td.n,.tab th.n{text-align:right}
+.tab tr:last-child td{border-bottom:0}
+.scroll{overflow-x:auto}
+.mini{font-size:12px;color:var(--muted)}
+.htete{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:baseline;justify-content:space-between}
+.hliste{margin-top:8px;border-top:1px solid var(--rule)}
+.hrow{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;justify-content:space-between;padding:9px 2px;border-bottom:1px solid var(--rule)}
+.htxt{display:flex;flex-direction:column;min-width:0;flex:1 1 220px}
+.hnom{font-family:Spectral,Georgia,serif;font-size:17px;font-weight:600;color:var(--forest);overflow-wrap:anywhere}
+.hmeta{font-size:12.5px;color:var(--muted)}
+.texte{white-space:pre-wrap;font-size:13.5px;line-height:1.45}
+
+/* ── registre/seance.css ── */
+/* la séance : un bureau, une page, et de quoi écrire */
+.card.seance{background:var(--fill)}
+.espace{flex:1 1 auto}
+.etats{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.etat{font-size:12.5px;padding:3px 9px;border:1px solid var(--rule);border-radius:2px;background:var(--surface);font-variant-numeric:tabular-nums;color:var(--muted)}
+.etat b{font-weight:600;color:var(--forest)}
+.etat.bas{border-color:var(--rust)} .etat.bas b{color:var(--rust)}
+.feuille{position:relative;margin-top:12px;background:var(--surface);border:1px solid var(--rule);border-radius:2px;box-shadow:var(--shadow);
+  padding:18px 22px 10px;max-height:max(300px, calc(100vh - 430px));overflow-y:auto;overscroll-behavior:contain;
+  font-family:Spectral,Georgia,serif;font-size:16px;line-height:1.6;color:var(--ink)}
+.feuille:focus{outline:none}
+.stitre{border-bottom:1px solid var(--rule);margin-bottom:14px;padding-bottom:6px}
+.stitre h3{font-size:20px;margin:0;line-height:1.25}
+.sdate{margin:2px 0 0;font-style:italic;color:var(--muted);font-size:14px}
+.feuille .vide{font-size:15px}
+.bloc{position:relative;margin:0 0 .8em;border-radius:2px}
+.bloc:hover{background:var(--fill);box-shadow:0 0 0 5px var(--fill)}
+.bloc p{margin:0;white-space:pre-wrap;overflow-wrap:anywhere}
+.b-scene p{font-weight:700}
+.b-achat p,.b-note p{font-family:"IBM Plex Sans",sans-serif;font-size:13px;font-style:italic;color:var(--muted)}
+.joints{font-family:"IBM Plex Sans",sans-serif;font-size:13px;color:var(--muted)}
+.joints.ok{color:var(--sage)} .joints.ko{color:var(--rust)}
+.encadre .sep{text-align:center;color:var(--muted);letter-spacing:.06em;margin:.35em 0}
+.encadre .joints{display:block}
+.bacts{position:absolute;right:-4px;top:-6px;display:flex;gap:1px;opacity:0;background:var(--surface);padding:2px;
+  border:1px solid var(--rule);border-radius:2px;box-shadow:var(--shadow);transition:opacity .12s}
+.bloc:hover .bacts,.bloc:focus-within .bacts{opacity:1}
+.bacts button{font-family:"IBM Plex Sans",sans-serif;font-size:12px;border:0;background:transparent;color:var(--forest);padding:3px 8px;cursor:pointer;border-radius:2px;line-height:1.2}
+.bacts button:hover{background:var(--fill)}
+.bacts button.danger{color:var(--rust);font-weight:600}
+@media (hover:none){
+  .bloc:hover{background:none;box-shadow:none}
+  .bacts{position:static;opacity:1;box-shadow:none;border:0;background:transparent;padding:0;margin-top:2px;justify-content:flex-end}
+}
+.bloc.retouche{background:var(--fill);box-shadow:0 0 0 6px var(--fill)}
+.bloc.retouche textarea{font-family:Spectral,Georgia,serif;font-size:16px}
+
+.compo{margin-top:12px;display:flex;flex-direction:column;gap:8px}
+.qui{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.qui button{font:inherit;font-size:13.5px;padding:5px 11px;border:1px solid var(--rule);background:var(--surface);color:var(--ink);border-radius:2px;cursor:pointer}
+.qui button:hover{border-color:var(--sage)}
+.qui button[aria-pressed=true]{background:var(--forest);border-color:var(--forest);color:var(--surface);font-weight:600}
+.qui input{width:160px;font-size:13.5px;padding:5px 9px}
+.qui input.actif{border-color:var(--forest);box-shadow:inset 0 0 0 1px var(--forest)}
+.genre button{font-size:13px;padding:4px 10px;background:var(--surface)}
+#coTexte{font-family:Spectral,Georgia,serif;font-size:16px;min-height:78px}
+.joint{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.puce{display:inline-flex;align-items:center;gap:4px;font-size:12.5px;padding:2px 3px 2px 9px;border:1px solid var(--rule);background:var(--surface);border-radius:2px;color:var(--ink)}
+.puce.ok{border-color:var(--sage);color:var(--sage)}
+.puce.ko{border-color:var(--rust);color:var(--rust)}
+.puce.vie{border-color:var(--gold);color:var(--gold)}
+.puce button{border:0;background:transparent;color:inherit;cursor:pointer;font-size:15px;line-height:1;padding:1px 5px;border-radius:2px}
+.puce button:hover{background:var(--fill)}
+.onlira{font-size:12.5px;color:var(--muted);font-style:italic;flex:1 1 100%}
+.btn.ghost.on{background:var(--surface);box-shadow:inset 0 0 0 1px var(--forest);font-weight:600}
+.panneau{border-top:1px dashed var(--rule);padding-top:10px}
+.verdict{margin-top:8px;font-size:13.5px;color:var(--muted)}
+.verdict b{font-family:Spectral,Georgia,serif;font-size:19px;color:var(--ink)}
+.verdict.ok b{color:var(--sage)} .verdict.ko b{color:var(--rust)}
+
+/* le paragraphe qu'on vient chercher depuis une fiche, la carte qu'on vient chercher depuis l'autre page */
+.bloc.eclaire{background:var(--fill);box-shadow:0 0 0 6px var(--fill),0 0 0 7px var(--sage)}
+.pcarte.eclaire{box-shadow:0 0 0 2px var(--sage)}
+
+/* ── registre/partie.css ── */
+/* la partie : le récit au milieu, ce qu'il faut sous la main à côté */
+.jeu{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:14px;align-items:start;margin-top:12px}
+.jeu-main{min-width:0}
+.jeu .feuille{margin-top:0}
+.jeu-cote{position:sticky;top:calc(12px + env(safe-area-inset-top, 0px));display:flex;flex-direction:column;gap:10px;max-height:calc(100vh - 24px);overflow-y:auto;overscroll-behavior:contain}
+
+/* ── registre/cotes.css ── */
+.cote{background:var(--surface);border:1px solid var(--rule);border-radius:2px;padding:10px 12px;box-shadow:var(--shadow);min-width:0}
+.ctete{display:flex;align-items:baseline;gap:6px 8px;flex-wrap:wrap;margin-bottom:4px}
+.ctitre{font-family:Spectral,Georgia,serif;font-size:15.5px;font-weight:700;color:var(--forest);margin:0}
+.cote a{color:var(--sage);font-size:12.5px}
+.cote>.mini{margin:2px 0 6px}
+/* la compagnie */
+.cie{display:flex;flex-wrap:wrap;align-items:center;gap:3px 12px;padding:6px 0;border-top:1px solid var(--rule)}
+.cie-liste .ctitre{margin-bottom:2px}
+.cie-liste .cie:first-of-type{border-top:0}
+
+/* ── registre/compagnie-jauges.css ── */
+.cnom{flex:1 0 100%;font-family:Spectral,Georgia,serif;font-size:15px;color:var(--forest);font-weight:600;overflow-wrap:anywhere}
+.cie.moi .cnom{text-decoration:underline;text-decoration-color:var(--rule);text-underline-offset:3px}
+.cie.tombe .cnom{color:var(--rust)}
+.cj{flex:1 1 100%;min-width:0;display:flex;align-items:center;gap:5px}
+.cjt{font-size:12px;font-variant-numeric:tabular-nums;white-space:nowrap;min-width:56px}
+.cj .abarre{flex:1 1 40px;min-width:24px}
+.cj button{width:22px;height:22px;flex:0 0 auto;border:1px solid var(--rule);background:var(--surface);color:var(--forest);border-radius:2px;cursor:pointer;font-size:13px;line-height:1;padding:0}
+.cj button:hover:not(:disabled){background:var(--fill)}
+.cj button:disabled{opacity:.35;cursor:default}
+
+/* ── registre/en-face.css ── */
+/* en face */
+.abarre{height:5px;background:var(--fill);border-radius:2px;overflow:hidden}
+.abarre i{display:block;height:100%;background:var(--sage)}
+.abarre i.bas{background:var(--rust)}
+.cpourquoi{font-style:italic}
+.aligne{border-top:1px solid var(--rule);padding:8px 0 6px}
+.aligne.visee{background:var(--fill);margin-inline:-6px;padding-inline:6px}
+.aligne.aterre>:not(.fouille):not(.afouille){opacity:.55}
+.aligne.aterre .anom{text-decoration:line-through;text-decoration-thickness:1px}
+.atete{display:flex;align-items:baseline;gap:8px}
+.anom{font-family:Spectral,Georgia,serif;font-size:15.5px;font-weight:600;color:var(--ink);flex:1 1 auto;min-width:0;overflow-wrap:anywhere}
+.arang{font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+.ax{border:0;background:transparent;color:var(--muted);cursor:pointer;font:inherit;font-size:15px;line-height:1;padding:2px 5px;border-radius:2px}
+.ax:hover{background:var(--fill);color:var(--rust)}
+.ax.danger{color:var(--rust);font-size:12px;font-weight:600}
+.ainfo{margin:1px 0 5px}
+.apv{display:flex;align-items:center;gap:8px}
+.apv .abarre{flex:1 1 auto}
+.apvn{font-size:12.5px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.acmd{display:flex;gap:3px}
+.acmd button{min-width:30px;height:24px;border:1px solid var(--rule);background:var(--surface);color:var(--forest);border-radius:2px;cursor:pointer;font-size:12px;padding:0 4px}
+.acmd button:hover:not(:disabled){background:var(--fill)}
+.acmd button:disabled{opacity:.35;cursor:default}
+.aatq{display:flex;flex-direction:column;gap:5px;margin-top:7px}
+.aat{display:flex;align-items:center;gap:8px}
+.aattxt{flex:1 1 auto;min-width:0;font-size:13px;line-height:1.35}
+.aattxt b{font-weight:600}
+.aty{display:inline-block;font-size:9.5px;letter-spacing:.07em;text-transform:uppercase;border:1px solid var(--rule);border-radius:2px;padding:0 4px;margin-right:5px;color:var(--muted);vertical-align:1px}
+.aty.tmag{border-color:var(--plum);color:var(--plum)}
+.aty.tspe{border-color:var(--gold);color:var(--gold)}
+.apart{margin:5px 0 0}
+.atete .aviser{align-self:center}
+.aligne.visee .aviser{background:var(--forest);color:var(--surface)}
+.ajoutadv{margin-top:8px;border-top:1px dashed var(--rule);padding-top:8px}
+.ajoutadv summary{cursor:pointer;font-size:13px;color:var(--forest)}
+.ajoutadv>.tirage{margin-top:8px}
+
+/* ── registre/tirer-rencontre.css ── */
+/* tirer une rencontre, le même tirage que le Registre des Rencontres */
+.tbloc{border-top:1px solid var(--rule);margin-top:6px;padding-top:8px}
+.tbloc>.lab{margin-bottom:6px}
+.tirage{display:flex;flex-direction:column;gap:8px}
+.tirage .acts{gap:6px}
+.tirage>.mini{margin:0}
+.tl{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.tl .lab{margin:0}
+.pas{display:inline-flex;align-items:center;border:1px solid var(--rule);border-radius:2px;background:var(--surface)}
+.pas button{width:28px;height:28px;border:0;background:transparent;color:var(--forest);cursor:pointer;font-size:15px;line-height:1;border-radius:2px}
+.pas button:hover:not(:disabled){background:var(--fill)}
+.pas button:disabled{opacity:.35;cursor:default}
+.pas b{min-width:24px;text-align:center;font-variant-numeric:tabular-nums;font-size:14px}
+.tint{gap:4px}
+.tint button{font-size:12.5px;padding:4px 9px;background:var(--surface)}
+.tsel{display:flex;flex-direction:column;gap:6px}
+.tsel select,.tajout select{width:100%;font-size:13.5px;padding:5px 7px}
+ul.tliste{list-style:none;margin:0;padding:0;border-top:1px solid var(--rule)}
+ul.tliste li{display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:1px solid var(--rule);font-size:13px}
+.tn{flex:1 1 auto;min-width:0;overflow-wrap:anywhere;line-height:1.35}
+.tn b{font-weight:600}
+.rdot{flex:0 0 auto;width:18px;height:18px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:700;color:var(--surface);background:var(--muted);font-variant-numeric:tabular-nums}
+.rdot.r2{background:var(--sage)} .rdot.r3{background:var(--gold)} .rdot.r4{background:var(--rust)} .rdot.r5{background:var(--plum)}
+.tajout{display:flex;flex-wrap:wrap;gap:6px}
+.tajout input[type=number]{width:62px;padding:5px 7px}
+
+/* ── registre/tour-de-table.css ── */
+/* le tour de table : les cartes du round */
+.tour{border-bottom:1px solid var(--rule);padding-bottom:8px;margin-bottom:6px}
+.tour .ctete{margin-bottom:2px}
+ul.prliste{list-style:none;margin:4px 0 0;padding:0}
+.prl{display:flex;align-items:center;gap:6px;padding:3px 0;border-top:1px solid var(--rule);font-size:13px}
+.prl:first-child{border-top:0}
+.prl.prmoi{background:var(--fill);margin-inline:-6px;padding-inline:6px}
+.prl.pra>.prn,.prl.pra>.prnom,.prl.pra>.prcote{opacity:.45}
+.prl.prech{outline:1px dashed var(--sage);outline-offset:1px}
+.prn{flex:0 0 auto;min-width:19px;height:19px;border-radius:2px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--surface);background:var(--forest);font-variant-numeric:tabular-nums}
+.prl.prmoi .prn{background:var(--rust)}
+.prnom{flex:0 1 auto;min-width:0;overflow-wrap:anywhere;line-height:1.3}
+.prnom.prbas{text-decoration:line-through;text-decoration-thickness:1px;color:var(--muted)}
+.prcote{flex:0 0 auto;font-size:9.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);border:1px solid var(--rule);border-radius:2px;padding:0 3px}
+.prcote.ceux{color:var(--rust);border-color:var(--rust)}
+.prx{font-size:12px;padding:1px 4px}
+.prl button{flex:0 0 auto;white-space:nowrap}
+.prbtns{display:flex;align-items:center;gap:4px;flex:0 0 auto}
+
+/* ── registre/tour-et-blocs.css ── */
+.atour{margin-top:6px}
+.cbloc{margin-top:8px;border-top:1px solid var(--rule);padding-top:8px}
+.cbloc .ctete{margin-bottom:2px}
+
+/* ── registre/butin.css ── */
+/* le butin de ceux qui sont tombés */
+.atete .afouiller{align-self:center}
+.cote-butin{margin-top:8px;border-top:1px dashed var(--rule);padding-top:8px}
+.cote-butin summary{cursor:pointer;font-size:13px;color:var(--forest);font-weight:600}
+.fligne{border-top:1px solid var(--rule);padding:6px 0 4px}
+.fligne:first-of-type{border-top:0}
+.fligne .atete{align-items:center;flex-wrap:wrap}
+.afouille{margin:5px 0 0;overflow-wrap:anywhere}
+.fouille{margin-top:8px;padding:8px 10px;border:1px solid var(--rule);border-radius:2px;background:var(--paper);display:flex;flex-direction:column;gap:7px}
+.ftitre{margin:0;font-family:Spectral,Georgia,serif;font-weight:700;color:var(--forest);font-size:14.5px}
+.fsienne ul{margin:2px 0 4px;padding-left:16px}
+.fsienne p{margin:0 0 4px}
+.fsienne .lab,.flivre .lab{margin:0 0 3px}
+.flivre{display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.flivre select{width:100%;font-size:13px;padding:5px 7px}
+.fouille .desmode{margin:0}
+.fdes{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.fverdict{margin:0;color:var(--forest)}
+.fouille textarea{width:100%;font-size:13.5px}
+.fdes input{width:66px;padding:4px 6px}
+.fsienne .acts,.flivre .acts{gap:5px}
+.jetdes .ou,.degats .ou{margin-left:2px}
+.amain{display:inline-flex;gap:6px;align-items:center;flex-wrap:nowrap}
+.fouille .acts{gap:6px}
+.fouille .acts select{flex:1 1 120px;min-width:0;font-size:13.5px;padding:5px 7px}
+
+/* ── registre/aides-de-seance.css ── */
+/* les visages de la séance */
+ul.gens{list-style:none;margin:4px 0 0;padding:0}
+ul.gens li{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 8px;padding:4px 0;border-top:1px solid var(--rule)}
+ul.gens li:first-child{border-top:0}
+.nomlien{border:0;background:transparent;padding:0;font:inherit;font-family:Spectral,Georgia,serif;font-size:15px;color:var(--forest);cursor:pointer;text-decoration:underline;text-decoration-color:var(--rule);text-underline-offset:3px}
+.nomlien:hover{text-decoration-color:var(--forest)}
+ul.gens .fiche{margin-left:auto}
+ul.gens li.mort .nomlien{color:var(--muted)}
+/* ce que dit le livre */
+.aide summary{cursor:pointer;font-family:Spectral,Georgia,serif;font-size:15px;font-weight:700;color:var(--forest)}
+.aide ul{margin:8px 0 0;padding-left:16px;font-size:12.5px;line-height:1.45}
+.aide li{margin-bottom:5px}
+.aide b{font-weight:600;color:var(--forest)}
+/* la rencontre, dans le récit */
+.rencontre{border:1px solid var(--rule);border-radius:2px;padding:8px 12px;background:var(--paper);font-family:"IBM Plex Sans",sans-serif;font-size:14px;line-height:1.5}
+.rencontre .rt{margin:0 0 4px;color:var(--forest)}
+.rencontre ul{margin:0;padding-left:18px}
+.rencontre li.aterre{color:var(--muted);text-decoration:line-through;text-decoration-thickness:1px}
+.rencontre .rp{font-style:italic;color:var(--muted);margin-top:4px}
+.rencontre .btn{margin-top:6px}
+/* les dés, les dégâts, et à qui ils vont */
+.desmode{display:flex;align-items:center;gap:6px 10px;flex-wrap:wrap;margin-bottom:10px}
+.desmode .lab,.acts .lab{margin:0}
+.desmode .seg button{font-size:13px;padding:4px 10px;background:var(--surface)}
+.appli{margin-top:10px;padding:10px 12px;border:1px solid var(--rule);border-radius:2px;background:var(--surface)}
+/* le message du moment, là où on regarde */
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom, 0px));z-index:60;width:max-content;max-width:min(560px, calc(100vw - 32px));margin:0;padding:10px 14px;background:var(--surface);color:var(--ink);border:1px solid var(--rule);border-radius:3px;box-shadow:0 6px 24px rgba(0,0,0,.18);font-size:13.5px;line-height:1.45;cursor:pointer}
+.toast.ok{border-color:var(--sage)}
+.toast.err{border-color:var(--rust);color:var(--rust)}
+
+/* ── registre/pnj.css ── */
+/* les PNJ */
+.pnjbarre{margin-bottom:4px}
+ul.nliens{list-style:none;margin:8px 0 0;padding:0;font-size:13px}
+ul.nliens li{display:flex;align-items:center;gap:8px;padding:2px 0;min-width:0;overflow-wrap:anywhere}
+.elien{padding:8px 0 4px;border-top:1px dashed var(--rule)}
+#ped-lien-plus{margin-top:8px}
+.ncarte .pact .btn,[data-pj] .pact .btn{font-size:12px;padding:3px 8px}
+.vliens{margin-top:8px}
+.ntete{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.att{font-size:11px;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border:1px solid var(--rule);border-radius:2px;white-space:nowrap;color:var(--muted);flex:0 0 auto}
+.att-amical{border-color:var(--sage);color:var(--sage)}
+.att-mefiant{border-color:var(--gold);color:var(--gold)}
+.att-hostile{border-color:var(--rust);color:var(--rust)}
+.ncarte.mort{opacity:.62}
+.ncarte.mort .pnom{text-decoration:line-through;text-decoration-thickness:1px}
+.nmeta{margin-top:4px}
+.lien{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--rule);font-size:13.5px;flex-wrap:wrap}
+.lien:last-of-type{border-bottom:0}
+.lien .q{flex:1 1 120px;min-width:0;overflow-wrap:anywhere}
+.lien .btn{font-size:12px;padding:3px 8px}
+.ltrait{width:22px;height:0;border-top:2px solid var(--muted);flex:0 0 auto}
+.ltrait.l-famille{border-top-color:var(--forest);border-top-width:3px}
+.ltrait.l-amour{border-top-color:var(--plum)}
+.ltrait.l-ami{border-top-color:var(--sage)}
+.ltrait.l-allie{border-top:2px dashed var(--sage)}
+.ltrait.l-rival{border-top:2px dashed var(--gold)}
+.ltrait.l-ennemi{border-top-color:var(--rust);border-top-width:3px}
+.ltrait.l-dette{border-top:2px dotted var(--muted)}
+.ltrait.l-brouille{border-top:2px dashed var(--rust)}
+.lien.edite{background:var(--paper);margin-inline:-6px;padding-inline:6px}
+/* l'histoire d'un lien, sous le lien */
+.lien .lhist{flex:1 1 100%;margin:2px 0 4px 30px}
+.lhist .lab{margin:0 0 2px}
+.lhist ul{list-style:none;margin:0;padding:0;font-size:12.5px;color:var(--muted)}
+.lhist li{display:flex;align-items:center;gap:8px;padding:1px 0}
+.lhist li.actuel{color:var(--ink)}
+.lhist .ltrait{width:16px}
+/* l'histoire des liens, séance par séance */
+.histoire h3.hseance{margin:14px 0 4px;font-size:15px}
+.histoire h3.hseance:first-of-type{margin-top:6px}
+ul.hliens{list-style:none;margin:0;padding:0}
+ul.hliens li{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--rule);font-size:13.5px}
+ul.hliens li .q{flex:1 1 auto;min-width:0;overflow-wrap:anywhere}
+ul.hliens li.change .q{color:var(--ink)}
+.hraison{font-style:italic;color:var(--forest)}
+/* « /Nahya » dans un texte : un lien vers sa fiche */
+button.mention{font:inherit;color:var(--forest);background:none;border:0;padding:0;cursor:pointer;text-decoration:underline;text-decoration-color:var(--rule);text-underline-offset:3px}
+button.mention:hover,button.mention:focus-visible{text-decoration-color:var(--forest)}
+.mentions{margin:4px 0 0;border:1px solid var(--forest);border-radius:2px;background:var(--surface);box-shadow:var(--shadow);max-height:260px;overflow-y:auto;font-family:"IBM Plex Sans",sans-serif;font-size:13.5px}
+.mentions button{display:flex;width:100%;align-items:baseline;gap:10px;text-align:left;font:inherit;background:transparent;border:0;border-bottom:1px solid var(--rule);color:var(--ink);padding:6px 10px;cursor:pointer}
+.mentions button.actif,.mentions button:hover{background:var(--fill)}
+.mentions button.neuve .mn{color:var(--forest);font-style:italic}
+.mentions .mn{flex:1 1 auto;min-width:0;overflow-wrap:anywhere}
+.mentions .mq{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.mentions .maide{margin:0;padding:4px 10px;font-size:11.5px;color:var(--muted)}
+/* ce que les comptes rendus disent de quelqu'un, sur sa fiche */
+.textes{display:flex;flex-direction:column;gap:4px;align-items:flex-start}
+.textes .tseance{margin:8px 0 0;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--sage);font-weight:600}
+.textes .tseance:first-child{margin-top:0}
+.textrait{display:flex;gap:6px;align-items:flex-start;width:100%;font-family:Spectral,Georgia,serif;font-size:14.5px;line-height:1.45}
+.textrait p{margin:0;flex:1 1 auto;min-width:0;overflow-wrap:anywhere}
+.textrait.agit p{color:var(--ink)}
+.textrait:not(.agit) p{color:var(--muted)}
+.textrait button.mention{color:var(--forest)}
+/* la fiche en grand : tout ce qui concerne quelqu'un, les comptes rendus en entier */
+.grand{margin-bottom:12px;padding:16px 20px}
+.gtete{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px}
+.gtete .gnom{margin:0;font-size:26px;line-height:1.2;overflow-wrap:anywhere}
+.gtete .gnom:focus{outline:none}
+.grand .gsous{margin:4px 0 0}
+.grand .gmeta{margin:2px 0 0}
+.gcorps{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,8fr);gap:6px 32px;margin-top:14px;border-top:1px solid var(--rule);padding-top:4px}
+.glab{font-family:Spectral,Georgia,serif;font-size:16.5px;color:var(--forest);margin:14px 0 6px}
+.gsait{font-family:Spectral,Georgia,serif;font-size:15.5px;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere}
+.gautre p{margin:0 0 8px;font-family:Spectral,Georgia,serif;font-size:15px;line-height:1.5;overflow-wrap:anywhere}
+.gtitre{display:flex;align-items:baseline;gap:10px}
+/* les filtres restent sous la main quand on descend dans les paragraphes */
+.gfiltres{position:sticky;top:env(safe-area-inset-top,0px);z-index:1;background:var(--surface);padding:6px 0 8px;border-bottom:1px solid var(--rule)}
+.gfiltres .seg{flex-wrap:wrap}
+.gfiltres .seg button:disabled{opacity:.45;cursor:default}
+.gsauts{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.gsauts button{font:inherit;font-size:12.5px;padding:3px 9px;border:1px solid var(--rule);background:transparent;color:var(--forest);border-radius:2px;cursor:pointer}
+.gsauts button:hover{background:var(--fill)}
+.ggroupe{scroll-margin-top:64px}
+.gseance{margin:16px 0 4px;font-family:"IBM Plex Sans",sans-serif;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--sage);font-weight:600}
+.gseance .gnb{letter-spacing:0;text-transform:none;font-weight:400;color:var(--muted)}
+.gpara{display:flex;gap:10px;align-items:flex-start;margin:4px 0;padding:6px 0 6px 12px;border-left:3px solid var(--rule)}
+.gpara.agit{border-left-color:var(--forest)}
+.gpara .gtexte{flex:1 1 auto;min-width:0}
+.gpara .gtexte p{margin:0;font-family:Spectral,Georgia,serif;font-size:16px;line-height:1.55;color:var(--ink);white-space:pre-wrap;overflow-wrap:anywhere}
+.gpara .gtexte p.joints{margin-top:3px;font-family:"IBM Plex Sans",sans-serif;font-size:12.5px;line-height:1.4;color:var(--muted);white-space:normal}
+mark.nomici{background:var(--fill);color:var(--forest);font-weight:600;border-radius:2px;padding:0 2px;box-shadow:inset 0 -2px 0 var(--sage)}
+button.mention.lui{font-weight:600;text-decoration-color:var(--forest)}
+@media (max-width:860px){.gcorps{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:560px){.grand{padding:12px 14px}.gtete .gnom{font-size:22px}}
+
+/* ── registre/missions.css ── */
+/* le tableau du Havre : une couleur par genre de mission, du relevé le plus simple à ce que personne n'a voulu prendre */
+.g-observer{--g:var(--sage)} .g-escorter{--g:var(--gold)} .g-releve{--g:var(--forest)} .g-erosion{--g:var(--rust)} .g-personne{--g:var(--plum)}
+.misbarre{margin:4px 0 14px}
+.mgrille{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(300px,100%),1fr));gap:14px;align-items:start}
+.mcarte{background:var(--surface);border:1px solid var(--rule);border-top:4px solid var(--g,var(--sage));border-radius:3px;padding:11px 14px 12px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:7px;min-width:0}
+.mcarte.e-cours{border-color:var(--forest);border-top-color:var(--g,var(--sage))}
+.mhaut{display:flex;flex-wrap:wrap;justify-content:space-between;gap:2px 10px;margin:0;font-size:11px;letter-spacing:.09em;text-transform:uppercase;font-weight:600;color:var(--g,var(--sage))}
+.mhaut .mpaie{color:var(--muted);letter-spacing:.05em;font-variant-numeric:tabular-nums}
+.mtitre{margin:0;font-size:19px;line-height:1.25;color:var(--ink);display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 8px;overflow-wrap:anywhere;text-wrap:balance}
+.mex{font-family:"IBM Plex Sans",sans-serif;font-size:10.5px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);border:1px dashed var(--rule);border-radius:2px;padding:0 5px}
+dl.mcmd{display:grid;grid-template-columns:auto minmax(0,1fr);gap:2px 10px;margin:0;font-size:13.5px;line-height:1.4}
+dl.mcmd dt{color:var(--muted);font-size:12px;white-space:nowrap}
+dl.mcmd dd{margin:0;min-width:0;overflow-wrap:anywhere}
+.mannonce{margin:0;font-family:Spectral,Georgia,serif;font-style:italic;font-size:15px;line-height:1.5;color:var(--ink);overflow-wrap:anywhere}
+.mbas{margin:0}
+.metat{margin:0;font-size:12.5px;font-weight:600;color:var(--forest)}
+.mcarte .pact{margin-top:2px}
+.mnote{margin:6px 0 0;max-width:60ch}
+/* une mission en entier */
+.mlire{margin-bottom:12px;padding:16px 20px;border-top:4px solid var(--g,var(--sage))}
+.mlire .mhaut-l{margin:4px 0 0}
+.mlire .metat{margin-top:4px}
+.mcorps{grid-template-columns:minmax(0,8fr) minmax(0,5fr)}
+.mtexte{margin:0 0 8px;font-family:Spectral,Georgia,serif;font-size:16px;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere}
+.mvisage{padding:6px 0;border-bottom:1px solid var(--rule)}
+.mvisage p{margin:0}
+.mvnom{font-size:14px;overflow-wrap:anywhere}
+.mmj{margin-top:12px;border:1px dashed var(--rule);border-radius:2px;padding:8px 12px;background:var(--paper)}
+.mmj summary{cursor:pointer;color:var(--forest);font-weight:600;font-size:13.5px}
+.mjlab{margin:10px 0 2px;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--sage);font-weight:600}
+.mlire .pact{margin-top:14px}
+/* écrire une mission */
+.medit{margin-bottom:12px;padding:16px 20px}
+.medit .mchamp{margin-top:10px}
+.mgenres{flex-wrap:wrap}
+.mpaiepts{display:grid;grid-template-columns:minmax(0,240px) 110px;gap:10px 16px;align-items:start;margin-top:10px}
+.mpaiepts input{width:100%}
+.mgrille3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px 14px}
+.mgrille3.mgrille2{grid-template-columns:repeat(2,minmax(0,1fr));margin-top:4px}
+.mde{display:flex;gap:6px;align-items:center}
+.mde input{flex:1 1 auto;min-width:0}
+.mvisages{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
+.mvligne{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1.4fr) minmax(0,.9fr) auto minmax(0,2fr) auto;gap:6px;align-items:center}
+.mvligne input,.mvligne select{min-width:0;width:100%}
+/* à la table : la mission sous la main */
+.cote.mission{border-top:3px solid var(--g,var(--sage))}
+.cote.mission .mnom{margin:0 0 2px;font-family:Spectral,Georgia,serif;font-size:16px;font-weight:600;color:var(--ink);overflow-wrap:anywhere}
+dl.mcmd-cote{font-size:12.5px;margin:6px 0 2px}
+.cote.mission .mmj{margin-top:8px;padding:6px 10px}
+.cote.mission .mmj p{margin:6px 0 0;font-size:13px;overflow-wrap:anywhere}
+.cote.mission .mmj .btn{margin-top:6px}
+@media (max-width:860px){.mgrille3,.mgrille3.mgrille2,.mcorps{grid-template-columns:minmax(0,1fr)} .mvligne{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}}
+@media (max-width:560px){.mvligne{grid-template-columns:minmax(0,1fr)} .medit,.mlire{padding:12px 14px}}
+.vtextes{margin-top:8px;border-top:1px solid var(--rule);padding-top:6px}
+.vtextes summary{cursor:pointer;font-size:13px;color:var(--forest)}
+.vtextes .textes{margin-top:6px}
+.lien>.flien{flex:1 1 100%}
+.lmode button{font-size:13px;padding:4px 10px;background:var(--surface)}
+.flien>.mini{margin:6px 0 8px}
+.lindice{flex:1 1 100%;margin:0}
+.lindice.doute{color:var(--rust)}
+.lindice .btn{margin-top:4px}
+.pratlue .mini{margin:0}
+.flien{margin-top:10px;padding:10px;border:1px dashed var(--rule);border-radius:2px;background:var(--paper)}
+
+/* ── registre/reseau.css ── */
+/* le réseau */
+.rbarre{margin-bottom:10px}
+.rbarre .zoom{min-width:34px}
+.coche{display:inline-flex;align-items:center;gap:4px;font-size:13px;color:var(--muted);cursor:pointer}
+.rzone{display:grid;grid-template-columns:minmax(0,1fr) 270px;gap:12px;align-items:start}
+.rcadre{border:1px solid var(--rule);border-radius:2px;background:var(--paper);overflow:hidden}
+svg.reseau{display:block;width:100%;height:auto;max-height:74vh;min-height:280px;touch-action:pan-y;user-select:none;-webkit-user-select:none;cursor:grab;--k:1}
+svg.reseau:active{cursor:grabbing}
+.rfond{fill:transparent}
+.arete{stroke:var(--muted);stroke-width:1.6;fill:none;transition:opacity .15s}
+.arete.l-famille{stroke:var(--forest);stroke-width:2.6}
+.arete.l-amour{stroke:var(--plum);stroke-width:2}
+.arete.l-ami{stroke:var(--sage);stroke-width:2}
+.arete.l-allie{stroke:var(--sage);stroke-width:2;stroke-dasharray:7 4}
+.arete.l-rival{stroke:var(--gold);stroke-width:2;stroke-dasharray:7 4}
+.arete.l-ennemi{stroke:var(--rust);stroke-width:2.6}
+.arete.l-dette{stroke-dasharray:2 4}
+.arete.l-brouille{stroke:var(--rust);stroke-width:2;stroke-dasharray:3 5}
+.fl{fill:var(--muted)}
+.fl.l-famille{fill:var(--forest)} .fl.l-amour{fill:var(--plum)} .fl.l-ami,.fl.l-allie{fill:var(--sage)}
+.fl.l-rival{fill:var(--gold)} .fl.l-ennemi,.fl.l-brouille{fill:var(--rust)}
+.elab{font-family:"IBM Plex Sans",sans-serif;font-size:calc(10.5px * var(--k));font-style:italic;fill:var(--muted);paint-order:stroke;stroke:var(--paper);stroke-width:3.5px;stroke-linejoin:round;pointer-events:none}
+.noeud{cursor:pointer;touch-action:none;transition:opacity .15s}
+.noeud:focus{outline:none}
+.noeud .halo{fill:none;stroke:transparent;stroke-width:3}
+.noeud.sel .halo,.noeud:focus-visible .halo{stroke:var(--sage)}
+.noeud.relie .halo{stroke:var(--gold);stroke-dasharray:4 3}
+.noeud .disque{fill:var(--surface);stroke:var(--muted);stroke-width:2.2}
+.noeud.pj .disque{fill:var(--forest);stroke:var(--forest)}
+.noeud .init{font-family:"IBM Plex Sans",sans-serif;font-size:calc(12px * min(var(--k), 1.4));font-weight:600;fill:var(--ink);pointer-events:none}
+.noeud.pj .init{fill:var(--surface);font-size:calc(13px * min(var(--k), 1.4))}
+.noeud .nlab{font-family:Spectral,Georgia,serif;font-size:calc(13px * var(--k));font-weight:600;fill:var(--ink);paint-order:stroke;stroke:var(--paper);stroke-width:calc(4px * var(--k));stroke-linejoin:round}
+.noeud.att-amical .disque{stroke:var(--sage)}
+.noeud.att-mefiant .disque{stroke:var(--gold)}
+.noeud.att-hostile .disque{stroke:var(--rust)}
+.noeud.att-inconnu .disque{stroke:var(--rule);stroke-dasharray:4 3}
+.noeud.st-mort{opacity:.55}
+.noeud.st-disparu .disque{stroke-dasharray:2 3}
+.noeud.st-disparu .nlab{font-style:italic}
+.pale{opacity:.18}
+.rpanneau{border:1px solid var(--rule);border-radius:2px;background:var(--surface);padding:12px;font-size:14px;min-height:120px}
+.rpanneau h3{margin-top:12px}
+.rpanneau .flien{background:var(--fill)}
+.rpanneau .jetform>div{flex:1 1 100%}
+.rlegende{display:flex;flex-direction:column;gap:6px;margin-top:10px;font-size:12.5px;color:var(--muted)}
+.rleg{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center}
+.rl{display:inline-flex;align-items:center;gap:6px}
+.rl svg{overflow:visible}
+.rpt{display:inline-block;width:12px;height:12px;border-radius:50%;border:2px solid var(--muted);background:var(--surface)}
+.rpt.pj{background:var(--forest);border-color:var(--forest)}
+.rpt.att-amical{border-color:var(--sage)} .rpt.att-mefiant{border-color:var(--gold)} .rpt.att-hostile{border-color:var(--rust)}
+.rpt.att-inconnu{border-style:dashed;border-color:var(--rule)}
+
+/* ── registre/jets.css ── */
+/* jets */
+.jetform{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end}
+.jetform>div{flex:1 1 180px;min-width:0}
+.jetform select,.jetform input{width:100%}
+/* un champ et une liste font la même hauteur : les étiquettes restent sur une ligne */
+.jetform input,.jetform select,.table input,.table select{min-height:38px}
+.jetform>div.eret{flex:0 0 auto}
+.histo{margin-top:12px;max-height:360px;overflow-y:auto}
+.jour{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--sage);margin:10px 0 2px;font-weight:600}
+.jour:first-child{margin-top:0}
+.ligne{display:flex;gap:10px;align-items:baseline;padding:5px 0;border-bottom:1px solid var(--rule);font-size:13px}
+.ligne:last-child{border-bottom:0}
+.ligne .h{color:var(--muted);font-size:11.5px;flex:0 0 52px;font-variant-numeric:tabular-nums}
+.ligne .q{flex:1 1 auto;min-width:0}
+.ligne .r{font-weight:600;font-variant-numeric:tabular-nums;flex:0 0 auto}
+.ligne .r.ok{color:var(--sage)} .ligne .r.ko{color:var(--rust)}
+
+/* ── registre/progression.css ── */
+/* progression */
+.progrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:10px}
+.progzone{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,360px);gap:18px;align-items:start}
+.progregle .lab{margin-bottom:6px}
+.tab.regle td{font-size:12.5px;vertical-align:top;padding:4px 6px}
+.tab.regle td:first-child{font-weight:600;color:var(--forest)}
+.pt{border:1px solid var(--rule);border-radius:2px;padding:8px 10px;background:var(--fill);text-align:center}
+.pt .v{font-family:Spectral,serif;font-size:24px;font-weight:700;color:var(--forest)}
+.pt .t{font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+
+/* ── registre/oracle.css ── */
+/* l'oracle, sous la main : une question, sa plausibilité, un d20 */
+.cote.oracle{display:flex;flex-direction:column;gap:7px}
+.cote.oracle .ctete{margin-bottom:0}
+.cote.oracle input[type=text]{width:100%;font-size:13.5px;padding:6px 8px}
+.oplaus{gap:4px}
+.oplaus button{font-size:12.5px;padding:4px 8px;background:var(--surface)}
+.oacts{gap:6px}
+.oacts input[type=number]{width:54px;padding:4px 6px;font-size:13.5px}
+.oacts .ou{margin-left:2px}
+.ores{display:flex;flex-direction:column;gap:1px;padding:7px 10px;border:1px solid var(--rule);border-left:4px solid var(--sage);border-radius:2px;background:var(--paper)}
+.ores.onon{border-left-color:var(--rust)}
+.ores b{font-family:Spectral,Georgia,serif;font-size:18px;line-height:1.25;color:var(--forest)}
+.ores.onon b{color:var(--rust)}
+.ores .acts{margin-top:5px;gap:8px}
+.ores a{color:var(--sage)}
+.ovisage{display:flex;flex-direction:column;gap:6px}
+.ovisage .lab{margin:0}
+.ovisage>.mini{margin:0}
+/* l'aide change de longueur quand on quitte le champ du lieu : deux lignes de place, pour que le bouton ne glisse pas sous le clic */
+.ovisage>.oaide{min-height:3em}
+.oseuils summary{cursor:pointer;font-size:13px;color:var(--forest)}
+.oseuils>.mini{margin:6px 0}
+.oligne{display:flex;flex-direction:column;gap:3px;margin-top:8px}
+.oligne .lab{margin:0}
+.oligne input.faux{border-color:var(--rust)}
+.obar{display:flex;height:8px;border-radius:2px;overflow:hidden;gap:1px;background:var(--rule)}
+.obar.vide{background:repeating-linear-gradient(90deg,var(--rule) 0 6px,transparent 6px 10px)}
+.obar span{display:block;min-width:2px}
+.obar .o-nonEt{background:var(--plum)} .obar .o-non{background:var(--rust)} .obar .o-nonMais{background:var(--gold);opacity:.6}
+.obar .o-ouiMais{background:var(--gold)} .obar .o-oui{background:var(--sage)} .obar .o-ouiEt{background:var(--forest)}
+.odetail{margin:0;font-variant-numeric:tabular-nums}
+/* une réponse de l'oracle, dans le récit */
+.boracle{font-family:"IBM Plex Sans",sans-serif;font-size:14px;line-height:1.45;border-left:3px solid var(--sage);padding:1px 0 1px 10px}
+.boracle.onon{border-left-color:var(--rust)}
+.feuille .boracle p{margin:0;white-space:normal}
+.boracle .olab{font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+.boracle .oq{font-style:italic}
+.boracle .orep{color:var(--forest)}
+.boracle.onon .orep{color:var(--rust)}
+
+/* ── registre/tete-de-seance.css ── */
+/* la tête de séance */
+.ligne4{display:grid;grid-template-columns:90px 160px 1fr;gap:8px}
+.ligne4 input{width:100%}
+
+/* ── registre/ecran-moyen.css ── */
+@media (max-width:1080px){
+  .jeu{display:flex;flex-direction:column;gap:12px}
+  .jeu-main,.jeu-cote{display:contents}
+  #seEtat{order:1} #seRecit{order:2} #seCombat{order:3} #seCompo{order:4;margin-top:0} #seOracle{order:5} #seMission{order:6} #seGens{order:7} #seAide{order:8}
+  .cnom{flex:1 1 150px}
+  .cj{flex:1 1 170px}
+}
+
+/* ── registre/petits-ecrans.css ── */
+@media (max-width:760px){
+  .rzone{grid-template-columns:1fr}
+  .progzone{grid-template-columns:1fr}
+}
+@media (max-width:560px){
+  .ligne4{grid-template-columns:1fr 1fr}
+  .ligne4>div:last-child{grid-column:1 / -1}
+  .pgrille{grid-template-columns:1fr}
+  .feuille{padding:14px 14px 6px;font-size:15.5px}
+  .qui input{width:100%}
+}
+
+/* ── registre/marchefleurs.css ── */
+/* ============ le Registre des Marchefleurs : la fiche de chacun, comme un écran de personnage ============ */
+/* les portraits, un par personnage de la table */
+.fportraits{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px}
+.fportrait{display:flex;align-items:center;gap:10px;flex:0 1 232px;min-width:0;padding:7px 12px 7px 8px;border:1px solid var(--rule);border-radius:3px;background:var(--surface);color:var(--ink);font:inherit;text-align:left;cursor:pointer;box-shadow:var(--shadow)}
+.fportrait:hover{border-color:var(--sage)}
+.fportrait[aria-selected=true]{border-color:var(--forest);background:var(--fill);box-shadow:inset 0 0 0 1px var(--forest)}
+.fpt{display:flex;flex-direction:column;min-width:0;flex:1 1 auto}
+.fpt b{font-family:Spectral,Georgia,serif;font-size:15px;font-weight:600;color:var(--forest);line-height:1.2;overflow-wrap:anywhere}
+.fpt small{font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+.fpbar{display:block;height:3px;background:var(--rule);border-radius:2px;margin-top:4px;overflow:hidden}
+.fpbar i{display:block;height:100%;background:var(--sage)}
+/* le médaillon : ses initiales, frappées comme un sceau */
+.fmed{flex:0 0 auto;width:78px;height:78px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--forest);color:var(--surface);font-family:Spectral,Georgia,serif;font-weight:700;font-size:29px;letter-spacing:.02em;box-shadow:0 0 0 3px var(--surface),0 0 0 4px var(--forest)}
+.fmed.petit{width:34px;height:34px;font-size:13.5px;box-shadow:0 0 0 2px var(--surface),0 0 0 3px var(--forest)}
+.fportrait[aria-selected=true] .fmed.petit{box-shadow:0 0 0 2px var(--fill),0 0 0 3px var(--forest)}
+/* sa tête : le médaillon, son nom, ses jauges, ce qu'on regarde d'un coup d'œil */
+.fheros{display:grid;grid-template-columns:auto minmax(0,1fr) auto;grid-template-areas:"med id tuiles" "med jauges tuiles" "act act act";gap:4px 20px;align-items:start;padding:16px 18px 14px}
+.fheros .fmed{grid-area:med;margin:4px 2px 0}
+.fid{grid-area:id;min-width:0}
+.fnom{margin:0;font-size:28px;line-height:1.15;color:var(--forest);overflow-wrap:anywhere;text-wrap:balance}
+.fqui{margin:2px 0 0;font-family:Spectral,Georgia,serif;font-style:italic;color:var(--sage);font-size:15px}
+.fjauges{grid-area:jauges;margin-top:6px;max-width:460px}
+.ftuiles{grid-area:tuiles;display:grid;grid-template-columns:repeat(3,minmax(96px,auto));gap:8px}
+.ftuile{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-width:0;padding:9px 12px;border:1px solid var(--rule);border-radius:2px;background:var(--fill);color:var(--forest);font:inherit;text-align:center;cursor:pointer}
+.ftuile:hover{border-color:var(--sage)}
+.ftuile b{font-family:Spectral,Georgia,serif;font-size:21px;font-weight:700;line-height:1.15;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.ftuile span{font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+.fact{grid-area:act;margin-top:10px;padding-top:10px;border-top:1px solid var(--rule)}
+.fact a.btn{text-decoration:none;display:inline-block}
+/* les onglets, et le panneau qu'ils ouvrent */
+.seg.fonglets{gap:2px;margin-top:16px;border-bottom:1px solid var(--rule)}
+.fonglets button{display:inline-flex;align-items:center;gap:6px;margin-bottom:-1px;padding:8px 13px;border:1px solid transparent;border-bottom:0;border-radius:3px 3px 0 0;background:transparent;color:var(--muted);font-size:14px}
+.fonglets button:hover{color:var(--forest)}
+.fonglets button[aria-pressed=true]{background:var(--surface);border-color:var(--rule);color:var(--forest);font-weight:600;box-shadow:0 1px 0 var(--surface)}
+.fcompte{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--fill);color:var(--forest);font-size:11px;font-weight:600;font-variant-numeric:tabular-nums}
+.fpanneau{border-top:0;border-radius:0 0 3px 3px;padding:6px 18px 18px}
+.fpanneau>h3:first-child,.fpanneau>div:first-child>h3:first-child{margin-top:10px}
+.fpanneau textarea{font-family:Spectral,Georgia,serif;font-size:15.5px}
+.fpanneau p.mini{margin:4px 0}
+/* ce qu'il porte */
+.picto{width:26px;height:26px;flex:0 0 auto;color:var(--sage)}
+.fslots{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(210px,100%),1fr));gap:10px}
+.fslot{display:flex;align-items:center;gap:10px;min-width:0;padding:10px 12px;border:1px dashed var(--rule);border-radius:3px;background:var(--paper)}
+.fslot.plein{border-style:solid;background:var(--fill)}
+.fslot>div{flex:1 1 auto;min-width:0}
+.fslot .lab{margin:0}
+.fslot b{display:block;font-family:Spectral,Georgia,serif;font-size:16px;font-weight:600;color:var(--forest);line-height:1.25;overflow-wrap:anywhere}
+.fslot:not(.plein) b{color:var(--muted);font-weight:400;font-style:italic}
+.fslot small{display:block;font-size:12px;color:var(--muted)}
+.fslot.plein .picto{color:var(--forest)}
+.fslotact{display:flex;flex-direction:column;gap:4px;flex:0 0 auto}
+.fred{margin:8px 0 0}
+/* le sac : une tuile par pile */
+.fgrille{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(270px,100%),1fr));gap:8px;margin-top:6px}
+.fobjet{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 10px;align-items:start;min-width:0;padding:9px 11px;border:1px solid var(--rule);border-radius:3px;background:var(--surface)}
+.fobjet .picto{margin-top:1px}
+.fobjet.arme .picto{color:var(--rust)}
+.fobjet.conso .picto{color:var(--plum)}
+.fobjet.armure .picto,.fobjet.bouclier .picto{color:var(--forest)}
+.fobjet.porte{border-color:var(--forest);background:var(--fill)}
+.fotxt{display:flex;flex-direction:column;min-width:0}
+.fotxt b{font-family:Spectral,Georgia,serif;font-size:15.5px;font-weight:600;color:var(--ink);line-height:1.25;overflow-wrap:anywhere}
+.fqte{font-family:"IBM Plex Sans",sans-serif;font-size:13px;font-weight:600;color:var(--forest);font-variant-numeric:tabular-nums;white-space:nowrap}
+.fomin{font-size:12.5px;color:var(--muted);line-height:1.35;overflow-wrap:anywhere}
+.foorig{font-size:11px;font-style:italic;color:var(--muted)}
+.foact{grid-column:1 / -1;display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
+.fobjet>.fform{grid-column:1 / -1}
+.fsous{margin:14px 0 0}
+.fform{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;margin-top:6px;padding:8px 10px;border:1px dashed var(--rule);border-radius:2px;background:var(--paper)}
+.fform.fcol{flex-direction:column;align-items:stretch}
+.fform .table>div{flex-basis:150px}
+.fajout{margin-top:16px;padding-top:10px;border-top:1px dashed var(--rule)}
+.fajout summary{cursor:pointer;font-weight:600;font-size:14px;color:var(--forest)}
+.fajout .seg{margin-top:10px}
+.fajout .seg button{font-size:13px;padding:5px 10px;background:var(--surface)}
+/* sa bourse */
+.fbourse{display:flex;align-items:center;gap:14px;margin-top:12px;padding:12px 16px;border:1px solid var(--rule);border-radius:3px;background:var(--fill)}
+.fbourse .picto{width:42px;height:42px;color:var(--gold)}
+.fbourse>div{display:flex;flex-direction:column;min-width:0}
+.fsomme{font-family:Spectral,Georgia,serif;font-size:28px;font-weight:700;line-height:1.1;color:var(--forest);font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.fpanneau .seg button{background:var(--surface)}
+.table.fbform>div:nth-child(-n+2){flex:0 0 auto}
+.fhist td{vertical-align:middle}
+.tab td.fneg{color:var(--rust);font-weight:600;white-space:nowrap}
+.tab td.fpos{color:var(--sage);font-weight:600;white-space:nowrap}
+/* le marché */
+.fmarche-tete{margin:12px 0 0;font-size:14px;color:var(--forest)}
+.fmarche td{vertical-align:middle}
+.tab td.fmact{text-align:right;white-space:nowrap}
+.fmact input{margin-right:6px;padding:4px 7px;font-size:13.5px;vertical-align:middle}
+.fmact .btn{vertical-align:middle}
+.fcoche{margin:8px 0 2px;align-items:flex-start;line-height:1.4}
+.fcoche input{margin-top:3px}
+/* ceux qui sont entrés dans le monde */
+.fancien{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;justify-content:space-between;padding:9px 2px;border-bottom:1px solid var(--rule)}
+.fancien>div{flex:1 1 240px;min-width:0}
+.fancien b{font-family:Spectral,Georgia,serif;font-size:16px;font-weight:600;color:var(--forest)}
+.fancien a,.fvide a,.nancien a{color:var(--forest)}
+.fvide p{margin:0 0 6px}
+#pEditeur{margin-top:14px}
+@media (max-width:860px){
+  .fheros{grid-template-columns:auto minmax(0,1fr);grid-template-areas:"med id" "jauges jauges" "tuiles tuiles" "act act"}
+  .fjauges{max-width:none;margin-top:10px}
+  .ftuiles{grid-template-columns:repeat(3,minmax(0,1fr));margin-top:8px}
+}
+@media (max-width:560px){
+  .fheros{padding:12px 14px;column-gap:14px}
+  .fmed{width:58px;height:58px;font-size:22px}
+  .fnom{font-size:23px}
+  .ftuile{padding:8px 6px}
+  .ftuile b{font-size:17px}
+  .fportrait{flex:1 1 100%}
+  .seg.fonglets{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;border-bottom:0}
+  .fonglets button{justify-content:center;margin:0;border:1px solid var(--rule);border-radius:2px}
+  .fonglets button[aria-pressed=true]{background:var(--fill);border-color:var(--forest);box-shadow:none}
+  .fpanneau{margin-top:8px;border-top:1px solid var(--rule);border-radius:3px;padding:4px 14px 16px}
+  /* le marché au téléphone : une ligne par article, l'achat en dessous, toute la largeur */
+  .tab.fmarche{display:block}
+  .fmarche tr{display:grid;grid-template-columns:minmax(0,1fr) auto auto;column-gap:10px;align-items:baseline;border-bottom:1px solid var(--rule);padding:5px 0}
+  .fmarche tr:last-child{border-bottom:0}
+  .fmarche th,.fmarche td{border:0;padding:1px 4px}
+  .fmarche th:last-child:empty{display:none}
+  .tab.fmarche td.fmact{grid-column:1 / -1;display:flex;gap:6px;text-align:left;white-space:normal;padding-top:4px}
+  .fmarche td.fmact input{flex:1 1 auto;min-width:0;margin:0}
+}
+
+/* ── registre/fiche-du-word.css ── */
+/* la fiche du Word, à l'impression seulement : la même que celle du Registre du Havre */
+#ficheImpr{display:none}
+.fimp{--fp:#FFFFFF;--fi:#1A1A1A;--fl:#6B7469;--fh:#1F3D2B;--fh2:#2E5A3E;--fr:#C3D2C6;--ff:#F1F5F1;--fhd:#E6EDE7;
+  page:fiche;background:var(--fp);color:var(--fi);font-family:Spectral,Cambria,Georgia,serif;font-size:12.5px;line-height:1.3;
+  print-color-adjust:exact;-webkit-print-color-adjust:exact}
+.fimp .ft{font-size:25px;font-weight:700;color:var(--fh);line-height:1.1;margin-bottom:1px;text-wrap:balance}
+.fimp .fsub{font-style:italic;color:var(--fh2);font-size:12px;border-bottom:2px solid var(--fh);padding-bottom:6px;margin-bottom:4px}
+.fimp .fh{font-family:"IBM Plex Sans",sans-serif;font-size:10.5px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--fh);border-bottom:1px solid var(--fh);padding-bottom:2px;margin:13px 0 5px}
+.fimp .fnote{font-size:11.5px;color:var(--fl);margin:0 0 5px}
+.fimp .fnote b{color:var(--fh2)}
+.fimp .fsm{font-size:10.5px;font-style:italic;color:var(--fl);margin:4px 0 0}
+.fimp table.fx{width:100%;border-collapse:collapse;margin:0 0 5px;table-layout:fixed;font-variant-numeric:tabular-nums}
+.fimp table.fx + table.fx{margin-top:-1px}
+.fimp .fx th,.fimp .fx td{border:1px solid var(--fr);padding:3px 6px;vertical-align:top;text-align:left;font-weight:400;font-size:12px;overflow-wrap:break-word;font-family:inherit;font-style:normal;color:var(--fi)}
+.fimp .fx th{background:var(--fhd);font-family:"IBM Plex Sans",sans-serif;font-size:9px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--fh)}
+.fimp .fx th.c,.fimp .fx td.c{text-align:center}
+.fimp .fx th.c{white-space:nowrap;letter-spacing:.04em}
+.fimp .fx td.b,.fimp .fx th.b{font-weight:700}
+.fimp .lb{font-family:"IBM Plex Sans",sans-serif;font-size:8.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--fl);margin-bottom:2px}
+.fimp td.fd .vl{font-size:12.5px;min-height:15px}
+.fimp td.notes{height:62px}
+.fimp .car th{text-align:center;font-size:7.5px;letter-spacing:.02em}
+.fimp .big2,.fimp .fx td.big2{font-size:17px;font-weight:700;color:var(--fh);text-align:center;line-height:1.15}
+.fimp .car .sub2{text-align:center;font-size:9.5px;color:var(--fl)}
+.fimp .der td.dv{background:var(--ff);text-align:center}
+.fimp .der .lb{text-align:center}
+.fimp .der .dvs{font-size:9.5px;font-style:italic;color:var(--fl);margin-bottom:1px;line-height:1.2}
+.fimp .sk td.grp{background:var(--ff);color:var(--fh2);font-size:11.5px}
+.fimp .sk td.grp i{font-size:10px;color:var(--fl)}
+.fimp .sk td.nte{font-size:10px;font-style:italic;color:var(--fl)}
+.fimp .prt td.de,.fimp .arm td.de{font-size:11px;color:var(--fl)}
+.fimp td.vide{height:19px}
+.fimp .chg td{height:24px}
+.fimp ul.sac{margin:2px 0 0;padding-left:16px}
+.fimp ul.sac li{margin:0}
+.fimp .am td.amc{background:var(--ff);width:50%;padding:6px 8px}
+.fimp .am p{margin:0 0 1px;font-size:11px;line-height:1.28}
+.fimp .am p.amb{font-weight:700;font-size:11.5px}
+.fimp .am p.ami{font-style:italic;color:var(--fl);font-size:10px;margin-top:3px}
+.fimp .brk{height:0}
+@page fiche{size:A4;margin:11mm}
+
+/* ── registre/impression.css ── */
+@page{size:A4;margin:16mm}
+@media print{
+  .noprint{display:none!important}
+  .gfiltres{position:static}
+  body{background:#fff;color:#000}
+  .wrap{padding:0;max-width:none}
+  body.imprime-seance header,
+  body.imprime-seance section:not(#secSeance),
+  body.imprime-seance #secSeance>h2,
+  body.imprime-seance #secSeance>.hint,
+  body.imprime-seance #seTete,
+  body.imprime-seance #seEtat{display:none!important}
+  body.imprime-seance .card.seance{border:0;box-shadow:none;background:#fff;padding:0}
+  body.imprime-seance .jeu{display:block}
+  .toast{display:none!important}
+  body.imprime-seance .feuille{max-height:none;overflow:visible;border:0;box-shadow:none;padding:0;margin:0;background:#fff;color:#000;font-size:12pt}
+  body.imprime-seance .bloc{break-inside:avoid}
+  body.imprime-seance .joints{color:#555}
+  /* la fiche du Word, seule sur la feuille */
+  body.imprime-fiche .wrap{display:none!important}
+  body.imprime-fiche #ficheImpr{display:block}
+  .fimp{font-size:8.9pt;line-height:1.26}
+  .fimp .ft{font-size:19pt}
+  .fimp .fx th,.fimp .fx td{font-size:8.4pt;padding:2px 5px}
+  .fimp .fx th{font-size:7.4pt;letter-spacing:.05em}
+  .fimp .big2,.fimp .fx td.big2{font-size:13pt}
+  .fimp .car th{font-size:6.8pt;letter-spacing:.01em}
+  .fimp .am p{font-size:7.8pt}
+  .fimp .brk{break-before:page;page-break-before:always}
+  .fimp tr,.fimp .fh,.fimp .ft{break-inside:avoid}
+  .fimp .fh{break-after:avoid}
+  .fimp table.fx{break-inside:auto}
+}
+
+/* ── commun/mouvement-reduit.css ── */
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}

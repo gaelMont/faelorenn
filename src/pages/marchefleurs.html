@@ -1,0 +1,60 @@
+<!--@ inclure en-tete titre="Registre des Marchefleurs" feuille="registre" -->
+<body>
+<!--@ inclure barre-registres -->
+
+<div class="wrap">
+<header>
+  <h1>Registre des Marchefleurs</h1>
+  <p class="sub">Faelorenn · la fiche, le sac et la bourse de chacun</p>
+  <nav class="saut noprint" aria-label="Aller à">
+    <a href="#secFiche">Les fiches</a>
+    <a href="#secMonde">Entrés dans le monde</a>
+    <a href="#secSauve">La sauvegarde</a>
+    <a href="table.html" target="faelorenn-table">La séance, dans le Registre de la Table</a>
+    <a href="pnj.html" target="faelorenn-visages">Les PNJ, dans le Registre des Visages</a>
+  </nav>
+  <div class="etatsync"><span class="pastille" id="tbPastille"></span><span id="tbEtat"></span></div>
+  <div class="cbarre noprint" id="cbarre" hidden><label class="lab" for="tbCampagne">Campagne</label><select id="tbCampagne"></select></div>
+</header>
+
+<section id="secFiche">
+  <h2><span class="num">1</span> Les fiches</h2>
+  <p class="hint">Chaque personnage de la table : ses PV et ses PC, ce qu’il sait faire, ce qu’il porte, son sac, sa bourse, le marché du Livre V, sa progression et son histoire. Tout part dans la table, comme le reste. « Imprimer sa fiche » rend la fiche du Word, avec ce qu’il a aujourd’hui.</p>
+  <div class="fportraits noprint" id="fQui" role="tablist" aria-label="Quel personnage"></div>
+  <div id="ficheBox"></div>
+  <div class="card noprint" id="pEditeur" hidden></div>
+</section>
+
+<section id="secMonde" class="noprint">
+  <h2><span class="num">2</span> Entrés dans le monde</h2>
+  <p class="hint">Ceux qu’on ne joue plus : ils sont devenus des PNJ du Registre des Visages, avec tous leurs liens. On peut en reprendre un.</p>
+  <div class="card" id="fMonde"></div>
+</section>
+
+<section id="secSauve" class="noprint">
+  <h2><span class="num">3</span> La sauvegarde</h2>
+  <p class="hint">Les fiches vivent dans le même fichier que la table : relier la sauvegarde en ligne ici ou dans un autre registre revient au même.</p>
+  <div class="card">
+    <div class="table">
+      <div>
+        <label class="lab" for="tbJoueur">Tu es</label>
+        <input type="text" id="tbJoueur" placeholder="Gaël" style="width:100%">
+      </div>
+    </div>
+    <div class="acts" style="margin-top:12px">
+      <button class="btn" id="tbEnLigne" type="button">Sauvegarder en ligne</button>
+      <button class="btn ghost sm" id="tbOuvrir" type="button" hidden>Reconnecter le fichier</button>
+      <button class="btn ghost sm" id="tbJson" type="button">Enregistrer la table en .json</button>
+      <button class="btn ghost sm" id="tbImport" type="button">Importer un .json</button>
+      <input type="file" id="tbFichier" accept=".json,application/json" hidden>
+    </div>
+    <div id="ghPlace"></div>
+  </div>
+</section>
+</div>
+<div id="ficheImpr"></div>
+<p class="note toast" id="tbMsg" hidden role="status"></p>
+
+<!--@ js registre -->
+</body>
+</html>

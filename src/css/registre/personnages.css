@@ -1,0 +1,35 @@
+/* personnages */
+.pgrille{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+.pcarte{border:1px solid var(--rule);border-radius:3px;padding:11px 13px;background:var(--surface);box-shadow:var(--shadow)}
+.pcarte.moi{border-color:var(--forest)}
+.pnom{font-family:Spectral,Georgia,serif;font-size:18px;font-weight:600;line-height:1.2}
+.pqui{font-size:12.5px;color:var(--muted)}
+/* deux jauges côte à côte, alignées ligne à ligne même quand un titre passe sur deux lignes */
+.jauges{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:14px;margin-top:8px}
+.jauge{display:grid;grid-row:span 4;grid-template-rows:subgrid;row-gap:0;min-width:0}
+.jauge .t{font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);align-self:end}
+.jauge .v{font-family:Spectral,serif;font-size:22px;font-weight:700;color:var(--forest);font-variant-numeric:tabular-nums}
+.jauge .v small{font-size:12px;color:var(--muted);font-weight:400}
+.jauge .cmd{display:flex;gap:4px;margin-top:3px}
+.jauge button{width:28px;height:26px;border:1px solid var(--rule);background:var(--surface);color:var(--forest);border-radius:2px;cursor:pointer;font-size:12px;line-height:1}
+.jauge button:hover:not(:disabled){background:var(--fill)}
+.jauge input{width:52px;padding:3px 5px;font-size:13px;text-align:center}
+.barre{height:4px;background:var(--fill);border-radius:2px;margin-top:4px;overflow:hidden}
+.barre i{display:block;height:100%;background:var(--sage)}
+.barre i.bas{background:var(--rust)}
+.pact{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.detail{border-top:1px solid var(--rule);margin-top:10px;padding-top:8px}
+.tab{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;font-size:13px}
+.tab th{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--sage);text-align:left;font-weight:600;padding:4px 6px;background:var(--fill);border-bottom:1px solid var(--rule)}
+.tab td{padding:3px 6px;border-bottom:1px solid var(--rule)}
+.tab td.n,.tab th.n{text-align:right}
+.tab tr:last-child td{border-bottom:0}
+.scroll{overflow-x:auto}
+.mini{font-size:12px;color:var(--muted)}
+.htete{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:baseline;justify-content:space-between}
+.hliste{margin-top:8px;border-top:1px solid var(--rule)}
+.hrow{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;justify-content:space-between;padding:9px 2px;border-bottom:1px solid var(--rule)}
+.htxt{display:flex;flex-direction:column;min-width:0;flex:1 1 220px}
+.hnom{font-family:Spectral,Georgia,serif;font-size:17px;font-weight:600;color:var(--forest);overflow-wrap:anywhere}
+.hmeta{font-size:12.5px;color:var(--muted)}
+.texte{white-space:pre-wrap;font-size:13.5px;line-height:1.45}

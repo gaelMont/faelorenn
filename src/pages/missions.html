@@ -1,0 +1,62 @@
+<!--@ inclure en-tete titre="Registre des Missions" feuille="registre" -->
+<body>
+<!--@ inclure barre-registres -->
+
+<div class="wrap">
+<header>
+  <h1>Registre des Missions</h1>
+  <p class="sub">Faelorenn · ce que le Havre confie, le matin, avant qu’on parte</p>
+  <nav class="saut noprint" aria-label="Aller à">
+    <a href="#secTableau">Le tableau</a>
+    <a href="#secSauve">La sauvegarde</a>
+    <a href="table.html" target="faelorenn-table">La séance, dans le Registre de la Table</a>
+    <a href="pnj.html" target="faelorenn-visages">Les PNJ, dans le Registre des Visages</a>
+  </nav>
+  <div class="etatsync"><span class="pastille" id="tbPastille"></span><span id="tbEtat"></span></div>
+  <div class="cbarre noprint" id="cbarre" hidden><label class="lab" for="tbCampagne">Campagne</label><select id="tbCampagne"></select></div>
+</header>
+
+<section id="secTableau">
+  <h2><span class="num">1</span> Le tableau du Havre</h2>
+  <p class="hint">Le Havre annonce la paie et les points de progression avant le départ : c’est sur ça qu’on choisit. « Partir » lance la mission dans la table : une séance neuve qui s’ouvre sur son annonce, ses visages dans le Registre des Visages, sa rencontre prête à tirer. « La boucler » donne ses points à chaque personnage, et sa paie dans la bourse de chacun.</p>
+  <div class="acts misbarre">
+    <div class="seg" role="group" aria-label="Voir">
+      <button type="button" id="misVueTableau" aria-pressed="true">Au tableau</button>
+      <button type="button" id="misVueCours" aria-pressed="false">En cours</button>
+      <button type="button" id="misVueFinies" aria-pressed="false">Finies</button>
+    </div>
+    <span class="espace"></span>
+    <button class="btn ghost sm" id="misTirer" type="button" title="Le générateur de mission du Livre VIII : un d20 par colonne">Tirer une mission</button>
+    <button class="btn sm" id="misNouvelle" type="button">Nouvelle mission</button>
+  </div>
+  <div id="misEditeur" class="card medit" hidden></div>
+  <div id="misLire" class="card mlire" role="region" hidden></div>
+  <div id="misBox" class="mgrille"></div>
+</section>
+
+<section id="secSauve">
+  <h2><span class="num">2</span> La sauvegarde</h2>
+  <p class="hint">Les missions vivent dans le même fichier que la table : relier la sauvegarde en ligne ici ou dans un autre registre de la table revient au même.</p>
+  <div class="card">
+    <div class="table">
+      <div>
+        <label class="lab" for="tbJoueur">Tu es</label>
+        <input type="text" id="tbJoueur" placeholder="Gaël" style="width:100%">
+      </div>
+    </div>
+    <div class="acts" style="margin-top:12px">
+      <button class="btn" id="tbEnLigne" type="button">Sauvegarder en ligne</button>
+      <button class="btn ghost sm" id="tbOuvrir" type="button" hidden>Reconnecter le fichier</button>
+      <button class="btn ghost sm" id="tbJson" type="button">Enregistrer la table en .json</button>
+      <button class="btn ghost sm" id="tbImport" type="button">Importer un .json</button>
+      <input type="file" id="tbFichier" accept=".json,application/json" hidden>
+    </div>
+    <div id="ghPlace"></div>
+  </div>
+</section>
+</div>
+<p class="note toast" id="tbMsg" hidden role="status"></p>
+
+<!--@ js registre -->
+</body>
+</html>

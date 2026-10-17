@@ -1,0 +1,10 @@
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:15.5px;line-height:1.55}
+.wrap{max-width:none;margin:0 auto;padding-inline:clamp(14px,2.2vw,44px);padding-block:44px 56px}
+.sur{font-family:Spectral,Georgia,serif;font-style:italic;color:var(--sage);margin:0;font-size:17px}
+h1{font-family:Spectral,Georgia,serif;font-weight:700;font-size:clamp(32px,6vw,46px);line-height:1.08;color:var(--forest);margin:2px 0 10px;letter-spacing:-.01em;text-wrap:balance}
+.intro{max-width:76ch;margin:0;color:var(--ink)}
+header{border-bottom:2px solid var(--forest);padding-bottom:22px;margin-bottom:28px}
+h2{font-family:Spectral,Georgia,serif;font-size:21px;color:var(--forest);margin:34px 0 8px;text-wrap:balance}
+p{margin:0 0 10px;max-width:65ch}

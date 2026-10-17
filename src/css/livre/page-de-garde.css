@@ -1,0 +1,6 @@
+/* la page de garde du livre, avant le premier titre */
+.lvgarde{border-left:3px solid var(--rule);padding-left:18px;margin:0 0 34px}
+.lvgarde p{color:var(--muted);font-size:15.5px;margin:0 0 .5em}
+.lvgarde p:first-child b{font-family:"IBM Plex Sans",sans-serif;font-size:12px;font-weight:600;letter-spacing:.22em;color:var(--sage)}
+.lvgarde p:nth-child(2){font-style:italic;color:var(--sage)}
+.lvgarde p:last-child{color:var(--ink);font-size:16.5px;margin-top:.9em}

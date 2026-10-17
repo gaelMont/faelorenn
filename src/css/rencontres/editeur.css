@@ -1,0 +1,31 @@
+/* l'editeur */
+.editeur{border:1px solid var(--forest);border-radius:3px;padding:14px 16px;margin:0 0 16px;background:var(--paper)}
+.edtete h3{font-family:Spectral,Georgia,serif;font-size:19px;color:var(--forest);margin:0 0 10px}
+.edgrille{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:18px;align-items:start}
+.edcote{position:sticky;top:12px}
+.editeur fieldset{border:0;padding:0;margin:0 0 14px}
+.editeur legend{font-family:Spectral,Georgia,serif;font-size:15px;font-weight:600;color:var(--forest);padding:0;margin-bottom:6px}
+.editeur details{border-top:1px solid var(--rule);padding-top:10px;margin-bottom:12px}
+.editeur summary{font-family:Spectral,Georgia,serif;font-size:15px;font-weight:600;color:var(--forest);cursor:pointer;margin-bottom:8px}
+.fld{margin-bottom:10px;min-width:0}
+.fld label,.fld .lab{display:block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.fld input,.fld textarea{width:100%;font:inherit;font-size:14.5px;padding:7px 9px;border:1px solid var(--rule);border-radius:2px;background:var(--surface);color:var(--ink);resize:vertical}
+.fld textarea{line-height:1.4}
+.fld input:focus-visible,.fld textarea:focus-visible,#bestDepuis:focus-visible,#bestRecherche:focus-visible{outline:2px solid var(--sage);outline-offset:1px}
+.fld [aria-invalid=true]{border-color:var(--rust)}
+.aide{font-size:12px;color:var(--muted);margin:4px 0 0;line-height:1.4}
+.err{font-size:12.5px;color:var(--rust);margin:4px 0 0}
+.lien{background:none;border:0;padding:0;margin-top:4px;color:var(--sage);font:inherit;font-size:12.5px;text-decoration:underline;cursor:pointer}
+.ligne2{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:10px}
+.ligne4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.rseg{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px}
+.rseg button{text-align:left;padding:6px 9px;border:1px solid var(--rule);background:var(--surface);color:var(--ink);border-radius:2px;cursor:pointer;display:flex;flex-direction:column;gap:1px}
+.rseg button b{font-size:13.5px;font-weight:600}
+.rseg button span{font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+.rseg button.on{border-color:var(--forest);background:var(--fill)}
+.rseg button.on b{color:var(--forest)}
+.edact{margin-top:6px}
+.apercu{padding:10px 14px;margin-bottom:12px}
+.ligneLivre{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11.5px;line-height:1.45;white-space:pre-wrap;overflow-wrap:anywhere;
+  background:var(--surface);border:1px solid var(--rule);border-radius:2px;padding:8px 10px;margin:0;color:var(--ink)}
+.bestprint{display:none}

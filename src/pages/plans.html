@@ -1,0 +1,69 @@
+<!--@ inclure en-tete titre="Registre des Plans" feuille="plans" -->
+<body>
+<!--@ inclure barre-registres -->
+
+<div class="wrap">
+<header class="noprint">
+  <h1>Registre des Plans</h1>
+  <p class="sub">Faelorenn · les bâtiments, les villages et les cartes du monde</p>
+  <p class="etat" id="etat" role="status"></p>
+</header>
+<p class="hint noprint">Consulter pour lire, zoomer et entrer d’une carte dans un village, puis dans un bâtiment, sans rien risquer de bouger. Modifier pour dessiner. Chaque plan est gardé dans ce navigateur dès que tu le touches, et dans ton dépôt GitHub une fois qu’il est relié.</p>
+
+<div id="app" class="ro">
+ <div id="top" role="toolbar" aria-label="Choix du plan">
+  <div class="seg" role="group" aria-label="Lire ou retoucher"><button type="button" id="e-c" aria-pressed="true">Consulter</button><button type="button" id="e-m" aria-pressed="false">Modifier</button></div>
+  <span class="sep" aria-hidden="true"></span>
+  <div class="seg" role="group" aria-label="Genre de plan"><button type="button" id="m-b" aria-pressed="true">Bâtiments</button><button type="button" id="m-v" aria-pressed="false">Villages</button><button type="button" id="m-w" aria-pressed="false">Mondes</button></div>
+  <select id="itemSel" aria-label="Plan affiché"></select>
+  <button type="button" class="btn" id="bNew">Nouveau</button>
+  <button type="button" class="btn" id="bDup">Dupliquer</button>
+  <button type="button" class="btn danger" id="bDel">Supprimer</button>
+  <div class="grp">
+   <button type="button" class="btn" id="bUndo" title="Annuler (Ctrl+Z)" aria-label="Annuler">↶</button>
+   <button type="button" class="btn" id="bRedo" title="Rétablir (Ctrl+Y)" aria-label="Rétablir">↷</button>
+   <button type="button" class="btn" id="bImp" aria-haspopup="menu">Importer ▾</button>
+   <button type="button" class="btn primary" id="bExp" aria-haspopup="menu">Exporter ▾</button>
+   <button type="button" class="btn" id="bTable" title="Envoyer cette carte au Registre de la Table, comme carte de combat">Vers la table</button>
+   <button type="button" class="btn icone" id="bFull" aria-pressed="false" title="Plein écran (Maj+F)" aria-label="Plein écran"></button>
+   <button type="button" class="btn" id="bHelp" aria-label="Aide">?</button>
+  </div>
+ </div>
+ <div id="main">
+  <nav id="tools" aria-label="Outils"></nav>
+  <section id="stage" aria-label="Plan">
+   <div id="floorbar"></div>
+   <div id="cvwrap">
+    <canvas id="tcv"></canvas><svg id="cv" xmlns="http://www.w3.org/2000/svg" role="application" aria-label="Zone de dessin" tabindex="0"><g id="world"><g id="content"></g><g id="overlay"></g></g></svg>
+    <div id="vide" hidden><div class="boite"><h2 id="videT"></h2><p id="videP"></p><div class="acts" style="justify-content:center"><button type="button" class="btn primary" id="videMod">Passer en mode Modifier</button></div></div></div>
+    <button type="button" id="enter" class="btn primary" hidden>Entrer ▸</button>
+    <div id="hud"><button type="button" id="zOut" aria-label="Zoom arrière">−</button><span id="zLbl">100%</span><button type="button" id="zIn" aria-label="Zoom avant">+</button><span id="sbar" style="display:inline-block;height:7px;border:2px solid var(--ink);border-top:0;margin-left:6px"></span><span id="sLbl"></span><button type="button" id="zFit" title="Tout voir" aria-label="Tout voir">⤢</button><span id="coord"></span></div>
+    <div id="msg" role="status"></div>
+   </div>
+  </section>
+  <aside id="side" aria-label="Détails"></aside>
+ </div>
+</div>
+
+<section id="secSauve" class="noprint">
+  <h2>Sauvegarder ou partager</h2>
+  <p class="hint">Les plans sont gardés dans ce navigateur. Reliés à ton dépôt GitHub, ils passent aussi chez Océane : chacun voit les plans de l’autre, et celui qui a retouché un plan en dernier l’emporte, plan par plan.</p>
+  <div class="card">
+    <div class="acts">
+      <button class="btn primary" id="plEnLigne" type="button">Sauvegarder en ligne</button>
+      <button class="btn" id="plJson" type="button">Sauvegarde .json</button>
+    </div>
+    <p class="note" id="plMsg" role="status" hidden></p>
+    <p class="note">La sauvegarde .json garde tous les plans ; elle se reprend avec « Importer », en haut de l’établi, sur un autre appareil ou chez Océane, et le plus récent l’emporte, plan par plan. Pour un seul plan, ou seulement les bâtiments, les villages ou les cartes du monde, « Exporter » et « Importer » proposent aussi ces fichiers-là. Pour reprendre un projet de l’ancien Atelier des plans : dans l’Atelier, « Projet » puis « Sauvegarder le projet (.json) », puis « Importer » ici.</p>
+    <div id="ghcPlace"></div>
+  </div>
+</section>
+</div>
+
+<div id="pop"></div>
+<input type="file" id="plFichier" accept=".json,application/json" hidden>
+<div id="modal" role="dialog" aria-modal="true" aria-label="Fenêtre"><div class="card" id="modalCard"></div></div>
+<!--@ js sync-github -->
+<!--@ js plans -->
+</body>
+</html>

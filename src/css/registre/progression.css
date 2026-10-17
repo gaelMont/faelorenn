@@ -1,0 +1,9 @@
+/* progression */
+.progrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:10px}
+.progzone{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,360px);gap:18px;align-items:start}
+.progregle .lab{margin-bottom:6px}
+.tab.regle td{font-size:12.5px;vertical-align:top;padding:4px 6px}
+.tab.regle td:first-child{font-weight:600;color:var(--forest)}
+.pt{border:1px solid var(--rule);border-radius:2px;padding:8px 10px;background:var(--fill);text-align:center}
+.pt .v{font-family:Spectral,serif;font-size:24px;font-weight:700;color:var(--forest)}
+.pt .t{font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}

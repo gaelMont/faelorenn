@@ -1,0 +1,14 @@
+/* groupe et intensite */
+.setup{display:flex;flex-wrap:wrap;gap:18px}
+.setup>div{flex:1 1 240px;min-width:0}
+.stepper{display:flex;align-items:center;gap:0}
+.stepper button{width:30px;height:30px;border:1px solid var(--rule);background:var(--surface);color:var(--forest);font-size:16px;line-height:1;cursor:pointer;border-radius:2px}
+.stepper button:hover:not(:disabled){background:var(--fill)}
+.stepper button:disabled{opacity:.3;cursor:default}
+.stepper .v{min-width:52px;text-align:center;font-variant-numeric:tabular-nums;font-weight:600;font-size:17px}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button{padding:6px 11px;border:1px solid var(--rule);background:transparent;color:var(--muted);border-radius:2px;cursor:pointer;font-size:14px}
+.seg button:hover{border-color:var(--sage);color:var(--forest)}
+.seg button[aria-pressed=true]{border-color:var(--forest);background:var(--fill);color:var(--forest);font-weight:600}
+.budget{font-family:Spectral,Georgia,serif;font-size:15px;color:var(--sage);margin-top:12px;border-top:1px solid var(--rule);padding-top:10px}
+.budget b{font-size:22px;color:var(--forest);font-family:Spectral,serif}

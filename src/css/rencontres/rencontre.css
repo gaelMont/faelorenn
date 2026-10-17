@@ -1,0 +1,52 @@
+/* la rencontre */
+.enc{background:var(--surface);border:1px solid var(--rule);border-radius:3px;padding:16px 18px;box-shadow:var(--shadow);
+  print-color-adjust:exact;-webkit-print-color-adjust:exact}
+.enc .eh{font-family:Spectral,Georgia,serif;font-size:21px;font-weight:700;color:var(--forest);line-height:1.15;text-wrap:balance}
+.enc .em{font-family:Spectral,Georgia,serif;font-style:italic;color:var(--rust);font-size:15px;margin:3px 0 0}
+.enc .ec{font-size:12.5px;color:var(--muted);margin-top:2px}
+.enc hr{border:0;border-top:1px solid var(--rule);margin:12px 0}
+.adv{display:flex;gap:12px;align-items:flex-start;padding:11px 0;border-bottom:1px solid var(--rule)}
+.adv:last-child{border-bottom:0}
+.adv.ko{opacity:.42}
+.rk{flex:0 0 64px;width:64px;text-align:center;border:1px solid var(--rule);border-radius:2px;padding:3px 1px;background:var(--fill)}
+.rk .rn{font-size:19px;font-weight:700;font-family:Spectral,serif;line-height:1}
+.rk .rl{font-size:7px;letter-spacing:.01em;text-transform:uppercase;color:var(--muted);display:block;margin-top:1px;overflow-wrap:anywhere;line-height:1.1}
+.rk1 .rn{color:var(--r1)}.rk2 .rn{color:var(--r2)}.rk3 .rn{color:var(--r3)}.rk4 .rn{color:var(--r4)}.rk5 .rn{color:var(--r5)}
+.adv .body{flex:1;min-width:0}
+.adv .nm{font-family:Spectral,Georgia,serif;font-size:16.5px;font-weight:600;color:var(--ink);line-height:1.2}
+.adv.ko .nm{text-decoration:line-through}
+.adv .st{font-size:12.5px;color:var(--muted);margin-top:1px;font-variant-numeric:tabular-nums}
+.adv .st b{color:var(--ink);font-weight:600}
+.adv .atq{margin-top:5px;display:flex;flex-direction:column;gap:2px}
+.adv .at{font-size:12.5px;line-height:1.35;display:flex;flex-wrap:wrap;gap:0 7px;align-items:baseline}
+.adv .at b{font-weight:600}
+.adv .ty{font-size:8.5px;letter-spacing:.09em;text-transform:uppercase;font-weight:600;border:1px solid var(--rule);
+  border-radius:2px;padding:0 4px;white-space:nowrap;flex:0 0 auto;min-width:56px;text-align:center}
+.adv .ty.tphy{color:var(--sage)}
+.adv .ty.tmag{color:var(--rust);border-color:var(--rust)}
+.adv .ty.tspe{color:var(--gold);border-color:var(--gold)}
+.adv .nm .fams{font-family:"IBM Plex Sans",sans-serif;font-size:10px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--muted);margin-left:8px;vertical-align:2px}
+/* qui peut se présenter : une ligne par sorte de famille */
+.famsel{display:flex;flex-direction:column;gap:7px}
+.famligne{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline}
+.famlab{flex:0 0 122px;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.famligne .seg{flex:1 1 280px;min-width:0}
+@media (max-width:560px){ .famlab{flex-basis:100%} }
+.famligne .seg button.famhors{border-style:dashed;opacity:.7}
+.famvide{font-size:12.5px;color:var(--muted);font-style:italic;align-self:center}
+.adv .po{color:var(--muted);font-size:11.5px;font-variant-numeric:tabular-nums}
+.adv .ef{color:var(--muted);font-size:12px;flex:1 1 auto;min-width:0}
+.adv .pa{font-size:13px;margin-top:5px;line-height:1.38;color:var(--muted);font-style:italic}
+.adv select.chg{margin-top:6px;font:inherit;font-size:12.5px;padding:3px 6px;border:1px solid var(--rule);
+  border-radius:2px;background:var(--surface);color:var(--muted);max-width:100%}
+.adv select.chg:hover{color:var(--ink);border-color:var(--sage)}
+.pvbox{flex:0 0 auto;display:flex;align-items:center;gap:4px}
+.pvbox .cur{font-family:Spectral,serif;font-size:21px;font-weight:700;min-width:40px;text-align:right;font-variant-numeric:tabular-nums;color:var(--forest)}
+.pvbox .max{font-size:11.5px;color:var(--muted);margin-right:2px}
+.pvbox button{width:27px;height:27px;border:1px solid var(--rule);background:var(--surface);color:var(--forest);font-size:12px;cursor:pointer;border-radius:2px;line-height:1}
+.pvbox button:hover:not(:disabled){background:var(--fill)}
+.pvbox button:disabled{opacity:.3;cursor:default}
+.re{border:1px solid var(--rule);background:transparent;color:var(--muted);border-radius:2px;width:27px;height:27px;cursor:pointer;font-size:13px;line-height:1}
+.re:hover{border-color:var(--sage);color:var(--forest)}
+.vide{color:var(--muted);font-style:italic;font-family:Spectral,Georgia,serif}

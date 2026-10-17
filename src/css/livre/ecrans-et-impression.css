@@ -1,0 +1,19 @@
+@media (max-width:560px){
+  .lvbarre input{flex:1 1 100%}
+}
+@media (max-width:899px){
+  .lvcol{display:block}
+  .lvaside{margin-bottom:10px}
+  .lvaside{position:static;max-height:none}
+  .lvtiroir{border:1px solid var(--rule);border-radius:3px;background:var(--surface)}
+  .lvtiroir>summary{display:list-item;cursor:pointer;padding:9px 12px;font-size:13px;color:var(--forest);font-weight:600}
+  .lvsom{max-height:52vh;padding:0 12px 12px}
+  .lvtexte{font-size:16px;max-width:none}
+}
+@media print{
+  .fae-site,.lvbarre,.lvaside,.lvhaut{display:none!important}
+  .lvcol{display:block}
+  .lvtexte{max-width:none;font-size:11pt}
+  .tbw{box-shadow:none}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}

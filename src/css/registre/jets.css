@@ -1,0 +1,16 @@
+/* jets */
+.jetform{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end}
+.jetform>div{flex:1 1 180px;min-width:0}
+.jetform select,.jetform input{width:100%}
+/* un champ et une liste font la même hauteur : les étiquettes restent sur une ligne */
+.jetform input,.jetform select,.table input,.table select{min-height:38px}
+.jetform>div.eret{flex:0 0 auto}
+.histo{margin-top:12px;max-height:360px;overflow-y:auto}
+.jour{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--sage);margin:10px 0 2px;font-weight:600}
+.jour:first-child{margin-top:0}
+.ligne{display:flex;gap:10px;align-items:baseline;padding:5px 0;border-bottom:1px solid var(--rule);font-size:13px}
+.ligne:last-child{border-bottom:0}
+.ligne .h{color:var(--muted);font-size:11.5px;flex:0 0 52px;font-variant-numeric:tabular-nums}
+.ligne .q{flex:1 1 auto;min-width:0}
+.ligne .r{font-weight:600;font-variant-numeric:tabular-nums;flex:0 0 auto}
+.ligne .r.ok{color:var(--sage)} .ligne .r.ko{color:var(--rust)}

@@ -1,0 +1,16 @@
+.tick{display:flex;gap:8px;align-items:flex-start;padding:7px 0;border-bottom:1px solid var(--rule)}
+.tick:last-child{border-bottom:0}
+.tick input{margin-top:4px;accent-color:var(--sage)}
+.tick .nm{font-weight:600}
+.tick .pc{font-size:11px;letter-spacing:.06em;color:var(--gold);border:1px solid var(--rule);border-radius:2px;padding:0 4px;margin-left:6px;white-space:nowrap}
+.tick .de{color:var(--muted);font-size:13px}
+.tick .jt{font-size:11px;color:var(--sage);border:1px solid var(--rule);border-radius:2px;padding:0 5px;margin-left:6px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.tick.donne{background:var(--fill);border-bottom:0;padding:7px 8px;border-radius:2px}
+.tick.donne .pc{color:var(--forest);border-color:var(--forest)}
+.tick .recu{color:var(--forest);font-weight:700;margin-top:1px;flex:0 0 auto}
+.btn{font:inherit;font-size:14px;padding:8px 14px;border:1px solid var(--forest);background:var(--forest);color:var(--paper);border-radius:2px;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--forest)}
+.btn.sm{font-size:13px;padding:6px 11px}
+.btn.danger{border-color:var(--rust);color:var(--rust)}
+.btn:disabled{opacity:.45;cursor:default}
+[hidden]{display:none!important}

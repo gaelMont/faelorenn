@@ -1,0 +1,9 @@
+/* Fichier généré par outils/build.mjs depuis src/css/site/ : ne pas le modifier, modifier les modules. */
+
+/* ── site/barre.css ── */
+.fae-site{display:flex;flex-wrap:wrap;gap:4px 18px;align-items:baseline;max-width:none;margin:0 auto;padding:12px clamp(14px,2.2vw,44px) 0;font:13px/1.4 "IBM Plex Sans",system-ui,sans-serif}
+.fae-site a{color:var(--sage,#4A6B52);text-decoration:none;border-bottom:1px solid transparent;padding-bottom:1px}
+.fae-site a:hover,.fae-site a:focus-visible{border-bottom-color:currentColor}
+.fae-site a[aria-current]{color:var(--forest,#1F3D2B);font-weight:600}
+.fae-site .fae-accueil{font-family:Spectral,Georgia,serif;font-weight:700;font-size:15px;color:var(--forest,#1F3D2B);margin-right:4px}
+@media print{.fae-site{display:none!important}}

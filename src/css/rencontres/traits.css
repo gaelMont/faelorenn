@@ -1,0 +1,13 @@
+/* les traits */
+.editeur fieldset.traits{border:1px solid var(--rule);border-radius:3px;padding:10px 12px;background:var(--surface)}
+.editeur fieldset.traits>.aide{margin:0 0 12px}
+.traits .tgr{margin-bottom:10px}
+.traits .tgr:last-of-type{margin-bottom:6px}
+.traits .lab{display:block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.traits .tsous{font-size:11.5px;color:var(--muted);font-style:italic;margin:4px 0 3px}
+.traits .seg button{font-size:13px;padding:4px 9px}
+.traits .seg button:disabled{opacity:.35;cursor:default}
+.traits .aide{margin-top:5px}
+.tacts{margin-top:10px}
+.tinfo{border-top:1px solid var(--rule);padding-top:7px;margin-top:8px;color:var(--sage)}
+.btr{margin:0 0 4px 76px;font-size:12px;color:var(--muted)}

@@ -1,0 +1,16 @@
+/* les entrées du livre, et ce qu'on en retouche */
+.blivre{border-top:1px solid var(--rule);margin-top:14px;padding-top:10px}
+.blivre summary{font-family:Spectral,Georgia,serif;font-size:16px;font-weight:600;color:var(--forest);cursor:pointer}
+.blivre summary span{font-family:"IBM Plex Sans",sans-serif;font-size:12.5px;font-weight:400;color:var(--muted)}
+.livgrille{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:2px 16px}
+.livrow{display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid var(--rule);min-width:0}
+.livtxt{flex:1 1 auto;min-width:0;font-size:14px;line-height:1.3}
+.livnm{overflow-wrap:anywhere}
+.livfam{display:block;font-size:11.5px;color:var(--muted);line-height:1.3;margin-top:1px}
+.anciennes{border:1px solid var(--gold);border-radius:3px;padding:10px 12px;margin-top:14px;background:var(--surface)}
+.anciennes p{margin:0 0 8px;font-size:13.5px;line-height:1.45}
+.anciennes .acts{margin:0}
+.livrow.retouche .livnm{color:var(--forest);font-weight:600}
+.livbadge{display:inline-block;margin-left:6px;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--gold);border:1px solid var(--gold);border-radius:2px;padding:0 4px;vertical-align:1px}
+.livact{display:flex;gap:4px;flex:0 0 auto}
+.btn.xs{font-size:12px;padding:3px 8px}

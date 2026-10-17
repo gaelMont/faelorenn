@@ -1,0 +1,14 @@
+/* composition a la main */
+.scroll{overflow-x:auto}
+.mix{width:100%;min-width:430px;border-collapse:collapse;font-variant-numeric:tabular-nums}
+.mix th{font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--sage);text-align:left;font-weight:600;padding:5px 7px;background:var(--fill);border-bottom:1px solid var(--rule)}
+.mix td{padding:4px 7px;border-bottom:1px solid var(--rule);font-size:14px}
+.mix td.n,.mix th.n{text-align:right}
+.mix tr:last-child td{border-bottom:0}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:7px;vertical-align:baseline}
+.d1{background:var(--r1)}.d2{background:var(--r2)}.d3{background:var(--r3)}.d4{background:var(--r4)}.d5{background:var(--r5)}
+
+.btn{font-size:15px;padding:10px 16px;border:1px solid var(--forest);background:var(--forest);color:var(--paper);border-radius:2px;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--forest)}
+.btn.sm{font-size:13px;padding:6px 11px}
+.acts{display:flex;gap:10px;flex-wrap:wrap;align-items:center}

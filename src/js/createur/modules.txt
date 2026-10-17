@@ -1,0 +1,11 @@
+commun/pratiques.js
+commun/reglesmaison.js
+commun/caracteristiques.js
+createur/regles-du-livre.js
+createur/creation.js
+createur/fiche-imprimable.js
+createur/export-word.js
+createur/export-json.js
+commun/sync-github.js
+createur/mes-personnages.js
+createur/demarrage.js

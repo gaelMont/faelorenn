@@ -1,0 +1,20 @@
+/* l'éditeur, en ligne */
+.editeur{border:1px solid var(--forest);border-radius:3px;padding:14px 16px;margin:10px 0 14px;background:var(--paper);flex:1 1 100%}
+.edtete h3{font-family:Spectral,Georgia,serif;font-size:18px;color:var(--forest);margin:0 0 10px}
+.fld{margin-bottom:10px;min-width:0}
+.fld label,.fld .lab{display:block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.fld input[type=text],.fld input[type=number],.fld textarea,.fld select{width:100%;font:inherit;font-size:14.5px;padding:7px 9px;border:1px solid var(--rule);border-radius:2px;background:var(--surface);color:var(--ink);resize:vertical}
+.fld textarea{line-height:1.4}
+.fld [aria-invalid=true]{border-color:var(--rust)}
+.fld input:disabled,.fld select:disabled{opacity:.6}
+.aide{font-size:12px;color:var(--muted);margin:4px 0 0;line-height:1.4}
+.err{font-size:12.5px;color:var(--rust);margin:4px 0 0}
+.ligne2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.6fr);gap:10px}
+.coche{display:flex;gap:8px;align-items:flex-start;font-size:14px;margin:0 0 10px;cursor:pointer;line-height:1.35}
+.coche input{accent-color:var(--sage);margin-top:3px}
+.edact{margin-top:8px}
+.usage-liste{font-size:12.5px;color:var(--ink);background:var(--surface);border:1px solid var(--rule);border-radius:2px;padding:7px 10px;margin:0 0 10px;line-height:1.45}
+
+.bexport{border-top:1px solid var(--rule);margin-top:16px;padding-top:12px}
+.bexport:first-child{border-top:0;margin-top:0;padding-top:0}
+.scroll{overflow-x:auto}

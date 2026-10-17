@@ -1,0 +1,8 @@
+.inventaire{margin-top:16px}
+.lab{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:0 0 6px}
+.inv{list-style:none;margin:0;padding:0;border-top:1px solid var(--rule)}
+.inv li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 14px;align-items:baseline;padding:9px 2px;border-bottom:1px solid var(--rule)}
+.inv .quoi{font-weight:500;color:var(--forest)}
+.inv .fic{font-size:13px;color:var(--muted);text-align:right}
+.inv .ou{grid-column:1 / -1;font-size:13.5px;color:var(--muted)}
+.inv li.la .ou{color:var(--sage)}

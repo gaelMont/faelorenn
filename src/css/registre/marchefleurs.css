@@ -1,0 +1,125 @@
+/* ============ le Registre des Marchefleurs : la fiche de chacun, comme un écran de personnage ============ */
+/* les portraits, un par personnage de la table */
+.fportraits{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px}
+.fportrait{display:flex;align-items:center;gap:10px;flex:0 1 232px;min-width:0;padding:7px 12px 7px 8px;border:1px solid var(--rule);border-radius:3px;background:var(--surface);color:var(--ink);font:inherit;text-align:left;cursor:pointer;box-shadow:var(--shadow)}
+.fportrait:hover{border-color:var(--sage)}
+.fportrait[aria-selected=true]{border-color:var(--forest);background:var(--fill);box-shadow:inset 0 0 0 1px var(--forest)}
+.fpt{display:flex;flex-direction:column;min-width:0;flex:1 1 auto}
+.fpt b{font-family:Spectral,Georgia,serif;font-size:15px;font-weight:600;color:var(--forest);line-height:1.2;overflow-wrap:anywhere}
+.fpt small{font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+.fpbar{display:block;height:3px;background:var(--rule);border-radius:2px;margin-top:4px;overflow:hidden}
+.fpbar i{display:block;height:100%;background:var(--sage)}
+/* le médaillon : ses initiales, frappées comme un sceau */
+.fmed{flex:0 0 auto;width:78px;height:78px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--forest);color:var(--surface);font-family:Spectral,Georgia,serif;font-weight:700;font-size:29px;letter-spacing:.02em;box-shadow:0 0 0 3px var(--surface),0 0 0 4px var(--forest)}
+.fmed.petit{width:34px;height:34px;font-size:13.5px;box-shadow:0 0 0 2px var(--surface),0 0 0 3px var(--forest)}
+.fportrait[aria-selected=true] .fmed.petit{box-shadow:0 0 0 2px var(--fill),0 0 0 3px var(--forest)}
+/* sa tête : le médaillon, son nom, ses jauges, ce qu'on regarde d'un coup d'œil */
+.fheros{display:grid;grid-template-columns:auto minmax(0,1fr) auto;grid-template-areas:"med id tuiles" "med jauges tuiles" "act act act";gap:4px 20px;align-items:start;padding:16px 18px 14px}
+.fheros .fmed{grid-area:med;margin:4px 2px 0}
+.fid{grid-area:id;min-width:0}
+.fnom{margin:0;font-size:28px;line-height:1.15;color:var(--forest);overflow-wrap:anywhere;text-wrap:balance}
+.fqui{margin:2px 0 0;font-family:Spectral,Georgia,serif;font-style:italic;color:var(--sage);font-size:15px}
+.fjauges{grid-area:jauges;margin-top:6px;max-width:460px}
+.ftuiles{grid-area:tuiles;display:grid;grid-template-columns:repeat(3,minmax(96px,auto));gap:8px}
+.ftuile{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-width:0;padding:9px 12px;border:1px solid var(--rule);border-radius:2px;background:var(--fill);color:var(--forest);font:inherit;text-align:center;cursor:pointer}
+.ftuile:hover{border-color:var(--sage)}
+.ftuile b{font-family:Spectral,Georgia,serif;font-size:21px;font-weight:700;line-height:1.15;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.ftuile span{font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+.fact{grid-area:act;margin-top:10px;padding-top:10px;border-top:1px solid var(--rule)}
+.fact a.btn{text-decoration:none;display:inline-block}
+/* les onglets, et le panneau qu'ils ouvrent */
+.seg.fonglets{gap:2px;margin-top:16px;border-bottom:1px solid var(--rule)}
+.fonglets button{display:inline-flex;align-items:center;gap:6px;margin-bottom:-1px;padding:8px 13px;border:1px solid transparent;border-bottom:0;border-radius:3px 3px 0 0;background:transparent;color:var(--muted);font-size:14px}
+.fonglets button:hover{color:var(--forest)}
+.fonglets button[aria-pressed=true]{background:var(--surface);border-color:var(--rule);color:var(--forest);font-weight:600;box-shadow:0 1px 0 var(--surface)}
+.fcompte{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--fill);color:var(--forest);font-size:11px;font-weight:600;font-variant-numeric:tabular-nums}
+.fpanneau{border-top:0;border-radius:0 0 3px 3px;padding:6px 18px 18px}
+.fpanneau>h3:first-child,.fpanneau>div:first-child>h3:first-child{margin-top:10px}
+.fpanneau textarea{font-family:Spectral,Georgia,serif;font-size:15.5px}
+.fpanneau p.mini{margin:4px 0}
+/* ce qu'il porte */
+.picto{width:26px;height:26px;flex:0 0 auto;color:var(--sage)}
+.fslots{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(210px,100%),1fr));gap:10px}
+.fslot{display:flex;align-items:center;gap:10px;min-width:0;padding:10px 12px;border:1px dashed var(--rule);border-radius:3px;background:var(--paper)}
+.fslot.plein{border-style:solid;background:var(--fill)}
+.fslot>div{flex:1 1 auto;min-width:0}
+.fslot .lab{margin:0}
+.fslot b{display:block;font-family:Spectral,Georgia,serif;font-size:16px;font-weight:600;color:var(--forest);line-height:1.25;overflow-wrap:anywhere}
+.fslot:not(.plein) b{color:var(--muted);font-weight:400;font-style:italic}
+.fslot small{display:block;font-size:12px;color:var(--muted)}
+.fslot.plein .picto{color:var(--forest)}
+.fslotact{display:flex;flex-direction:column;gap:4px;flex:0 0 auto}
+.fred{margin:8px 0 0}
+/* le sac : une tuile par pile */
+.fgrille{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(270px,100%),1fr));gap:8px;margin-top:6px}
+.fobjet{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 10px;align-items:start;min-width:0;padding:9px 11px;border:1px solid var(--rule);border-radius:3px;background:var(--surface)}
+.fobjet .picto{margin-top:1px}
+.fobjet.arme .picto{color:var(--rust)}
+.fobjet.conso .picto{color:var(--plum)}
+.fobjet.armure .picto,.fobjet.bouclier .picto{color:var(--forest)}
+.fobjet.porte{border-color:var(--forest);background:var(--fill)}
+.fotxt{display:flex;flex-direction:column;min-width:0}
+.fotxt b{font-family:Spectral,Georgia,serif;font-size:15.5px;font-weight:600;color:var(--ink);line-height:1.25;overflow-wrap:anywhere}
+.fqte{font-family:"IBM Plex Sans",sans-serif;font-size:13px;font-weight:600;color:var(--forest);font-variant-numeric:tabular-nums;white-space:nowrap}
+.fomin{font-size:12.5px;color:var(--muted);line-height:1.35;overflow-wrap:anywhere}
+.foorig{font-size:11px;font-style:italic;color:var(--muted)}
+.foact{grid-column:1 / -1;display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
+.fobjet>.fform{grid-column:1 / -1}
+.fsous{margin:14px 0 0}
+.fform{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;margin-top:6px;padding:8px 10px;border:1px dashed var(--rule);border-radius:2px;background:var(--paper)}
+.fform.fcol{flex-direction:column;align-items:stretch}
+.fform .table>div{flex-basis:150px}
+.fajout{margin-top:16px;padding-top:10px;border-top:1px dashed var(--rule)}
+.fajout summary{cursor:pointer;font-weight:600;font-size:14px;color:var(--forest)}
+.fajout .seg{margin-top:10px}
+.fajout .seg button{font-size:13px;padding:5px 10px;background:var(--surface)}
+/* sa bourse */
+.fbourse{display:flex;align-items:center;gap:14px;margin-top:12px;padding:12px 16px;border:1px solid var(--rule);border-radius:3px;background:var(--fill)}
+.fbourse .picto{width:42px;height:42px;color:var(--gold)}
+.fbourse>div{display:flex;flex-direction:column;min-width:0}
+.fsomme{font-family:Spectral,Georgia,serif;font-size:28px;font-weight:700;line-height:1.1;color:var(--forest);font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.fpanneau .seg button{background:var(--surface)}
+.table.fbform>div:nth-child(-n+2){flex:0 0 auto}
+.fhist td{vertical-align:middle}
+.tab td.fneg{color:var(--rust);font-weight:600;white-space:nowrap}
+.tab td.fpos{color:var(--sage);font-weight:600;white-space:nowrap}
+/* le marché */
+.fmarche-tete{margin:12px 0 0;font-size:14px;color:var(--forest)}
+.fmarche td{vertical-align:middle}
+.tab td.fmact{text-align:right;white-space:nowrap}
+.fmact input{margin-right:6px;padding:4px 7px;font-size:13.5px;vertical-align:middle}
+.fmact .btn{vertical-align:middle}
+.fcoche{margin:8px 0 2px;align-items:flex-start;line-height:1.4}
+.fcoche input{margin-top:3px}
+/* ceux qui sont entrés dans le monde */
+.fancien{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;justify-content:space-between;padding:9px 2px;border-bottom:1px solid var(--rule)}
+.fancien>div{flex:1 1 240px;min-width:0}
+.fancien b{font-family:Spectral,Georgia,serif;font-size:16px;font-weight:600;color:var(--forest)}
+.fancien a,.fvide a,.nancien a{color:var(--forest)}
+.fvide p{margin:0 0 6px}
+#pEditeur{margin-top:14px}
+@media (max-width:860px){
+  .fheros{grid-template-columns:auto minmax(0,1fr);grid-template-areas:"med id" "jauges jauges" "tuiles tuiles" "act act"}
+  .fjauges{max-width:none;margin-top:10px}
+  .ftuiles{grid-template-columns:repeat(3,minmax(0,1fr));margin-top:8px}
+}
+@media (max-width:560px){
+  .fheros{padding:12px 14px;column-gap:14px}
+  .fmed{width:58px;height:58px;font-size:22px}
+  .fnom{font-size:23px}
+  .ftuile{padding:8px 6px}
+  .ftuile b{font-size:17px}
+  .fportrait{flex:1 1 100%}
+  .seg.fonglets{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;border-bottom:0}
+  .fonglets button{justify-content:center;margin:0;border:1px solid var(--rule);border-radius:2px}
+  .fonglets button[aria-pressed=true]{background:var(--fill);border-color:var(--forest);box-shadow:none}
+  .fpanneau{margin-top:8px;border-top:1px solid var(--rule);border-radius:3px;padding:4px 14px 16px}
+  /* le marché au téléphone : une ligne par article, l'achat en dessous, toute la largeur */
+  .tab.fmarche{display:block}
+  .fmarche tr{display:grid;grid-template-columns:minmax(0,1fr) auto auto;column-gap:10px;align-items:baseline;border-bottom:1px solid var(--rule);padding:5px 0}
+  .fmarche tr:last-child{border-bottom:0}
+  .fmarche th,.fmarche td{border:0;padding:1px 4px}
+  .fmarche th:last-child:empty{display:none}
+  .tab.fmarche td.fmact{grid-column:1 / -1;display:flex;gap:6px;text-align:left;white-space:normal;padding-top:4px}
+  .fmarche td.fmact input{flex:1 1 auto;min-width:0;margin:0}
+}

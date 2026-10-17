@@ -1,0 +1,5 @@
+/* la barre de recherche */
+.lvbarre{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;display:flex;flex-wrap:wrap;gap:8px;align-items:center;
+  background:var(--paper);border-bottom:1px solid var(--rule);padding:10px 0;margin-bottom:6px}
+.lvbarre input{flex:1 1 230px;min-width:0}
+.lvbarre .note{flex:0 1 auto}

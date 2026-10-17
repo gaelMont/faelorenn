@@ -1,0 +1,50 @@
+<!--@ inclure en-tete titre="Registre des Tirages" feuille="registre" -->
+<body>
+<!--@ inclure barre-registres -->
+<!--@ css tirages -->
+
+<div class="wrap">
+<header>
+  <h1>Registre des Tirages</h1>
+  <p class="sub">Faelorenn · ce qu’on tire quand le MJ n’est pas là</p>
+  <nav class="saut noprint" aria-label="Aller à">
+    <a href="#secTables">Les tables</a>
+    <a href="#secSauve">La sauvegarde</a>
+    <a href="table.html" target="faelorenn-table">La séance, dans le Registre de la Table</a>
+  </nav>
+  <div class="etatsync"><span class="pastille" id="tbPastille"></span><span id="tbEtat"></span></div>
+  <div class="cbarre noprint" id="cbarre" hidden><label class="lab" for="tbCampagne">Campagne</label><select id="tbCampagne"></select></div>
+</header>
+
+<section id="secTables">
+  <h2><span class="num">1</span> Les tables</h2>
+  <p class="hint">Les quatre tables du Livre VIII, telles que le livre les écrit, et les tiennes. Tout se réécrit : une ligne, une colonne, une table entière. Chaque ligne peut porter une rareté, et le tirage demande les paliers l’un après l’autre, du plus rare au plus courant. Les numéros restent affichés : on tire aussi bien au d20, sur papier, sans le site.</p>
+  <div id="tabBox"></div>
+</section>
+
+<section id="secSauve">
+  <h2><span class="num">2</span> La sauvegarde</h2>
+  <p class="hint">Les tables vivent dans le même fichier que la table de jeu : relier la sauvegarde en ligne ici ou ailleurs revient au même, et Océane a les mêmes tables que toi.</p>
+  <div class="card">
+    <div class="table">
+      <div>
+        <label class="lab" for="tbJoueur">Tu es</label>
+        <input type="text" id="tbJoueur" placeholder="Gaël" style="width:100%">
+      </div>
+    </div>
+    <div class="acts" style="margin-top:12px">
+      <button class="btn" id="tbEnLigne" type="button">Sauvegarder en ligne</button>
+      <button class="btn ghost sm" id="tbOuvrir" type="button" hidden>Reconnecter le fichier</button>
+      <button class="btn ghost sm" id="tbJson" type="button">Enregistrer la table en .json</button>
+      <button class="btn ghost sm" id="tbImport" type="button">Importer un .json</button>
+      <input type="file" id="tbFichier" accept=".json,application/json" hidden>
+    </div>
+    <div id="ghPlace"></div>
+  </div>
+</section>
+</div>
+<p class="note toast" id="tbMsg" hidden role="status"></p>
+
+<!--@ js registre -->
+</body>
+</html>

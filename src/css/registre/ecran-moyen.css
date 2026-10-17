@@ -1,0 +1,7 @@
+@media (max-width:1080px){
+  .jeu{display:flex;flex-direction:column;gap:12px}
+  .jeu-main,.jeu-cote{display:contents}
+  #seEtat{order:1} #seRecit{order:2} #seCombat{order:3} #seCompo{order:4;margin-top:0} #seOracle{order:5} #seMission{order:6} #seGens{order:7} #seAide{order:8}
+  .cnom{flex:1 1 150px}
+  .cj{flex:1 1 170px}
+}

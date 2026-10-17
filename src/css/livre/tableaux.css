@@ -1,0 +1,9 @@
+/* les tableaux du livre */
+.tbw{overflow-x:auto;margin:0 0 1.1em;border:1px solid var(--rule);border-radius:3px;background:var(--surface);box-shadow:var(--shadow)}
+.lvtexte table{border-collapse:collapse;width:100%;font-family:"IBM Plex Sans",sans-serif;font-size:13.5px;line-height:1.42}
+.lvtexte th{text-align:left;vertical-align:bottom;font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:600;
+  padding:8px 11px;border-bottom:1px solid var(--forest);white-space:nowrap}
+.lvtexte td{vertical-align:top;padding:7px 11px;border-bottom:1px solid var(--rule)}
+.lvtexte tbody tr:last-child td{border-bottom:0}
+.lvtexte td.de{font-variant-numeric:tabular-nums;white-space:nowrap;color:var(--sage);font-weight:600;width:1%}
+.lvtexte td b{color:var(--ink)}

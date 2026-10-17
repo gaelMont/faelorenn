@@ -1,0 +1,61 @@
+/* la carte de combat */
+.carte{background:var(--surface);border:1px solid var(--rule);border-radius:2px;padding:10px 12px;box-shadow:var(--shadow);margin-bottom:10px;min-width:0}
+.carte .ctete{margin-bottom:6px}
+.ctzone{position:relative;border:1px solid var(--rule);border-radius:2px;background:var(--paper);overflow:hidden;touch-action:none}
+.ctsvg{display:block;width:100%;height:auto;max-height:52vh;cursor:grab}
+.carte.plein .ctsvg{max-height:none;height:calc(100vh - 230px)}
+.ctj{cursor:grab}
+.ctj.ctbas{opacity:.5}
+.ctj.ctsel circle{stroke:var(--gold);stroke-width:.14}
+.ctnom{fill:var(--ink);stroke:var(--paper);stroke-width:.14;paint-order:stroke;font-family:Spectral,Georgia,serif}
+.ctpas{fill:var(--sage);fill-opacity:.13;stroke:var(--sage);stroke-width:.08}
+.ctportee{fill:none;stroke:var(--rust);stroke-width:.08;stroke-dasharray:.5 .4}
+.ctliste{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:8px}
+.ctl{display:flex;align-items:center;gap:6px;font-size:12.5px;padding:2px 0}
+.ctl.ctlsel{font-weight:600}
+.ctl.ctlbas .ctlnom{text-decoration:line-through;color:var(--muted)}
+.ctpuce{width:10px;height:10px;border-radius:50%;flex:0 0 auto}
+.ctlnom{border:0;background:transparent;font:inherit;color:var(--forest);cursor:pointer;padding:0;text-align:left}
+.ctlnom:hover{text-decoration:underline}
+.ctpasn{color:var(--muted);font-variant-numeric:tabular-nums}
+.ctpasn.trop{color:var(--rust);font-weight:600}
+.ctl.ctlmoi .ctlnom{font-weight:700;color:var(--rust)}
+.ctposer{margin:6px 0 0;font-weight:600}
+/* choisir une carte : la fenêtre, les lieux puis ce qu'on prend dedans */
+.ctfen{position:fixed;inset:0;background:rgba(20,18,14,.5);display:flex;align-items:center;justify-content:center;padding:16px;z-index:55}
+.ctfenin{background:var(--surface);border:1px solid var(--rule);border-radius:3px;padding:14px 16px;width:100%;max-width:560px;max-height:82vh;overflow:auto;box-shadow:0 10px 40px rgba(0,0,0,.35)}
+.ctfenin .ctete{margin-bottom:2px}
+.ctitre2{margin:8px 0 0;font-weight:700;font-size:15px}
+.ctchoix{display:flex;flex-direction:column;margin-top:8px}
+.ctgrp{margin:12px 0 2px;font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+.ctsous{margin:12px 0 2px;font-weight:700;font-size:14px}
+.ctlig.ctetg{padding-left:18px}
+.ctlig.ctetg b{font-weight:400}
+.ctlig{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;width:100%;text-align:left;background:none;border:0;border-top:1px solid var(--rule);padding:8px 4px;cursor:pointer;font:inherit;color:inherit}
+.ctchoix>.ctlig:first-child{border-top:0}
+.ctlig:hover,.ctlig:focus-visible{background:var(--fill)}
+.ctlig .mini{margin:0}
+/* hors de son tour : la raison, sous les dés */
+.cobloc{color:var(--rust);font-weight:600;margin:6px 0 0}
+/* ce que chacun subit : une puce par état */
+.etats{display:flex;flex-wrap:wrap;align-items:center;gap:4px;margin-top:6px}
+.etp{display:inline-flex;align-items:baseline;gap:4px;font-size:11.5px;line-height:1.5;padding:1px 4px;border:1px solid var(--rule);border-radius:2px;background:var(--fill)}
+.etp i{font-style:normal;color:var(--muted);font-size:10.5px}
+.etp button{border:0;background:none;padding:0 1px;cursor:pointer;color:var(--muted);font-size:12px;line-height:1}
+.etp button:hover{color:var(--rust)}
+.etplus{border:1px dashed var(--rule);background:none;border-radius:2px;font-size:11px;padding:1px 5px;cursor:pointer;color:var(--muted);font-family:inherit}
+.etplus:hover{color:var(--ink);border-color:var(--muted)}
+.etform{flex:1 0 100%;display:flex;flex-direction:column;gap:4px;margin-top:4px}
+/* celui qui est à terre : ses jets de mort */
+.mort{margin-top:6px;border-top:1px dashed var(--rust);padding-top:5px}
+.mort .ctete{margin-bottom:3px}
+.mort.mortfini{opacity:.75}
+.jmort{border-color:var(--rust)}
+.jourj{font-variant-numeric:tabular-nums;font-weight:600;font-size:12.5px;align-self:center}
+.repos{margin-top:10px}
+.ctvit{width:54px;padding:2px 4px;font-size:12px}
+.ctaide{margin-top:6px}
+.ctdist{margin:6px 0 0}
+.ctdist.trop{color:var(--rust);font-weight:600}
+body.carteplein .hbcote{display:none}
+@media (max-width:820px){.ctsvg{max-height:46vh}}

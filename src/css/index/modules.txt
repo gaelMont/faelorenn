@@ -1,0 +1,6 @@
+commun/jetons.css
+index/base.css
+index/registres.css
+index/textes.css
+index/inventaire.css
+index/petits-ecrans.css

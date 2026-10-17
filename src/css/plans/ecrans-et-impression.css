@@ -1,0 +1,21 @@
+@media (max-width:860px){
+  #app{height:auto;overflow:visible}
+  #main{grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(320px,64vh) auto}
+  #app.ro #main{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(320px,64vh) auto}
+  #tools{flex-direction:row;border-right:0;border-bottom:1px solid var(--rule);overflow-x:auto;overflow-y:hidden}
+  #side{border-left:0;border-top:1px solid var(--rule);max-height:none;overflow:visible}
+  #main>#stage{order:1}
+  #main>#tools{order:0}
+  #main>#side{order:2}
+}
+@media (max-width:560px){
+  .wrap{padding-inline:16px}
+  /* 16 px au moins : en dessous, un téléphone zoome la page dès qu'on touche un champ */
+  select,input[type=text],input[type=number],textarea{font-size:16px}
+  #top select{max-width:100%;flex:1 1 100%}
+  #top .sep{display:none}
+}
+@media print{
+  .noprint,#top,#tools,#side,#hud,#floorbar{display:none!important}
+  html,body{background:#fff;color:#000}
+}

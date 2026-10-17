@@ -1,0 +1,36 @@
+/* en face */
+.abarre{height:5px;background:var(--fill);border-radius:2px;overflow:hidden}
+.abarre i{display:block;height:100%;background:var(--sage)}
+.abarre i.bas{background:var(--rust)}
+.cpourquoi{font-style:italic}
+.aligne{border-top:1px solid var(--rule);padding:8px 0 6px}
+.aligne.visee{background:var(--fill);margin-inline:-6px;padding-inline:6px}
+.aligne.aterre>:not(.fouille):not(.afouille){opacity:.55}
+.aligne.aterre .anom{text-decoration:line-through;text-decoration-thickness:1px}
+.atete{display:flex;align-items:baseline;gap:8px}
+.anom{font-family:Spectral,Georgia,serif;font-size:15.5px;font-weight:600;color:var(--ink);flex:1 1 auto;min-width:0;overflow-wrap:anywhere}
+.arang{font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+.ax{border:0;background:transparent;color:var(--muted);cursor:pointer;font:inherit;font-size:15px;line-height:1;padding:2px 5px;border-radius:2px}
+.ax:hover{background:var(--fill);color:var(--rust)}
+.ax.danger{color:var(--rust);font-size:12px;font-weight:600}
+.ainfo{margin:1px 0 5px}
+.apv{display:flex;align-items:center;gap:8px}
+.apv .abarre{flex:1 1 auto}
+.apvn{font-size:12.5px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.acmd{display:flex;gap:3px}
+.acmd button{min-width:30px;height:24px;border:1px solid var(--rule);background:var(--surface);color:var(--forest);border-radius:2px;cursor:pointer;font-size:12px;padding:0 4px}
+.acmd button:hover:not(:disabled){background:var(--fill)}
+.acmd button:disabled{opacity:.35;cursor:default}
+.aatq{display:flex;flex-direction:column;gap:5px;margin-top:7px}
+.aat{display:flex;align-items:center;gap:8px}
+.aattxt{flex:1 1 auto;min-width:0;font-size:13px;line-height:1.35}
+.aattxt b{font-weight:600}
+.aty{display:inline-block;font-size:9.5px;letter-spacing:.07em;text-transform:uppercase;border:1px solid var(--rule);border-radius:2px;padding:0 4px;margin-right:5px;color:var(--muted);vertical-align:1px}
+.aty.tmag{border-color:var(--plum);color:var(--plum)}
+.aty.tspe{border-color:var(--gold);color:var(--gold)}
+.apart{margin:5px 0 0}
+.atete .aviser{align-self:center}
+.aligne.visee .aviser{background:var(--forest);color:var(--surface)}
+.ajoutadv{margin-top:8px;border-top:1px dashed var(--rule);padding-top:8px}
+.ajoutadv summary{cursor:pointer;font-size:13px;color:var(--forest)}
+.ajoutadv>.tirage{margin-top:8px}

@@ -1,0 +1,17 @@
+/* les tables à tirer */
+.tbgrille{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px}
+.tbcarte{border:1px solid var(--rule);border-radius:3px;padding:10px 12px;background:var(--surface)}
+.tbnom{font-family:Spectral,Georgia,serif;font-size:16px}
+.tbcols{color:var(--muted)}
+.tbpaliers{display:flex;flex-direction:column;gap:4px;margin:6px 0}
+.tbpal{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.tbcolonnes{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin-top:12px}
+.tbcol{border:1px solid var(--rule);border-radius:3px;padding:8px 10px;background:var(--surface)}
+.tbcoln{font-weight:600;flex:1 1 120px;min-width:0}
+.tblignes{display:flex;flex-direction:column;gap:2px;margin:6px 0}
+.tbl{display:flex;align-items:center;gap:5px}
+.tbn{flex:0 0 auto;min-width:20px;text-align:right;font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+.tbt{flex:1 1 auto;min-width:0}
+.tbp{flex:0 0 auto;max-width:110px}
+.tbsort{margin-top:8px;border-left:2px solid var(--sage);padding-left:8px}
+.tbsortt{margin:0;font-family:Spectral,Georgia,serif;font-size:17px}

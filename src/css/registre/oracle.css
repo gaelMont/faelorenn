@@ -1,0 +1,39 @@
+/* l'oracle, sous la main : une question, sa plausibilité, un d20 */
+.cote.oracle{display:flex;flex-direction:column;gap:7px}
+.cote.oracle .ctete{margin-bottom:0}
+.cote.oracle input[type=text]{width:100%;font-size:13.5px;padding:6px 8px}
+.oplaus{gap:4px}
+.oplaus button{font-size:12.5px;padding:4px 8px;background:var(--surface)}
+.oacts{gap:6px}
+.oacts input[type=number]{width:54px;padding:4px 6px;font-size:13.5px}
+.oacts .ou{margin-left:2px}
+.ores{display:flex;flex-direction:column;gap:1px;padding:7px 10px;border:1px solid var(--rule);border-left:4px solid var(--sage);border-radius:2px;background:var(--paper)}
+.ores.onon{border-left-color:var(--rust)}
+.ores b{font-family:Spectral,Georgia,serif;font-size:18px;line-height:1.25;color:var(--forest)}
+.ores.onon b{color:var(--rust)}
+.ores .acts{margin-top:5px;gap:8px}
+.ores a{color:var(--sage)}
+.ovisage{display:flex;flex-direction:column;gap:6px}
+.ovisage .lab{margin:0}
+.ovisage>.mini{margin:0}
+/* l'aide change de longueur quand on quitte le champ du lieu : deux lignes de place, pour que le bouton ne glisse pas sous le clic */
+.ovisage>.oaide{min-height:3em}
+.oseuils summary{cursor:pointer;font-size:13px;color:var(--forest)}
+.oseuils>.mini{margin:6px 0}
+.oligne{display:flex;flex-direction:column;gap:3px;margin-top:8px}
+.oligne .lab{margin:0}
+.oligne input.faux{border-color:var(--rust)}
+.obar{display:flex;height:8px;border-radius:2px;overflow:hidden;gap:1px;background:var(--rule)}
+.obar.vide{background:repeating-linear-gradient(90deg,var(--rule) 0 6px,transparent 6px 10px)}
+.obar span{display:block;min-width:2px}
+.obar .o-nonEt{background:var(--plum)} .obar .o-non{background:var(--rust)} .obar .o-nonMais{background:var(--gold);opacity:.6}
+.obar .o-ouiMais{background:var(--gold)} .obar .o-oui{background:var(--sage)} .obar .o-ouiEt{background:var(--forest)}
+.odetail{margin:0;font-variant-numeric:tabular-nums}
+/* une réponse de l'oracle, dans le récit */
+.boracle{font-family:"IBM Plex Sans",sans-serif;font-size:14px;line-height:1.45;border-left:3px solid var(--sage);padding:1px 0 1px 10px}
+.boracle.onon{border-left-color:var(--rust)}
+.feuille .boracle p{margin:0;white-space:normal}
+.boracle .olab{font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+.boracle .oq{font-style:italic}
+.boracle .orep{color:var(--forest)}
+.boracle.onon .orep{color:var(--rust)}

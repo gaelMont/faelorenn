@@ -1,0 +1,14 @@
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:15px;line-height:1.5}
+.wrap{max-width:none;margin:0 auto;padding-inline:clamp(14px,2.2vw,44px);padding-block:28px 40px}
+h1{font-family:Spectral,Georgia,serif;font-weight:700;font-size:clamp(27px,5vw,38px);color:var(--forest);margin:0;letter-spacing:-.01em;text-wrap:balance}
+.sub{font-family:Spectral,Georgia,serif;font-style:italic;color:var(--sage);margin:2px 0 0}
+header{border-bottom:2px solid var(--forest);padding-bottom:12px;margin-bottom:22px}
+section{margin-bottom:22px}
+h2{font-family:Spectral,Georgia,serif;font-size:19px;color:var(--forest);margin:0 0 2px;display:flex;align-items:baseline;gap:10px;text-wrap:balance}
+h2 .num{font-size:12px;font-weight:600;letter-spacing:.14em;color:var(--sage);font-family:"IBM Plex Sans",sans-serif;border:1px solid var(--rule);border-radius:2px;padding:1px 6px}
+.hint{color:var(--muted);font-size:13px;margin:0 0 12px}
+.card{background:var(--surface);border:1px solid var(--rule);border-radius:3px;padding:14px 16px;box-shadow:var(--shadow)}
+label.f{display:block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+button{font:inherit}
+select:focus-visible,input:focus-visible,button:focus-visible{outline:2px solid var(--sage);outline-offset:1px}

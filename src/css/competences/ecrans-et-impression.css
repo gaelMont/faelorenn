@@ -1,0 +1,10 @@
+@media (max-width:560px){
+  .ligne2{grid-template-columns:1fr}
+  .bact{margin-left:0}
+  /* 16 px au moins : en dessous, un téléphone zoome la page dès qu'on touche un champ */
+  .fld input[type=text],.fld input[type=number],.fld textarea,.fld select,.plcaster select{font-size:16px}
+}
+@media print{
+  .noprint,.bact,.seg{display:none!important}
+  html,body{background:#fff;color:#000}
+}

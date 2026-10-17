@@ -1,0 +1,70 @@
+/* Fichier généré par outils/build.mjs depuis src/css/index/ : ne pas le modifier, modifier les modules. */
+
+/* ── commun/jetons.css ── */
+:root{
+  --paper:#F4F2EA; --surface:#FFFFFF; --fill:#E9EFE8; --ink:#1B1C18; --muted:#6B7469;
+  --forest:#1F3D2B; --sage:#4A6B52; --rule:#CBD6C9; --rust:#9A4A28; --gold:#8A6D2F;
+  --shadow:0 1px 2px rgba(31,61,43,.07);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#131713; --surface:#1B211C; --fill:#212A22; --ink:#E6E7DF; --muted:#94A08F;
+    --forest:#9DC2A6; --sage:#7FA88A; --rule:#2E3A30; --rust:#D98A63; --gold:#C9A758;
+    --shadow:0 1px 2px rgba(0,0,0,.4);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#131713; --surface:#1B211C; --fill:#212A22; --ink:#E6E7DF; --muted:#94A08F;
+  --forest:#9DC2A6; --sage:#7FA88A; --rule:#2E3A30; --rust:#D98A63; --gold:#C9A758;
+  --shadow:0 1px 2px rgba(0,0,0,.4);
+}
+
+/* ── index/base.css ── */
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:15.5px;line-height:1.55}
+.wrap{max-width:none;margin:0 auto;padding-inline:clamp(14px,2.2vw,44px);padding-block:44px 56px}
+.sur{font-family:Spectral,Georgia,serif;font-style:italic;color:var(--sage);margin:0;font-size:17px}
+h1{font-family:Spectral,Georgia,serif;font-weight:700;font-size:clamp(32px,6vw,46px);line-height:1.08;color:var(--forest);margin:2px 0 10px;letter-spacing:-.01em;text-wrap:balance}
+.intro{max-width:76ch;margin:0;color:var(--ink)}
+header{border-bottom:2px solid var(--forest);padding-bottom:22px;margin-bottom:28px}
+h2{font-family:Spectral,Georgia,serif;font-size:21px;color:var(--forest);margin:34px 0 8px;text-wrap:balance}
+p{margin:0 0 10px;max-width:65ch}
+
+/* ── index/registres.css ── */
+.registres{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:14px;border-top:1px solid var(--rule);padding-top:14px}
+.registre{display:grid;grid-template-columns:minmax(0,1fr);gap:1px;align-content:start;padding:14px 16px;border:1px solid var(--rule);border-radius:3px;background:var(--surface);box-shadow:var(--shadow);text-decoration:none;color:inherit}
+.registre:hover{border-color:var(--sage)}
+.registre:hover .rnom,.registre:focus-visible .rnom{text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:4px}
+.registre:focus-visible{outline:2px solid var(--sage);outline-offset:2px}
+.rnom{font-family:Spectral,Georgia,serif;font-size:20px;font-weight:600;color:var(--forest);line-height:1.2}
+.rquoi{font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--sage);margin-bottom:6px}
+.rdesc{color:var(--muted);font-size:14px;line-height:1.45}
+
+/* ── index/textes.css ── */
+ol{padding-left:22px;margin:6px 0 12px}
+ol li{margin:6px 0;max-width:62ch}
+.chemins li b{color:var(--forest)}
+.note{font-size:13.5px;color:var(--muted)}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.92em;background:var(--fill);padding:1px 5px;border-radius:2px;overflow-wrap:anywhere}
+.encart{border:1px solid var(--rule);background:var(--surface);border-radius:3px;padding:14px 16px;box-shadow:var(--shadow);margin-top:10px}
+.encart p:last-child{margin-bottom:0}
+a{color:var(--forest)}
+footer{margin-top:44px;padding-top:12px;border-top:1px solid var(--rule);font-size:12.5px;color:var(--muted)}
+
+/* ── index/inventaire.css ── */
+.inventaire{margin-top:16px}
+.lab{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:0 0 6px}
+.inv{list-style:none;margin:0;padding:0;border-top:1px solid var(--rule)}
+.inv li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 14px;align-items:baseline;padding:9px 2px;border-bottom:1px solid var(--rule)}
+.inv .quoi{font-weight:500;color:var(--forest)}
+.inv .fic{font-size:13px;color:var(--muted);text-align:right}
+.inv .ou{grid-column:1 / -1;font-size:13.5px;color:var(--muted)}
+.inv li.la .ou{color:var(--sage)}
+
+/* ── index/petits-ecrans.css ── */
+@media (max-width:520px){ .inv li{grid-template-columns:1fr} .inv .fic{text-align:left} }
+@media (max-width:520px){
+  .registre{grid-template-columns:1fr}
+  .rquoi{white-space:normal}
+}

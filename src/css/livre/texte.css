@@ -1,0 +1,17 @@
+/* le texte du livre */
+.lvtexte{font-family:Spectral,Georgia,serif;font-size:17px;line-height:1.65;max-width:none;min-width:0}
+.lvtexte p{margin:0 0 .72em}
+.lvtexte ul{margin:0 0 .9em;padding-left:1.1em}
+.lvtexte li{margin:0 0 .3em}
+.lvtexte b{font-weight:600;color:var(--forest)}
+.lvtexte h2,.lvtexte h3,.lvtexte h4,.lvtexte h5{scroll-margin-top:84px;position:relative;text-wrap:balance}
+.lvtexte h2{font-family:Spectral,Georgia,serif;font-size:13px;font-weight:700;letter-spacing:.17em;text-transform:uppercase;color:var(--sage);
+  border-top:2px solid var(--forest);margin:46px 0 18px;padding-top:9px}
+.lvtexte h2:first-child{margin-top:4px}
+.lvtexte h3{font-family:Spectral,Georgia,serif;font-size:25px;font-weight:700;color:var(--forest);margin:30px 0 10px;letter-spacing:-.01em}
+.lvtexte h4{font-family:Spectral,Georgia,serif;font-size:18px;font-weight:600;color:var(--forest);margin:22px 0 6px}
+.lvtexte h5{font-family:"IBM Plex Sans",sans-serif;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--gold);margin:18px 0 5px}
+.anc{position:absolute;left:-1.1em;top:0;color:var(--rule);text-decoration:none;font-family:"IBM Plex Sans",sans-serif;font-size:14px;opacity:0;padding:0 .2em}
+.lvtexte h2:hover .anc,.lvtexte h3:hover .anc,.lvtexte h4:hover .anc,.lvtexte h5:hover .anc,.anc:focus-visible{opacity:1}
+mark{background:var(--marque);color:inherit;border-radius:2px;padding:0 1px}
+mark.ici{outline:2px solid var(--rust);outline-offset:1px}

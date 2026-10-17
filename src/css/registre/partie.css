@@ -1,0 +1,5 @@
+/* la partie : le récit au milieu, ce qu'il faut sous la main à côté */
+.jeu{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:14px;align-items:start;margin-top:12px}
+.jeu-main{min-width:0}
+.jeu .feuille{margin-top:0}
+.jeu-cote{position:sticky;top:calc(12px + env(safe-area-inset-top, 0px));display:flex;flex-direction:column;gap:10px;max-height:calc(100vh - 24px);overflow-y:auto;overscroll-behavior:contain}

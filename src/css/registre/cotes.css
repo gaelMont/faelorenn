@@ -1,0 +1,9 @@
+.cote{background:var(--surface);border:1px solid var(--rule);border-radius:2px;padding:10px 12px;box-shadow:var(--shadow);min-width:0}
+.ctete{display:flex;align-items:baseline;gap:6px 8px;flex-wrap:wrap;margin-bottom:4px}
+.ctitre{font-family:Spectral,Georgia,serif;font-size:15.5px;font-weight:700;color:var(--forest);margin:0}
+.cote a{color:var(--sage);font-size:12.5px}
+.cote>.mini{margin:2px 0 6px}
+/* la compagnie */
+.cie{display:flex;flex-wrap:wrap;align-items:center;gap:3px 12px;padding:6px 0;border-top:1px solid var(--rule)}
+.cie-liste .ctitre{margin-bottom:2px}
+.cie-liste .cie:first-of-type{border-top:0}

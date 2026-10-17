@@ -1,0 +1,11 @@
+@media (max-width:760px){
+  .rzone{grid-template-columns:1fr}
+  .progzone{grid-template-columns:1fr}
+}
+@media (max-width:560px){
+  .ligne4{grid-template-columns:1fr 1fr}
+  .ligne4>div:last-child{grid-column:1 / -1}
+  .pgrille{grid-template-columns:1fr}
+  .feuille{padding:14px 14px 6px;font-size:15.5px}
+  .qui input{width:100%}
+}

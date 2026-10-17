@@ -1,0 +1,25 @@
+/* le butin de ceux qui sont tombés */
+.atete .afouiller{align-self:center}
+.cote-butin{margin-top:8px;border-top:1px dashed var(--rule);padding-top:8px}
+.cote-butin summary{cursor:pointer;font-size:13px;color:var(--forest);font-weight:600}
+.fligne{border-top:1px solid var(--rule);padding:6px 0 4px}
+.fligne:first-of-type{border-top:0}
+.fligne .atete{align-items:center;flex-wrap:wrap}
+.afouille{margin:5px 0 0;overflow-wrap:anywhere}
+.fouille{margin-top:8px;padding:8px 10px;border:1px solid var(--rule);border-radius:2px;background:var(--paper);display:flex;flex-direction:column;gap:7px}
+.ftitre{margin:0;font-family:Spectral,Georgia,serif;font-weight:700;color:var(--forest);font-size:14.5px}
+.fsienne ul{margin:2px 0 4px;padding-left:16px}
+.fsienne p{margin:0 0 4px}
+.fsienne .lab,.flivre .lab{margin:0 0 3px}
+.flivre{display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.flivre select{width:100%;font-size:13px;padding:5px 7px}
+.fouille .desmode{margin:0}
+.fdes{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.fverdict{margin:0;color:var(--forest)}
+.fouille textarea{width:100%;font-size:13.5px}
+.fdes input{width:66px;padding:4px 6px}
+.fsienne .acts,.flivre .acts{gap:5px}
+.jetdes .ou,.degats .ou{margin-left:2px}
+.amain{display:inline-flex;gap:6px;align-items:center;flex-wrap:nowrap}
+.fouille .acts{gap:6px}
+.fouille .acts select{flex:1 1 120px;min-width:0;font-size:13.5px;padding:5px 7px}

@@ -1,0 +1,9 @@
+.cnom{flex:1 0 100%;font-family:Spectral,Georgia,serif;font-size:15px;color:var(--forest);font-weight:600;overflow-wrap:anywhere}
+.cie.moi .cnom{text-decoration:underline;text-decoration-color:var(--rule);text-underline-offset:3px}
+.cie.tombe .cnom{color:var(--rust)}
+.cj{flex:1 1 100%;min-width:0;display:flex;align-items:center;gap:5px}
+.cjt{font-size:12px;font-variant-numeric:tabular-nums;white-space:nowrap;min-width:56px}
+.cj .abarre{flex:1 1 40px;min-width:24px}
+.cj button{width:22px;height:22px;flex:0 0 auto;border:1px solid var(--rule);background:var(--surface);color:var(--forest);border-radius:2px;cursor:pointer;font-size:13px;line-height:1;padding:0}
+.cj button:hover:not(:disabled){background:var(--fill)}
+.cj button:disabled{opacity:.35;cursor:default}

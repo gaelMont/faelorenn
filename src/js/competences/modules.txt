@@ -1,0 +1,11 @@
+commun/pratiques.js
+commun/caracteristiques.js
+competences/competences-du-livre.js
+commun/reglesmaison.js
+competences/retouches.js
+competences/editeur.js
+commun/sync-github.js
+competences/sur-github.js
+commun/telechargement.js
+competences/sauvegarde.js
+competences/demarrage.js

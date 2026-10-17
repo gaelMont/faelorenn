@@ -1,0 +1,113 @@
+<!--@ inclure en-tete titre="Registre du Havre" feuille="createur" -->
+<body>
+<!--@ inclure barre-registres -->
+
+<div class="wrap">
+<header class="noprint">
+  <h1>Registre du Havre</h1>
+  <p class="sub">Faelorenn · inscription d'un nouveau Marchefleur</p>
+</header>
+
+<section class="noprint" id="secMiens">
+  <h2>Tes personnages</h2>
+  <p class="hint">Enregistre un personnage pour ne pas le perdre : il suit ensuite chacun de tes changements. Avec la sauvegarde en ligne, il part aussi dans ton dépôt GitHub, et tu le retrouves sur tous tes appareils.</p>
+  <div class="card">
+    <div class="mtete">
+      <p class="mien-etat" id="mienEtat"></p>
+      <div class="mboutons">
+        <button class="btn sm" id="mienGarder" type="button">Enregistrer dans mes personnages</button>
+        <button class="btn ghost sm" id="mienNouveau" type="button">Nouveau personnage</button>
+      </div>
+    </div>
+    <p class="note mmsg" id="mienMsg" role="status" hidden></p>
+    <div class="miens" id="miensListe"></div>
+    <div id="ghcPlace"></div>
+  </div>
+</section>
+
+<section class="noprint">
+  <h2><span class="num">1</span> Qui tu es</h2>
+  <p class="hint">Le peuple donne les chiffres et les contraintes, la Voie donne le métier et le paquetage.</p>
+  <div class="card">
+    <div class="row">
+      <div><label class="f" for="nom">Nom</label><input type="text" id="nom" placeholder="Le nom de ton personnage"></div>
+      <div><label class="f" for="peuple">Peuple</label><select id="peuple"></select></div>
+      <div><label class="f" for="voie">Voie</label><select id="voie"></select></div>
+    </div>
+    <div class="row" id="subChoices" style="margin-top:12px"></div>
+    <dl class="facts" id="peupleFacts"></dl>
+  </div>
+</section>
+
+<section class="noprint">
+  <h2><span class="num">2</span> Caractéristiques</h2>
+  <p class="hint">Vingt-et-un points à répartir. Elles démarrent à 8 et ne dépassent pas 15 à la création. Le bonus de peuple s'ajoute après, et peut passer au-dessus.</p>
+  <p class="hint" id="carHint" hidden style="color:var(--forest);font-weight:500"></p>
+  <div class="card scroll">
+    <table id="carTable">
+      <thead><tr><th>Caractéristique</th><th class="n">Base</th><th class="n">Peuple</th><th class="n">Valeur</th><th class="n">×2</th><th class="n">mod</th></tr></thead>
+      <tbody></tbody>
+    </table>
+    <p class="note">Ton mod, c'est la caractéristique divisée par cinq, arrondie vers le bas comme tout le reste. C'est lui qui s'ajoute aux dégâts.</p>
+  </div>
+</section>
+
+<section class="noprint">
+  <h2><span class="num">3</span> Compétences</h2>
+  <p class="hint">Cent points à répartir, quarante au maximum sur une même compétence. Les bonus de ta Voie et de tes traits s'ajoutent par-dessus, sans rien coûter.</p>
+  <div class="card scroll">
+    <table id="skillTable">
+      <thead><tr><th>Compétence</th><th class="n">Payé</th><th class="n">Voie</th><th class="n">Trait</th><th class="n">Total</th><th class="n">d20</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+  <div id="traitChoice"></div>
+</section>
+
+<section class="noprint">
+  <h2><span class="num">4</span> Pratiques</h2>
+  <p class="hint" id="pratHint">Trois à la création. Une Pratique démarre à +20, et ton domaine ajoute +20, ou +10 pour l'école d'un humain.</p>
+  <div class="card" id="pratBox"></div>
+</section>
+
+<section class="noprint">
+  <h2><span class="num">5</span> Ce que tu emportes</h2>
+  <p class="hint">Le paquetage vient de ta Voie, et ton peuple ajoute le sien.</p>
+  <div class="card" id="gearBox"></div>
+</section>
+
+<section class="noprint">
+  <h2><span class="num">6</span> La fiche</h2>
+  <p class="hint">Voilà ce qui sort de l'imprimante, et rien d'autre. Dans la fenêtre d'impression, décoche « En-têtes et pieds de page » et choisis le format A4.</p>
+  <div style="display:flex;gap:10px;flex-wrap:wrap">
+    <button class="btn" id="enLigne" type="button">Sauvegarder en ligne</button>
+    <button class="btn" id="print">Imprimer la fiche</button>
+    <button class="btn ghost" id="word">Exporter en Word</button>
+    <button class="btn ghost" id="wcopy">Copier pour Word</button>
+    <button class="btn ghost" id="json">Enregistrer en .json</button>
+    <button class="btn ghost" id="copy">Copier en texte</button>
+    <button class="btn ghost" id="reset">Repartir de zéro</button>
+  </div>
+  <p class="note mmsg" id="enLigneMsg" role="status" hidden></p>
+  <p class="note" id="wordNote"></p>
+</section>
+
+<section id="ficheWrap">
+  <div class="fiche" id="fiche"></div>
+</section>
+</div>
+
+<div class="bar noprint">
+  <div class="in">
+    <span class="pill" id="pCar"><span>Caractéristiques</span><b>21</b></span>
+    <span class="pill" id="pSkill"><span>Compétences</span><b>100</b></span>
+    <span class="pill" id="pPrat"><span>Pratiques</span><b>0/3</b></span>
+    <span class="pill"><span>PV</span><b id="pPv">8</b></span>
+    <span class="pill"><span>PC</span><b id="pPc">4</b></span>
+    <span class="pill"><span>Réduction</span><b id="pRed">0</b></span>
+  </div>
+</div>
+
+<!--@ js createur -->
+</body>
+</html>

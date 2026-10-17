@@ -1,0 +1,63 @@
+/* la séance : un bureau, une page, et de quoi écrire */
+.card.seance{background:var(--fill)}
+.espace{flex:1 1 auto}
+.etats{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.etat{font-size:12.5px;padding:3px 9px;border:1px solid var(--rule);border-radius:2px;background:var(--surface);font-variant-numeric:tabular-nums;color:var(--muted)}
+.etat b{font-weight:600;color:var(--forest)}
+.etat.bas{border-color:var(--rust)} .etat.bas b{color:var(--rust)}
+.feuille{position:relative;margin-top:12px;background:var(--surface);border:1px solid var(--rule);border-radius:2px;box-shadow:var(--shadow);
+  padding:18px 22px 10px;max-height:max(300px, calc(100vh - 430px));overflow-y:auto;overscroll-behavior:contain;
+  font-family:Spectral,Georgia,serif;font-size:16px;line-height:1.6;color:var(--ink)}
+.feuille:focus{outline:none}
+.stitre{border-bottom:1px solid var(--rule);margin-bottom:14px;padding-bottom:6px}
+.stitre h3{font-size:20px;margin:0;line-height:1.25}
+.sdate{margin:2px 0 0;font-style:italic;color:var(--muted);font-size:14px}
+.feuille .vide{font-size:15px}
+.bloc{position:relative;margin:0 0 .8em;border-radius:2px}
+.bloc:hover{background:var(--fill);box-shadow:0 0 0 5px var(--fill)}
+.bloc p{margin:0;white-space:pre-wrap;overflow-wrap:anywhere}
+.b-scene p{font-weight:700}
+.b-achat p,.b-note p{font-family:"IBM Plex Sans",sans-serif;font-size:13px;font-style:italic;color:var(--muted)}
+.joints{font-family:"IBM Plex Sans",sans-serif;font-size:13px;color:var(--muted)}
+.joints.ok{color:var(--sage)} .joints.ko{color:var(--rust)}
+.encadre .sep{text-align:center;color:var(--muted);letter-spacing:.06em;margin:.35em 0}
+.encadre .joints{display:block}
+.bacts{position:absolute;right:-4px;top:-6px;display:flex;gap:1px;opacity:0;background:var(--surface);padding:2px;
+  border:1px solid var(--rule);border-radius:2px;box-shadow:var(--shadow);transition:opacity .12s}
+.bloc:hover .bacts,.bloc:focus-within .bacts{opacity:1}
+.bacts button{font-family:"IBM Plex Sans",sans-serif;font-size:12px;border:0;background:transparent;color:var(--forest);padding:3px 8px;cursor:pointer;border-radius:2px;line-height:1.2}
+.bacts button:hover{background:var(--fill)}
+.bacts button.danger{color:var(--rust);font-weight:600}
+@media (hover:none){
+  .bloc:hover{background:none;box-shadow:none}
+  .bacts{position:static;opacity:1;box-shadow:none;border:0;background:transparent;padding:0;margin-top:2px;justify-content:flex-end}
+}
+.bloc.retouche{background:var(--fill);box-shadow:0 0 0 6px var(--fill)}
+.bloc.retouche textarea{font-family:Spectral,Georgia,serif;font-size:16px}
+
+.compo{margin-top:12px;display:flex;flex-direction:column;gap:8px}
+.qui{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.qui button{font:inherit;font-size:13.5px;padding:5px 11px;border:1px solid var(--rule);background:var(--surface);color:var(--ink);border-radius:2px;cursor:pointer}
+.qui button:hover{border-color:var(--sage)}
+.qui button[aria-pressed=true]{background:var(--forest);border-color:var(--forest);color:var(--surface);font-weight:600}
+.qui input{width:160px;font-size:13.5px;padding:5px 9px}
+.qui input.actif{border-color:var(--forest);box-shadow:inset 0 0 0 1px var(--forest)}
+.genre button{font-size:13px;padding:4px 10px;background:var(--surface)}
+#coTexte{font-family:Spectral,Georgia,serif;font-size:16px;min-height:78px}
+.joint{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.puce{display:inline-flex;align-items:center;gap:4px;font-size:12.5px;padding:2px 3px 2px 9px;border:1px solid var(--rule);background:var(--surface);border-radius:2px;color:var(--ink)}
+.puce.ok{border-color:var(--sage);color:var(--sage)}
+.puce.ko{border-color:var(--rust);color:var(--rust)}
+.puce.vie{border-color:var(--gold);color:var(--gold)}
+.puce button{border:0;background:transparent;color:inherit;cursor:pointer;font-size:15px;line-height:1;padding:1px 5px;border-radius:2px}
+.puce button:hover{background:var(--fill)}
+.onlira{font-size:12.5px;color:var(--muted);font-style:italic;flex:1 1 100%}
+.btn.ghost.on{background:var(--surface);box-shadow:inset 0 0 0 1px var(--forest);font-weight:600}
+.panneau{border-top:1px dashed var(--rule);padding-top:10px}
+.verdict{margin-top:8px;font-size:13.5px;color:var(--muted)}
+.verdict b{font-family:Spectral,Georgia,serif;font-size:19px;color:var(--ink)}
+.verdict.ok b{color:var(--sage)} .verdict.ko b{color:var(--rust)}
+
+/* le paragraphe qu'on vient chercher depuis une fiche, la carte qu'on vient chercher depuis l'autre page */
+.bloc.eclaire{background:var(--fill);box-shadow:0 0 0 6px var(--fill),0 0 0 7px var(--sage)}
+.pcarte.eclaire{box-shadow:0 0 0 2px var(--sage)}

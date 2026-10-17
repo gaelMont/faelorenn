@@ -1,0 +1,33 @@
+# Les mêmes modules que le Registre (src/css/registre/), dans le même ordre ;
+# en propre (src/css/table/) : la disposition du hub, la tête de la compagnie, la carte de combat,
+# le tour et ses blocs, l'écran moyen. table/partie, table/tour-et-blocs et table/ecran-moyen
+# remplacent leurs homonymes de registre/ (mêmes règles de départ, version du hub).
+registre/jetons.css
+registre/base.css
+registre/barre-de-table.css
+registre/personnages.css
+registre/seance.css
+table/partie.css
+registre/cotes.css
+table/compagnie-tete.css
+registre/compagnie-jauges.css
+registre/en-face.css
+registre/tirer-rencontre.css
+table/carte-de-combat.css
+registre/tour-de-table.css
+table/tour-et-blocs.css
+registre/butin.css
+registre/aides-de-seance.css
+registre/pnj.css
+registre/missions.css
+registre/reseau.css
+registre/jets.css
+registre/progression.css
+registre/oracle.css
+registre/tete-de-seance.css
+table/ecran-moyen.css
+registre/petits-ecrans.css
+registre/marchefleurs.css
+registre/fiche-du-word.css
+registre/impression.css
+commun/mouvement-reduit.css

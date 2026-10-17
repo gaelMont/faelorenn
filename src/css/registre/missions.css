@@ -1,0 +1,64 @@
+/* le tableau du Havre : une couleur par genre de mission, du relevé le plus simple à ce que personne n'a voulu prendre */
+.g-observer{--g:var(--sage)} .g-escorter{--g:var(--gold)} .g-releve{--g:var(--forest)} .g-erosion{--g:var(--rust)} .g-personne{--g:var(--plum)}
+.misbarre{margin:4px 0 14px}
+.mgrille{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(300px,100%),1fr));gap:14px;align-items:start}
+.mcarte{background:var(--surface);border:1px solid var(--rule);border-top:4px solid var(--g,var(--sage));border-radius:3px;padding:11px 14px 12px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:7px;min-width:0}
+.mcarte.e-cours{border-color:var(--forest);border-top-color:var(--g,var(--sage))}
+.mhaut{display:flex;flex-wrap:wrap;justify-content:space-between;gap:2px 10px;margin:0;font-size:11px;letter-spacing:.09em;text-transform:uppercase;font-weight:600;color:var(--g,var(--sage))}
+.mhaut .mpaie{color:var(--muted);letter-spacing:.05em;font-variant-numeric:tabular-nums}
+.mtitre{margin:0;font-size:19px;line-height:1.25;color:var(--ink);display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 8px;overflow-wrap:anywhere;text-wrap:balance}
+.mex{font-family:"IBM Plex Sans",sans-serif;font-size:10.5px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);border:1px dashed var(--rule);border-radius:2px;padding:0 5px}
+dl.mcmd{display:grid;grid-template-columns:auto minmax(0,1fr);gap:2px 10px;margin:0;font-size:13.5px;line-height:1.4}
+dl.mcmd dt{color:var(--muted);font-size:12px;white-space:nowrap}
+dl.mcmd dd{margin:0;min-width:0;overflow-wrap:anywhere}
+.mannonce{margin:0;font-family:Spectral,Georgia,serif;font-style:italic;font-size:15px;line-height:1.5;color:var(--ink);overflow-wrap:anywhere}
+.mbas{margin:0}
+.metat{margin:0;font-size:12.5px;font-weight:600;color:var(--forest)}
+.mcarte .pact{margin-top:2px}
+.mnote{margin:6px 0 0;max-width:60ch}
+/* une mission en entier */
+.mlire{margin-bottom:12px;padding:16px 20px;border-top:4px solid var(--g,var(--sage))}
+.mlire .mhaut-l{margin:4px 0 0}
+.mlire .metat{margin-top:4px}
+.mcorps{grid-template-columns:minmax(0,8fr) minmax(0,5fr)}
+.mtexte{margin:0 0 8px;font-family:Spectral,Georgia,serif;font-size:16px;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere}
+.mvisage{padding:6px 0;border-bottom:1px solid var(--rule)}
+.mvisage p{margin:0}
+.mvnom{font-size:14px;overflow-wrap:anywhere}
+.mmj{margin-top:12px;border:1px dashed var(--rule);border-radius:2px;padding:8px 12px;background:var(--paper)}
+.mmj summary{cursor:pointer;color:var(--forest);font-weight:600;font-size:13.5px}
+.mjlab{margin:10px 0 2px;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--sage);font-weight:600}
+.mlire .pact{margin-top:14px}
+/* écrire une mission */
+.medit{margin-bottom:12px;padding:16px 20px}
+.medit .mchamp{margin-top:10px}
+.mgenres{flex-wrap:wrap}
+.mpaiepts{display:grid;grid-template-columns:minmax(0,240px) 110px;gap:10px 16px;align-items:start;margin-top:10px}
+.mpaiepts input{width:100%}
+.mgrille3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px 14px}
+.mgrille3.mgrille2{grid-template-columns:repeat(2,minmax(0,1fr));margin-top:4px}
+.mde{display:flex;gap:6px;align-items:center}
+.mde input{flex:1 1 auto;min-width:0}
+.mvisages{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
+.mvligne{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1.4fr) minmax(0,.9fr) auto minmax(0,2fr) auto;gap:6px;align-items:center}
+.mvligne input,.mvligne select{min-width:0;width:100%}
+/* à la table : la mission sous la main */
+.cote.mission{border-top:3px solid var(--g,var(--sage))}
+.cote.mission .mnom{margin:0 0 2px;font-family:Spectral,Georgia,serif;font-size:16px;font-weight:600;color:var(--ink);overflow-wrap:anywhere}
+dl.mcmd-cote{font-size:12.5px;margin:6px 0 2px}
+.cote.mission .mmj{margin-top:8px;padding:6px 10px}
+.cote.mission .mmj p{margin:6px 0 0;font-size:13px;overflow-wrap:anywhere}
+.cote.mission .mmj .btn{margin-top:6px}
+@media (max-width:860px){.mgrille3,.mgrille3.mgrille2,.mcorps{grid-template-columns:minmax(0,1fr)} .mvligne{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}}
+@media (max-width:560px){.mvligne{grid-template-columns:minmax(0,1fr)} .medit,.mlire{padding:12px 14px}}
+.vtextes{margin-top:8px;border-top:1px solid var(--rule);padding-top:6px}
+.vtextes summary{cursor:pointer;font-size:13px;color:var(--forest)}
+.vtextes .textes{margin-top:6px}
+.lien>.flien{flex:1 1 100%}
+.lmode button{font-size:13px;padding:4px 10px;background:var(--surface)}
+.flien>.mini{margin:6px 0 8px}
+.lindice{flex:1 1 100%;margin:0}
+.lindice.doute{color:var(--rust)}
+.lindice .btn{margin-top:4px}
+.pratlue .mini{margin:0}
+.flien{margin-top:10px;padding:10px;border:1px dashed var(--rule);border-radius:2px;background:var(--paper)}

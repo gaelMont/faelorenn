@@ -1,0 +1,126 @@
+/* Fichier généré par outils/build.mjs depuis src/css/livre/ : ne pas le modifier, modifier les modules. */
+
+/* ── livre/jetons.css ── */
+:root{
+  --paper:#F4F2EA; --surface:#FFFFFF; --fill:#E9EFE8; --ink:#1B1C18; --muted:#6B7469;
+  --forest:#1F3D2B; --sage:#4A6B52; --rule:#CBD6C9; --rust:#9A4A28; --gold:#8A6D2F; --plum:#6B2F3A;
+  --shadow:0 1px 2px rgba(31,61,43,.07); --marque:#F3E4B4;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#131713; --surface:#1B211C; --fill:#212A22; --ink:#E6E7DF; --muted:#94A08F;
+    --forest:#9DC2A6; --sage:#7FA88A; --rule:#2E3A30; --rust:#D98A63; --gold:#C9A758; --plum:#C97182;
+    --shadow:0 1px 2px rgba(0,0,0,.4); --marque:#4A431F;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#131713; --surface:#1B211C; --fill:#212A22; --ink:#E6E7DF; --muted:#94A08F;
+  --forest:#9DC2A6; --sage:#7FA88A; --rule:#2E3A30; --rust:#D98A63; --gold:#C9A758; --plum:#C97182;
+  --shadow:0 1px 2px rgba(0,0,0,.4); --marque:#4A431F;
+}
+
+/* ── livre/base.css ── */
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--paper);color:var(--ink);font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:15px;line-height:1.5;margin:0}
+.wrap{max-width:none;margin:0 auto;padding-inline:clamp(14px,2.2vw,44px);padding-block:26px 40px}
+.wrap.large{max-width:none}
+h1{font-family:Spectral,Georgia,serif;font-weight:700;font-size:clamp(27px,5vw,38px);color:var(--forest);margin:0;letter-spacing:-.01em;text-wrap:balance}
+.sub{font-family:Spectral,Georgia,serif;font-style:italic;color:var(--sage);margin:2px 0 0}
+header{border-bottom:2px solid var(--forest);padding-bottom:12px;margin-bottom:14px}
+.note{font-size:12.5px;color:var(--muted);margin:0;line-height:1.45}
+.note.err{color:var(--rust)}
+.btn{font:inherit;font-size:14px;padding:8px 13px;border:1px solid var(--forest);background:var(--forest);color:var(--paper);border-radius:2px;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--forest)}
+.btn.sm{font-size:13px;padding:5px 10px}
+.btn:disabled{opacity:.35;cursor:default}
+input{font:inherit;font-size:14.5px;padding:7px 9px;border:1px solid var(--rule);border-radius:2px;background:var(--surface);color:var(--ink);max-width:100%}
+input:focus-visible,button:focus-visible,a:focus-visible{outline:2px solid var(--sage);outline-offset:1px}
+
+/* ── livre/barre-de-recherche.css ── */
+/* la barre de recherche */
+.lvbarre{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;display:flex;flex-wrap:wrap;gap:8px;align-items:center;
+  background:var(--paper);border-bottom:1px solid var(--rule);padding:10px 0;margin-bottom:6px}
+.lvbarre input{flex:1 1 230px;min-width:0}
+.lvbarre .note{flex:0 1 auto}
+
+/* ── livre/sommaire.css ── */
+/* les deux colonnes */
+.lvcol{display:grid;grid-template-columns:304px minmax(0,1fr);gap:40px;align-items:start}
+.lvaside{position:sticky;top:calc(58px + env(safe-area-inset-top,0px));max-height:calc(100vh - 80px);display:flex;flex-direction:column;min-width:0}
+.lvtiroir>summary{display:none}
+.lvsom{overflow:auto;padding-right:6px;font-size:13.5px;line-height:1.35;scrollbar-width:thin;max-height:calc(100vh - 100px)}
+.slv{margin-bottom:10px}
+.slv.mort{opacity:.38}
+.lvsom a{display:block;color:var(--muted);text-decoration:none;padding:2px 0;overflow-wrap:anywhere}
+.lvsom a:hover{color:var(--forest)}
+.lvsom .sl1{font-family:Spectral,Georgia,serif;font-size:12px;letter-spacing:.09em;text-transform:uppercase;color:var(--sage);font-weight:600;border-bottom:1px solid var(--rule);padding-bottom:3px;margin-bottom:3px}
+.lvsom .sl2{padding-left:0}
+.lvsom .sl3w{margin:1px 0 4px 11px;border-left:1px solid var(--rule);padding-left:9px}
+.lvsom .sl3{font-size:12.5px;color:var(--muted);padding:1px 0}
+.lvsom a.ici{color:var(--forest);font-weight:600}
+.lvsom a.mort{opacity:.45}
+.sbul{display:inline-block;margin-left:6px;font-size:11px;font-weight:600;color:var(--paper);background:var(--sage);border-radius:9px;padding:0 5px;vertical-align:1px}
+
+/* ── livre/texte.css ── */
+/* le texte du livre */
+.lvtexte{font-family:Spectral,Georgia,serif;font-size:17px;line-height:1.65;max-width:none;min-width:0}
+.lvtexte p{margin:0 0 .72em}
+.lvtexte ul{margin:0 0 .9em;padding-left:1.1em}
+.lvtexte li{margin:0 0 .3em}
+.lvtexte b{font-weight:600;color:var(--forest)}
+.lvtexte h2,.lvtexte h3,.lvtexte h4,.lvtexte h5{scroll-margin-top:84px;position:relative;text-wrap:balance}
+.lvtexte h2{font-family:Spectral,Georgia,serif;font-size:13px;font-weight:700;letter-spacing:.17em;text-transform:uppercase;color:var(--sage);
+  border-top:2px solid var(--forest);margin:46px 0 18px;padding-top:9px}
+.lvtexte h2:first-child{margin-top:4px}
+.lvtexte h3{font-family:Spectral,Georgia,serif;font-size:25px;font-weight:700;color:var(--forest);margin:30px 0 10px;letter-spacing:-.01em}
+.lvtexte h4{font-family:Spectral,Georgia,serif;font-size:18px;font-weight:600;color:var(--forest);margin:22px 0 6px}
+.lvtexte h5{font-family:"IBM Plex Sans",sans-serif;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--gold);margin:18px 0 5px}
+.anc{position:absolute;left:-1.1em;top:0;color:var(--rule);text-decoration:none;font-family:"IBM Plex Sans",sans-serif;font-size:14px;opacity:0;padding:0 .2em}
+.lvtexte h2:hover .anc,.lvtexte h3:hover .anc,.lvtexte h4:hover .anc,.lvtexte h5:hover .anc,.anc:focus-visible{opacity:1}
+mark{background:var(--marque);color:inherit;border-radius:2px;padding:0 1px}
+mark.ici{outline:2px solid var(--rust);outline-offset:1px}
+
+/* ── livre/tableaux.css ── */
+/* les tableaux du livre */
+.tbw{overflow-x:auto;margin:0 0 1.1em;border:1px solid var(--rule);border-radius:3px;background:var(--surface);box-shadow:var(--shadow)}
+.lvtexte table{border-collapse:collapse;width:100%;font-family:"IBM Plex Sans",sans-serif;font-size:13.5px;line-height:1.42}
+.lvtexte th{text-align:left;vertical-align:bottom;font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:600;
+  padding:8px 11px;border-bottom:1px solid var(--forest);white-space:nowrap}
+.lvtexte td{vertical-align:top;padding:7px 11px;border-bottom:1px solid var(--rule)}
+.lvtexte tbody tr:last-child td{border-bottom:0}
+.lvtexte td.de{font-variant-numeric:tabular-nums;white-space:nowrap;color:var(--sage);font-weight:600;width:1%}
+.lvtexte td b{color:var(--ink)}
+
+/* ── livre/page-de-garde.css ── */
+/* la page de garde du livre, avant le premier titre */
+.lvgarde{border-left:3px solid var(--rule);padding-left:18px;margin:0 0 34px}
+.lvgarde p{color:var(--muted);font-size:15.5px;margin:0 0 .5em}
+.lvgarde p:first-child b{font-family:"IBM Plex Sans",sans-serif;font-size:12px;font-weight:600;letter-spacing:.22em;color:var(--sage)}
+.lvgarde p:nth-child(2){font-style:italic;color:var(--sage)}
+.lvgarde p:last-child{color:var(--ink);font-size:16.5px;margin-top:.9em}
+
+/* ── livre/retour-en-haut.css ── */
+.lvhaut{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:6;border-radius:3px;
+  background:var(--surface);box-shadow:0 2px 8px rgba(0,0,0,.18);border-color:var(--rule);color:var(--forest)}
+
+/* ── livre/ecrans-et-impression.css ── */
+@media (max-width:560px){
+  .lvbarre input{flex:1 1 100%}
+}
+@media (max-width:899px){
+  .lvcol{display:block}
+  .lvaside{margin-bottom:10px}
+  .lvaside{position:static;max-height:none}
+  .lvtiroir{border:1px solid var(--rule);border-radius:3px;background:var(--surface)}
+  .lvtiroir>summary{display:list-item;cursor:pointer;padding:9px 12px;font-size:13px;color:var(--forest);font-weight:600}
+  .lvsom{max-height:52vh;padding:0 12px 12px}
+  .lvtexte{font-size:16px;max-width:none}
+}
+@media print{
+  .fae-site,.lvbarre,.lvaside,.lvhaut{display:none!important}
+  .lvcol{display:block}
+  .lvtexte{max-width:none;font-size:11pt}
+  .tbw{box-shadow:none}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}

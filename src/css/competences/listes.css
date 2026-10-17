@@ -1,0 +1,33 @@
+/* une liste de Pratiques */
+.pliste{border-top:1px solid var(--rule);margin-top:16px;padding-top:12px}
+.pltete{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:baseline;justify-content:space-between;margin-bottom:4px}
+.pltete h3{font-family:Spectral,Georgia,serif;font-size:18px;color:var(--forest);margin:0;text-wrap:balance}
+.pltete h3 small{font-family:"IBM Plex Sans",sans-serif;font-size:12.5px;font-weight:400;color:var(--muted);margin-left:8px}
+.plcaster{display:flex;flex-wrap:wrap;gap:4px 8px;align-items:center;font-size:13.5px;color:var(--ink)}
+.plcaster select,.fld select{font:inherit;font-size:14px;padding:5px 8px;border:1px solid var(--rule);border-radius:2px;background:var(--surface);color:var(--ink);max-width:100%}
+.plcaster .aucun{color:var(--muted);font-style:italic}
+.prrow,.cprow{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:flex-start;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--rule)}
+.prrow:last-of-type,.cprow:last-of-type{border-bottom:0}
+.prrow.flash,.cprow.flash{animation:flash 1.6s ease-out}
+@keyframes flash{from{background:var(--fill)}to{background:transparent}}
+.prtxt,.cptxt{flex:1 1 300px;min-width:0}
+.prnm,.cpnm{font-family:Spectral,Georgia,serif;font-size:16.5px;font-weight:600;color:var(--ink);line-height:1.25;overflow-wrap:anywhere}
+.prmeta,.cpmeta{font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums;margin-top:1px}
+.prd{font-size:13.5px;color:var(--muted);font-style:italic;margin-top:3px;line-height:1.4;max-width:70ch}
+.badge{display:inline-block;margin-left:6px;font-family:"IBM Plex Sans",sans-serif;font-size:10.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+  border:1px solid var(--rule);color:var(--sage);border-radius:2px;padding:0 5px;vertical-align:2px}
+.badge.or{color:var(--gold);border-color:var(--gold)}
+.badge.rouille{color:var(--rust);border-color:var(--rust)}
+.bact{display:flex;flex-wrap:wrap;gap:6px;flex:0 0 auto}
+.vide{color:var(--muted);font-style:italic;font-family:Spectral,Georgia,serif;margin:8px 0}
+.retirees{border-top:1px solid var(--rule);margin-top:8px;padding-top:8px}
+.retirees summary{font-size:13px;color:var(--sage);cursor:pointer}
+.retirees .prrow{opacity:.85}
+
+/* les compétences */
+.cpgrp{margin-top:14px}
+.cpgrp:first-of-type{margin-top:0}
+.cpgrp h3{font-family:Spectral,Georgia,serif;font-size:16px;color:var(--sage);font-style:italic;margin:0 0 2px;border-bottom:1px solid var(--rule);padding-bottom:3px;display:flex;gap:10px;align-items:baseline}
+.cpgrp h3 small{font-family:"IBM Plex Sans",sans-serif;font-style:normal;font-size:12px;color:var(--muted)}
+.cpusage{font-size:12px;color:var(--muted);margin-top:1px}
+.cpcle{font-size:12px;color:var(--muted);margin-left:6px;font-family:"IBM Plex Sans",sans-serif;font-weight:400}

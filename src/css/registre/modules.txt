@@ -1,0 +1,29 @@
+# Les modules de registre/ servent aussi au paquet table, sauf partie, tour-et-blocs et ecran-moyen
+# (le paquet table a les siens, dans src/css/table/).
+registre/jetons.css
+registre/base.css
+registre/barre-de-table.css
+registre/personnages.css
+registre/seance.css
+registre/partie.css
+registre/cotes.css
+registre/compagnie-jauges.css
+registre/en-face.css
+registre/tirer-rencontre.css
+registre/tour-de-table.css
+registre/tour-et-blocs.css
+registre/butin.css
+registre/aides-de-seance.css
+registre/pnj.css
+registre/missions.css
+registre/reseau.css
+registre/jets.css
+registre/progression.css
+registre/oracle.css
+registre/tete-de-seance.css
+registre/ecran-moyen.css
+registre/petits-ecrans.css
+registre/marchefleurs.css
+registre/fiche-du-word.css
+registre/impression.css
+commun/mouvement-reduit.css

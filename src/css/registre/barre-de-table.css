@@ -1,0 +1,16 @@
+/* la barre de table */
+.table{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:flex-end}
+.table>div{flex:1 1 200px;min-width:0}
+.etatsync{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);margin-top:10px;flex-wrap:wrap}
+/* les campagnes : la liste dans la barre de table, ses boutons dessous ; dans les autres pages, une ligne sous l'en-tête */
+.campagnes .acts{margin-top:8px}
+.campagnes .cresume{margin:8px 0 0}
+.cform{margin-top:10px;max-width:520px}
+.cform .acts{margin-top:8px}
+.cbarre{display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap}
+.cbarre[hidden]{display:none}
+.cbarre .lab{margin:0}
+.cbarre select{min-width:180px;font-size:13.5px;padding:5px 7px}
+.pastille{width:8px;height:8px;border-radius:50%;background:var(--muted);flex:0 0 auto}
+.pastille.on{background:var(--sage)}
+.pastille.off{background:var(--rust)}

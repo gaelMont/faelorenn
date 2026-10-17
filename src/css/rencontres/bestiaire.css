@@ -1,0 +1,24 @@
+/* ============ le bestiaire ============ */
+.adv .nm .maison{font-family:"IBM Plex Sans",sans-serif;font-size:8.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--gold);border:1px solid var(--gold);border-radius:2px;padding:0 4px;margin-left:8px;vertical-align:2px}
+.adv .rf{font-size:12.5px;margin-top:4px;color:var(--ink)}
+.btete{display:flex;flex-wrap:wrap;gap:4px 16px;align-items:baseline;justify-content:space-between}
+.bcompte{font-family:Spectral,Georgia,serif;font-size:17px;font-weight:600;color:var(--forest);margin:0}
+#bestDepuis,#bestRecherche{font:inherit;font-size:14px;padding:7px 9px;border:1px solid var(--rule);border-radius:2px;background:var(--surface);color:var(--ink);max-width:100%}
+#bestDepuis{flex:1 1 220px;min-width:0}
+#bestRecherche{flex:1 1 180px;min-width:0}
+.grang{font-family:Spectral,Georgia,serif;font-size:15px;color:var(--sage);font-style:italic;margin:18px 0 4px;border-bottom:1px solid var(--rule);padding-bottom:3px}
+.bcarte{border-bottom:1px solid var(--rule);padding-bottom:8px}
+.bcarte .adv{border-bottom:0;padding-bottom:4px}
+.bcarte.flash{animation:flash 1.6s ease-out}
+@keyframes flash{from{background:var(--fill)}to{background:transparent}}
+.bfam{display:flex;flex-wrap:wrap;gap:4px;margin:0 0 6px 76px}
+.bfam span{font-size:10.5px;letter-spacing:.06em;color:var(--muted);border:1px solid var(--rule);border-radius:2px;padding:0 5px}
+.bact{display:flex;flex-wrap:wrap;gap:6px;margin-left:76px}
+.btn.danger{border-color:var(--rust);color:var(--rust)}
+.bexport{border-top:1px solid var(--rule);margin-top:16px;padding-top:12px}
+.lab{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:0 0 6px;display:block}
+.coche{display:flex;gap:8px;align-items:center;font-size:14px;margin:0 0 10px;cursor:pointer}
+.coche input{accent-color:var(--sage)}
+.note.ok{color:var(--forest)}
+.note.err{color:var(--rust)}

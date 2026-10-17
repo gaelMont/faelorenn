@@ -1,0 +1,16 @@
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--paper);color:var(--ink);font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:15px;line-height:1.5;margin:0}
+.wrap{max-width:none;margin:0 auto;padding-inline:clamp(14px,2.2vw,44px);padding-block:26px 40px}
+.wrap.large{max-width:none}
+h1{font-family:Spectral,Georgia,serif;font-weight:700;font-size:clamp(27px,5vw,38px);color:var(--forest);margin:0;letter-spacing:-.01em;text-wrap:balance}
+.sub{font-family:Spectral,Georgia,serif;font-style:italic;color:var(--sage);margin:2px 0 0}
+header{border-bottom:2px solid var(--forest);padding-bottom:12px;margin-bottom:14px}
+.note{font-size:12.5px;color:var(--muted);margin:0;line-height:1.45}
+.note.err{color:var(--rust)}
+.btn{font:inherit;font-size:14px;padding:8px 13px;border:1px solid var(--forest);background:var(--forest);color:var(--paper);border-radius:2px;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--forest)}
+.btn.sm{font-size:13px;padding:5px 10px}
+.btn:disabled{opacity:.35;cursor:default}
+input{font:inherit;font-size:14.5px;padding:7px 9px;border:1px solid var(--rule);border-radius:2px;background:var(--surface);color:var(--ink);max-width:100%}
+input:focus-visible,button:focus-visible,a:focus-visible{outline:2px solid var(--sage);outline-offset:1px}

@@ -1,0 +1,134 @@
+<!--@ inclure en-tete titre="Registre des Rencontres" feuille="rencontres" -->
+<body>
+<!--@ inclure barre-registres -->
+
+<div class="wrap">
+<header class="noprint">
+  <h1>Registre des Rencontres</h1>
+  <p class="sub">Faelorenn · monter un combat qui tient debout</p>
+</header>
+
+<section class="noprint">
+  <h2><span class="num">1</span> Le groupe</h2>
+  <p class="hint">Le budget dépend du nombre de personnages, jamais du rang des adversaires seul.</p>
+  <div class="card">
+    <div class="setup">
+      <div>
+        <label class="f" id="lblPj">Combien de personnages</label>
+        <div class="stepper" id="pjStep" role="group" aria-labelledby="lblPj"></div>
+      </div>
+      <div>
+        <label class="f" id="lblInt">Quel genre de combat</label>
+        <div class="seg" id="intSeg" role="group" aria-labelledby="lblInt"></div>
+      </div>
+    </div>
+    <p class="budget" id="budget"></p>
+  </div>
+</section>
+
+<section class="noprint">
+  <h2><span class="num">2</span> Qui se présente</h2>
+  <p class="hint">Tire au sort, ou compose toi-même. Chaque adversaire posé se change ensuite un par un.</p>
+  <div class="card">
+    <label class="f" id="lblSrc">D'où ils sortent</label>
+    <div class="seg" id="srcSeg" role="group" aria-labelledby="lblSrc" style="margin-bottom:12px"></div>
+    <label class="f" id="lblFam">Qui peut se présenter</label>
+    <p class="note" style="margin:0 0 8px">Deux choix sur la même ligne : l’un ou l’autre. Sur deux lignes : les deux à la fois, un Humanoïde Hors-la-loi par exemple. Une fois une case cochée, seules restent celles qui vont avec.</p>
+    <div class="famsel" id="famSeg" role="group" aria-labelledby="lblFam" style="margin-bottom:6px"></div>
+    <p class="note" id="famNote" style="margin:0 0 12px"></p>
+    <div class="acts" style="margin-bottom:12px">
+      <button class="btn" id="roll">Tirer une rencontre</button>
+      <button class="btn ghost sm" id="tetes">Changer les têtes</button>
+      <button class="btn ghost sm" id="motif">Relancer le pourquoi</button>
+      <button class="btn ghost sm" id="clear">Vider</button>
+    </div>
+    <div class="scroll">
+    <table class="mix">
+      <thead><tr><th>Rang</th><th class="n">Coût</th><th class="n">PV</th><th class="n">Dégâts</th><th class="n">Réd.</th><th class="n">Cartes</th><th class="n">Combien</th></tr></thead>
+      <tbody id="mixBody"></tbody>
+    </table>
+    </div>
+    <p class="warnline" id="mixWarn" hidden></p>
+  </div>
+</section>
+
+<section class="sec-rencontre">
+  <h2 class="noprint"><span class="num">3</span> La rencontre</h2>
+  <p class="hint noprint">Chaque adversaire a deux attaques et n'en utilise qu'une par round. Une fois la rencontre validée, « Mettre dans la séance » la pose dans le Registre de la Table : le combat s'y suit à côté du récit.</p>
+  <div class="acts noprint" style="margin-bottom:12px">
+    <button class="btn sm" id="envoyer" type="button">Mettre dans la séance</button>
+    <button class="btn ghost sm" id="print">Imprimer</button>
+    <button class="btn ghost sm" id="copy">Copier en texte</button>
+    <button class="btn ghost sm" id="heal">Remettre les PV au plein</button>
+  </div>
+  <p class="note noprint" id="envoiMsg" role="status" hidden style="margin:-4px 0 12px"></p>
+  <div class="enc" id="enc"></div>
+</section>
+
+<section class="noprint" id="bestiaire">
+  <h2><span class="num">4</span> Ton bestiaire</h2>
+  <p class="hint">Tes créatures et tes familles entrent dans les tirages comme celles du livre. L'export Word en fait un bestiaire à relire ou à imprimer.</p>
+  <div class="card">
+    <div class="btete">
+      <p class="bcompte" id="bestCompte"></p>
+      <p class="note" id="bestEtat" style="margin:0"></p>
+    </div>
+    <div class="acts" style="margin:12px 0">
+      <button class="btn" id="bestNouveau" type="button">Nouvelle créature</button>
+      <select id="bestDepuis" aria-label="Partir d'une entrée du livre"></select>
+      <input type="search" id="bestRecherche" placeholder="Chercher dans les tiennes" aria-label="Chercher dans ton bestiaire">
+    </div>
+    <div id="bestEditeur" class="editeur" hidden></div>
+    <div id="bestListe"></div>
+    <div id="bestAnciennes" class="anciennes" role="status" hidden></div>
+    <details class="blivre" id="bestLivreBloc">
+      <summary>Les entrées du livre<span id="livreCompte"></span></summary>
+      <p class="note" style="margin:4px 0 8px">« Retoucher » fait ta version d’une entrée : elle prend sa place dans les tirages, ici et à la table, avec son butin. « Revenir au livre » la défait. Pour un adversaire de plus à côté de l’original, « Partir d’une entrée du livre » en fait une variante.</p>
+      <div id="livreListe"></div>
+    </details>
+    <div class="bfamilles" id="bestFamilles">
+      <div class="bftete">
+        <p class="lab" style="margin:0">Tes familles<span id="famCompte"></span></p>
+        <button class="btn ghost sm" id="famNouvelle" type="button">Nouvelle famille</button>
+      </div>
+      <p class="note" style="margin:4px 0 10px">Une famille regroupe ceux qui se présentent ensemble. Tu y mets tes créatures et celles du livre, et elle s'ajoute aux choix de « Qui peut se présenter ». Les familles du livre, ses catégories et ses sous-catégories, ne changent pas.</p>
+      <div id="famEditeur" class="editeur" hidden></div>
+      <div id="famListe"></div>
+    </div>
+    <div class="bfamilles" id="bestButins">
+      <div class="bftete">
+        <p class="lab" style="margin:0">Tes tables de butin<span id="butCompte"></span></p>
+        <button class="btn ghost sm" id="butNouvelle" type="button">Nouvelle table</button>
+      </div>
+      <p class="note" style="margin:4px 0 10px">Une table se partage : les poches des bandits, ce que laissent les bêtes d’une vallée. Tu l’écris une fois, une ligne par objet, et tu coches qui la porte, du livre ou à toi. Chaque créature peut aussi avoir sa propre table, dans sa fiche. À la table, « Fouiller » tire dedans.</p>
+      <div id="butEditeur" class="editeur" hidden></div>
+      <div id="butListe"></div>
+    </div>
+    <div class="bexport">
+      <p class="lab">En tirer un bestiaire</p>
+      <label class="coche"><input type="checkbox" id="bestLivre" checked> <span id="bestLivreN">Inclure les entrées du livre</span></label>
+      <div class="acts">
+        <button class="btn ghost sm" id="bestWord" type="button">Exporter en Word</button>
+        <button class="btn ghost sm" id="bestImprimer" type="button">Imprimer le bestiaire</button>
+        <button class="btn ghost sm" id="bestTexte" type="button">Texte pour le livre</button>
+      </div>
+      <p class="lab" style="margin-top:14px">Sauvegarder ou partager</p>
+      <div class="acts">
+        <button class="btn sm" id="bestEnLigne" type="button">Sauvegarder en ligne</button>
+        <button class="btn ghost sm" id="bestJson" type="button">Sauvegarde .json</button>
+        <button class="btn ghost sm" id="bestImport" type="button">Importer un .json</button>
+        <input type="file" id="bestFichier" accept=".json,application/json" hidden>
+      </div>
+      <p class="note" id="bestMsg" hidden></p>
+      <p class="note">« Texte pour le livre » met tes créatures au format du Livre VII, prêtes à coller. La sauvegarde .json, créatures, retouches, familles et tables de butin, se réimporte ici, sur un autre appareil ou chez Océane.</p>
+      <div id="ghcPlace"></div>
+    </div>
+  </div>
+</section>
+
+<div id="bestPrint" class="bestprint"></div>
+</div>
+
+<!--@ js rencontres -->
+</body>
+</html>

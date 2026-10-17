@@ -1,0 +1,13 @@
+@media (max-width:1080px){
+  /* en une colonne, le récit passe devant : les rails le suivent, dans l'ordre choisi */
+  .jeu{display:flex;flex-direction:column;gap:12px}
+  .jeu-main{order:1}
+  #hbCoteG{order:2}
+  #hbCoteD{order:3}
+  .hbcote{position:static;display:block}
+  .hbrail{max-height:none;overflow:visible;margin-bottom:12px}
+  #hbG,#hbD{flex:none;width:auto}
+  .hbgrille{grid-template-columns:minmax(0,1fr)}
+  .cnom{flex:1 1 150px}
+  .cj{flex:1 1 170px}
+}

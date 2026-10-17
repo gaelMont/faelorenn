@@ -1,0 +1,5 @@
+@media (max-width:520px){ .inv li{grid-template-columns:1fr} .inv .fic{text-align:left} }
+@media (max-width:520px){
+  .registre{grid-template-columns:1fr}
+  .rquoi{white-space:normal}
+}

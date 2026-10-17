@@ -1,0 +1,71 @@
+<!--@ inclure en-tete titre="Registre des Compétences" feuille="competences" -->
+<body>
+<!--@ inclure barre-registres -->
+
+<div class="wrap">
+<header class="noprint">
+  <h1>Registre des Compétences</h1>
+  <p class="sub">Faelorenn · ce que les personnages savent faire, et comment ils le lancent</p>
+</header>
+
+<section id="secPratiques">
+  <h2><span class="num">1</span> Les Pratiques</h2>
+  <p class="hint">Chaque liste du livre se lance sous une seule caractéristique, écrite en tête. Chaque Pratique peut pourtant se lancer sous une autre (la Force, la Dextérité, l’Intelligence, la Sagesse, le Charisme ou la Contenance), et le choix en tête de liste les remet toutes sous la même d’un coup. Retouche une Pratique, ajoutes-en une, retires-en une : le créateur et la table s’en servent au prochain chargement. Le livre ne bouge pas, et « Revenir au livre » défait une retouche.</p>
+  <div class="card">
+    <div class="btete">
+      <p class="bcompte" id="prCompte"></p>
+      <p class="etat" id="etat" role="status"></p>
+    </div>
+    <label class="f" id="lblDom">Quelle école</label>
+    <div class="seg" id="domSeg" role="group" aria-labelledby="lblDom"></div>
+    <div id="prListes"></div>
+  </div>
+</section>
+
+<section id="secCompetences">
+  <h2><span class="num">2</span> Les compétences</h2>
+  <p class="hint">Le nom que tu donnes se lit partout, mais la compétence garde dessous celui du livre : aucune fiche n’en est changée. Une compétence peut changer de caractéristique ou se retirer, et une nouvelle s’ajoute en bas. Combat, Tir et Acrobatie sont nommées par les règles : elles ne changent pas de nom et ne se retirent pas.</p>
+  <div class="card">
+    <div class="btete">
+      <p class="bcompte" id="cpCompte"></p>
+      <button class="btn ghost sm" id="cpNouvelle" type="button">Nouvelle compétence</button>
+    </div>
+    <div id="cpNeuve"></div>
+    <div id="cpListe"></div>
+    <details class="retirees" id="cpRetireesBloc" hidden>
+      <summary id="cpRetireesTitre"></summary>
+      <div id="cpRetirees"></div>
+    </details>
+    <p class="note">Constitution et Contenance n’ont pas de compétence : les fiches n’ont pas de place pour en ajouter. Les bonus des Voies et des peuples, eux, restent attachés aux compétences du livre.</p>
+  </div>
+</section>
+
+<section id="secBanniere">
+  <h2><span class="num">3</span> Les compétences de Bannière</h2>
+  <p class="hint">Un humain n’en a qu’une, choisie dans sa Bannière : elle ne coûte rien et ne se lance pas.</p>
+  <div class="card">
+    <div class="btete"><p class="bcompte" id="banCompte"></p></div>
+    <div id="banListes"></div>
+  </div>
+</section>
+
+<section id="secSauve" class="noprint">
+  <h2><span class="num">4</span> Sauvegarder ou partager</h2>
+  <p class="hint">Tes retouches sont gardées dans ce navigateur. Reliées à ton dépôt GitHub, elles passent aussi chez Océane, dans le créateur comme à la table.</p>
+  <div class="card">
+    <div class="acts">
+      <button class="btn sm" id="cmpEnLigne" type="button">Sauvegarder en ligne</button>
+      <button class="btn ghost sm" id="cmpJson" type="button">Sauvegarde .json</button>
+      <button class="btn ghost sm" id="cmpImport" type="button">Importer un .json</button>
+      <input type="file" id="cmpFichier" accept=".json,application/json" hidden>
+    </div>
+    <p class="note" id="cmpMsg" role="status" hidden></p>
+    <p class="note">La sauvegarde .json garde toutes tes retouches ; elle se réimporte ici, sur un autre appareil ou chez Océane, et le plus récent l’emporte, pièce par pièce. Le créateur et la table relisent le dépôt à l’ouverture, puis toutes les deux minutes : s’il y a du neuf, ils proposent de recharger.</p>
+    <div id="ghcPlace"></div>
+  </div>
+</section>
+</div>
+
+<!--@ js competences -->
+</body>
+</html>

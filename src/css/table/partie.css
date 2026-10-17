@@ -1,0 +1,83 @@
+/* la partie : le récit au milieu, ce qu'il faut sous la main à côté */
+.jeu{display:flex;gap:14px;align-items:flex-start;margin-top:12px}
+.jeu-main{flex:1 1 auto;min-width:0}
+.jeu .feuille{margin-top:0}
+.hbcote{display:flex;gap:10px;align-items:flex-start;position:sticky;top:calc(12px + env(safe-area-inset-top, 0px));flex:0 0 auto}
+.hbrail{display:flex;flex-direction:column;gap:10px;max-height:calc(100vh - 24px);overflow-y:auto;overscroll-behavior:contain;min-width:0}
+#hbG{flex:0 0 var(--lg,300px);width:var(--lg,300px)}
+#hbD{flex:0 0 var(--ld,300px);width:var(--ld,300px)}
+.hbw{min-width:0}
+.hbhaut{margin-bottom:12px;max-height:none;overflow:visible}
+.hbw>*{margin-bottom:0!important}
+
+/* la barre du bas : ce qu'on fait, à portée de pouce */
+.hbbarre{display:flex;flex-wrap:wrap;gap:4px;align-items:center;margin-top:12px;padding:6px;
+  background:var(--surface);border:1px solid var(--rule);border-radius:4px}
+.hbbarre .btn{font-size:14.5px;padding:8px 14px;border-radius:3px}
+.hbbarre .btn.ghost{border-color:transparent;color:var(--ink)}
+.hbbarre .btn.ghost:hover,.hbbarre .btn.ghost:focus-visible{border-color:var(--rule);background:var(--fill);color:var(--forest)}
+.hbbarre .espace{flex:1 1 auto;min-width:0}
+
+/* les ennemis, un bouton chacun */
+.hbeux{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.hbe{flex:1 1 130px;min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:8px 10px;
+  border:1px solid var(--rule);border-radius:3px;background:var(--surface);color:var(--ink);font:inherit;text-align:left;cursor:pointer}
+.hbe:hover{border-color:var(--sage)}
+.hbe.tour{border-color:var(--forest);background:var(--fill);box-shadow:inset 3px 0 0 var(--forest)}
+.hbe.visee{outline:2px solid var(--rust);outline-offset:1px}
+.hbe.bas{opacity:.5}
+.hben{font-family:Spectral,Georgia,serif;font-weight:600;font-size:14.5px;overflow-wrap:anywhere;line-height:1.25}
+.hbev{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.hbe .abarre{width:100%;margin-top:3px}
+.cie.tour{background:var(--fill);box-shadow:inset 3px 0 0 var(--forest)}
+
+/* les fenêtres du hub */
+.hbfen{position:fixed;inset:0;background:rgba(20,18,14,.5);display:flex;align-items:center;justify-content:center;padding:16px;z-index:60}
+.hbfenin{background:var(--surface);border:1px solid var(--rule);border-radius:3px;padding:14px 16px;width:100%;max-width:620px;
+  max-height:86vh;overflow:auto;box-shadow:0 10px 40px rgba(0,0,0,.35)}
+.hbfenin .ctete{margin-bottom:6px}
+.hbfenin.hblarge{max-width:900px}
+.hbcorps{min-width:0}
+.hbcorps>.cote{border:0;box-shadow:none;padding:0;background:none}
+.hbcorps .panneau{margin-top:8px}
+.hbliste{display:flex;flex-direction:column;gap:4px;margin-top:8px;max-height:52vh;overflow:auto}
+.hbpnj{display:flex;flex-direction:column;align-items:flex-start;gap:1px;padding:7px 10px;border:1px solid var(--rule);border-radius:2px;
+  background:var(--surface);color:var(--ink);font:inherit;text-align:left;cursor:pointer}
+.hbpnj:hover{border-color:var(--sage)}
+#hbPnjQ{width:100%}
+.hbtir{margin-top:12px;border-top:1px dashed var(--rule);padding-top:10px}
+
+/* le hub en plein écran : la page disparaît, le récit défile, le reste tient en place */
+body.hubplein,html.hubplein{overflow:hidden}
+body.hubplein .fae-site,body.hubplein .wrap>header,body.hubplein #secTable,body.hubplein #secPerso,
+body.hubplein #secJets,body.hubplein #secSeance>h2,body.hubplein #secSeance>.hint{display:none!important}
+body.hubplein .wrap{position:fixed;inset:0;height:auto;max-width:none;display:flex;flex-direction:column;
+  padding:8px clamp(14px,2.2vw,44px) calc(8px + env(safe-area-inset-bottom,0px));background:var(--paper);z-index:3}
+body.hubplein #secSeance{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;margin-bottom:0}
+body.hubplein .card.seance{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;background:none;border:0;box-shadow:none;padding:0}
+body.hubplein #seTete{flex:0 0 auto}
+body.hubplein .jeu{flex:1 1 auto;min-height:0;height:auto;margin-top:8px;align-items:stretch}
+body.hubplein .hbcote{position:static;min-height:0}
+body.hubplein .hbrail{max-height:100%}
+body.hubplein .jeu-main{display:flex;flex-direction:column;min-height:0}
+body.hubplein .hbhaut{flex:0 1 auto;max-height:42%;overflow:auto;margin-bottom:8px}
+body.hubplein .feuille{flex:1 1 auto;min-height:0;overflow:auto}
+body.hubplein .compo{flex:0 0 auto}
+body.hubplein .hbbarre{flex:0 0 auto;margin-bottom:0}
+@media (max-width:1080px){ body.hubplein{overflow:auto} body.hubplein .jeu{height:auto} body.hubplein .feuille{overflow:visible} }
+
+/* les options : quatre colonnes qu'on remplit à la main */
+.hbgrille{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:12px}
+@media (max-width:720px){.hbgrille{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.hbcol{border:1px solid var(--rule);border-radius:3px;padding:8px;min-width:0;background:var(--paper)}
+.hbchips{display:flex;flex-direction:column;gap:5px;min-height:46px}
+.hbchip{display:flex;align-items:center;gap:7px;padding:6px 8px;border:1px solid var(--rule);border-radius:2px;background:var(--surface);
+  color:var(--ink);font:inherit;font-size:13px;text-align:left;cursor:grab;touch-action:none;overflow-wrap:anywhere}
+.hbchip:hover{border-color:var(--sage)}
+.hbchip.hbpris{opacity:.35}
+.hbgrip{color:var(--muted);font-size:11px;letter-spacing:-1px}
+.hbvole{position:fixed;z-index:70;pointer-events:none;box-shadow:0 6px 18px rgba(0,0,0,.3);opacity:.95;width:160px}
+.hbtrou{height:30px;border:1px dashed var(--sage);border-radius:2px;background:var(--fill)}
+.hblarg{display:flex;flex-wrap:wrap;gap:10px 18px;margin-top:10px}
+.hblargl{display:flex;flex-direction:column;gap:2px;flex:1 1 160px}
+.hblargl input{width:100%;accent-color:var(--forest)}

@@ -1,0 +1,17 @@
+# Vérifie que les pages et assets/ ont bien été régénérés après une modification de src/.
+name: Vérifier le build
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Les fichiers générés sont-ils à jour ?
+        run: node outils/build.mjs --verifier

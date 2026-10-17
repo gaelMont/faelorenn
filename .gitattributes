@@ -1,0 +1,9 @@
+# Fins de ligne LF partout, même sous Windows.
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.zip binary
+
+# Produits par outils/build.mjs depuis src/ : GitHub les replie dans les diffs.
+assets/** linguist-generated=true
+/*.html linguist-generated=true

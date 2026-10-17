@@ -47,7 +47,7 @@ input:focus-visible,button:focus-visible,a:focus-visible{outline:2px solid var(-
 .lvbarre .note{flex:0 1 auto}
 
 /* les deux colonnes */
-.lvcol{display:grid;grid-template-columns:304px minmax(0,100ch);gap:40px;align-items:start;justify-content:center}
+.lvcol{display:grid;grid-template-columns:304px minmax(0,1fr);gap:40px;align-items:start}
 .lvaside{position:sticky;top:calc(58px + env(safe-area-inset-top,0px));max-height:calc(100vh - 80px);display:flex;flex-direction:column;min-width:0}
 .lvtiroir>summary{display:none}
 .lvsom{overflow:auto;padding-right:6px;font-size:13.5px;line-height:1.35;scrollbar-width:thin;max-height:calc(100vh - 100px)}
@@ -391,6 +391,13 @@ function mesurer() {
 
 function suivreLaLecture() {
   if (!REPERES.length) return;
+  /* au bas de la page, c'est la dernière section qu'on lit : elle ne peut plus monter plus haut */
+  if(window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 4){
+    const der = REPERES[REPERES.length - 1].id;
+    const som0 = $('lvSom');
+    if(som0.dataset.ici !== der){ som0.dataset.ici = der; dessinerSommaire(); }
+    return;
+  }
   const y = window.scrollY + 100;
   let id = REPERES[0].id;
   for (let i = 0; i < REPERES.length; i++) { if (REPERES[i].y <= y) id = REPERES[i].id; else break; }

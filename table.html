@@ -188,8 +188,8 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-vis
 .hbw>*{margin-bottom:0!important}
 
 /* la barre du bas : ce qu'on fait, à portée de pouce */
-.hbbarre{position:sticky;bottom:calc(8px + env(safe-area-inset-bottom, 0px));z-index:4;display:flex;flex-wrap:wrap;gap:4px;align-items:center;
-  margin-top:12px;padding:6px;background:var(--surface);border:1px solid var(--rule);border-radius:4px;box-shadow:0 3px 12px rgba(0,0,0,.16)}
+.hbbarre{display:flex;flex-wrap:wrap;gap:4px;align-items:center;margin-top:12px;padding:6px;
+  background:var(--surface);border:1px solid var(--rule);border-radius:4px}
 .hbbarre .btn{font-size:14.5px;padding:8px 14px;border-radius:3px}
 .hbbarre .btn.ghost{border-color:transparent;color:var(--ink)}
 .hbbarre .btn.ghost:hover,.hbbarre .btn.ghost:focus-visible{border-color:var(--rule);background:var(--fill);color:var(--forest)}
@@ -224,7 +224,23 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-vis
 #hbPnjQ{width:100%}
 .hbtir{margin-top:12px;border-top:1px dashed var(--rule);padding-top:10px}
 
-/* les options : trois colonnes qu'on remplit à la main */
+/* le hub en plein écran : la page disparaît, le récit défile, le reste tient en place */
+body.hubplein{overflow:hidden}
+body.hubplein .fae-site,body.hubplein .wrap>header,body.hubplein #secTable,body.hubplein #secPerso,
+body.hubplein #secJets,body.hubplein #secSeance>h2,body.hubplein #secSeance>.hint{display:none!important}
+body.hubplein .wrap{padding-block:8px 6px}
+body.hubplein .card.seance{background:none;border:0;box-shadow:none;padding:0}
+body.hubplein .jeu{height:calc(100vh - 86px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));margin-top:8px}
+body.hubplein .hbcote{position:static;height:100%}
+body.hubplein .hbrail{max-height:100%;height:100%}
+body.hubplein .jeu-main{display:flex;flex-direction:column;min-height:0;height:100%}
+body.hubplein .hbhaut{flex:0 0 auto}
+body.hubplein .feuille{flex:1 1 auto;min-height:0;overflow:auto}
+body.hubplein .compo{flex:0 0 auto}
+body.hubplein .hbbarre{flex:0 0 auto;margin-bottom:0}
+@media (max-width:1080px){ body.hubplein{overflow:auto} body.hubplein .jeu{height:auto} body.hubplein .feuille{overflow:visible} }
+
+/* les options : quatre colonnes qu'on remplit à la main */
 .hbgrille{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:12px}
 @media (max-width:720px){.hbgrille{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .hbcol{border:1px solid var(--rule);border-radius:3px;padding:8px;min-width:0;background:var(--paper)}
@@ -248,6 +264,9 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-vis
 .cie{display:flex;flex-wrap:wrap;align-items:center;gap:3px 12px;padding:6px 0;border-top:1px solid var(--rule)}
 .cie-liste .ctitre{margin-bottom:2px}
 .cie-liste .cie:first-of-type{border-top:0}
+.cietete{flex:1 0 100%;display:flex;flex-wrap:wrap;align-items:baseline;gap:3px 8px}
+.cietete .cnom{flex:1 1 auto}
+.cietete .ax{margin-left:auto}
 .cnom{flex:1 0 100%;font-family:Spectral,Georgia,serif;font-size:15px;color:var(--forest);font-weight:600;overflow-wrap:anywhere}
 .cie.moi .cnom{text-decoration:underline;text-decoration-color:var(--rule);text-underline-offset:3px}
 .cie.tombe .cnom{color:var(--rust)}
@@ -1064,6 +1083,8 @@ svg.reseau:active{cursor:grabbing}
           <button class="btn" id="hbAction" type="button">Action</button>
           <button class="btn ghost" id="hbVisage" type="button">Un visage connu ?</button>
           <button class="btn ghost" id="hbOracle" type="button">Oracle</button>
+          <button class="btn ghost" id="prTirer" type="button" hidden>Tirer les priorités</button>
+          <button class="btn ghost" id="hbJets" type="button">Les jets</button>
           <span class="espace"></span>
           <button class="btn ghost" id="hbOptions" type="button">Options</button>
         </div>
@@ -1083,26 +1104,6 @@ svg.reseau:active{cursor:grabbing}
         <div id="seTirage" class="cote" hidden></div>
         <div id="seButin" class="cote" hidden></div>
         <div id="seGens" class="cote" hidden></div>
-        <details class="cote aide" id="seAide">
-          <summary>Ce que dit le livre, en combat</summary>
-          <ul>
-            <li><b>L’initiative</b> : une carte par combattant à chaque round, on agit de la plus petite à la plus grande. Un exceptionnel en reçoit deux.</li>
-            <li><b>Chacun son tour</b> : les cartes tirées, le tour de table dit à qui c’est. Hors de son tour, un jeton ne se déplace pas, personne ne frappe et personne ne vise. « Au suivant » fait tourner, « Revenir » défait. Qui entre au milieu d’un round n’a pas de carte : il agit librement et reçoit la sienne au tirage suivant.</li>
-            <li><b>Une attaque veut une cible</b> : « personne (pas de cible) » existe pour un coup dans le vide ou une Pratique de zone, mais tant qu’aucune cible n’est choisie, les dégâts ne s’appliquent à personne.</li>
-            <li><b>Un PNJ qui se bat</b> a ses PV, sa réduction, ses dés, ses cartes et ses sept caractéristiques, d’office selon son rang ; la table lance pour lui, caractéristique fois deux plus le bonus du rang. Son peuple lui donne l’attaque de base de son espèce, donnée d’office, et son genre une seconde attaque : une vraie Pratique de sa liste, ou l’attaque de son métier.</li>
-            <li><b>Attaquer</b> : d20 sous la valeur divisée par cinq. 1 naturel, dégâts doublés ; 20 naturel, quelque chose se passe mal.</li>
-            <li><b>L’ennemi touche d’office</b>, sans jet du MJ. Une seule réaction par round : esquive sous Acrobatie, parade sous Combat, au d20.</li>
-            <li><b>Réaction ratée de moins de 4</b> : aucun dégât, mais pas d’attaque au prochain round. De 4 ou plus : les dégâts passent.</li>
-            <li><b>Les dégâts</b> : on retire d’abord la réduction, puis la contrainte du corps, et on arrondit vers le bas.</li>
-            <li><b>La réduction</b> arrête le physique et la matière : Sève, eau, pierre, vent, Mue. Le feu, l’onde, l’ombre et le sacré la traversent.</li>
-            <li><b>Un échec consomme le PC</b>, sauf l’attaque de base, qui ne coûte rien.</li>
-            <li><b>À 0 PV</b>, on tombe, inconscient, et la table ouvre ses jets de mort : un par round, sous 11 au d20 (ou sous sa Constitution fois deux divisée par cinq, si c’est plus haut). Trois réussites, il est stabilisé ; trois échecs, il meurt. Un 1 le relève à 1 PV, un 20 compte double. Un soin, une fiole ou un jet de Médecine le stabilisent sans jet.</li>
-            <li><b>Ce qu’il subit</b> se pose en puces sous lui, dans la compagnie comme en face : « À terre », « Pris », « −10 à ses jets ». Chacune dit combien de rounds elle tient ; un nouveau round les fait descendre, un repos long efface celles qui tenaient jusque-là.</li>
-            <li><b>Le repos</b>, sous la compagnie : court, une heure, 1d6 PV et 1d4 PC ; long, une nuit, tout, et le jour avance. Le repos ne rend rien d’autre. Le jour de jeu se compte comme le Livre I, en années de la Réunion, et chaque campagne a le sien : l’âge des PNJ se lit là-dessus.</li>
-            <li><b>La carte</b> : pendant un combat, le pavé « La carte », en haut du récit, a un bouton « Choisir une carte » ; une fenêtre liste tes villages, et dans un village tu prends sa carte entière ou l’étage d’une de ses bâtisses. La table va la chercher dans le Registre des Plans sans que tu quittes la table. Pour cadrer une ruelle, ouvre plutôt le plan, zoome, et clique « Vers la table ». <b>Autre fenêtre</b> sort la carte à part, pour un second écran : elle suit la table, et ce qu’on y déplace revient dans la table. Un pas vaut un mètre. Tu poses chaque jeton où tu veux : « Poser », sous la carte, puis un clic à l’endroit voulu ; « Les poser d’office » range les manquants en deux rangs, et le « × » d’une ligne reprend un jeton. Ensuite on le glisse, pendant son tour seulement ; le cercle plein montre ce qui lui reste à marcher ce round, le cercle en pointillé sa portée, et le compteur de pas ne s’affiche que pour celui qui joue. Dix pas par round d’office, à changer sous la carte. Pour les portées, la carte prévient seulement : elle n’empêche pas de frapper de trop loin.</li>
-            <li><b>Modificateurs</b> : difficile −20 ou −4 · quasiment impossible −40 ou −8 · les circonstances aident +20 ou +4.</li>
-          </ul>
-        </details>
     </div>
   </div>
 </section>
@@ -5124,28 +5125,15 @@ function dessinerCompositeur(force){
     };
     lq.append(chip('MJ', {k:'mj', id:'', nom:''}, COMPO.qui.k === 'mj'));
     persos().forEach(c => lq.append(chip(c.nom || 'Sans nom', {k:'perso', id:c.id, nom:c.nom}, COMPO.qui.k === 'perso' && COMPO.qui.id === c.id)));
-    const pnj = el('input'); pnj.type = 'text'; pnj.id = 'coPnj'; pnj.placeholder = 'un PNJ, Nahya';
-    pnj.setAttribute('list', 'coPnjs'); pnj.setAttribute('aria-label', 'Faire parler ou agir un PNJ');
-    pnj.value = COMPO.qui.k === 'pnj' ? nomDe(COMPO.qui) : '';
-    if(COMPO.qui.k === 'pnj') pnj.className = 'actif';
-    const dl = el('datalist'); dl.id = 'coPnjs';
-    const vus = {};
-    pnjs().forEach(p => { if(p.nom) vus[p.nom] = 1; });
-    Object.keys(T.blocs).map(k => T.blocs[k]).filter(b => b && !b.supprime && b.qui && b.qui.k === 'pnj' && b.qui.nom && !b.qui.id)
-      .sort((x, y) => y.ordre - x.ordre).forEach(b => { if(!vus[b.qui.nom] && !pnjParNom(b.qui.nom)) vus[b.qui.nom] = 1; });
-    Object.keys(vus).slice(0, 80).forEach(n => dl.append(new Option(n, n)));
-    const prendre = () => {
-      const v = pnj.value.trim(); if(!v) return;
-      const f = pnjParNom(v);
-      if(COMPO.qui.k === 'pnj' && cleNom(nomDe(COMPO.qui)) === cleNom(v)) return;
-      choisirQui({k:'pnj', id:f ? f.id : '', nom:f ? f.nom : v});
-    };
-    pnj.onchange = prendre;
-    pnj.onkeydown = ev => { if(ev.key === 'Enter'){ ev.preventDefault(); prendre(); $('coTexte').focus(); } };
-    const ch = el('button','btn ghost xs','PNJ ?'); ch.type = 'button'; ch.id = 'coPnjCherche';
-    ch.setAttribute('aria-label', 'Chercher un visage de la séance');
+    /* ceux qui se battent à nos côtés se choisissent comme les personnages */
+    const allies = pnjsAuCombat().filter(p => p.combat.cote === 'nous');
+    allies.forEach(p => lq.append(chip(p.nom || 'Sans nom', {k:'pnj', id:p.id, nom:p.nom}, COMPO.qui.k === 'pnj' && COMPO.qui.id === p.id)));
+    const ailleurs = COMPO.qui.k === 'pnj' && !allies.some(p => p.id === COMPO.qui.id);
+    const ch = el('button', ailleurs ? 'actif' : null, ailleurs ? nomDe(COMPO.qui) : 'Un PNJ ?'); ch.type = 'button'; ch.id = 'coPnjCherche';
+    ch.setAttribute('aria-pressed', ailleurs ? 'true' : 'false');
+    ch.setAttribute('aria-label', 'Choisir un visage qui parle ou qui agit');
     ch.onclick = () => ouvrirChoixPnj();
-    lq.append(pnj, dl, ch);
+    lq.append(ch);
   }
 
   /* comment */
@@ -5175,7 +5163,7 @@ function dessinerCompositeur(force){
     majSeuilCompo();
   }
   majApercuCompo();
-  if(force && focus && focus !== 'coPnj' && $(focus) && document.activeElement !== $(focus)) $(focus).focus();
+  if(force && focus && $(focus) && document.activeElement !== $(focus)) $(focus).focus();
 }
 
 /* les dés : le site les lance, ou l'on écrit ceux qu'on a lancés sur la table. Les deux sont toujours là */
@@ -7071,17 +7059,10 @@ function blocPriorites(){
     x.onclick = () => fermerPriorites();
     g.append(s, x);
     t.append(g);
-  } else {
-    const b = el('button','btn sm','Tirer les priorités'); b.type = 'button'; b.id = 'prTirer';
-    b.disabled = !l.filter(DEBOUT).length;
-    b.onclick = () => tirerPriorites(false);
-    t.append(b);
   }
+  /* rien de tiré : le pavé ne sert à rien, « Tirer les priorités » vit dans la barre du bas */
+  if(!p) return null;
   w.append(t);
-  if(!p){
-    w.append(el('p','mini', 'Une carte par combattant à chaque round, de la plus petite à la plus grande. Un exceptionnel en reçoit deux.'));
-    return w;
-  }
   const tour = aQuiLeTour();
   /* à qui le tour, et de quoi avancer ou revenir : rien ne bouge ni ne frappe hors de son tour */
   const z0 = actifCombattant();
@@ -7304,9 +7285,41 @@ function changerPvPnj(p, n){
 }
 
 /* la ligne d'un PNJ qui se bat : ses PV, ses attaques, et son tour joué tout seul quand il est en face */
+/* un allié se tient comme un joueur dans la compagnie : son nom, ses PV, ses puces.
+   Ce qu'il fait passe par « PNJ ? » et la fenêtre « Action », où ses attaques l'attendent. */
+function ligneAllie(p, z, pv, bas){
+  const r = el('div','cie' + (bas ? ' tombe' : '') + (estActif(z) ? ' tour' : '') + (COMPO.cible === p.id ? ' visee' : ''));
+  r.setAttribute('data-pnjc', p.id);
+  const h = el('div','cietete');
+  h.append(el('b','cnom', p.nom || 'Sans nom'), el('span','arang', 'rang ' + p.combat.rang));
+  r.append(h);
+  const j = el('div','cj');
+  j.append(el('span','cjt', 'PV ' + Math.max(0, pv) + '/' + p.pvMax), barrePv(pv, p.pvMax));
+  [['−', -1], ['+', 1]].forEach(([sg, d]) => {
+    const b = el('button', null, sg); b.type = 'button';
+    b.setAttribute('aria-label', (d < 0 ? 'Retirer 1 PV à ' : 'Rendre 1 PV à ') + (p.nom || 'ce PNJ'));
+    b.disabled = (d < 0 && pv <= 0) || (d > 0 && pv >= p.pvMax);
+    b.onclick = () => changerPvPnj(p, d);
+    j.append(b);
+  });
+  r.append(j);
+  const v = el('button','btn ghost xs aviser', COMPO.cible === p.id ? 'Visé' : 'Viser'); v.type = 'button';
+  v.disabled = !peutViser();
+  v.setAttribute('aria-label', v.disabled ? motPasSonTour(monCombattant()) : 'Viser ' + p.nom);
+  if(v.disabled) v.title = motPasSonTour(monCombattant());
+  v.onclick = () => { COMPO.cible = p.id; COMPO.perte = null; dessinerCompositeur(true); dessinerCombat(true); };
+  const x = el('button','ax','×'); x.type = 'button';
+  x.setAttribute('aria-label', 'Sortir ' + p.nom + ' du combat');
+  x.onclick = () => mettreAuCombat(p.id, false);
+  h.append(v, x);
+  const mo = blocMort(z); if(mo) r.append(mo);
+  r.append(blocEtats(z));
+  return r;
+}
 function lignePnjCombat(p){
   const c = p.combat, pv = p.pv == null ? p.pvMax : p.pv, bas = p.pvMax > 0 && pv <= 0;
   const z = {k:'pnj', id:p.id, nom:p.nom, cote:c.cote, x:p, pv:pv, pvMax:p.pvMax, cartes:c.cartes};
+  if(c.cote === 'nous') return ligneAllie(p, z, pv, bas);
   const w = el('div','aligne' + (bas ? ' aterre' : '') + (COMPO.cible === p.id ? ' visee' : ''));
   w.setAttribute('data-pnjc', p.id);
   const t = el('div','atete');
@@ -7780,7 +7793,6 @@ function dessinerCarteVrai(box, force, dehors){
       : att.length + ' jetons ne sont pas posés : « Poser » sous la carte, un par un, ou « Les poser d’office ».'));
   }
   box.append(listeJetons());
-  box.append(el('p','mini ctaide', 'Un pas vaut un mètre. Tu poses chaque jeton où tu veux, puis tu le glisses pour le déplacer, pendant son tour seulement : le cercle plein montre ce qui lui reste à marcher ce round, le cercle en pointillé sa portée. La molette zoome, un glissement dans le vide déplace la carte. Les pas repartent de zéro à chaque nouveau round.'));
 }
 /* ---------- aller chercher une carte, quand il n'y en a pas ----------
    Elle ne se fabrique pas ici : on ouvre un plan dans le Registre des Plans et on clique « Vers la table ».
@@ -8439,13 +8451,14 @@ function blocRepos(){
   const g = el('div','tajout');
   const court = el('button','btn ghost sm','Repos court'); court.type = 'button'; court.id = 'repCourt';
   court.setAttribute('aria-label', 'Repos court, une heure : 1d6 PV et 1d4 PC à chacun');
+  court.title = 'Une heure : 1d6 PV et 1d4 PC à chacun.';
   court.onclick = () => reposer(false);
   const long = el('button','btn ghost sm','Repos long'); long.type = 'button'; long.id = 'repLong';
   long.setAttribute('aria-label', 'Repos long, une nuit complète : tout, et le jour avance');
+  long.title = 'Une nuit : tout revient, le jour avance, et ce qui tenait « jusqu’au repos » s’efface.';
   long.onclick = () => reposer(true);
   g.append(court, long);
   w.append(g);
-  w.append(el('p','mini', 'Court, une heure : 1d6 PV et 1d4 PC. Long, une nuit : tout, le jour avance, et ce qui tenait « jusqu’au repos » s’efface. Le repos ne rend rien d’autre.'));
   return w;
 }
 /* le jour de jeu, son propre widget : l'âge des PNJ se lit dessus */
@@ -8455,14 +8468,15 @@ function blocJour(){
   const t = el('div','ctete');
   t.append(el('p','ctitre', 'Le jour'));
   t.append(el('span','espace'));
+  if(c) t.append(el('span','jourj', texteDuJour(c)));
   w.append(t);
-  if(!c) w.append(el('p','mini', 'Pas encore de campagne : le jour se compte quand il y en a une.'));
+  if(!c) w.append(el('p','mini', 'Pas encore de campagne.'));
   if(c){
     const d = el('div','tajout');
-    d.append(el('span','jourj', texteDuJour(c)));
     const un = el('button','btn ghost xs','+ 1 jour'); un.type = 'button'; un.id = 'repJour';
+    un.title = 'Le lendemain.';
     un.onclick = () => { avancerJours(1); dessiner(); };
-    const n = el('input'); n.type = 'number'; n.min = '1'; n.max = '3600'; n.placeholder = 'jours'; n.style.width = '62px';
+    const n = el('input'); n.type = 'number'; n.min = '1'; n.max = '3600'; n.placeholder = 'jours'; n.style.width = '58px';
     n.setAttribute('aria-label', 'Combien de jours passent');
     const ok = el('button','btn ghost xs','Passer'); ok.type = 'button'; ok.id = 'repPasser';
     ok.onclick = () => { const v = parseInt(n.value, 10); if(v > 0){ avancerJours(v); n.value = ''; dessiner(); } };
@@ -8853,21 +8867,16 @@ function blocColonne(t, c, i){
    de la table, sous le nom du joueur : changer d'ordinateur ne le perd pas. */
 
 const HUB_LISTE = [
-  {k:'repos',   id:'seRepos',   n:'Le repos',                 ou:'g', on:true},
-  {k:'jour',    id:'seJour',    n:'Le jour',                  ou:'g', on:true},
-  {k:'carte',   id:'seCarte',   n:'La carte',                 ou:'g', on:true},
-  {k:'cie',     id:'seEtat',    n:'La compagnie',             ou:'d', on:true},
-  {k:'tour',    id:'seTour',    n:'Le tour',                  ou:'d', on:true},
-  {k:'eux',     id:'seCombat',  n:'Les ennemis',              ou:'d', on:true},
-  {k:'oracle',  id:'seOracle',  n:'L’oracle',                 ou:'d', on:false},
-  {k:'visage',  id:'seVisage',  n:'Un visage connu ?',        ou:'d', on:false},
-  {k:'mission', id:'seMission', n:'La mission en cours',      ou:'d', on:false},
-  {k:'gens',    id:'seGens',    n:'Les visages de la séance', ou:'d', on:false},
-  {k:'tirage',  id:'seTirage',  n:'Tirer une rencontre',      ou:'d', on:false},
-  {k:'butin',   id:'seButin',   n:'La fouille',               ou:'d', on:false},
-  {k:'aide',    id:'seAide',    n:'Ce que dit le livre',      ou:'d', on:false},
-  {k:'jets',    id:'secJets',   n:'Les jets, hors séance',    ou:'d', on:false}
+  {k:'repos', id:'seRepos',  n:'Le repos',      ou:'g', on:true},
+  {k:'jour',  id:'seJour',   n:'Le jour',       ou:'g', on:true},
+  {k:'carte', id:'seCarte',  n:'La carte',      ou:'g', on:true},
+  {k:'cie',   id:'seEtat',   n:'La compagnie',  ou:'d', on:true},
+  {k:'tour',  id:'seTour',   n:'Le tour',       ou:'d', on:true},
+  {k:'eux',   id:'seCombat', n:'Les ennemis',   ou:'d', on:true}
 ];
+/* ce qui n'est pas un widget mais qu'une fenêtre emprunte le temps de s'en servir */
+const HUB_PRETS = {oracle:'seOracle', visage:'seVisage', jets:'secJets', tirage:'seTirage', butin:'seButin'};
+const idPanneau = k => (HUB_CLES[k] ? HUB_CLES[k].id : HUB_PRETS[k]) || '';
 const HUB_CLES = {};
 HUB_LISTE.forEach(w => { HUB_CLES[w.k] = w; });
 const HUB_RAILS = [{k:'gd', l:'Un à gauche, un à droite'}, {k:'dd', l:'Les deux à droite'}, {k:'gg', l:'Les deux à gauche'}];
@@ -8886,6 +8895,7 @@ function reglageHub(){
   const r = sien && !sien.supprime ? sien : {};
   const out = {
     rails: HUB_RAILS.some(x => x.k === r.rails) ? r.rails : 'gd',
+    plein: !!r.plein,
     larg: {g: largeurHub((r.larg || {}).g), d: largeurHub((r.larg || {}).d)},
     h: [], g: [], d: [], off: []
   };
@@ -8899,7 +8909,7 @@ function reglageHub(){
 function poserReglageHub(r){
   changer(() => {
     if(!T.hub) T.hub = {};
-    T.hub[cleHub()] = {maj:maintenant(), rails:r.rails, larg:{g:r.larg.g, d:r.larg.d},
+    T.hub[cleHub()] = {maj:maintenant(), rails:r.rails, plein:!!r.plein, larg:{g:r.larg.g, d:r.larg.d},
       h:r.h.slice(), g:r.g.slice(), d:r.d.slice(), off:r.off.slice()};
   });
 }
@@ -8908,7 +8918,7 @@ function poserReglageHub(r){
 function oublierReglageHub(){
   changer(() => {
     if(!T.hub) T.hub = {};
-    T.hub[cleHub()] = {maj:maintenant(), supprime:true, rails:'gd', larg:{g:HUB_LARG.def, d:HUB_LARG.def}, h:[], g:[], d:[], off:[]};
+    T.hub[cleHub()] = {maj:maintenant(), supprime:true, rails:'gd', plein:false, larg:{g:HUB_LARG.def, d:HUB_LARG.def}, h:[], g:[], d:[], off:[]};
   });
 }
 const hubAllume = k => reglageHub().off.indexOf(k) < 0;
@@ -8979,6 +8989,7 @@ function dessinerHub(){
   jeu.style.setProperty('--lg', r.larg.g + 'px');
   jeu.style.setProperty('--ld', r.larg.d + 'px');
   jeu.setAttribute('data-rails', r.rails);
+  document.body.classList.toggle('hubplein', !!r.plein);
   g.hidden = !g.children.length;
   d.hidden = !d.children.length;
   const plein = c => [].slice.call(c.children).some(x => x.children.length);
@@ -8989,7 +9000,7 @@ function dessinerHub(){
 function normHub(o){
   if(!o || typeof o !== 'object') return null;
   const li = c => (Array.isArray(o[c]) ? o[c] : []).filter(k => HUB_CLES[k]).map(String);
-  return {maj:+o.maj || 0, supprime:!!o.supprime,
+  return {maj:+o.maj || 0, supprime:!!o.supprime, plein:!!o.plein,
     rails: HUB_RAILS.some(x => x.k === o.rails) ? o.rails : 'gd',
     larg: {g:largeurHub((o.larg || {}).g), d:largeurHub((o.larg || {}).d)},
     h:li('h'), g:li('g'), d:li('d'), off:li('off')};
@@ -9015,7 +9026,7 @@ function fermerFen(){
 /* un panneau prêté à la fenêtre retourne dans sa boîte, allumée ou non */
 function rendreLePrete(){
   if(!HUB.prete) return;
-  const w = HUB_CLES[HUB.prete], e = w && $(w.id), box = w && $('hbW-' + w.k);
+  const e = $(idPanneau(HUB.prete)), box = $('hbW-' + HUB.prete) || $('hbReserve');
   if(e && box) box.append(e);
   HUB.prete = '';
 }
@@ -9045,7 +9056,7 @@ function ouvrirFen(cle, titre, remplir){
 }
 /* prêter un panneau du hub à la fenêtre ouverte */
 function preter(k, corps){
-  const w = HUB_CLES[k], e = w && $(w.id);
+  const e = $(idPanneau(k));
   if(!e) return false;
   rendreLePrete();
   HUB.prete = k;
@@ -9054,7 +9065,12 @@ function preter(k, corps){
   return true;
 }
 document.addEventListener('keydown', e => {
-  if(e.key === 'Escape' && $('hbFen') && !$('ctFen')){ e.preventDefault(); fermerFen(); }
+  if(e.key !== 'Escape' || $('ctFen')) return;
+  if($('hbFen')){ e.preventDefault(); fermerFen(); return; }
+  if(document.body.classList.contains('hubplein')){
+    e.preventDefault();
+    const r = reglageHub(); r.plein = false; poserReglageHub(r);
+  }
 });
 
 /* ---------- Action : le jet, les dégâts, les PV, pour qui est choisi ---------- */
@@ -9070,6 +9086,7 @@ function ouvrirAction(quoi){
       seg.append(b);
     });
     corps.append(el('p','mini', 'Pour ' + nomCompo() + '. Le paragraphe se joint au récit comme avant.'));
+    const fr = blocFrappes(); if(fr) corps.append(fr);
     corps.append(seg);
     const pn = $('coPanneau');
     if(pn) corps.append(pn);
@@ -9145,6 +9162,20 @@ function blocTirerUneTable(){
   return w;
 }
 
+/* l'historique des jets, et le tirage d'une rencontre : des fenêtres, plus des pavés */
+function ouvrirJets(){
+  ouvrirFen('jets', 'Les jets', corps => {
+    if(!preter('jets', corps)){ corps.append(el('p','mini', 'Rien à montrer.')); return; }
+    dessinerJets();
+  });
+}
+function ouvrirTirage(){
+  ouvrirFen('tirage', 'Tirer une rencontre', corps => {
+    if(!preter('tirage', corps)){ corps.append(el('p','mini', 'Rien à tirer.')); return; }
+    dessinerCombat(true);
+  });
+}
+
 /* ---------- les ennemis en boutons ---------- */
 
 function blocEnnemis(l, pnjs){
@@ -9170,12 +9201,19 @@ function boutonEnnemi(e){
   return b;
 }
 function ouvrirEnnemi(k, id){
-  const nom = k === 'adv' ? (unAdversaire(id) || {}).nom : (unPnj(id) || {}).nom;
-  ouvrirFen('eux:' + id, nom || 'En face', corps => {
-    const a = k === 'adv' ? unAdversaire(id) : unPnj(id);
-    if(!a){ corps.append(el('p','mini', 'Il n’est plus là.')); return; }
-    corps.append(k === 'adv' ? ligneAdversaire(a) : lignePnjCombat(a));
-  });
+  const a0 = k === 'adv' ? unAdversaire(id) : unPnj(id);
+  /* tombé : on l'ouvre sur sa fouille */
+  if(a0 && k === 'adv' && aTerre(a0) && !a0.fouille) FOU.id = id;
+  ouvrirFen('eux:' + id, (a0 || {}).nom || 'En face', corps => remplirEnnemi(corps, k, id));
+}
+function remplirEnnemi(corps, k, id){
+  const a = k === 'adv' ? unAdversaire(id) : unPnj(id);
+  if(!a){ corps.append(el('p','mini', 'Il n’est plus là.')); return; }
+  corps.append(k === 'adv' ? ligneAdversaire(a) : lignePnjCombat(a));
+  if(k === 'adv' && aTerre(a)){
+    const bt = blocButin();
+    if(bt) corps.append(bt);
+  }
 }
 /* la fenêtre d'un ennemi suit ce qui change : les PV, les états, le tour */
 function majFenEnnemi(){
@@ -9186,7 +9224,7 @@ function majFenEnnemi(){
   if(!a && !p){ fermerFen(); return; }
   if(occupe(corps)) return;
   corps.innerHTML = '';
-  corps.append(a ? ligneAdversaire(a) : lignePnjCombat(p));
+  remplirEnnemi(corps, a ? 'adv' : 'pnj', id);
 }
 
 /* ---------- qui parle : chercher un PNJ plutôt que taper son nom ---------- */
@@ -9217,7 +9255,18 @@ function majListePnj(){
   l.innerHTML = '';
   const q = cleNom(HUB.cherche);
   const tout = visagesAPortee().filter(x => !q || cleNom(x.p.nom).indexOf(q) >= 0 || cleNom(x.p.role || '').indexOf(q) >= 0);
-  if(!tout.length){ l.append(el('p','mini', 'Personne de ce nom. Écris-le dans la case à côté du bouton pour un inconnu.')); return; }
+  const brut = (HUB.cherche || '').trim();
+  if(brut && !tout.some(x => cleNom(x.p.nom) === cleNom(brut))){
+    const nb = el('button','hbpnj'); nb.type = 'button'; nb.id = 'hbPnjInconnu';
+    nb.append(el('b', null, 'Parler au nom de « ' + brut + ' »'));
+    nb.append(el('span','mini', 'un inconnu, sans fiche'));
+    nb.onclick = () => { choisirQui({k:'pnj', id:'', nom:brut}); fermerFen(); const t = $('coTexte'); if(t) t.focus(); };
+    l.append(nb);
+  }
+  if(!tout.length){
+    if(!brut) l.append(el('p','mini', 'Personne pour l’instant : écris un nom pour un inconnu.'));
+    return;
+  }
   let titre = '';
   tout.slice(0, 60).forEach(x => {
     const t = x.ici ? 'Dans la séance' : 'Les autres visages';
@@ -9253,6 +9302,12 @@ function dessinerOptions(corps){
     b.onclick = () => { r.rails = x.k; poserReglageHub(r); dessinerOptions(); };
     seg.append(b);
   });
+  const pl = el('button','btn ghost sm' + (r.plein ? ' on' : ''), r.plein ? 'Quitter le plein écran' : 'Le hub en plein écran');
+  pl.type = 'button'; pl.id = 'hbPlein';
+  pl.setAttribute('aria-pressed', r.plein ? 'true' : 'false');
+  pl.title = 'La page s’efface : il ne reste que le récit, la zone d’écriture et tes rails. Échap pour en sortir.';
+  pl.onclick = () => { r.plein = !r.plein; poserReglageHub(r); dessinerOptions(); };
+  seg.append(pl);
   box.append(seg);
   /* les largeurs */
   const lg = el('div','hblarg');
@@ -9379,23 +9434,45 @@ function brancherBarre(){
   b('hbVisage', () => ouvrirVisage());
   b('hbOracle', () => ouvrirOracle());
   b('hbOptions', () => ouvrirOptions());
-  /* le lien du haut de page vers un outil éteint le rallume plutôt que de ne rien faire */
-  HUB_LISTE.forEach(w => {
-    const a = document.querySelector('a[href="#' + w.id + '"]');
-    if(!a) return;
-    a.onclick = ev => {
-      ev.preventDefault();
-      allumerWidget(w.k);
-      const z = $(w.id);
-      if(z) z.scrollIntoView({block:'center'});
-    };
-  });
+  b('prTirer', () => tirerPriorites(false));
+  b('hbJets', () => ouvrirJets());
+  /* le lien « Les jets » du haut de page ouvre la fenêtre */
+  const aj = document.querySelector('a[href="#secJets"]');
+  if(aj) aj.onclick = ev => { ev.preventDefault(); ouvrirJets(); };
 }
 function dessinerBarre(){
   const a = $('hbAction');
   if(a) a.textContent = COMPO.qui.k === 'mj' ? 'Action' : 'Action de ' + (nomDe(COMPO.qui) || '').split(' ')[0];
   const v = $('hbVisage');
   if(v) v.disabled = !seanceCourante();
+  /* les cartes du round se tirent d'ici tant qu'aucune n'est posée */
+  const t = $('prTirer');
+  if(t){
+    const debout = ceuxQuiSeBattent().filter(DEBOUT).length;
+    t.hidden = !!priorites() || !debout || !seanceCourante();
+  }
+}
+/* ses attaques, dans la fenêtre « Action » : un PNJ se joue comme un personnage */
+function blocFrappes(){
+  const q = COMPO.qui;
+  if(!q || (q.k !== 'pnj' && q.k !== 'adv')) return null;
+  const z = unCombattant(q.k, q.id);
+  if(!z) return null;
+  const l = attaquesDe(z);
+  if(!l.length) return null;
+  const w = el('div','hbfrappes');
+  w.append(el('p','lab', 'Ce qu’il sait faire'));
+  const g = el('div','pact');
+  l.forEach(atk => {
+    const b = el('button','btn ghost xs', atk.n); b.type = 'button';
+    b.disabled = !peutJouer(z);
+    b.setAttribute('aria-label', b.disabled ? motPasSonTour(z) : (z.nom + ' frappe : ' + atk.n));
+    if(b.disabled) b.title = motPasSonTour(z);
+    b.onclick = () => { frapperPour(z, atk); ouvrirAction('jet'); };
+    g.append(b);
+  });
+  w.append(g);
+  return w;
 }
 
 /* ---------- le panneau « En face », à côté du récit ---------- */
@@ -9508,10 +9585,8 @@ function dessinerCombat(force){
     t.append(el('p','ctitre', 'En face'), el('span','mini', eux0.length ? eux0.length + (eux0.length > 1 ? ' en face' : ' en face') : 'personne'));
     box.append(t);
     if(eux0.length) box.append(blocEnnemis([], eux0));
-    const bt0 = blocButin();
-    if(bt0){ poserAutour('seButin', bt0, box); const m = proposerWidget('butin', 'Il y a de quoi fouiller : ouvrir la fouille'); if(m) box.append(m); }
     poserAutour('seTirage', blocTirage(false), box);
-    const m0 = proposerWidget('tirage', 'Tirer une rencontre'); if(m0) box.append(m0);
+    box.append(boutonTirage('Tirer une rencontre'));
     box.append(el('p','mini', 'Une rencontre validée dans le Registre des Rencontres arrive aussi ici toute seule.'));
     majFenEnnemi();
     return;
@@ -9533,16 +9608,21 @@ function dessinerCombat(force){
   rencontresEnCours().forEach(x => { if(x.pourquoi) box.append(el('p','mini cpourquoi', x.pourquoi)); });
   box.append(blocEnnemis(l, pnjsAuCombat().filter(p => p.combat.cote === 'eux')));
   poserAutour('seTirage', blocTirage(true), box);
-  const mt = proposerWidget('tirage', 'Des renforts : tirer'); if(mt) box.append(mt);
-  const bt = blocButin();
-  if(bt){ poserAutour('seButin', bt, box); const m = proposerWidget('butin', 'Il y a de quoi fouiller : ouvrir la fouille'); if(m) box.append(m); }
+  box.append(boutonTirage('Des renforts : en tirer'));
+  poserAutour('seButin', blocButin(), box);
   majFenEnnemi();
+}
+/* tirer une rencontre : un bouton sous les ennemis, la table se tire dans sa fenêtre */
+function boutonTirage(mot){
+  const b = el('button','btn ghost xs','' + mot); b.type = 'button'; b.id = 'hbTirage';
+  b.onclick = () => ouvrirTirage();
+  return b;
 }
 /* un morceau du combat dans son widget, ou sous les ennemis quand le widget n'existe pas */
 function poserAutour(id, bloc, repli){
   const b = $(id);
-  if(b){ b.innerHTML = ''; b.append(bloc); b.hidden = false; return; }
-  if(repli) repli.append(bloc);
+  if(b){ b.innerHTML = ''; b.hidden = !bloc; if(bloc) b.append(bloc); return; }
+  if(bloc && repli) repli.append(bloc);
 }
 
 /* ---------- dans le récit et dans le Doc ---------- */

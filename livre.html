@@ -47,7 +47,7 @@ input:focus-visible,button:focus-visible,a:focus-visible{outline:2px solid var(-
 .lvbarre .note{flex:0 1 auto}
 
 /* les deux colonnes */
-.lvcol{display:grid;grid-template-columns:272px minmax(0,1fr);gap:28px;align-items:start}
+.lvcol{display:grid;grid-template-columns:304px minmax(0,100ch);gap:40px;align-items:start;justify-content:center}
 .lvaside{position:sticky;top:calc(58px + env(safe-area-inset-top,0px));max-height:calc(100vh - 80px);display:flex;flex-direction:column;min-width:0}
 .lvtiroir>summary{display:none}
 .lvsom{overflow:auto;padding-right:6px;font-size:13.5px;line-height:1.35;scrollbar-width:thin;max-height:calc(100vh - 100px)}
@@ -64,7 +64,7 @@ input:focus-visible,button:focus-visible,a:focus-visible{outline:2px solid var(-
 .sbul{display:inline-block;margin-left:6px;font-size:11px;font-weight:600;color:var(--paper);background:var(--sage);border-radius:9px;padding:0 5px;vertical-align:1px}
 
 /* le texte du livre */
-.lvtexte{font-family:Spectral,Georgia,serif;font-size:16.5px;line-height:1.62;max-width:72ch;min-width:0;margin-inline:auto}
+.lvtexte{font-family:Spectral,Georgia,serif;font-size:17px;line-height:1.65;max-width:none;min-width:0}
 .lvtexte p{margin:0 0 .72em}
 .lvtexte ul{margin:0 0 .9em;padding-left:1.1em}
 .lvtexte li{margin:0 0 .3em}

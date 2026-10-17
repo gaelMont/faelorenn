@@ -298,6 +298,22 @@ ul.tliste li{display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom
 .ctlig .mini{margin:0}
 /* hors de son tour : la raison, sous les dés */
 .cobloc{color:var(--rust);font-weight:600;margin:6px 0 0}
+/* ce que chacun subit : une puce par état */
+.etats{display:flex;flex-wrap:wrap;align-items:center;gap:4px;margin-top:6px}
+.etp{display:inline-flex;align-items:baseline;gap:4px;font-size:11.5px;line-height:1.5;padding:1px 4px;border:1px solid var(--rule);border-radius:2px;background:var(--fill)}
+.etp i{font-style:normal;color:var(--muted);font-size:10.5px}
+.etp button{border:0;background:none;padding:0 1px;cursor:pointer;color:var(--muted);font-size:12px;line-height:1}
+.etp button:hover{color:var(--rust)}
+.etplus{border:1px dashed var(--rule);background:none;border-radius:2px;font-size:11px;padding:1px 5px;cursor:pointer;color:var(--muted);font-family:inherit}
+.etplus:hover{color:var(--ink);border-color:var(--muted)}
+.etform{flex:1 0 100%;display:flex;flex-direction:column;gap:4px;margin-top:4px}
+/* celui qui est à terre : ses jets de mort */
+.mort{margin-top:6px;border-top:1px dashed var(--rust);padding-top:5px}
+.mort .ctete{margin-bottom:3px}
+.mort.mortfini{opacity:.75}
+.jmort{border-color:var(--rust)}
+.jourj{font-variant-numeric:tabular-nums;font-weight:600;font-size:12.5px;align-self:center}
+.repos{margin-top:10px}
 .ctvit{width:54px;padding:2px 4px;font-size:12px}
 .ctaide{margin-top:6px}
 .ctdist{margin:6px 0 0}
@@ -998,7 +1014,9 @@ svg.reseau:active{cursor:grabbing}
             <li><b>Les dégâts</b> : on retire d’abord la réduction, puis la contrainte du corps, et on arrondit vers le bas.</li>
             <li><b>La réduction</b> arrête le physique et la matière : Sève, eau, pierre, vent, Mue. Le feu, l’onde, l’ombre et le sacré la traversent.</li>
             <li><b>Un échec consomme le PC</b>, sauf l’attaque de base, qui ne coûte rien.</li>
-            <li><b>À 0 PV</b>, on tombe, inconscient. En groupe, sans stabilisation avant la fin du combat, on meurt.</li>
+            <li><b>À 0 PV</b>, on tombe, inconscient, et la table ouvre ses jets de mort : un par round, sous 11 au d20 (ou sous sa Constitution fois deux divisée par cinq, si c’est plus haut). Trois réussites, il est stabilisé ; trois échecs, il meurt. Un 1 le relève à 1 PV, un 20 compte double. Un soin, une fiole ou un jet de Médecine le stabilisent sans jet.</li>
+            <li><b>Ce qu’il subit</b> se pose en puces sous lui, dans la compagnie comme en face : « À terre », « Pris », « −10 à ses jets ». Chacune dit combien de rounds elle tient ; un nouveau round les fait descendre, un repos long efface celles qui tenaient jusque-là.</li>
+            <li><b>Le repos</b>, sous la compagnie : court, une heure, 1d6 PV et 1d4 PC ; long, une nuit, tout, et le jour avance. Le repos ne rend rien d’autre. Le jour de jeu se compte comme le Livre I, en années de la Réunion, et chaque campagne a le sien : l’âge des PNJ se lit là-dessus.</li>
             <li><b>La carte</b> : pendant un combat, le pavé « La carte », en haut du récit, a un bouton « Choisir une carte » ; une fenêtre liste tes villages, et dans un village tu prends sa carte entière ou l’étage d’une de ses bâtisses. La table va la chercher dans le Registre des Plans sans que tu quittes la table. Pour cadrer une ruelle, ouvre plutôt le plan, zoome, et clique « Vers la table ». <b>Autre fenêtre</b> sort la carte à part, pour un second écran : elle suit la table, et ce qu’on y déplace revient dans la table. Un pas vaut un mètre. Tu poses chaque jeton où tu veux : « Poser », sous la carte, puis un clic à l’endroit voulu ; « Les poser d’office » range les manquants en deux rangs, et le « × » d’une ligne reprend un jeton. Ensuite on le glisse, pendant son tour seulement ; le cercle plein montre ce qui lui reste à marcher ce round, le cercle en pointillé sa portée, et le compteur de pas ne s’affiche que pour celui qui joue. Dix pas par round d’office, à changer sous la carte. Pour les portées, la carte prévient seulement : elle n’empêche pas de frapper de trop loin.</li>
             <li><b>Modificateurs</b> : difficile −20 ou −4 · quasiment impossible −40 ou −8 · les circonstances aident +20 ou +4.</li>
           </ul>
@@ -2088,6 +2106,9 @@ function normPnj(o){
     seance:txtOu(o.seance), texte:txtOu(o.texte), auteur:txtOu(o.auteur),
     valeurs: Array.isArray(o.valeurs) ? o.valeurs.filter(v => v && txtOu(v.n).trim()).slice(0, 20).map(v => ({n:txtOu(v.n).trim(), v:Math.max(0, Math.round(+v.v || 0))})) : [],
     pvMax:num(o.pvMax), pv:num(o.pv),
+    /* l'année de sa naissance, dans le compte de la Réunion : son âge se lit par rapport au jour de la campagne,
+       et deux campagnes qui ne se jouent pas au même moment ne lui donnent pas le même âge */
+    ne:(o.ne == null || o.ne === '' || isNaN(+o.ne)) ? null : Math.round(+o.ne),
     /* un ancien personnage : le personnage d'où il vient */
     pj:txtOu(o.pj),
     /* ce qu'il faut pour le faire se battre : sa propre date, une retouche de sa fiche ne l'efface pas */
@@ -2242,7 +2263,12 @@ function normCampagne(o){
     /* en cours, ou terminée : ses personnages sont alors entrés dans le monde */
     etat: o.etat === 'finie' ? 'finie' : 'cours', majEtat:+o.majEtat || 0, finie:+o.finie || 0,
     /* les jets d'avant cette date sont vidés, dans cette campagne seulement */
-    jetsAvant:+o.jetsAvant || 0};
+    jetsAvant:+o.jetsAvant || 0,
+    /* où elle en est dans le monde : l'année de la Réunion et le jour dans l'année, avec leur propre date.
+       Deux campagnes peuvent se jouer à dix ans d'écart, et les PNJ n'y ont pas le même âge. */
+    an:(o.an == null || o.an === '' || isNaN(+o.an)) ? AN_DEFAUT : Math.max(0, Math.min(999999, Math.round(+o.an))),
+    jour:(o.jour == null || o.jour === '' || isNaN(+o.jour)) ? 1 : Math.max(1, Math.min(JOURS_AN, Math.round(+o.jour))),
+    majDate:+o.majDate || 0};
 }
 const parCreation = (a, b) => ((+a.creee || 0) - (+b.creee || 0)) || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
 /* la première campagne : celle d'avant, sinon la plus ancienne. C'est là que va tout ce qui n'a pas de campagne */
@@ -2277,6 +2303,9 @@ function fondreCampagneRec(garde, autre){
   if(ue > te || (ue === te && autre.etat < garde.etat)){ x.etat = autre.etat; x.majEtat = ue; x.finie = autre.finie; }
   x.jetsAvant = Math.max(+garde.jetsAvant || 0, +autre.jetsAvant || 0);
   x.creee = Math.min(+garde.creee || 0, +autre.creee || 0);
+  /* le jour de jeu a sa propre date : un nom changé ailleurs ne remonte pas le temps */
+  const td = +garde.majDate || 0, ud = +autre.majDate || 0;
+  if(ud > td){ x.an = autre.an; x.jour = autre.jour; x.majDate = ud; }
   return x;
 }
 
@@ -2329,6 +2358,8 @@ function fusionner(a, b){
       /* la carte de combat, et les jetons dessus : chacun sa date */
       if(k === 'journal' && (autre.majCarte || 0) > (garde.majCarte || 0)) garde = Object.assign({}, garde, {carte:autre.carte || null, majCarte:autre.majCarte});
       if(k === 'journal' && (autre.majJetons || 0) > (garde.majJetons || 0)) garde = Object.assign({}, garde, {jetons:autre.jetons || {}, majJetons:autre.majJetons});
+      /* ce que chacun subit : sa propre date, comme les jetons */
+      if(k === 'journal' && (autre.majEtats || 0) > (garde.majEtats || 0)) garde = Object.assign({}, garde, {etats:autre.etats || {}, majEtats:autre.majEtats});
       /* ce qu'il faut pour se battre : sa propre date, comme les PV */
       if(k === 'pnj' && (autre.majCombat || 0) > (garde.majCombat || 0)) garde = Object.assign({}, garde, {combat:autre.combat || null, majCombat:autre.majCombat});
       if(k === 'missions') garde = fondreMission(garde, autre);
@@ -2381,7 +2412,11 @@ function normTable(o){
       init:normInit(e.init), majInit:+e.majInit || 0,
       /* la carte de combat et les jetons posés dessus, chacun avec sa propre date */
       carte:normCarte(e.carte), majCarte:+e.majCarte || 0,
-      jetons:normJetons(e.jetons), majJetons:+e.majJetons || 0};
+      jetons:normJetons(e.jetons), majJetons:+e.majJetons || 0,
+      /* ce que chacun subit, et où en est celui qui est à terre : leur propre date */
+      etats:normEtats(e.etats), majEtats:+e.majEtats || 0,
+      /* le jour de jeu où cette séance s'ouvre */
+      jourJeu:(e.jourJeu == null || e.jourJeu === '' || isNaN(+e.jourJeu)) ? null : Math.max(0, Math.round(+e.jourJeu))};
   });
   Object.keys(o.blocs || {}).forEach(id => { const b = normBloc(o.blocs[id]); b.id = id; t.blocs[id] = b; });
   Object.keys(o.pnj || {}).forEach(id => { const p = normPnj(o.pnj[id]); p.id = id; t.pnj[id] = p; });
@@ -4648,8 +4683,13 @@ function dessinerEtatSeance(){
       });
       r.append(j);
     });
+    /* ce qu'il subit, et ses jets de mort quand il est tombé */
+    const z = zPerso(c);
+    const m = blocMort(z); if(m) r.append(m);
+    r.append(blocEtats(z));
     box.append(r);
   });
+  box.append(blocRepos());
 }
 
 /* ---------- la zone d'écriture ---------- */
@@ -6739,6 +6779,8 @@ function tirerPriorites(suivant){
   poserInit({r:suivant && av ? av.r + 1 : 1, c:c});
   /* les pas repartent de zéro : chacun retrouve toute sa vitesse */
   if(typeof remettreLesPas === 'function') remettreLesPas();
+  /* et ce qui se comptait en rounds descend d'un cran */
+  if(suivant && av && typeof tournerLesEtats === 'function') tournerLesEtats();
 }
 function fermerPriorites(){ ECHANGE = null; poserInit(null); }
 /* à qui le tour : la plus petite carte qui n'a pas encore agi */
@@ -7221,6 +7263,8 @@ function lignePnjCombat(p){
     at.append(l);
   });
   w.append(at);
+  const mo = blocMort(z); if(mo) w.append(mo);
+  w.append(blocEtats(z));
   if(c.cote === 'eux' && !bas){
     const j = el('button','btn ghost xs','Son tour'); j.type = 'button'; j.style.marginTop = '6px';
     j.disabled = !tour;
@@ -7968,6 +8012,372 @@ function listeJetons(){
   return u;
 }
 
+/* ============ ce qu'il faut pour tenir la partie sans MJ ============
+   Le repos, ce que chacun subit, celui qui est à terre, et le jour où l'on en est. Tout se garde avec la
+   séance ou avec la campagne, comme le reste, et chaque chose a sa propre date. */
+
+/* ---------- le jour de jeu ----------
+   Le Livre I compte les années depuis la Réunion : « aujourd'hui, an 14 509 ». Chaque campagne a son jour,
+   et deux campagnes peuvent se jouer à dix ans d'écart sans se gêner. */
+const AN_DEFAUT = 14509;
+const JOURS_AN = 360;                   /* le livre ne donne pas de mois : douze fois trente, pour compter */
+function laCampagne(){ const c = T.campagnes[idCourante()]; return c && !c.supprime ? c : null; }
+const anCourant = () => { const c = laCampagne(); return c ? c.an : AN_DEFAUT; };
+function texteDuJour(c){
+  if(!c) return '';
+  return 'an ' + String(c.an).replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + ', jour ' + c.jour;
+}
+/* avancer, ou reculer, d'un nombre de jours */
+function avancerJours(n){
+  n = Math.round(+n || 0);
+  const c = laCampagne(); if(!c || !n) return;
+  let an = c.an, jour = c.jour + n;
+  while(jour > JOURS_AN){ jour -= JOURS_AN; an++; }
+  while(jour < 1){ jour += JOURS_AN; an--; }
+  an = Math.max(0, an);
+  changer(() => {
+    const x = T.campagnes[c.id];
+    if(x) T.campagnes[c.id] = Object.assign({}, x, {an:an, jour:jour, majDate:maintenant(), maj:maintenant()});
+  });
+  return {an:an, jour:jour};
+}
+function poserDate(an, jour){
+  const c = laCampagne(); if(!c) return;
+  changer(() => {
+    const x = T.campagnes[c.id];
+    if(x) T.campagnes[c.id] = Object.assign({}, x, {an:Math.max(0, Math.round(+an || 0)),
+      jour:Math.max(1, Math.min(JOURS_AN, Math.round(+jour || 1))), majDate:maintenant(), maj:maintenant()});
+  });
+}
+/* l'âge d'un PNJ, lu au jour de la campagne qu'on joue */
+function ageDe(p){
+  if(!p || p.ne == null) return null;
+  return anCourant() - p.ne;
+}
+function texteAge(p){
+  const a = ageDe(p);
+  if(a == null) return '';
+  if(a < 0) return 'pas encore né';
+  if(a === 0) return 'moins d’un an';
+  return a + ' ans';
+}
+
+/* ---------- ce que chacun subit ----------
+   Une puce par état, posée sur un combattant : « À terre », « Pris », « −10 à ses jets ». Chacune dit combien
+   de rounds elle tient ; un nouveau round les fait descendre, un repos long efface celles qui tiennent jusque-là.
+   Tout vit sur la séance, à côté des jetons, avec sa propre date. */
+const ET_MAX = 12;
+function normEtats(o){
+  if(!o || typeof o !== 'object') return {};
+  const out = {};
+  Object.keys(o).slice(0, 80).forEach(k => {
+    const x = o[k];
+    if(!x || typeof x !== 'object') return;
+    const l = Array.isArray(x.l) ? x.l.slice(0, ET_MAX).map(e => e && typeof e === 'object' && txtOu(e.n) ? {
+      n:txtOu(e.n).slice(0, 60),
+      /* r : les rounds qui restent. -1 : jusqu'au repos. 0 : tant qu'on ne l'enlève pas */
+      r:(e.r == null || isNaN(+e.r)) ? 0 : Math.max(-1, Math.min(99, Math.round(+e.r)))
+    } : null).filter(Boolean) : [];
+    const m = x.m && typeof x.m === 'object' ? {
+      r:Math.max(0, Math.min(3, Math.round(+x.m.r) || 0)),
+      e:Math.max(0, Math.min(3, Math.round(+x.m.e) || 0)),
+      f:x.m.f === 'stable' ? 'stable' : x.m.f === 'mort' ? 'mort' : ''
+    } : null;
+    if(!l.length && !m) return;
+    out[String(k).slice(0, 60)] = {l:l, m:m};
+  });
+  return out;
+}
+const lesEtats = () => { const e = seanceCourante(); return e && e.etats ? e.etats : {}; };
+function poserEtats(x){
+  const e = seanceCourante(); if(!e) return;
+  changer(() => {
+    const y = T.journal[e.id]; if(!y) return;
+    T.journal[e.id] = Object.assign({}, y, {etats:normEtats(x), majEtats:maintenant()});
+  });
+}
+const cleEtat = z => z.k + ':' + z.id;
+const etatsDe = z => (lesEtats()[cleEtat(z)] || {}).l || [];
+const mortDe = z => (lesEtats()[cleEtat(z)] || {}).m || null;
+function majEtatDe(z, f){
+  const tout = JSON.parse(JSON.stringify(lesEtats())), cle = cleEtat(z);
+  const av = tout[cle] || {l:[], m:null};
+  const ap = f(av) || av;
+  if(!ap.l.length && !ap.m) delete tout[cle]; else tout[cle] = ap;
+  poserEtats(tout);
+}
+/* les états qu'on pose le plus souvent, tirés des attaques du livre et du bestiaire */
+const ETATS_COURANTS = [
+  {n:'À terre', r:0}, {n:'Pris : un jet de FOR pour se dégager', r:0}, {n:'Collé', r:0},
+  {n:'Ne se déplace plus', r:1}, {n:'Ne peut pas attaquer ce round', r:1},
+  {n:'−10 à ses jets', r:-1}, {n:'−4 au d20', r:3}, {n:'+4 à son prochain jet', r:1},
+  {n:'Pare la prochaine attaque', r:1}, {n:'Brûle : le dé du rang par round', r:3},
+  {n:'Perd 1d4 PV par round', r:3}, {n:'Marqué par la Floraison', r:-1}
+];
+const DUREES = [{r:0, l:'tant qu’on ne l’enlève pas'}, {r:1, l:'ce round'}, {r:2, l:'2 rounds'},
+  {r:3, l:'3 rounds'}, {r:5, l:'5 rounds'}, {r:-1, l:'jusqu’au repos'}];
+const texteDuree = r => r === 0 ? '' : r === -1 ? 'jusqu’au repos' : r + (r > 1 ? ' rounds' : ' round');
+function ajouterEtat(z, nom, r){
+  nom = String(nom || '').replace(/\s+/g, ' ').trim();
+  if(!nom){ msgTable('Écris ce qu’il subit.', false); return; }
+  majEtatDe(z, av => {
+    const l = av.l.filter(x => x.n !== nom).concat([{n:nom.slice(0, 60), r:r == null ? 0 : r}]).slice(-ET_MAX);
+    return {l:l, m:av.m};
+  });
+}
+function retirerEtat(z, i){
+  majEtatDe(z, av => ({l:av.l.filter((x, j) => j !== i), m:av.m}));
+}
+/* un nouveau round : ce qui se comptait en rounds descend d'un cran, et ce qui arrive à zéro s'en va.
+   Zéro veut dire « tant qu'on ne l'enlève pas », moins un « jusqu'au repos » : ni l'un ni l'autre ne bouge. */
+function tournerLesEtats(){
+  const av = lesEtats(), tout = {};
+  let bouge = false;
+  Object.keys(av).forEach(cle => {
+    const x = av[cle], l = [];
+    x.l.forEach(e => {
+      if(e.r > 0){ if(e.r > 1) l.push({n:e.n, r:e.r - 1}); else bouge = true; }
+      else l.push({n:e.n, r:e.r});
+    });
+    if(l.length !== x.l.length) bouge = true;
+    if(l.length || x.m) tout[cle] = {l:l, m:x.m};
+  });
+  if(bouge) poserEtats(tout);
+}
+/* le repos efface ce qui tenait jusque-là */
+function effacerEtatsDuRepos(){
+  const tout = JSON.parse(JSON.stringify(lesEtats()));
+  Object.keys(tout).forEach(cle => {
+    tout[cle].l = tout[cle].l.filter(e => e.r !== -1);
+    if(!tout[cle].l.length && !tout[cle].m) delete tout[cle];
+  });
+  poserEtats(tout);
+}
+
+/* ---------- à terre, et ce qui s'ensuit ----------
+   Le livre : à 0 PV on tombe, un allié peut stabiliser, et sans personne on meurt avant la fin du combat.
+   Ici, comme à D&D : un jet par round tant qu'on est à terre. Trois réussites, on est stabilisé ; trois échecs,
+   on meurt. Le 1 naturel relève à 1 PV, le 20 naturel compte double, comme partout ailleurs dans le livre. */
+const SEUIL_MORT = 11;
+function seuilDeMort(z){
+  const c = z.k === 'perso' ? z.x : null;
+  const par = c ? d20v((c.car.Constitution || 0) * 2) : 0;
+  return Math.max(SEUIL_MORT, par);
+}
+function jetDeMort(z, main){
+  const m = mortDe(z) || {r:0, e:0, f:''};
+  if(m.f){ msgTable(z.nom + ' n’a plus de jet à faire.', false); return; }
+  const s = seuilDeMort(z);
+  if(main != null && (isNaN(main) || main < 1 || main > 20)){ msgTable('Un dé entre 1 et 20.', false); return; }
+  const d = main != null ? main : de(20);
+  let r = m.r, e = m.e, fin = '', mot = '';
+  if(d === 1){
+    changer(() => { const w = quiVit(z.id); if(w) coup(w.x, 'pv', 1); });
+    fin = 'stable'; r = 3;
+    mot = z.nom + ' ouvre les yeux : 1 au d20, il revient à 1 PV.';
+  } else if(d === 20){
+    e = Math.min(3, e + 2);
+    mot = z.nom + ' s’enfonce : 20 au d20, deux échecs.';
+  } else if(d < s){
+    r = Math.min(3, r + 1);
+    mot = z.nom + ' tient : ' + d + ' sous ' + s + '.';
+  } else {
+    e = Math.min(3, e + 1);
+    mot = z.nom + ' faiblit : ' + d + ', il fallait moins de ' + s + '.';
+  }
+  if(!fin && r >= 3) fin = 'stable';
+  if(!fin && e >= 3) fin = 'mort';
+  majEtatDe(z, av => ({l:av.l, m:{r:r, e:e, f:fin}}));
+  const suite = fin === 'stable' ? ' Il est stabilisé : il ne meurt plus, il dort.'
+    : fin === 'mort' ? ' Il meurt.' : ' ' + r + ' réussite' + (r > 1 ? 's' : '') + ', ' + e + ' échec' + (e > 1 ? 's' : '') + '.';
+  msgTable(mot + suite, fin !== 'mort');
+  changer(() => noterDansSeance('À terre : ' + mot + suite, 'note'));
+}
+function stabiliser(z){
+  majEtatDe(z, av => ({l:av.l, m:{r:3, e:0, f:'stable'}}));
+  msgTable(z.nom + ' est stabilisé.', true);
+  changer(() => noterDansSeance(z.nom + ' est stabilisé : il ne meurt plus.', 'note'));
+}
+function relever(z){
+  majEtatDe(z, av => ({l:av.l, m:null}));
+}
+/* le pavé d'un combattant à terre : où en sont ses jets, et de quoi les faire */
+function blocMort(z){
+  const bas = z.pvMax > 0 && z.pv <= 0;
+  const m = mortDe(z);
+  if(!bas){ if(m) relever(z); return null; }
+  const w = el('div','mort' + (m && m.f === 'mort' ? ' mortfini' : ''));
+  const r = m ? m.r : 0, e = m ? m.e : 0, f = m ? m.f : '';
+  const t = el('div','ctete');
+  t.append(el('b', null, f === 'mort' ? 'Mort' : f === 'stable' ? 'Stabilisé' : 'À terre'));
+  t.append(el('span','mini', f ? '' : r + ' réussite' + (r > 1 ? 's' : '') + ' · ' + e + ' échec' + (e > 1 ? 's' : '')));
+  t.append(el('span','espace'));
+  w.append(t);
+  if(!f){
+    const g = el('div','tajout');
+    const b = el('button','btn ghost xs','Jet de mort'); b.type = 'button'; b.className = 'btn ghost xs jmort';
+    b.setAttribute('aria-label', 'Lancer le jet de mort de ' + z.nom);
+    b.onclick = () => jetDeMort(z, null);
+    const n = el('input'); n.type = 'number'; n.min = '1'; n.max = '20'; n.placeholder = 'd20'; n.style.width = '70px';
+    n.setAttribute('aria-label', 'Ton d20, pour son jet de mort');
+    n.onkeydown = ev => { if(ev.key === 'Enter'){ ev.preventDefault(); jetDeMort(z, parseInt(n.value, 10)); } };
+    const ok = el('button','btn ghost xs','Entrer'); ok.type = 'button';
+    ok.onclick = () => jetDeMort(z, parseInt(n.value, 10));
+    const st = el('button','btn ghost xs','Stabiliser'); st.type = 'button'; st.className = 'btn ghost xs jstab';
+    st.setAttribute('aria-label', 'Stabiliser ' + z.nom + ' : un soin, une fiole, un jet de Médecine');
+    st.onclick = () => stabiliser(z);
+    g.append(b, n, ok, st);
+    w.append(g);
+    w.append(el('p','mini', 'Un jet par round, sous ' + seuilDeMort(z) + ' au d20. Trois réussites, il est stabilisé ; trois échecs, il meurt. Un 1 le relève à 1 PV, un 20 compte double. Un soin, une fiole ou un jet de Médecine le stabilisent sans jet.'));
+  } else if(f === 'stable'){
+    w.append(el('p','mini', 'Il ne meurt plus. Il reste inconscient jusqu’à ce qu’on le soigne ou qu’il se repose.'));
+  } else {
+    w.append(el('p','mini', 'Trois échecs. Le récit le dit.'));
+  }
+  return w;
+}
+
+/* ---------- les puces d'état, sous un combattant ---------- */
+let ETA = {ouvert:'', nom:'', duree:0};
+function blocEtats(z){
+  const l = etatsDe(z);
+  const w = el('div','etats');
+  l.forEach((e, i) => {
+    const p = el('span','etp', e.n);
+    if(e.r) p.append(el('i', null, texteDuree(e.r)));
+    const x = el('button', null, '×'); x.type = 'button';
+    x.setAttribute('aria-label', 'Retirer « ' + e.n +' » de ' + z.nom);
+    x.onclick = () => retirerEtat(z, i);
+    p.append(x);
+    w.append(p);
+  });
+  const cle = cleEtat(z);
+  const plus = el('button','etplus', ETA.ouvert === cle ? '×' : '+ état'); plus.type = 'button';
+  plus.setAttribute('aria-label', 'Poser un état sur ' + z.nom);
+  plus.onclick = () => { ETA.ouvert = ETA.ouvert === cle ? '' : cle; ETA.nom = ''; dessinerCombat(true); dessinerEtatSeance(); };
+  w.append(plus);
+  if(ETA.ouvert === cle){
+    const f = el('div','etform');
+    const s = el('select'); s.setAttribute('aria-label', 'Un état courant');
+    s.add(new Option('un état courant…', ''));
+    ETATS_COURANTS.forEach(x => s.add(new Option(x.n + (x.r ? ' · ' + texteDuree(x.r) : ''), x.n + '|' + x.r)));
+    s.onchange = () => {
+      if(!s.value) return;
+      const [n, r] = s.value.split('|');
+      ajouterEtat(z, n, +r);
+      ETA.ouvert = ''; dessinerCombat(true); dessinerEtatSeance();
+    };
+    f.append(s);
+    const g = el('div','tajout');
+    const n = el('input'); n.type = 'text'; n.placeholder = 'ou le tien : aveuglé'; n.style.flex = '1 1 120px';
+    n.setAttribute('aria-label', 'Un état à écrire');
+    n.value = ETA.nom;
+    n.oninput = () => { ETA.nom = n.value; };
+    const d = el('select'); d.setAttribute('aria-label', 'Combien de temps');
+    DUREES.forEach(x => d.add(new Option(x.l, String(x.r))));
+    d.value = String(ETA.duree);
+    d.onchange = () => { ETA.duree = +d.value; };
+    const ok = el('button','btn ghost xs','Poser'); ok.type = 'button';
+    ok.onclick = () => { if(!n.value.trim()) return; ajouterEtat(z, n.value, +d.value); ETA.ouvert = ''; ETA.nom = ''; dessinerCombat(true); dessinerEtatSeance(); };
+    n.onkeydown = ev => { if(ev.key === 'Enter'){ ev.preventDefault(); ok.click(); } };
+    g.append(n, d, ok);
+    f.append(g);
+    w.append(f);
+  }
+  return w;
+}
+/* le combattant d'un personnage, pour les états et les jets de mort */
+const zPerso = c => ({k:'perso', id:c.id, nom:c.nom || 'Sans nom', cote:'nous', x:c, pv:c.pv, pvMax:c.pvMax, cartes:1});
+
+/* ---------- le repos ----------
+   Livre II, 6 : court, une heure, 1d6 PV et 1d4 PC ; long, une nuit complète, tout. Le repos ne rend rien
+   d'autre : ce qu'une Floraison a fait ne part pas en dormant. */
+function ceuxQuiSeReposent(){
+  const l = persos().map(c => ({k:'perso', id:c.id, nom:c.nom || 'Sans nom', x:c, pc:true}));
+  pnjsAuCombat().concat(pnjs().filter(p => p.pvMax != null && p.statut !== 'mort' && p.combat && p.combat.cote === 'nous'))
+    .forEach(p => { if(p.combat && p.combat.cote === 'nous' && !l.some(y => y.id === p.id)) l.push({k:'pnj', id:p.id, nom:p.nom, x:p}); });
+  return l;
+}
+function reposer(long){
+  const e = seanceCourante();
+  if(!e){ msgTable('Ouvre une séance d’abord.', false); return; }
+  if(combatEnCours()){ msgTable('Le combat n’est pas fini : on ne se repose pas en plein dedans.', false); return; }
+  const l = ceuxQuiSeReposent();
+  if(!l.length){ msgTable('Personne à reposer.', false); return; }
+  const mots = [];
+  changer(() => {
+    l.forEach(q => {
+      const x = q.k === 'perso' ? perso(q.id) : unPnj(q.id);
+      if(!x) return;
+      if(long){
+        baseVie(x, x.pvMax, q.pc ? x.pcMax : undefined);
+        mots.push(q.nom + ' au plein');
+      } else {
+        const pv = x.pvMax == null ? 0 : Math.min(de(6), Math.max(0, x.pvMax - x.pv));
+        const pc = q.pc && x.pcMax != null ? Math.min(de(4), Math.max(0, x.pcMax - x.pcc)) : 0;
+        if(pv) coup(x, 'pv', pv);
+        if(pc) coup(x, 'pc', pc);
+        mots.push(q.nom + (pv || pc ? ' +' + pv + ' PV' + (q.pc ? ', +' + pc + ' PC' : '') : ' rien à rendre'));
+      }
+    });
+  });
+  if(long){
+    effacerEtatsDuRepos();
+    avancerJours(1);
+  }
+  const c = laCampagne();
+  const titre = long ? 'Repos long, une nuit complète' : 'Repos court, une heure';
+  changer(() => noterDansSeance(titre + (long && c ? ' (' + texteDuJour(c) + ')' : '') + ' : ' + mots.join(', ') + '.', 'note'));
+  msgTable(titre + ' : ' + mots.join(', ') + '.', true);
+  dessiner();
+}
+/* le pavé du repos et du jour, sous la compagnie */
+function blocRepos(){
+  const w = el('div','cbloc repos');
+  const c = laCampagne();
+  const t = el('div','ctete');
+  t.append(el('p','ctitre', 'Le repos et le jour'));
+  t.append(el('span','espace'));
+  w.append(t);
+  const g = el('div','tajout');
+  const court = el('button','btn ghost sm','Repos court'); court.type = 'button'; court.id = 'repCourt';
+  court.setAttribute('aria-label', 'Repos court, une heure : 1d6 PV et 1d4 PC à chacun');
+  court.onclick = () => reposer(false);
+  const long = el('button','btn ghost sm','Repos long'); long.type = 'button'; long.id = 'repLong';
+  long.setAttribute('aria-label', 'Repos long, une nuit complète : tout, et le jour avance');
+  long.onclick = () => reposer(true);
+  g.append(court, long);
+  w.append(g);
+  w.append(el('p','mini', 'Court, une heure : 1d6 PV et 1d4 PC. Long, une nuit : tout, le jour avance, et ce qui tenait « jusqu’au repos » s’efface. Le repos ne rend rien d’autre.'));
+  if(c){
+    const d = el('div','tajout');
+    d.append(el('span','jourj', texteDuJour(c)));
+    const un = el('button','btn ghost xs','+ 1 jour'); un.type = 'button'; un.id = 'repJour';
+    un.onclick = () => { avancerJours(1); dessiner(); };
+    const n = el('input'); n.type = 'number'; n.min = '1'; n.max = '3600'; n.placeholder = 'jours'; n.style.width = '62px';
+    n.setAttribute('aria-label', 'Combien de jours passent');
+    const ok = el('button','btn ghost xs','Passer'); ok.type = 'button'; ok.id = 'repPasser';
+    ok.onclick = () => { const v = parseInt(n.value, 10); if(v > 0){ avancerJours(v); n.value = ''; dessiner(); } };
+    n.onkeydown = ev => { if(ev.key === 'Enter'){ ev.preventDefault(); ok.click(); } };
+    d.append(un, n, ok);
+    w.append(d);
+    const e2 = el('details','ajoutadv');
+    e2.append(el('summary', null, 'Régler le jour'));
+    const g2 = el('div','tajout');
+    const an = el('input'); an.type = 'number'; an.min = '0'; an.max = '999999'; an.value = String(c.an); an.style.width = '110px';
+    an.setAttribute('aria-label', 'L’année de la Réunion');
+    const jr = el('input'); jr.type = 'number'; jr.min = '1'; jr.max = String(JOURS_AN); jr.value = String(c.jour); jr.style.width = '80px';
+    jr.setAttribute('aria-label', 'Le jour dans l’année');
+    const ok2 = el('button','btn ghost xs','Poser'); ok2.type = 'button'; ok2.id = 'repPoser';
+    ok2.onclick = () => { poserDate(an.value, jr.value); dessiner(); };
+    g2.append(el('span','mini','an'), an, el('span','mini','jour'), jr, ok2);
+    e2.append(g2);
+    e2.append(el('p','mini', 'Le livre compte les années depuis la Réunion : aujourd’hui, an 14 509. Trois cent soixante jours par an, faute de mois. Chaque campagne a le sien : l’âge des PNJ se lit là-dessus.'));
+    w.append(e2);
+  }
+  return w;
+}
+
 /* ---------- le panneau « En face », à côté du récit ---------- */
 function barrePv(cour, max){
   const b = el('div','abarre');
@@ -8050,6 +8460,8 @@ function ligneAdversaire(a){
     w.append(j);
   }
   if(a.traits || a.p) w.append(el('p','mini apart', [a.traits, a.p].filter(Boolean).join(' · ')));
+  const mo = blocMort(z); if(mo) w.append(mo);
+  w.append(blocEtats(z));
   if(aTerre(a)) fouilleSurLigne(a, w);
   return w;
 }
@@ -8672,7 +9084,7 @@ function cartePnj(p){
   const nm = el('div','pnom', (p.nom || 'Sans nom') + (p.statut === 'mort' ? ' †' : ''));
   t.append(nm, el('span','att att-' + p.attitude, libelle(ATTITUDES, p.attitude)));
   w.append(t);
-  const qui = [p.role, p.peuple, p.groupe].filter(Boolean).join(' · ');
+  const qui = [p.role, p.peuple, texteAge(p), p.groupe].filter(Boolean).join(' · ');
   w.append(el('div','pqui', qui || 'rien de noté pour l’instant'));
   const ap = apparitions(p), nl = liensDe('pnj:' + p.id).length;
   const premiere = p.seance && T.journal[p.seance] && !T.journal[p.seance].supprime ? etiquetteSeance(T.journal[p.seance]) : '';
@@ -8795,7 +9207,7 @@ function dessinerGrand(force){
   fer.onclick = fermerGrand;
   t.append(fer);
   box.append(t);
-  const qui = q.pj ? [o.joueur ? 'joué par ' + o.joueur : '', o.peuple, o.voie] : [o.role, o.peuple, o.groupe];
+  const qui = q.pj ? [o.joueur ? 'joué par ' + o.joueur : '', o.peuple, o.voie] : [o.role, o.peuple, texteAge(o), o.groupe];
   box.append(el('p','pqui gsous', qui.filter(Boolean).join(' · ') || 'rien de noté pour l’instant'));
   const vu = listeNumerosSeances(l.map(x => x.e));
   const nl = liensDe(ref).length;
@@ -9249,6 +9661,30 @@ function ouvrirEditeurPnj(p, nouveau){
   const pv = nombre(PNJ_ED.pvMax == null ? '' : PNJ_ED.pvMax, 0, 500); pv.id = 'ped-pv'; pv.placeholder = 'aucun';
   pv.oninput = () => { PNJ_ED.pvMax = pv.value === '' ? null : Math.max(0, parseInt(pv.value, 10) || 0); };
   champ(gv, 'PV en combat', pv, 'Laisse vide pour un PNJ qui ne se bat pas.');
+  /* son âge se garde par son année de naissance : il vieillit tout seul, et deux campagnes jouées à dix ans
+     d'écart ne lui donnent pas le même âge */
+  const ne = nombre(PNJ_ED.ne == null ? '' : PNJ_ED.ne, -99999, 999999); ne.id = 'ped-ne'; ne.placeholder = 'inconnue'; ne.style.width = '110px';
+  ne.oninput = () => { PNJ_ED.ne = ne.value === '' ? null : Math.round(+ne.value || 0); };
+  const aide = el('span','mini'); aide.id = 'ped-age';
+  const majAge = () => { aide.textContent = PNJ_ED.ne == null ? 'Au jour de la campagne : an ' + anCourant() + '.'
+    : texteAge(PNJ_ED) + ' au jour de la campagne (an ' + anCourant() + ').'; };
+  ne.addEventListener('input', majAge);
+  champ(gv, 'Né en l’an', ne);
+  majAge();
+  const agb = el('div'); agb.append(aide);
+  const quel = el('button','btn ghost xs','Il a tel âge…'); quel.type = 'button'; quel.id = 'ped-ageQ';
+  quel.setAttribute('aria-label', 'Donner son âge plutôt que son année de naissance');
+  quel.onclick = () => {
+    const v = prompt('Quel âge a-t-il, au jour de la campagne (an ' + anCourant() + ') ?', '30');
+    if(v == null) return;
+    const n = Math.round(+v);
+    if(isNaN(n)){ msgTable('Écris un nombre d’années.', false); return; }
+    PNJ_ED.ne = anCourant() - n;
+    ne.value = String(PNJ_ED.ne);
+    majAge();
+  };
+  agb.append(quel);
+  gv.append(agb);
   box.append(gv);
 
   /* ---- au combat : son rang, ses dés, son attaque. La table peut alors jouer son tour ---- */

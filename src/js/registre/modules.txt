@@ -38,3 +38,4 @@ commun/fiche-du-word.js
 registre/marchefleurs.js
 registre/oracle.js
 registre/demarrage.js
+registre/frappe.js

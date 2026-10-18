@@ -137,7 +137,19 @@ test('tables de tirage : privées, puis validées par un admin', async () => {
   await assertSucceeds(updateDoc(doc(qui('oce'), 'tables/t-oce'), retouche('oce', { statut: 'propose' })));
   await assertSucceeds(updateDoc(doc(qui('gael'), 'tables/t-oce'), retouche('gael', { statut: 'valide' })));
   await assertFails(updateDoc(doc(qui('oce'), 'tables/t-valide'), retouche('oce', { f: '{"x":2}' })));       // reste validée : non
-  await assertSucceeds(updateDoc(doc(qui('oce'), 'tables/t-valide'), retouche('oce', { f: '{"x":2}', statut: 'propose' })));
+  await assertFails(updateDoc(doc(qui('oce'), 'tables/t-valide'), retouche('oce', { f: '{"x":2}', statut: 'propose' })));
+  await assertSucceeds(updateDoc(doc(qui('oce'), 'tables/t-valide'), retouche('oce', { f: '{"x":2}', revoir: true, fv: '{}' })));
+});
+
+test('« … écrit » : chacun le sien, lu par les membres de la campagne', async () => {
+  const frappe = (c, plus) => Object.assign({ campagne: c, seance: 's1', nom: 'Yvellis', actif: true, t: serverTimestamp() }, plus || {});
+  await assertSucceeds(setDoc(doc(qui('oce'), 'frappe/oce'), frappe('c1')));
+  await assertFails(setDoc(doc(qui('oce'), 'frappe/gael'), frappe('c1')));                     // au nom d'un autre
+  await assertFails(setDoc(doc(qui('oce'), 'frappe/oce'), frappe('c2')));                      // une campagne dont elle n'est pas
+  await assertFails(setDoc(doc(qui('oce'), 'frappe/oce'), frappe('c1', { texte: 'secret' })));  // le texte ne part pas
+  await assertSucceeds(getDocs(query(collection(qui('gael'), 'frappe'), where('campagne', '==', 'c1'))));
+  await assertFails(getDocs(query(collection(qui('luc'), 'frappe'), where('campagne', '==', 'c1'))));
+  await assertSucceeds(setDoc(doc(qui('oce'), 'frappe/oce'), frappe('c1', { actif: false })));
 });
 
 test('un admin corrige tout et importe au nom des autres', async () => {

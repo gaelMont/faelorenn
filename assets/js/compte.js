@@ -372,6 +372,21 @@ function formeJson(s){
 function mondeOmbre(col, id){ return (MONDE_OMBRES[col] || {})[id] || null; }
 function mondeGarderOmbre(col, id, d){ (MONDE_OMBRES[col] = MONDE_OMBRES[col] || {})[id] = d; }
 function mondeProprio(col, id){ const o = mondeOmbre(col, id); return o ? {uid:o.proprietaire, nom:o.proprietaireNom} : null; }
+/* ---------- les pièces à valider (bestiaire, plans, tables de tirage) : qui y travaille, ce que voient les autres ----------
+   Le créateur peut inviter d'autres joueurs (membres) : l'équipe voit et retouche le travail en cours, en direct.
+   Les autres ne voient qu'une pièce validée, et seulement sa version publiée : quand l'équipe retouche une pièce
+   validée, la version d'avant est gardée (fv) jusqu'à ce qu'un admin publie la retouche (revoir). */
+function mondeEquipe(o){ return !!o && typeof COMPTE !== 'undefined' && (o.proprietaire === COMPTE.uid || (Array.isArray(o.membres) && o.membres.indexOf(COMPTE.uid) >= 0)); }
+// le contenu qu'on montre : l'équipe et les admins voient le travail en cours ; les autres, la version publiée
+function mondeContenu(o){ return (mondeEquipe(o) || estAdmin() || !o.fv) ? o.f : o.fv; }
+// le statut d'une écriture : une pièce nouvelle est privée ; validée, elle le reste et la retouche attend un admin.
+// Un admin qui retouche publie aussitôt.
+function mondeStatutEcrit(ombre){
+  if(!ombre) return {statut:'prive'};
+  if(ombre.statut !== 'valide') return {statut:ombre.statut || 'prive'};
+  if(estAdmin()) return {statut:'valide', revoir:false, fv:''};
+  return Object.assign({statut:'valide', revoir:true}, ombre.fv ? {} : {fv:ombre.f});
+}
 function mondeTemps(t){ return t && typeof t.toMillis === 'function' ? t.toMillis() : 0; }
 
 /* écouter une requête, seulement le neuf. surDocs reçoit [{id, data}] ; la clé distingue les écoutes.
@@ -477,7 +492,8 @@ function mondePieceDe(cfg, col, id, data){
 function mondeRequetes(col, statut){
   const c = FB_DB.collection(col);
   if(!statut || estAdmin()) return [[col, c]];
-  return [[col + '@valide', c.where('statut', '==', 'valide')], [col + '@moi', c.where('proprietaire', '==', COMPTE.uid)]];
+  return [[col + '@valide', c.where('statut', '==', 'valide')], [col + '@moi', c.where('proprietaire', '==', COMPTE.uid)],
+    [col + '@avec', c.where('membres', 'array-contains', COMPTE.uid)]];
 }
 
 function mondeDoc(o, cfg){
@@ -537,7 +553,7 @@ function mondeDoc(o, cfg){
           docs.forEach(({id, data}) => {
             mondeGarderOmbre(col, id, data);
             const [s, pid] = mondePieceDe(cfg, col, id, data);
-            if(s) (recu[s] = recu[s] || {})[pid] = formeJson(data.f);
+            if(s) (recu[s] = recu[s] || {})[pid] = formeJson(cfg.statut ? mondeContenu(data) : data.f);
           });
           if(d.lu) servir();
         }, erreur, 0, premiere);
@@ -567,11 +583,11 @@ function mondeDoc(o, cfg){
         const x = c[s][id], f = JSON.stringify(x);
         if(JSON.stringify((recu[s] || {})[id]) === f) return;
         const did = mondeIdDe(cfg, s, id), ombre = mondeOmbre(col, did);
-        if(ombre && ombre.proprietaire !== COMPTE.uid && !estAdmin()){ refus.push(id); return; }
+        // la pièce d'un autre : seulement si l'on est de son équipe (pour les pièces à valider) ou admin
+        if(ombre && ombre.proprietaire !== COMPTE.uid && !estAdmin() && !(cfg.statut && mondeEquipe(ombre))){ refus.push(id); return; }
         const champs = {f:f};
         if(cfg.prefixe) champs.section = s;
-        // une pièce nouvelle reste privée ; une pièce validée que son créateur retouche repasse en proposition
-        if(cfg.statut) champs.statut = !ombre ? 'prive' : (ombre.statut === 'valide' && !estAdmin() ? 'propose' : (ombre.statut || 'prive'));
+        if(cfg.statut) Object.assign(champs, mondeStatutEcrit(ombre));
         travaux.push(mondeEcrire(col, did, champs).then(() => { (recu[s] = recu[s] || {})[id] = JSON.parse(f); }, e => {
           // déjà en ligne : on reprend la version du serveur, qui sera servie au registre
           if(e && e.code === 'deja-la'){ (recu[s] = recu[s] || {})[id] = formeJson(e.data.f); repris = true; return; }
@@ -606,7 +622,8 @@ function mondeDoc(o, cfg){
     if(!d.actif) return;
     clearTimeout(d.minuteur);
     d.prevu = true;
-    d.minuteur = setTimeout(d.ecrire, delai == null ? 1500 : delai);
+    // presque tout de suite : ce qui change ici se voit chez les autres sans attendre (on regroupe juste un geste)
+    d.minuteur = setTimeout(d.ecrire, delai == null ? 120 : delai);
   };
   d.arreter = function(){
     d.actif = false; d.prevu = false;
@@ -629,7 +646,7 @@ function mondeLireFichier(chemin){
   return Promise.all(Object.keys(cols).map(col => Promise.all(mondeRequetes(col, cfg.statut).map(([, q]) => q.get())).then(snaps => {
     snaps.forEach(snap => snap.docs.forEach(doc => {
       const [s, pid] = mondePieceDe(cfg, col, doc.id, doc.data());
-      if(s) f[s][pid] = formeJson(doc.data().f);
+      if(s) f[s][pid] = formeJson(cfg.statut ? mondeContenu(doc.data()) : doc.data().f);
     }));
   }))).then(() => f);
 }

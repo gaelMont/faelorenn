@@ -25,7 +25,9 @@ function tableRecevoir(k, docs){
   docs.forEach(({id, data}) => {
     mondeGarderOmbre(FORMES[k].col, id, data);
     if(k === 'campagnes') EN_LIGNE.membres[id] = Array.isArray(data.membres) ? data.membres : [];
-    partiel[k][id] = Object.assign(depuisDoc(k, data), {id:id});
+    // une table de tirage validée qu'une équipe retouche : les autres gardent sa version publiée
+    const vu = FORMES[k].portee === 'statut' ? Object.assign({}, data, {f:mondeContenu(data)}) : data;
+    partiel[k][id] = Object.assign(depuisDoc(k, vu), {id:id});
   });
   const norme = normTable(partiel);
   docs.forEach(({id}) => {
@@ -110,7 +112,8 @@ function premiereLectureFaite(){
 function tablePlanifier(){
   if(SYNC.etat !== 'enligne') return;
   clearTimeout(EN_LIGNE.minuteur);
-  EN_LIGNE.minuteur = setTimeout(tableEcrire, 1200);
+  // presque tout de suite : un paragraphe, un coup, un jeton se voient chez les autres sans attendre
+  EN_LIGNE.minuteur = setTimeout(tableEcrire, 100);
 }
 function membreDe(cid){ return estAdmin() || (EN_LIGNE.membres[cid] || []).indexOf(COMPTE.uid) >= 0; }
 
@@ -130,6 +133,7 @@ function joueurDe(c){ const p = proprioDe('personnages', c.id); return (p && p.n
 function groupesPermis(k, id, champs){
   const o = mondeOmbre(FORMES[k].col, id);
   if(!o || estAdmin() || o.proprietaire === COMPTE.uid) return null;            // tout
+  if(FORMES[k].portee === 'statut') return mondeEquipe(o) ? null : [];         // son équipe y travaille avec lui
   const camp = o.campagne || '';
   if(k === 'personnages') return membreDe(camp) ? ['e'] : [];
   if(k === 'journal') return membreDe(camp) ? ['e', 'c'] : [];
@@ -168,6 +172,8 @@ function tableEcrire(){
         if(touches.some(c => permis.indexOf(c) < 0)){ refus.push([k, id]); return; }
       }
       if(k === 'campagnes' && !o) champs.membres = [COMPTE.uid];
+      // une table de tirage : privée en naissant ; validée, elle le reste et la retouche attend un admin
+      if(FORMES[k].portee === 'statut') Object.assign(champs, mondeStatutEcrit(o));
       normes[id] = texte;
       EN_LIGNE.normes[k] = normes;
       mondeEcrire(col, id, champs).catch(e => {
@@ -263,6 +269,7 @@ function tableEnLigneDemarrer(){
         else {
           tableEcoute('tables@valide', FB_DB.collection('tables').where('statut', '==', 'valide'), docs => tableRecevoir('tables', docs));
           tableEcoute('tables@moi', FB_DB.collection('tables').where('proprietaire', '==', COMPTE.uid), docs => tableRecevoir('tables', docs));
+          tableEcoute('tables@avec', FB_DB.collection('tables').where('membres', 'array-contains', COMPTE.uid), docs => tableRecevoir('tables', docs));
         }
         FB_DB.collection('monde').doc('table').onSnapshot(s => { if(s.exists) tableRecevoirMonde(s.data({serverTimestamps:'estimate'})); }, () => {});
       });

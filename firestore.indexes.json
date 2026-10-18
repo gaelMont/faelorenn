@@ -209,6 +209,76 @@
           "order": "ASCENDING"
         }
       ]
+    },
+    {
+      "collectionGroup": "creatures",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "membres",
+          "arrayConfig": "CONTAINS"
+        },
+        {
+          "fieldPath": "majS",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "familles",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "membres",
+          "arrayConfig": "CONTAINS"
+        },
+        {
+          "fieldPath": "majS",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "butins",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "membres",
+          "arrayConfig": "CONTAINS"
+        },
+        {
+          "fieldPath": "majS",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "plans",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "membres",
+          "arrayConfig": "CONTAINS"
+        },
+        {
+          "fieldPath": "majS",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "tables",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "membres",
+          "arrayConfig": "CONTAINS"
+        },
+        {
+          "fieldPath": "majS",
+          "order": "ASCENDING"
+        }
+      ]
     }
   ],
   "fieldOverrides": []

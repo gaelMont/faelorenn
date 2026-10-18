@@ -111,8 +111,9 @@ service cloud.firestore {
     }
     function aMoi() { return a().proprietaire == moi(); }
     function formeOk() {
-      return n().keys().hasOnly(['f', 'e', 'c', 'campagne', 'perso', 'statut', 'membres', 'section',
+      return n().keys().hasOnly(['f', 'e', 'c', 'campagne', 'perso', 'statut', 'membres', 'section', 'fv', 'revoir',
                                  'proprietaire', 'proprietaireNom', 'cree', 'majS', 'modifiePar'])
+        && n().get('fv', '') is string && n().get('revoir', false) is bool && n().get('membres', []) is list
         && n().f is string && n().get('e', '') is string && n().get('c', '') is string
         && n().majS == request.time && n().modifiePar == moi()
         && n().proprietaire is string && n().proprietaireNom is string;
@@ -241,13 +242,24 @@ service cloud.firestore {
     }
 
     // ---------- les tables de tirage : privées tant qu'un admin ne les a pas validées ----------
+    // (même circuit que le bestiaire et les plans, plus bas)
     match /tables/{id} {
-      allow read: if invite() && (resource.data.statut == 'valide' || resource.data.proprietaire == moi() || admin());
-      allow create: if creation() && (n().statut in ['prive', 'propose'] || (admin() && n().statut == 'valide'));
-      // une table validée que son créateur retouche repasse en proposition
-      allow update: if modification() && (
-        (aMoi() && n().statut in ['prive', 'propose'])
-        || admin());
+      allow read: if invite() && lisibleSelonStatut();
+      allow create: if creationSelonStatut();
+      allow update: if modificationSelonStatut();
+    }
+
+    // ---------- « … écrit » : qui est en train d'écrire, dans quelle séance ----------
+    // un document par joueur, réécrit pendant qu'il tape, lu par les membres de la campagne
+    match /frappe/{uid} {
+      allow read: if invite() && (membreDe(resource.data.campagne) || admin());
+      allow create, update: if invite() && uid == moi()
+        && n().keys().hasOnly(['campagne', 'seance', 'nom', 't', 'actif'])
+        && n().campagne is string && membreDe(n().campagne)
+        && n().seance is string && n().seance.size() <= 100
+        && n().nom is string && n().nom.size() <= 80
+        && n().actif is bool && n().t == request.time;
+      allow delete: if invite() && uid == moi();
     }
 
     // ---------- la table elle-même : son nom, la purge des jets, les seuils de l'oracle ----------
@@ -264,11 +276,33 @@ service cloud.firestore {
       allow update: if modification() && (aMoi() || admin());
     }
 
-    // ---------- bestiaire et plans : privés tant qu'un admin ne les a pas validés ----------
-    // (même règle que les tables de tirage) une pièce validée que son créateur retouche repasse en proposition
-    function lisibleSelonStatut() { return resource.data.statut == 'valide' || resource.data.proprietaire == moi() || admin(); }
-    function creationSelonStatut() { return creation() && (n().statut in ['prive', 'propose'] || (admin() && n().statut == 'valide')); }
-    function modificationSelonStatut() { return modification() && ((aMoi() && n().statut in ['prive', 'propose']) || admin()); }
+    // ---------- bestiaire, plans et tables de tirage : privés tant qu'un admin ne les a pas validés ----------
+    // Le créateur peut inviter d'autres joueurs à y travailler avec lui (membres) : l'équipe voit et retouche
+    // la pièce en direct. Les autres ne la voient qu'une fois validée, et seulement sa version publiée :
+    // une pièce validée que l'équipe retouche reste validée, sa version d'avant est gardée (fv) et la
+    // retouche attend un admin (revoir). Un admin publie (fv vidé) ou renvoie.
+    function equipe() { return aMoi() || moi() in a().get('membres', []); }
+    function lisibleSelonStatut() {
+      return resource.data.statut == 'valide' || resource.data.proprietaire == moi()
+        || moi() in resource.data.get('membres', []) || admin();
+    }
+    function creationSelonStatut() {
+      return creation() && (admin() || (n().statut in ['prive', 'propose'] && !n().keys().hasAny(['fv', 'revoir'])));
+    }
+    function modificationSelonStatut() {
+      return modification() && (admin() || (equipe()
+        // les membres de l'équipe, seul le créateur les choisit
+        && (aMoi() || !touche().hasAny(['membres']))
+        && (
+          // pas encore validée : privée ou proposée, rien de publié
+          (a().statut in ['prive', 'propose'] && n().statut in ['prive', 'propose'] && !touche().hasAny(['fv', 'revoir']))
+          // validée : elle le reste ; une retouche attend un admin, et la version publiée est gardée telle quelle
+          || (a().statut == 'valide' && n().statut == 'valide'
+              && (!touche().hasAny(['f', 'fv', 'revoir'])
+                  || (n().revoir == true
+                      && (n().get('fv', '') == a().get('fv', '') && a().get('fv', '') != ''
+                          || (a().get('fv', '') == '' && n().fv == a().f))))))));
+    }
     match /creatures/{id} {
       allow read: if invite() && lisibleSelonStatut();
       allow create: if creationSelonStatut();

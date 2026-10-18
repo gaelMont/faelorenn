@@ -68,7 +68,7 @@ const mkV=(n)=>({id:uid(),name:n||'Nouveau village',W:400,H:300,seed:ri(Math.ran
 /* garder : un instant après le dernier geste, ou tout de suite quand la page se ferme */
 let saveT=0;
 function saveNow(){clearTimeout(saveT);saveT=0;try{refreshLocs()}catch(e){}plansApres()}
-function save(){clearTimeout(saveT);saveT=setTimeout(saveNow,300)}
+function save(){clearTimeout(saveT);saveT=setTimeout(saveNow,150)}
 /* annuler : les états d'avant, dans la limite de la mémoire (un monde pèse lourd) */
 function histClear(){hist=[];fut=[];histSize=0;updUndo()}
 function snap(){const s=JSON.stringify(P);hist.push(s);histSize+=s.length;while(hist.length>80||histSize>6e7)histSize-=hist.shift().length;fut=[];updUndo()}

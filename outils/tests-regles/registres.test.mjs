@@ -60,9 +60,34 @@ test('bestiaire : privé, puis validé par un admin', async () => {
 test('plans : leur section ne change pas', async () => {
   await assertSucceeds(setDoc(doc(qui('luc'), 'plans/villages:v1'), neuf('luc', 'Luc', { statut: 'prive', section: 'villages' })));
   await assertFails(setDoc(doc(qui('luc'), 'plans/ailleurs:x'), neuf('luc', 'Luc', { statut: 'prive', section: 'ailleurs' })));
-  await assertSucceeds(updateDoc(doc(qui('oce'), 'plans/batiments:b1'), retouche('oce', { f: '{"y":1}', statut: 'propose' })));
-  await assertFails(updateDoc(doc(qui('oce'), 'plans/batiments:b1'), retouche('oce', { section: 'mondes', statut: 'propose' })));
+  // validé : il le reste, la retouche attend un admin, la version publiée est gardée
+  await assertFails(updateDoc(doc(qui('oce'), 'plans/batiments:b1'), retouche('oce', { f: '{"y":1}', statut: 'propose' })));
+  await assertSucceeds(updateDoc(doc(qui('oce'), 'plans/batiments:b1'), retouche('oce', { f: '{"y":1}', statut: 'valide', revoir: true, fv: '{}' })));
+  await assertFails(updateDoc(doc(qui('oce'), 'plans/batiments:b1'), retouche('oce', { section: 'mondes' })));
   await assertFails(updateDoc(doc(qui('luc'), 'plans/batiments:b1'), retouche('luc', { f: '{}', statut: 'propose' })));
+});
+
+test('à plusieurs : le créateur invite, l’équipe retouche en direct, les autres attendent la validation', async () => {
+  const db = qui('oce');
+  await assertSucceeds(updateDoc(doc(db, 'creatures/cr-oce'), retouche('oce', { membres: ['luc'] })));          // Océane invite Luc
+  await assertSucceeds(getDoc(doc(qui('luc'), 'creatures/cr-oce')));                                           // il la voit
+  await assertSucceeds(getDocs(query(collection(qui('luc'), 'creatures'), where('membres', 'array-contains', 'luc'))));
+  await assertFails(getDocs(query(collection(qui('luc'), 'creatures'), where('membres', 'array-contains', 'oce'))));
+  await assertSucceeds(updateDoc(doc(qui('luc'), 'creatures/cr-oce'), retouche('luc', { f: '{"pv":12}' })));   // et la retouche
+  await assertFails(updateDoc(doc(qui('luc'), 'creatures/cr-oce'), retouche('luc', { membres: ['luc', 'gael'] }))); // pas ses membres
+  await assertFails(updateDoc(doc(qui('luc'), 'creatures/cr-oce'), retouche('luc', { statut: 'valide' })));
+  await assertSucceeds(updateDoc(doc(qui('luc'), 'creatures/cr-oce'), retouche('luc', { statut: 'propose' })));
+  // validée : l'équipe retouche, la version publiée reste, un admin publie
+  await assertSucceeds(updateDoc(doc(qui('gael'), 'creatures/cr-oce'), retouche('gael', { statut: 'valide' })));
+  await assertFails(updateDoc(doc(qui('luc'), 'creatures/cr-oce'), retouche('luc', { f: '{"pv":20}' })));                      // sans attendre un admin
+  await assertFails(updateDoc(doc(qui('luc'), 'creatures/cr-oce'), retouche('luc', { f: '{"pv":20}', revoir: true, fv: '{"pv":99}' }))); // une fausse version publiée
+  await assertSucceeds(updateDoc(doc(qui('luc'), 'creatures/cr-oce'), retouche('luc', { f: '{"pv":20}', revoir: true, fv: '{"pv":12}' })));
+  await assertSucceeds(updateDoc(doc(qui('oce'), 'creatures/cr-oce'), retouche('oce', { f: '{"pv":21}', revoir: true })));    // fv déjà gardée
+  await assertFails(updateDoc(doc(qui('oce'), 'creatures/cr-oce'), retouche('oce', { f: '{"pv":22}', revoir: true, fv: '{"pv":21}' }))); // on ne la change plus
+  await assertFails(updateDoc(doc(qui('oce'), 'creatures/cr-oce'), retouche('oce', { revoir: false })));
+  await assertSucceeds(updateDoc(doc(qui('gael'), 'creatures/cr-oce'), retouche('gael', { revoir: false, fv: '' })));         // publiée
+  await assertFails(updateDoc(doc(qui('luc'), 'creatures/cr-valide'), retouche('luc', { membres: ['luc'] })));             // s'inviter
+  await assertFails(setDoc(doc(qui('luc'), 'creatures/cr-triche'), neuf('luc', 'Luc', { statut: 'prive', fv: '{}' })));
 });
 
 test('compétences : admins seulement ; un joueur propose', async () => {

@@ -665,6 +665,7 @@ function ajouterDepuisCompo(){
   });
   if(creee){ COMPO.qui = {k:'pnj', id:creee.id, nom:creee.nom}; msgTable('Fiche de ' + creee.nom + ' créée, dans le Registre des Visages.', true); }
   z.value = '';
+  frappeTape();   /* le texte est parti : on n'écrit plus, et les autres le voient aussitôt (frappe.js) */
   try{ localStorage.removeItem('faelorenn.table.brouillon'); }catch(e){}
   COMPO.jet = null; COMPO.degats = null; COMPO.vies = []; COMPO.perte = null; COMPO.cible = '';
   dessinerCompositeur(true);

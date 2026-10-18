@@ -55,7 +55,10 @@ function ghcGarder(){
 function ghcPossible(){ try{ return typeof fetch === 'function' && typeof TextEncoder === 'function' && !!window.localStorage; }catch(e){ return false; } }
 /* dans une page hébergée par Claude, les appels vers GitHub sont bloqués */
 function ghcBloque(){ try{ return typeof claude !== 'undefined' && !!claude && typeof claude.use === 'function'; }catch(e){ return false; } }
-const ghcPret = () => GHC.actif && !!GHC.jeton && !!GHC.depot && ghcPossible() && !ghcBloque();
+/* le monde en ligne (paquet compte) a remplacé le dépôt : une fois le compte entré, tout y passe, et GitHub
+   n'est plus jamais appelé. Sans paquet compte (une page d'avant), le dépôt relié sert comme avant. */
+const ghcMonde = () => typeof mondeActif === 'function' && mondeActif();
+const ghcPret = () => ghcMonde() || (typeof COMPTE === 'undefined' && GHC.actif && !!GHC.jeton && !!GHC.depot && ghcPossible() && !ghcBloque());
 const ghcCleDepot = () => GHC.api + '|' + GHC.depot + '|' + GHC.jeton;
 
 /* ---------- les petites choses ---------- */
@@ -103,6 +106,7 @@ function ghcEnAvance(ici, labas){
   });
 }
 function ghcJoueur(){
+  if(typeof COMPTE !== 'undefined' && COMPTE.nom) return COMPTE.nom;
   try{ const m = JSON.parse(localStorage.getItem('faelorenn.table.moi') || 'null'); return m && m.joueur ? String(m.joueur).trim() : ''; }catch(e){ return ''; }
 }
 function ghcIlYA(t){
@@ -199,9 +203,10 @@ function ghcOublier(){ GHC.actif = false; GHC.jeton = ''; GHC_VU = ''; ghcGarder
 /* ce qu'on dit après « Sauvegarder en ligne » */
 function ghcPhraseSauvegarde(r, sujet){
   if(!r.ok) return r.msg || 'La sauvegarde en ligne n’a pas pu se faire.';
-  if(r.rien) return sujet + ' est à jour dans le dépôt ' + GHC.depot + '.';
+  const ou = ghcMonde() ? 'le monde en ligne' : 'le dépôt ' + GHC.depot;
+  if(r.rien) return sujet + ' est à jour dans ' + ou + '.';
   const h = new Date();
-  return sujet + ' est dans le dépôt ' + GHC.depot + ', à ' + String(h.getHours()).padStart(2, '0') + ':' + String(h.getMinutes()).padStart(2, '0') + '.';
+  return sujet + ' est dans ' + ou + ', à ' + String(h.getHours()).padStart(2, '0') + ':' + String(h.getMinutes()).padStart(2, '0') + '.';
 }
 /* pas encore relié : on montre le panneau, prêt à remplir */
 function ghcOuvrirPanneau(){
@@ -214,9 +219,12 @@ function ghcOuvrirPanneau(){
 }
 function ghcSurveiller(fn){
   window.addEventListener('storage', e => { if(e.key === GHC_CLE || e.key === null){ ghcCharger(); try{ fn(); }catch(x){} } });
+  // le compte entré, le registre repart sur le monde en ligne
+  if(typeof compteQuandPret === 'function') compteQuandPret(() => { try{ fn(); }catch(x){ console.error(x); } });
 }
 /* lire un fichier du dépôt une fois, sans le suivre : l'objet, ou null s'il n'existe pas encore */
 function ghcLireUnFichier(chemin){
+  if(ghcMonde()) return mondeLireFichier(chemin);
   if(!ghcPret()) return Promise.resolve(null);
   return fetch(ghcUrl(chemin, true), {headers:ghcEntetes(), cache:'no-store'}).then(r => {
     if(r.status === 404) return '';
@@ -232,7 +240,7 @@ function ghcLireUnFichier(chemin){
 }
 /* ce que le dépôt contient, pour l'accueil */
 function ghcInventaire(){
-  if(!ghcPret()) return Promise.resolve(null);
+  if(ghcMonde() || !ghcPret()) return Promise.resolve(null);
   return fetch(ghcBase() + '/contents/' + (GHC.branche ? '?ref=' + encodeURIComponent(GHC.branche) : ''), {headers:ghcEntetes(), cache:'no-store'}).then(r => {
     if(r.status === 404) return [];
     if(!r.ok) throw {gh:ghcErreur(r)};
@@ -249,6 +257,9 @@ function ghcInventaire(){
    o.rate(d, e)     une lecture a raté
    o.etat(d)        quelque chose a changé : on redessine */
 function ghcDoc(o){
+  // les fichiers que le monde en ligne connaît : mondeDoc a les mêmes gestes (compte/monde-en-ligne.js)
+  const fichier = typeof o.chemin === 'function' ? '' : o.chemin;
+  if(typeof mondeDoc === 'function' && typeof MONDE_FICHIERS !== 'undefined' && MONDE_FICHIERS[fichier]) return mondeDoc(o, MONDE_FICHIERS[fichier]);
   const t = (typeof window !== 'undefined' && window.GHC_TEMPS) || {};   /* les essais vont plus vite */
   const d = {nom:o.nom || '', sha:'', etag:'', boucle:null, ecrit:null, prevu:false, occupe:false, encore:false, reessai:false,
     derniereEcriture:0, pause:0, tLecture:t.lecture || 10000, tRegroupe:t.regroupe || 4000, tEcart:t.ecart || 15000,
@@ -475,7 +486,7 @@ function ghcPanneau(boite, opt){
   ghcStyle();
   boite.innerHTML =
     '<details class="ghc' + (opt.encart ? ' ghc-encart' : '') + '" id="ghcBloc"' + (opt.ouvert ? ' open' : '') + '>' +
-      '<summary><span class="ghc-pastille" id="ghcPastille"></span>Sauvegarde en ligne<span class="ghc-resume" id="ghcResume"></span></summary>' +
+      '<summary><span class="ghc-pastille" id="ghcPastille"></span><span id="ghcSummaryTitre">Sauvegarde en ligne</span><span class="ghc-resume" id="ghcResume"></span></summary>' +
       '<div class="ghc-corps">' +
         '<p class="ghc-texte" id="ghcTexte"></p>' +
         '<p class="ghc-outil" id="ghcOutil" hidden></p>' +
@@ -510,6 +521,24 @@ function ghcPanneau(boite, opt){
     if(t) dire.t = setTimeout(() => { m.hidden = true; }, 12000);
   }
   function dessiner(){
+    // le monde en ligne : plus de dépôt à relier, le panneau dit seulement où tout part
+    const monde = ghcMonde();
+    ['ghcEtapes', 'ghcChamps', 'ghcPlus'].forEach(id => { const x = $g(id); if(x && monde) x.hidden = true; });
+    $g('ghcBloc').querySelector('.ghc-acts').hidden = monde;
+    $g('ghcBloc').querySelector('.ghc-petit').hidden = monde;
+    if(monde){
+      let e = null;
+      try{ e = opt.etat ? opt.etat() : null; }catch(x){}
+      const err = !!(e && e.erreur);
+      $g('ghcPastille').className = 'ghc-pastille' + (err ? ' off' : ' on');
+      $g('ghcResume').textContent = 'le monde en ligne' + (err ? ' · à vérifier' : e && e.texte ? ' · ' + e.texte : '');
+      $g('ghcTexte').textContent = 'Tout ce que tu enregistres part dans le monde en ligne, à ton nom : la table, tes personnages, le bestiaire, les plans, les compétences. Chacun ne change que ce qu’il a créé.';
+      const o2 = $g('ghcOutil');
+      o2.hidden = !err;
+      if(err){ o2.textContent = e.nom + ' : ' + e.erreur; o2.className = 'ghc-outil err'; }
+      $g('ghcSummaryTitre').textContent = 'Monde en ligne';
+      return;
+    }
     const bloque = ghcBloque(), relie = ghcPret();
     let e = null;
     try{ e = relie && opt.etat ? opt.etat() : null; }catch(x){}
@@ -570,6 +599,7 @@ function ghcPanneau(boite, opt){
     dessiner();
   };
   setInterval(() => { if(ghcPret()) dessiner(); }, 10000);
+  if(typeof compteQuandPret === 'function') compteQuandPret(dessiner);
   dessiner();
   return {dessiner:dessiner, dire:dire};
 }

@@ -129,3 +129,15 @@ select:focus-visible,input:focus-visible,textarea:focus-visible,button:focus-vis
   .noprint,.bact,.seg{display:none!important}
   html,body{background:#fff;color:#000}
 }
+
+/* ── competences/proposer.css ── */
+/* un joueur lit les compétences sans les retoucher : seuls les admins les changent (voir propositions.js) */
+.lecture-seule #secPratiques .card,.lecture-seule #secCompetences .card,.lecture-seule #secBanniere .card{pointer-events:none;user-select:text}
+.lecture-seule #secPratiques .card :is(input,select,textarea,button),.lecture-seule #secCompetences .card :is(input,select,textarea,button),.lecture-seule #secBanniere .card :is(input,select,textarea,button){opacity:.55}
+.lecture-seule #secSauve{display:none}
+.propForm{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
+.propForm select,.propForm textarea{font:inherit;font-size:14px;padding:7px 9px;border:1px solid var(--rule);border-radius:2px;background:var(--paper);color:var(--ink)}
+.propForm .btn{align-self:flex-start}
+.propItem{border-top:1px solid var(--rule);padding:8px 0}
+.propTete{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.propTexte{margin:2px 0 0;white-space:pre-wrap}

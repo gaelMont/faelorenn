@@ -41,14 +41,26 @@
   <div class="card"><div id="cptListe"></div></div>
 </section>
 
+<section id="secValidations">
+  <h2><span class="num">4</span> À valider</h2>
+  <p class="hint">Un ennemi, une famille, une table de butin, un plan ou une table de tirage reste privé à son créateur jusqu’à ce qu’il le propose. Le valider le rend visible et utilisable par tous ; le renvoyer le rend privé à son créateur.</p>
+  <div class="card"><div id="valListe"></div></div>
+</section>
+
+<section id="secPropositions">
+  <h2><span class="num">5</span> Les propositions de compétences</h2>
+  <p class="hint">Accepter ne change rien tout seul : fais la retouche dans le Registre des Compétences, puis accepte pour prévenir le joueur.</p>
+  <div class="card"><div id="propAdmin"></div></div>
+</section>
+
 <section id="secCampagnes">
-  <h2><span class="num">4</span> Les campagnes</h2>
+  <h2><span class="num">6</span> Les campagnes</h2>
   <p class="hint">Les séances, les paragraphes, les jets et les rencontres d’une campagne ne se lisent que par ses membres. Son créateur en fait toujours partie.</p>
   <div class="card"><div id="campListe"></div></div>
 </section>
 
 <section id="secImport">
-  <h2><span class="num">5</span> Importer l’ancien monde</h2>
+  <h2><span class="num">7</span> Importer l’ancien monde</h2>
   <p class="hint">Choisis les fichiers .json de l’ancien dépôt privé (table-faelorenn.json d’abord). Ils sont lus ici, dans ton navigateur, et ne vont que dans le monde en ligne. Attribue chaque nom de joueur à un compte : il devient le propriétaire de ce qui porte ce nom. Ce qui est déjà en ligne n’est pas réécrit : l’import peut se relancer.</p>
   <div class="card">
     <input type="file" id="impFichiers" accept=".json,application/json" multiple>

@@ -3,3 +3,4 @@ competences/base.css
 competences/listes.css
 competences/editeur.css
 competences/ecrans-et-impression.css
+competences/proposer.css

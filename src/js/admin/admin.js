@@ -113,7 +113,7 @@ compteQuandPret(c => {
     dessinerComptes(s);
     // les cases des campagnes et l'import ont besoin des comptes : ils se redessinent avec eux
     if(typeof CAMP_SNAP !== 'undefined' && CAMP_SNAP) dessinerCampagnes(CAMP_SNAP);
-    if(typeof IMP !== 'undefined' && IMP.table) dessinerImport();
+    if(typeof IMP !== 'undefined' && Object.keys(IMP.f).length) dessinerImport();
   }, panne('cptListe'));
   FB_DB.collection('invitations').onSnapshot(dessinerInvitations, panne('invListe'));
   FB_DB.collection('demandes').onSnapshot(dessinerDemandes, panne('demListe'));

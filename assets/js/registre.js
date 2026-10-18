@@ -12173,7 +12173,10 @@ function ghcGarder(){
 function ghcPossible(){ try{ return typeof fetch === 'function' && typeof TextEncoder === 'function' && !!window.localStorage; }catch(e){ return false; } }
 /* dans une page hébergée par Claude, les appels vers GitHub sont bloqués */
 function ghcBloque(){ try{ return typeof claude !== 'undefined' && !!claude && typeof claude.use === 'function'; }catch(e){ return false; } }
-const ghcPret = () => GHC.actif && !!GHC.jeton && !!GHC.depot && ghcPossible() && !ghcBloque();
+/* le monde en ligne (paquet compte) a remplacé le dépôt : une fois le compte entré, tout y passe, et GitHub
+   n'est plus jamais appelé. Sans paquet compte (une page d'avant), le dépôt relié sert comme avant. */
+const ghcMonde = () => typeof mondeActif === 'function' && mondeActif();
+const ghcPret = () => ghcMonde() || (typeof COMPTE === 'undefined' && GHC.actif && !!GHC.jeton && !!GHC.depot && ghcPossible() && !ghcBloque());
 const ghcCleDepot = () => GHC.api + '|' + GHC.depot + '|' + GHC.jeton;
 
 /* ---------- les petites choses ---------- */
@@ -12221,6 +12224,7 @@ function ghcEnAvance(ici, labas){
   });
 }
 function ghcJoueur(){
+  if(typeof COMPTE !== 'undefined' && COMPTE.nom) return COMPTE.nom;
   try{ const m = JSON.parse(localStorage.getItem('faelorenn.table.moi') || 'null'); return m && m.joueur ? String(m.joueur).trim() : ''; }catch(e){ return ''; }
 }
 function ghcIlYA(t){
@@ -12317,9 +12321,10 @@ function ghcOublier(){ GHC.actif = false; GHC.jeton = ''; GHC_VU = ''; ghcGarder
 /* ce qu'on dit après « Sauvegarder en ligne » */
 function ghcPhraseSauvegarde(r, sujet){
   if(!r.ok) return r.msg || 'La sauvegarde en ligne n’a pas pu se faire.';
-  if(r.rien) return sujet + ' est à jour dans le dépôt ' + GHC.depot + '.';
+  const ou = ghcMonde() ? 'le monde en ligne' : 'le dépôt ' + GHC.depot;
+  if(r.rien) return sujet + ' est à jour dans ' + ou + '.';
   const h = new Date();
-  return sujet + ' est dans le dépôt ' + GHC.depot + ', à ' + String(h.getHours()).padStart(2, '0') + ':' + String(h.getMinutes()).padStart(2, '0') + '.';
+  return sujet + ' est dans ' + ou + ', à ' + String(h.getHours()).padStart(2, '0') + ':' + String(h.getMinutes()).padStart(2, '0') + '.';
 }
 /* pas encore relié : on montre le panneau, prêt à remplir */
 function ghcOuvrirPanneau(){
@@ -12332,9 +12337,12 @@ function ghcOuvrirPanneau(){
 }
 function ghcSurveiller(fn){
   window.addEventListener('storage', e => { if(e.key === GHC_CLE || e.key === null){ ghcCharger(); try{ fn(); }catch(x){} } });
+  // le compte entré, le registre repart sur le monde en ligne
+  if(typeof compteQuandPret === 'function') compteQuandPret(() => { try{ fn(); }catch(x){ console.error(x); } });
 }
 /* lire un fichier du dépôt une fois, sans le suivre : l'objet, ou null s'il n'existe pas encore */
 function ghcLireUnFichier(chemin){
+  if(ghcMonde()) return mondeLireFichier(chemin);
   if(!ghcPret()) return Promise.resolve(null);
   return fetch(ghcUrl(chemin, true), {headers:ghcEntetes(), cache:'no-store'}).then(r => {
     if(r.status === 404) return '';
@@ -12350,7 +12358,7 @@ function ghcLireUnFichier(chemin){
 }
 /* ce que le dépôt contient, pour l'accueil */
 function ghcInventaire(){
-  if(!ghcPret()) return Promise.resolve(null);
+  if(ghcMonde() || !ghcPret()) return Promise.resolve(null);
   return fetch(ghcBase() + '/contents/' + (GHC.branche ? '?ref=' + encodeURIComponent(GHC.branche) : ''), {headers:ghcEntetes(), cache:'no-store'}).then(r => {
     if(r.status === 404) return [];
     if(!r.ok) throw {gh:ghcErreur(r)};
@@ -12367,6 +12375,9 @@ function ghcInventaire(){
    o.rate(d, e)     une lecture a raté
    o.etat(d)        quelque chose a changé : on redessine */
 function ghcDoc(o){
+  // les fichiers que le monde en ligne connaît : mondeDoc a les mêmes gestes (compte/monde-en-ligne.js)
+  const fichier = typeof o.chemin === 'function' ? '' : o.chemin;
+  if(typeof mondeDoc === 'function' && typeof MONDE_FICHIERS !== 'undefined' && MONDE_FICHIERS[fichier]) return mondeDoc(o, MONDE_FICHIERS[fichier]);
   const t = (typeof window !== 'undefined' && window.GHC_TEMPS) || {};   /* les essais vont plus vite */
   const d = {nom:o.nom || '', sha:'', etag:'', boucle:null, ecrit:null, prevu:false, occupe:false, encore:false, reessai:false,
     derniereEcriture:0, pause:0, tLecture:t.lecture || 10000, tRegroupe:t.regroupe || 4000, tEcart:t.ecart || 15000,
@@ -12593,7 +12604,7 @@ function ghcPanneau(boite, opt){
   ghcStyle();
   boite.innerHTML =
     '<details class="ghc' + (opt.encart ? ' ghc-encart' : '') + '" id="ghcBloc"' + (opt.ouvert ? ' open' : '') + '>' +
-      '<summary><span class="ghc-pastille" id="ghcPastille"></span>Sauvegarde en ligne<span class="ghc-resume" id="ghcResume"></span></summary>' +
+      '<summary><span class="ghc-pastille" id="ghcPastille"></span><span id="ghcSummaryTitre">Sauvegarde en ligne</span><span class="ghc-resume" id="ghcResume"></span></summary>' +
       '<div class="ghc-corps">' +
         '<p class="ghc-texte" id="ghcTexte"></p>' +
         '<p class="ghc-outil" id="ghcOutil" hidden></p>' +
@@ -12628,6 +12639,24 @@ function ghcPanneau(boite, opt){
     if(t) dire.t = setTimeout(() => { m.hidden = true; }, 12000);
   }
   function dessiner(){
+    // le monde en ligne : plus de dépôt à relier, le panneau dit seulement où tout part
+    const monde = ghcMonde();
+    ['ghcEtapes', 'ghcChamps', 'ghcPlus'].forEach(id => { const x = $g(id); if(x && monde) x.hidden = true; });
+    $g('ghcBloc').querySelector('.ghc-acts').hidden = monde;
+    $g('ghcBloc').querySelector('.ghc-petit').hidden = monde;
+    if(monde){
+      let e = null;
+      try{ e = opt.etat ? opt.etat() : null; }catch(x){}
+      const err = !!(e && e.erreur);
+      $g('ghcPastille').className = 'ghc-pastille' + (err ? ' off' : ' on');
+      $g('ghcResume').textContent = 'le monde en ligne' + (err ? ' · à vérifier' : e && e.texte ? ' · ' + e.texte : '');
+      $g('ghcTexte').textContent = 'Tout ce que tu enregistres part dans le monde en ligne, à ton nom : la table, tes personnages, le bestiaire, les plans, les compétences. Chacun ne change que ce qu’il a créé.';
+      const o2 = $g('ghcOutil');
+      o2.hidden = !err;
+      if(err){ o2.textContent = e.nom + ' : ' + e.erreur; o2.className = 'ghc-outil err'; }
+      $g('ghcSummaryTitre').textContent = 'Monde en ligne';
+      return;
+    }
     const bloque = ghcBloque(), relie = ghcPret();
     let e = null;
     try{ e = relie && opt.etat ? opt.etat() : null; }catch(x){}
@@ -12688,6 +12717,7 @@ function ghcPanneau(boite, opt){
     dessiner();
   };
   setInterval(() => { if(ghcPret()) dessiner(); }, 10000);
+  if(typeof compteQuandPret === 'function') compteQuandPret(dessiner);
   dessiner();
   return {dessiner:dessiner, dire:dire};
 }
@@ -12869,98 +12899,10 @@ function depuisDoc(k, doc){
   }
   return x;
 }
-function formeJson(s){
-  if(typeof s !== 'string' || !s) return {};
-  try{ const o = JSON.parse(s); return o && typeof o === 'object' ? o : {}; }catch(e){ return {}; }
-}
 
 /* les jets : un document chacun, jamais retouché */
 function jetVersDoc(j, t){ return {f:JSON.stringify(j), campagne:formeCampagneEff(t, j.campagne)}; }
 function jetDepuisDoc(doc){ return formeJson(doc.f); }
-
-// ── commun/monde-en-ligne.js ──
-/* ============ le monde en ligne : écouter et écrire les documents Firestore ============
-   La mécanique commune aux registres qui vivent dans Firestore (FB_DB et COMPTE viennent du paquet compte).
-   - On ne relit que le neuf : chaque écoute demande les documents dont majS (l'heure du serveur) est
-     plus récente que le dernier vu, gardé dans ce navigateur avec le cache local. Un nouvel appareil
-     lit tout une fois, puis seulement ce qui change : c'est ce qui tient le forfait gratuit.
-   - On n'écrit que ce qui a changé : chaque document est comparé à son « ombre », la dernière version
-     reçue du serveur, groupe par groupe (f, e, c) ; seuls les groupes différents partent.
-   - Ce que le serveur refuse (ce n'est pas à toi) revient à l'ombre, et on le dit.
-   Les règles de firestore.rules ont le dernier mot ; ce module ne fait que les suivre. */
-
-const MONDE_MARGE = 120000;          // on relit deux minutes avant le dernier vu : rien ne passe entre deux écritures
-const MONDE_OMBRES = {};             // collection → id → le document tel que le serveur l'a
-const MONDE_ECOUTES = {};            // clé d'écoute → fonction pour l'arrêter
-
-function mondeCleCurseurs(){ return 'faelorenn.curseurs.' + COMPTE.uid; }
-function mondeCurseurs(){
-  try{ return JSON.parse(localStorage.getItem(mondeCleCurseurs()) || '{}') || {}; }catch(e){ return {}; }
-}
-function mondeGarderCurseur(cle, t){
-  const c = mondeCurseurs();
-  if((c[cle] || 0) >= t) return;
-  c[cle] = t;
-  try{ localStorage.setItem(mondeCleCurseurs(), JSON.stringify(c)); }catch(e){}
-}
-/* le cache local a été vidé (autre compte, navigateur nettoyé) : on relit tout */
-function mondeOublierCurseurs(){ try{ localStorage.removeItem(mondeCleCurseurs()); }catch(e){} }
-
-function mondeOmbre(col, id){ return (MONDE_OMBRES[col] || {})[id] || null; }
-function mondeGarderOmbre(col, id, d){ (MONDE_OMBRES[col] = MONDE_OMBRES[col] || {})[id] = d; }
-function mondeProprio(col, id){ const o = mondeOmbre(col, id); return o ? {uid:o.proprietaire, nom:o.proprietaireNom} : null; }
-function mondeTemps(t){ return t && typeof t.toMillis === 'function' ? t.toMillis() : 0; }
-
-/* écouter une requête, seulement le neuf. surDocs reçoit [{id, data}] ; la clé distingue les écoutes.
-   surServeur est appelé une fois, à la première réponse du serveur (pas du cache), même vide */
-function mondeEcouter(cle, requete, surDocs, surErreur, depuisMin, surServeur){
-  mondeArreter(cle);
-  const depuis = Math.max(0, (mondeCurseurs()[cle] || 0) - MONDE_MARGE, depuisMin || 0);
-  const q = requete.where('majS', '>', firebase.firestore.Timestamp.fromMillis(depuis));
-  let servi = false;
-  MONDE_ECOUTES[cle] = q.onSnapshot({includeMetadataChanges:true}, snap => {
-    if(!servi && !snap.metadata.fromCache){ servi = true; setTimeout(() => { if(surServeur) surServeur(); }, 0); }
-    const docs = [];
-    let max = 0;
-    snap.docChanges().forEach(ch => {
-      if(ch.type === 'removed') return;
-      const data = ch.doc.data({serverTimestamps:'estimate'});
-      docs.push({id:ch.doc.id, data:data});
-      if(!ch.doc.metadata.hasPendingWrites) max = Math.max(max, mondeTemps(data.majS));
-    });
-    if(docs.length) surDocs(docs);
-    // le curseur n'avance que sur ce que le serveur a confirmé
-    if(max && !snap.metadata.fromCache) mondeGarderCurseur(cle, max);
-  }, e => { if(surErreur) surErreur(e); });
-}
-function mondeArreter(cle){ if(MONDE_ECOUTES[cle]){ MONDE_ECOUTES[cle](); delete MONDE_ECOUTES[cle]; } }
-function mondeToutArreter(){ Object.keys(MONDE_ECOUTES).forEach(mondeArreter); }
-
-/* écrire un document : création s'il n'a pas d'ombre, sinon seulement les champs qui diffèrent.
-   champs : {f, e?, c?, campagne?, perso?, statut?, membres?}. Rend une promesse ; refuse : {code} */
-function mondeEcrire(col, id, champs){
-  const ref = FB_DB.collection(col).doc(id), ombre = mondeOmbre(col, id);
-  const heure = firebase.firestore.FieldValue.serverTimestamp();
-  if(!ombre){
-    const d = Object.assign({}, champs, {proprietaire:COMPTE.uid, proprietaireNom:COMPTE.nom, cree:heure, majS:heure, modifiePar:COMPTE.uid});
-    mondeGarderOmbre(col, id, Object.assign({}, d, {cree:null, majS:null}));
-    return ref.set(d).catch(e => { delete MONDE_OMBRES[col][id]; throw e; });
-  }
-  const maj = {};
-  Object.keys(champs).forEach(k => { if(JSON.stringify(champs[k]) !== JSON.stringify(ombre[k])) maj[k] = champs[k]; });
-  if(!Object.keys(maj).length) return Promise.resolve(false);
-  const avant = Object.assign({}, ombre);
-  mondeGarderOmbre(col, id, Object.assign({}, ombre, maj));
-  return ref.update(Object.assign(maj, {majS:heure, modifiePar:COMPTE.uid})).catch(e => { mondeGarderOmbre(col, id, avant); throw e; });
-}
-
-/* ce que le serveur refuse, dit simplement */
-function mondeRefus(e){
-  if(e && e.code === 'permission-denied') return 'Ce n’est pas à toi de changer ça.';
-  if(e && e.code === 'resource-exhausted') return 'Le forfait du jour est atteint : tout reste gardé ici, et repartira demain matin.';
-  if(e && (e.code === 'unavailable' || e.code === 'deadline-exceeded')) return 'Hors ligne : tout reste gardé ici, et repartira au retour de la connexion.';
-  return 'Erreur en ligne : ' + ((e && (e.message || e.code)) || e);
-}
 
 // ── registre/table-en-ligne.js ──
 /* ============ la table en ligne : le monde partagé dans Firestore ============

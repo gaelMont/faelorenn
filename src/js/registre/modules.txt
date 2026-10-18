@@ -32,7 +32,6 @@ registre/missions.js
 commun/sync-github.js
 registre/table-sur-github.js
 commun/formes-en-ligne.js
-commun/monde-en-ligne.js
 registre/table-en-ligne.js
 registre/personnages-du-havre.js
 commun/fiche-du-word.js

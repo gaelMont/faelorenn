@@ -83,10 +83,6 @@ function depuisDoc(k, doc){
   }
   return x;
 }
-function formeJson(s){
-  if(typeof s !== 'string' || !s) return {};
-  try{ const o = JSON.parse(s); return o && typeof o === 'object' ? o : {}; }catch(e){ return {}; }
-}
 
 /* les jets : un document chacun, jamais retouché */
 function jetVersDoc(j, t){ return {f:JSON.stringify(j), campagne:formeCampagneEff(t, j.campagne)}; }

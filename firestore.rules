@@ -111,7 +111,7 @@ service cloud.firestore {
     }
     function aMoi() { return a().proprietaire == moi(); }
     function formeOk() {
-      return n().keys().hasOnly(['f', 'e', 'c', 'campagne', 'perso', 'statut', 'membres',
+      return n().keys().hasOnly(['f', 'e', 'c', 'campagne', 'perso', 'statut', 'membres', 'section',
                                  'proprietaire', 'proprietaireNom', 'cree', 'majS', 'modifiePar'])
         && n().f is string && n().get('e', '') is string && n().get('c', '') is string
         && n().majS == request.time && n().modifiePar == moi()
@@ -245,6 +245,58 @@ service cloud.firestore {
       allow read: if invite();
       allow create: if creation() && admin();
       allow update: if modification() && (seulement(['e']) || admin());
+    }
+
+    // ---------- les personnages du Havre : à leur joueur, vus de tous ----------
+    match /havre/{id} {
+      allow read: if invite();
+      allow create: if creation();
+      allow update: if modification() && (aMoi() || admin());
+    }
+
+    // ---------- bestiaire et plans : privés tant qu'un admin ne les a pas validés ----------
+    // (même règle que les tables de tirage) une pièce validée que son créateur retouche repasse en proposition
+    function lisibleSelonStatut() { return resource.data.statut == 'valide' || resource.data.proprietaire == moi() || admin(); }
+    function creationSelonStatut() { return creation() && (n().statut in ['prive', 'propose'] || (admin() && n().statut == 'valide')); }
+    function modificationSelonStatut() { return modification() && ((aMoi() && n().statut in ['prive', 'propose']) || admin()); }
+    match /creatures/{id} {
+      allow read: if invite() && lisibleSelonStatut();
+      allow create: if creationSelonStatut();
+      allow update: if modificationSelonStatut();
+    }
+    match /familles/{id} {
+      allow read: if invite() && lisibleSelonStatut();
+      allow create: if creationSelonStatut();
+      allow update: if modificationSelonStatut();
+    }
+    match /butins/{id} {
+      allow read: if invite() && lisibleSelonStatut();
+      allow create: if creationSelonStatut();
+      allow update: if modificationSelonStatut();
+    }
+    match /plans/{id} {
+      allow read: if invite() && lisibleSelonStatut();
+      allow create: if creationSelonStatut() && n().section in ['batiments', 'villages', 'mondes'];
+      allow update: if modificationSelonStatut() && n().section == a().section;
+    }
+
+    // ---------- les compétences : seuls les admins les changent ----------
+    match /regles/{doc} {
+      allow read: if invite();
+      allow create: if creation() && admin();
+      allow update: if modification() && admin();
+    }
+    // ce qu'un joueur propose de changer, qu'un admin accepte ou refuse
+    match /propositions/{id} {
+      allow read: if invite() && (resource.data.proprietaire == moi() || admin());
+      allow create: if invite() && n().keys().hasOnly(['texte', 'sujet', 'proprietaire', 'proprietaireNom', 't', 'statut'])
+        && n().proprietaire == moi() && n().proprietaireNom == get(compteDe(moi())).data.nom
+        && n().t == request.time && n().statut == 'ouverte'
+        && n().texte is string && n().texte.size() > 0 && n().texte.size() <= 4000
+        && n().sujet is string && n().sujet.size() <= 200;
+      allow update: if admin() && touche().hasOnly(['statut', 'reponse', 'decidePar', 'decideLe'])
+        && n().statut in ['acceptee', 'refusee'] && n().decidePar == moi() && n().decideLe == request.time;
+      allow delete: if admin();
     }
 
     // ---------- tout le reste : fermé ----------

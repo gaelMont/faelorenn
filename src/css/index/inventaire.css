@@ -6,3 +6,6 @@
 .inv .fic{font-size:13px;color:var(--muted);text-align:right}
 .inv .ou{grid-column:1 / -1;font-size:13.5px;color:var(--muted)}
 .inv li.la .ou{color:var(--sage)}
+/* tes créations privées : le bouton pour les proposer, au bout de la ligne */
+.inv li .btn-mini{grid-column:2;grid-row:1;font:inherit;font-size:13px;padding:4px 10px;border:1px solid var(--forest);background:transparent;color:var(--forest);border-radius:2px;cursor:pointer}
+.inv li .btn-mini:disabled{opacity:.45;cursor:default}

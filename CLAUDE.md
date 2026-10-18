@@ -30,31 +30,39 @@ node outils/build.mjs --verifier   # writes nothing; fails if a generated file i
 - **Cross-page communication**: pages talk through `localStorage` (`faelorenn.*` keys) plus `storage` event listeners, through named windows (`ONGLET_*`), and through `postMessage` (plans → table combat map). Inline mentions in text: `/Nom` cites a person, `--Lieu` cites a place.
 - **Claude artifact runtime**: the code checks for `claude.use` (`ghcBloque()`, the `downloads` capability). Inside a Claude artifact, GitHub sync is off and downloads go through the runtime. Keep both paths working.
 
-## Accounts (Firebase), being rolled out
+## Accounts and the online world (Firebase)
 
-The plan is to move the shared world from the GitHub sync to Firebase (Auth + Firestore, project `faelorenn`, free Spark plan), registry by registry. **Step 1 (done)**:
-- every page starts veiled: the `compte` bundle (`src/js/compte/`, loaded with the vendored `firebase` compat SDK by `src/morceaux/compte.html`, included in `barre-registres` and in index/livre) shows a gate until the user is signed in (Google or e-mail) **and** has an account doc;
-- an account comes from a one-time invitation link (`index.html?invitation=CODE`) or an admin accepting an entry request. Roles are `joueur` and `admin`, and the founder can't be demoted;
-- `admin.html` manages invitations, requests and accounts;
-- the account's nickname becomes `MOI.joueur` (the "Tu es" field is read-only);
-- the registry data itself is still local plus GitHub sync.
+All data lives in Firebase (Auth + Firestore, project `faelorenn`, free Spark plan); login is mandatory, by invitation.
 
-The other pieces:
-- `compteQuandPret(fn)` runs code once the user is in. `COMPTE = {etat, uid, nom, role}`. `FB_DB` and `FB_AUTH` are the Firebase handles.
-- **`firestore.rules` is the real security**: the config in `src/js/compte/config.js` is public by design. Every rule change needs tests in `outils/tests-regles/` (both allowed and refused cases):
+- **Login gate**: every page starts veiled. The `compte` bundle (`src/js/compte/`: config, `compte.js`, `monde-en-ligne.js`, loaded after the vendored `firebase` compat SDK by `src/morceaux/compte.html`) shows the gate until the user is signed in (Google or e-mail) **and** has an account doc.
+  - Accounts come from a one-time invitation link (`index.html?invitation=CODE`), or from an admin accepting an entry request.
+  - Roles are `joueur` and `admin`; the founder (`fondateur: true`) can't be demoted.
+  - `compteQuandPret(fn)` runs code once inside. `COMPTE = {etat, uid, nom, role}`. `FB_DB`/`FB_AUTH` are the Firebase handles. The nickname becomes `MOI.joueur`.
+- **The table** (`registre` bundle): `registre/table-en-ligne.js` keeps the in-memory `T` and `fusionner()`, and only swaps the transport.
+  - Each `CLES_FUSION` entry is one document, shaped by `commun/formes-en-ligne.js`: JSON groups `f` (sheet, owner only), `e` (game state, writable by campaign members, or by everyone for PNJ and missions) and `c` (the session's combat map), plus `proprietaire`, `campagne`, `majS` and so on.
+  - Ownership is tracked in the sync layer (`mondeOmbre(col, id)`), **never in `T`**: the `norm*` functions rebuild objects field by field.
+  - Reads are deltas on `majS` (server time) with cursors in localStorage. Campaign-private collections (séances, paragraphes, rencontres, adversaires, jets) are read with one query per campaign the user belongs to.
+  - Writes send only the changed groups. A refused change reverts to the server version.
+  - The local cache is per account (`faelorenn.compte.dernier`): another account, or the first online start, starts from an empty `T`.
+- **The other registries** (Havre, bestiary, skills, plans) still call the old GitHub API in `commun/sync-github.js`, which is now a **façade**.
+  - Once logged in, `ghcDoc`, `ghcPret`, `ghcLireUnFichier` and `ghcPanneau` go to `mondeDoc`, `mondeActif`, `mondeLireFichier` and an online panel (`compte/monde-en-ligne.js`, `MONDE_FICHIERS`). GitHub is never called.
+  - `mondeDoc` splits each "file" into one doc per piece: `havre`, `creatures`, `familles`, `butins`, `plans` (ids `section:id`), plus the single doc `regles/maison`.
+- **Validation**: creatures, familles, butins, plans and draw tables (`tables`) carry `statut` (`prive` → `propose` → `valide`). Players propose from the home page (`index/creations.js`); admins validate in `admin.html`. An owner editing a validated piece sends it back to `propose`.
+- **Skills**: admins only. Players see them read-only and send `propositions` (`competences/propositions.js`).
+- **`admin.html`**: invitations, entry requests, accounts, the validation queue, skill proposals, campaign members, and the **import** of the old private repo's JSON files (lossless, idempotent, name → account mapping).
+- **`firestore.rules` is the real security**: the config in `src/js/compte/config.js` is public by design. Every rule change needs tests in `outils/tests-regles/` (30 today, allowed and refused cases) before deploying:
 
   ```
   cd outils/tests-regles && npm install && npm test   # Firebase emulator, needs Java 21; CI runs it too
-  firebase deploy --only firestore:rules              # only after the tests pass
+  firebase deploy --only firestore                    # rules + indexes (firestore.indexes.json)
   ```
 
-- `?emulateur` on localhost points the site at local emulators (`firebase emulators:start --only auth,firestore`).
-- Snapshots inject a fake account (`window.FAE_ESSAI`) that skips Firebase.
-- The full plan and its decisions: `C:\Users\gmont\.claude\plans\en-attendant-tu-peux-declarative-map.md` (on Gaël's machine). Next: a sync layer mapping each table entry to a Firestore document (ownership tracked in that layer, not in `T`, because the `norm*` functions rebuild objects field by field), campaign-private reads, admin validation of enemies, plans and draw tables, skill proposals, then the import of the private JSON files.
+- `?emulateur` on localhost points the site at local emulators (`firebase emulators:start --only auth,firestore`). Snapshots inject a fake account (`window.FAE_ESSAI`) that skips Firebase.
+- The plan and its decisions: `C:\Users\gmont\.claude\plans\en-attendant-tu-peux-declarative-map.md` (on Gaël's machine). Still to do: lore UI on PNJ sheets, campaign member management from the table, per-entry UI guards in the registers (the rules already refuse), and removal of the GitHub code (`ghc*`, FSA shared-file mode).
 
 ## Privacy constraint
 
-This repo is public and contains only code and rulebook content. Player data (characters, sessions, home-made bestiary, plans) lives in browser localStorage and in the user's private sync repo (`faelorenn-table`, one JSON file per registry). Never write player data or tokens into this repo, and don't change those JSON formats without a migration.
+This repo is public and contains only code and rulebook content. Player data lives in Firestore, protected by `firestore.rules`, and in each browser's cache. The old private repo (`faelorenn-table`) is only an import source. Never write player data, tokens or real exports into this repo (tests use fictional data), and keep the document shapes in `formes-en-ligne.js` / `MONDE_FICHIERS` stable, or migrate them.
 
 ## Checking a change
 

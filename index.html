@@ -7,12 +7,12 @@
 <title>Les registres de Faelorenn</title>
 <meta name="description" content="Les outils de Faelorenn : créer ses personnages, tenir la campagne à plusieurs, tirer les rencontres.">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,600;0,700;1,400&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
-<link rel="stylesheet" href="assets/css/index.css?v=b3e753a214">
+<link rel="stylesheet" href="assets/css/index.css?v=dc1cb33541">
 </head>
 <body>
 <link rel="stylesheet" href="assets/css/compte.css?v=7f15b187f9">
 <script src="assets/js/firebase.js?v=9a3a030513"></script>
-<script src="assets/js/compte.js?v=99157fb61a"></script>
+<script src="assets/js/compte.js?v=bc01e49581"></script>
 <div class="wrap">
 <header>
   <p class="sur">Faelorenn</p>
@@ -73,8 +73,8 @@
   </a>
 </nav>
 
-<h2 id="sauvegarde">Tout garder en ligne</h2>
-<p>Sans rien relier, chaque registre garde ce que tu fais dans ce navigateur, et seulement là : un nettoyage du navigateur, un autre ordinateur, et tout est à refaire. Relie une fois un dépôt GitHub privé : la table et ses PNJ, tes personnages, ton bestiaire, tes retouches des règles et tes plans y partent tout seuls, et tu les retrouves partout où le dépôt est relié.</p>
+<h2 id="sauvegarde">Le monde en ligne</h2>
+<p>Tout ce que tu fais dans les registres part dans le monde en ligne, à ton nom : la table et ses PNJ, tes personnages, ton bestiaire, tes plans, tes tables de tirage. Tu le retrouves sur n’importe quel ordinateur en te connectant, et ceux qui jouent avec toi le reçoivent en quelques secondes. Chacun ne change que ce qu’il a créé ; dans une campagne, ses membres changent aussi l’état de jeu des personnages (les PV, les coups, les états), jamais leur fiche.</p>
 <div id="ghcPlace"></div>
 <div class="inventaire" id="inventaire" hidden>
   <p class="lab">Dans le dépôt</p>
@@ -82,34 +82,25 @@
   <p class="note" id="invNote"></p>
 </div>
 
-<h2>Mettre le dépôt en place</h2>
-<ol>
-  <li>Sur GitHub, crée un dépôt <b>privé</b>, <code>faelorenn-table</code> par exemple, et coche « Add a README file » pour qu’il ne soit pas vide.</li>
-  <li>Crée un jeton : Settings, Developer settings, Personal access tokens, <a href="https://github.com/settings/personal-access-tokens/new" rel="noopener">Fine-grained tokens</a>, Generate new token. Dans <i>Repository access</i>, choisis seulement ce dépôt. Dans les permissions du dépôt, mets <i>Contents</i> en <i>Read and write</i>. Donne-lui une date d’expiration.</li>
-  <li>Colle le dépôt et le jeton ci-dessus, puis « Relier ». Les registres de ce navigateur s’en servent aussitôt.</li>
-  <li>Donne le même dépôt et le même jeton à ceux qui jouent avec toi, par un message privé. Un jeton à accès fin ne sert que pour les dépôts de son propriétaire : les autres ne peuvent pas s’en faire un pour le tien.</li>
-</ol>
-<div class="encart">
-  <p>Le jeton n’ouvre que ce dépôt-là, et il reste dans le navigateur où on l’a collé. S’il se perd, supprime-le sur GitHub et crée-en un autre : rien de ce qui est dans le dépôt n’en souffre.</p>
-  <p class="note">Chaque enregistrement devient une version dans l’historique du dépôt. Les registres regroupent les changements et n’écrivent jamais deux fois en moins de quinze secondes : GitHub en accepte 500 par heure et par jeton, ce qui laisse de la marge même à plusieurs pendant une séance chargée.</p>
-</div>
+<h2 id="creations">Tes créations privées</h2>
+<p>Un ennemi, une famille, une table de butin, un plan ou une table de tirage que tu crées reste à toi seul. Propose-le : un admin le valide, et tout le monde peut s’en servir. Si tu retouches une création validée, elle repasse en proposition.</p>
+<div class="encart" id="creations-liste"><p class="note">Connecte-toi pour voir tes créations.</p></div>
 
 <h2>Jouer à plusieurs</h2>
-<p>Pour la table, trois chemins :</p>
 <ol class="chemins">
-  <li><b>Par la sauvegarde en ligne.</b> Chacun relie le même dépôt. Chaque changement y part tout seul, et les autres le reçoivent dans les dix à trente secondes.</li>
-  <li><b>Par un dossier partagé.</b> Le fichier de table posé dans Drive, OneDrive ou Dropbox, synchronisé sur chaque ordinateur. Il faut Chrome ou Edge, et le fichier posé sur l’ordinateur plutôt que le site.</li>
-  <li><b>Par un .json.</b> On l’enregistre, on l’envoie, l’autre l’importe. Tout se fusionne sans rien écraser.</li>
+  <li><b>Entrer dans le monde.</b> Un admin t’envoie un lien d’invitation ; tu te connectes (Google ou e-mail), tu choisis ton nom de joueur.</li>
+  <li><b>Une campagne.</b> Celui qui la crée choisit ses membres. Ses séances, ses paragraphes, ses jets et ses rencontres ne se lisent que par eux ; le reste du monde (les PNJ, les lieux, les liens, les missions, les personnages) est commun.</li>
+  <li><b>Hors ligne.</b> Ce que tu fais sans connexion reste dans ton navigateur et part dès qu’elle revient.</li>
 </ol>
 
 <h2>Ce que ce site montre</h2>
-<p>Le site est public : avec un compte GitHub gratuit, le dépôt qui l’héberge doit l’être, et n’importe qui peut lire le code des registres, avec ce qu’il contient du livre (peuples, Pratiques, bestiaire).</p>
-<p>Vos personnages, vos séances, votre bestiaire et vos retouches des règles et vos plans ne sont jamais dans ce dépôt-là. Ils restent dans vos navigateurs, et dans votre dépôt privé si vous reliez la sauvegarde en ligne.</p>
+<p>Le site est public : n’importe qui peut lire le code des registres, avec ce qu’il contient du livre (peuples, Pratiques, bestiaire).</p>
+<p>Vos personnages, vos séances, votre bestiaire, vos plans et vos retouches ne sont jamais dans ce code. Ils sont dans le monde en ligne, que seuls les comptes invités peuvent lire, et dont les campagnes ne s’ouvrent qu’à leurs membres.</p>
 
 <footer>Faelorenn · mis à jour le 9 octobre 2026</footer>
 </div>
 <script src="assets/js/site.js?v=24971e46c0"></script>
-<script src="assets/js/sync-github.js?v=31f66b1f67"></script>
-<script src="assets/js/index.js?v=1cd54e7ea0"></script>
+<script src="assets/js/sync-github.js?v=9f8682a562"></script>
+<script src="assets/js/index.js?v=ca6ee5d9ba"></script>
 </body>
 </html>

@@ -50,7 +50,14 @@ function fondreMiens(autres){
   });
   return change;
 }
-const miensVivants = () => Object.keys(MIENS).map(k => MIENS[k]).filter(r => !r.supprime).sort((a, b) => (b.maj || 0) - (a.maj || 0));
+/* en ligne, « tes personnages » sont les tiens : ceux des autres joueurs ne se retouchent pas ici
+   (ils vont à la table par le Registre de la Table). Un personnage pas encore parti n'a pas de trace en ligne : il est à toi */
+const estMien = r => {
+  if(typeof mondeActif !== 'function' || !mondeActif()) return true;
+  const o = mondeOmbre('havre', r.id);
+  return !o || o.proprietaire === COMPTE.uid;
+};
+const miensVivants = () => Object.keys(MIENS).map(k => MIENS[k]).filter(r => !r.supprime && estMien(r)).sort((a, b) => (b.maj || 0) - (a.maj || 0));
 
 function slugMien(s){ return String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 30) || 'perso'; }
 function copieS(){

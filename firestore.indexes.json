@@ -97,6 +97,118 @@
           "order": "ASCENDING"
         }
       ]
+    },
+    {
+      "collectionGroup": "creatures",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "statut",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "majS",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "creatures",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "proprietaire",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "majS",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "familles",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "statut",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "majS",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "familles",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "proprietaire",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "majS",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "butins",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "statut",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "majS",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "butins",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "proprietaire",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "majS",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "plans",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "statut",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "majS",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "plans",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "proprietaire",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "majS",
+          "order": "ASCENDING"
+        }
+      ]
     }
   ],
   "fieldOverrides": []

@@ -9,4 +9,5 @@ commun/sync-github.js
 competences/sur-github.js
 commun/telechargement.js
 competences/sauvegarde.js
+competences/propositions.js
 competences/demarrage.js

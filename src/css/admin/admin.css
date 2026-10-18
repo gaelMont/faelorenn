@@ -21,3 +21,5 @@
 .adfichiers li{margin:2px 0}
 #impCorps select{font:inherit;font-size:14px;padding:5px 8px;border:1px solid var(--rule);border-radius:2px;background:var(--paper);color:var(--ink)}
 #impCorps .adtable{margin-bottom:14px}
+.adreponse{flex:1 1 220px;min-width:0;font:inherit;font-size:14px;padding:6px 9px;border:1px solid var(--rule);border-radius:2px;background:var(--paper);color:var(--ink)}
+.propTexte{margin:4px 0 8px;white-space:pre-wrap}

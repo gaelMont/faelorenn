@@ -298,6 +298,9 @@ function demarrerCompte(){
     FB_AUTH.useEmulator('http://127.0.0.1:9099', {disableWarnings:true});
     FB_DB.useEmulator('127.0.0.1', 8080);
   }
+  // hors ligne, ce qu'on écrit attend dans le navigateur et part au retour de la connexion, même après fermeture.
+  // Plusieurs onglets ouverts partagent ce cache ; un navigateur qui ne le permet pas travaille sans.
+  FB_DB.enablePersistence({synchronizeTabs:true}).catch(() => {});
   porteCarte('Les registres de Faelorenn', 'Un instant…');
   FB_AUTH.onAuthStateChanged(user => {
     if(!user){ if(COMPTE.etat === 'dedans') location.reload(); else ecranDehors(); return; }

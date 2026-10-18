@@ -109,7 +109,12 @@ compteQuandPret(c => {
   $('adCorps').hidden = false;
   $('invForm').onsubmit = creerInvitation;
   const panne = boite => e => dire($(boite), compteErreur(e));
-  FB_DB.collection('comptes').onSnapshot(s => { dessinerComptes(s); }, panne('cptListe'));
+  FB_DB.collection('comptes').onSnapshot(s => {
+    dessinerComptes(s);
+    // les cases des campagnes et l'import ont besoin des comptes : ils se redessinent avec eux
+    if(typeof CAMP_SNAP !== 'undefined' && CAMP_SNAP) dessinerCampagnes(CAMP_SNAP);
+    if(typeof IMP !== 'undefined' && IMP.table) dessinerImport();
+  }, panne('cptListe'));
   FB_DB.collection('invitations').onSnapshot(dessinerInvitations, panne('invListe'));
   FB_DB.collection('demandes').onSnapshot(dessinerDemandes, panne('demListe'));
 });

@@ -29,10 +29,12 @@ function dessinerTable(){
 
   const p = $('tbPastille'), e = $('tbEtat');
   const attache = !!SYNC.poignee && SYNC.etat === 'fichier';
-  const gh = SYNC.etat === 'github';
+  const enLigne = SYNC.etat === 'enligne';
+  const gh = SYNC.etat === 'github' || enLigne;
   if(p) p.className = 'pastille' + ((attache || gh) && !SYNC.erreur ? ' on' : SYNC.etat === 'attente' || SYNC.erreur ? ' off' : '');
   if(e){
-    if(gh) e.textContent = 'GitHub · ' + SYNC.nom + ' · dernier échange ' + ilYA(SYNC.dernier);
+    if(enLigne) e.textContent = (EN_LIGNE.pret ? 'En ligne · dernier échange ' + ilYA(SYNC.dernier) : 'En ligne · lecture du monde…');
+    else if(gh) e.textContent = 'GitHub · ' + SYNC.nom + ' · dernier échange ' + ilYA(SYNC.dernier);
     else if(attache) e.textContent = 'Fichier « ' + SYNC.nom + ' » · dernier échange ' + ilYA(SYNC.dernier);
     else if(SYNC.etat === 'attente') e.textContent = 'Le fichier « ' + SYNC.nom + ' » attend ton feu vert.';
     else e.textContent = 'Enregistré dans ce navigateur seulement.';
@@ -50,7 +52,8 @@ function dessinerTable(){
 
   const aide = $('tbAide');
   if(aide){
-    if(gh) aide.textContent = 'La table passe par la sauvegarde en ligne : chaque changement part dans le dépôt, et ceux qui y sont reliés le reçoivent en quelques secondes.';
+    if(enLigne) aide.textContent = 'La table vit dans le monde en ligne : chaque changement part tout seul, et les autres joueurs de la campagne le reçoivent en quelques secondes.';
+    else if(gh) aide.textContent = 'La table passe par la sauvegarde en ligne : chaque changement part dans le dépôt, et ceux qui y sont reliés le reçoivent en quelques secondes.';
     else if(!FSA()) aide.textContent = 'Ce navigateur ne sait pas ouvrir un fichier partagé : passe par la sauvegarde en ligne, ou échangez le .json. Depuis la page en ligne, le fichier partagé est bloqué de toute façon.';
     else aide.textContent = 'Pose le fichier de table dans un dossier synchronisé, Drive, OneDrive ou Dropbox, et que chacun l’ouvre ici. Les changements passent d’un joueur à l’autre en quelques secondes. Sinon, échangez le .json à la main.';
   }
@@ -194,6 +197,7 @@ if(PAGE === 'table'){
 /* la sauvegarde en ligne */
 sur('tbEnLigne', () => {
   const b = $('tbEnLigne');
+  if(SYNC.etat === 'enligne'){ tableEcrire(); msgTable('Tout part tout seul dans le monde en ligne : c’est fait.', true); return; }
   if(!ghcPret() || SYNC.etat !== 'github'){
     msgTable('Relie d’abord ton dépôt GitHub, une seule fois : c’est le panneau « Sauvegarde en ligne », juste en dessous. Ensuite, chaque changement part tout seul.', false);
     ghcOuvrirPanneau();
@@ -215,17 +219,8 @@ function etatGithub(){
   if(!GH.actif && !GH.erreur) return null;
   return {nom:PAGE === 'table' ? 'La table' : PAGE === 'fiche' ? 'La table et ses fiches' : PAGE === 'progression' ? 'La table et la progression' : PAGE === 'missions' ? 'La table et ses missions' : 'La table et ses PNJ', texte: GH.actif ? 'dernier échange ' + ilYA(GH.dernier) : 'à l’arrêt', erreur:GH.erreur};
 }
-PANNEAU = ghcPanneau($('ghPlace'), {
-  table:true,
-  etat: etatGithub,
-  apresRelier: r => ghTableRelier(r),
-  apresDetacher: () => { ghTableArreter(); dessiner(); }
-});
-ghcSurveiller(() => {
-  if(ghcPret()) ghTableDemarrer();
-  else if(SYNC.etat === 'github') ghTableArreter();
-  dessiner();
-});
+/* la table vit dans le monde en ligne (table-en-ligne.js) : plus de panneau GitHub pour elle */
+if($('ghPlace')) $('ghPlace').hidden = true;
 
 /* un autre onglet de ce navigateur a gardé la table : la table, ou le Registre des Visages. Ce qu'il n'a pas eu
    le temps d'envoyer part d'ici : l'écriture ne part que s'il y a du neuf pour le dépôt */
@@ -321,11 +316,10 @@ window.addEventListener('hashchange', suivreAncre);
 chargerLocal();
 if(PAGE === 'table'){ batirHub(); brancherBarre(); }
 if(PAGE === 'fiche') lireChoixFiche();   /* le personnage et l'onglet de la dernière fois, dans ce navigateur */
-const parGithub = ghReprendre();
+/* le monde en ligne : la première lecture faite, le sac et la bourse d'avant migrent (inventaire.js) */
+const parGithub = tableEnLigneDemarrer();
 dessiner();
-/* le sac et la bourse d'avant attendent la première lecture de la table partagée (inventaire.js) */
-if(!parGithub){ const fait = () => { DEPART_FAIT = true; planifierMigration(); }; reprendreFichier().then(fait, fait); }
-else DEPART_FAIT = true;
+parGithub.then(() => { DEPART_FAIT = true; planifierMigration(); });
 /* une rencontre qui attend : on la pose après la première lecture du dépôt, dans la séance la plus récente */
 if(PAGE === 'missions') chargerBestiaire();   /* les familles maison du dépôt, pour la rencontre prévue */
 if(PAGE === 'table'){
@@ -335,7 +329,7 @@ if(PAGE === 'table'){
   else entrees();
 }
 setTimeout(suivreAncre, 60);
-setInterval(() => { if(SYNC.poignee || SYNC.etat === 'github') dessinerTable(); }, 10000);
+setInterval(() => { if(SYNC.poignee || SYNC.etat === 'github' || SYNC.etat === 'enligne') dessinerTable(); }, 10000);
 document.addEventListener('visibilitychange', () => {
   if(!document.hidden && SYNC.poignee && SYNC.etat === 'fichier') lireFichier(false);
 });

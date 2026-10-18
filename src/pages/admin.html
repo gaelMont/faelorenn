@@ -40,6 +40,21 @@
   <p class="hint">Un admin invite, accepte, valide (bientôt : ennemis, plans, tables, compétences) et peut corriger ce que d’autres ont créé. Un compte mis en pause ne voit plus rien du monde. Le fondateur ne peut être ni rétrogradé ni mis en pause.</p>
   <div class="card"><div id="cptListe"></div></div>
 </section>
+
+<section id="secCampagnes">
+  <h2><span class="num">4</span> Les campagnes</h2>
+  <p class="hint">Les séances, les paragraphes, les jets et les rencontres d’une campagne ne se lisent que par ses membres. Son créateur en fait toujours partie.</p>
+  <div class="card"><div id="campListe"></div></div>
+</section>
+
+<section id="secImport">
+  <h2><span class="num">5</span> Importer l’ancien monde</h2>
+  <p class="hint">Choisis les fichiers .json de l’ancien dépôt privé (table-faelorenn.json d’abord). Ils sont lus ici, dans ton navigateur, et ne vont que dans le monde en ligne. Attribue chaque nom de joueur à un compte : il devient le propriétaire de ce qui porte ce nom. Ce qui est déjà en ligne n’est pas réécrit : l’import peut se relancer.</p>
+  <div class="card">
+    <input type="file" id="impFichiers" accept=".json,application/json" multiple>
+    <div id="impCorps"></div>
+  </div>
+</section>
 </div>
 </div>
 

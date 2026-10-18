@@ -1,4 +1,103 @@
 {
-  "indexes": [],
+  "indexes": [
+    {
+      "collectionGroup": "seances",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "campagne",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "majS",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "paragraphes",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "campagne",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "majS",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "rencontres",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "campagne",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "majS",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "adversaires",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "campagne",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "majS",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "jets",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "campagne",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "majS",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "tables",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "statut",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "majS",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "tables",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "proprietaire",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "majS",
+          "order": "ASCENDING"
+        }
+      ]
+    }
+  ],
   "fieldOverrides": []
 }

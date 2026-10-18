@@ -158,7 +158,8 @@ test('les demandes d\'entrée', async () => {
   await assertSucceeds(setDoc(doc(qui('gael'), 'comptes/inconnu'), { nom: 'Inconnu', role: 'joueur', actif: true, invitation: 'demande', cree: serverTimestamp() }));
 });
 
-test('tout le reste est fermé, même aux admins', async () => {
-  await assertFails(getDoc(doc(qui('gael'), 'personnages/p-x')));
-  await assertFails(setDoc(doc(qui('gael'), 'campagnes/c'), { nom: 'c' }));
+test('une collection inconnue est fermée, même aux admins', async () => {
+  await assertFails(getDoc(doc(qui('gael'), 'inconnue/x')));
+  await assertFails(setDoc(doc(qui('gael'), 'inconnue/y'), { nom: 'y' }));
+  await assertFails(setDoc(doc(qui('gael'), 'campagnes/c'), { nom: 'c' }));   // pas à la forme du monde
 });

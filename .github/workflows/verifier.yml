@@ -32,4 +32,4 @@ jobs:
         working-directory: outils/tests-regles
         run: |
           npm ci --no-audit --no-fund
-          npx --yes firebase-tools@15.0.0 emulators:exec --only firestore,auth --project demo-faelorenn "node --test"
+          npx --yes firebase-tools@15.0.0 emulators:exec --only firestore,auth --project demo-faelorenn "node --test --test-concurrency=1"

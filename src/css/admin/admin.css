@@ -12,3 +12,12 @@
 .adtable .pale{color:var(--muted)}
 .adactions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
 @media (max-width:640px){.adtable th:nth-child(2),.adtable td:nth-child(2){display:none}}
+.adcamp{padding:10px 0;border-bottom:1px solid var(--rule)}
+.adcamp:last-child{border-bottom:0}
+.adcamp-nom{font-family:Spectral,Georgia,serif;font-size:17px;color:var(--forest)}
+.adcases{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:6px}
+.adcase{font-size:14px;cursor:pointer}
+.adfichiers{margin:6px 0 12px;padding-left:18px;font-size:14px}
+.adfichiers li{margin:2px 0}
+#impCorps select{font:inherit;font-size:14px;padding:5px 8px;border:1px solid var(--rule);border-radius:2px;background:var(--paper);color:var(--ink)}
+#impCorps .adtable{margin-bottom:14px}

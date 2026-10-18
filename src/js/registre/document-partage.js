@@ -897,6 +897,7 @@ function ecrireFichier(){
     });
 }
 function planifierEcriture(){
+  if(SYNC.etat === 'enligne'){ tablePlanifier(); return; }
   if(SYNC.etat === 'github'){ ghPlanifier(); return; }
   if(!SYNC.poignee) return;
   clearTimeout(SYNC.ecrit);

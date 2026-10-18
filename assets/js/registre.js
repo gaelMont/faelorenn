@@ -1592,6 +1592,7 @@ function ecrireFichier(){
     });
 }
 function planifierEcriture(){
+  if(SYNC.etat === 'enligne'){ tablePlanifier(); return; }
   if(SYNC.etat === 'github'){ ghPlanifier(); return; }
   if(!SYNC.poignee) return;
   clearTimeout(SYNC.ecrit);
@@ -12782,6 +12783,428 @@ function ghReprendre(){
   return ghTableDemarrer().then(() => true, () => true);
 }
 
+// ── commun/formes-en-ligne.js ──
+/* ============ les formes en ligne : une entrée de la table ↔ un document Firestore ============
+   Chaque entrée (un personnage, une séance, un paragraphe…) devient un document de même identifiant.
+   Son contenu y est écrit en JSON, en groupes, parce que les règles de sécurité décident par groupe :
+   - f : la fiche, à celui qui l'a créée ;
+   - e : l'état de jeu (PV, coups, états, cartes du round, où en est une mission…), que d'autres
+     joueurs peuvent changer : les membres de la campagne, ou tout le monde selon la collection ;
+   - c : la carte de combat d'une séance, à part parce qu'elle est lourde.
+   Le JSON garde tout tel quel (Firestore refuse les tableaux de tableaux, les clés vides, undefined).
+   À côté : proprietaire, proprietaireNom, cree, majS (heure du serveur, pour ne relire que le neuf),
+   modifiePar, et selon la collection campagne, perso, statut, membres.
+   Ces fonctions sont pures : la table (registre) et l'import (admin) s'en servent pareil. */
+
+const FORMES = {
+  campagnes:   {col:'campagnes',   portee:'monde',    etat:['an', 'jour', 'majDate', 'jetsAvant']},
+  personnages: {col:'personnages', portee:'monde',    etat:['pv', 'pcc', 'pv0', 'pc0', 'majPv', 'majPc', 'vie', 'prog', 'monde', 'mondeT']},
+  journal:     {col:'seances',     portee:'campagne', etat:['init', 'majInit', 'jetons', 'majJetons', 'etats', 'majEtats', 'lieu', 'majLieu'], carte:['carte', 'majCarte']},
+  blocs:       {col:'paragraphes', portee:'campagne'},
+  rencontres:  {col:'rencontres',  portee:'campagne'},
+  adversaires: {col:'adversaires', portee:'campagne'},
+  pnj:         {col:'pnj',         portee:'monde',    etat:['pv', 'pv0', 'majPv', 'vie', 'majCombat']},
+  lieux:       {col:'lieux',       portee:'monde'},
+  liens:       {col:'liens',       portee:'monde'},
+  missions:    {col:'missions',    portee:'monde',    etat:['etat', 'seance', 'lancee', 'fin', 'finie', 'bloc', 'gagnants', 'majEtat']},
+  objets:      {col:'objets',      portee:'monde'},
+  argent:      {col:'argent',      portee:'monde'},
+  tables:      {col:'tables',      portee:'statut'}
+};
+const FORMES_CLES = Object.keys(FORMES);
+const FORME_DE_COL = {};
+FORMES_CLES.forEach(k => { FORME_DE_COL[FORMES[k].col] = k; });
+
+/* la campagne d'un élément, comme la table la lit : la sienne si elle existe, sinon la première
+   (celle d'avant les campagnes, ou la plus ancienne) */
+function formeCampagneDefaut(t){
+  const l = Object.keys((t && t.campagnes) || {}).map(k => t.campagnes[k]).filter(c => c && !c.supprime);
+  const d = l.find(c => c.id === 'c-principale') || l.sort((a, b) => ((+a.creee || 0) - (+b.creee || 0)) || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0))[0];
+  return d ? d.id : '';
+}
+function formeCampagneEff(t, id){
+  const c = id && t.campagnes && t.campagnes[id];
+  return c && !c.supprime ? id : formeCampagneDefaut(t);
+}
+function formeCampagneDe(t, k, x){
+  if(k === 'journal' || k === 'personnages') return formeCampagneEff(t, x.campagne);
+  if(k === 'blocs') return formeCampagneEff(t, ((t.journal || {})[x.seance] || {}).campagne);
+  if(k === 'rencontres') return formeCampagneEff(t, ((t.journal || {})[x.seance] || {}).campagne);
+  if(k === 'adversaires'){
+    const r = (t.rencontres || {})[x.rencontre] || {};
+    return formeCampagneEff(t, ((t.journal || {})[r.seance] || {}).campagne);
+  }
+  return '';
+}
+
+/* une entrée de la table → les champs du document (sans les champs de propriété ni les dates) */
+function versDoc(k, x, t){
+  const F = FORMES[k], f = Object.assign({}, x), d = {};
+  if(F.etat){
+    const e = {};
+    F.etat.forEach(c => { if(c in f){ e[c] = f[c]; delete f[c]; } });
+    // un PNJ qu'on fait entrer dans un combat : c'est de l'état de jeu, la fiche de combat reste au créateur
+    if(k === 'pnj' && f.combat && typeof f.combat === 'object'){
+      e.engage = {dans:!!f.combat.dans, seance:f.combat.seance || ''};
+      f.combat = Object.assign({}, f.combat); delete f.combat.dans; delete f.combat.seance;
+    }
+    d.e = JSON.stringify(e);
+  }
+  if(F.carte){
+    const c = {};
+    F.carte.forEach(n => { if(n in f){ c[n] = f[n]; delete f[n]; } });
+    d.c = JSON.stringify(c);
+  }
+  d.f = JSON.stringify(f);
+  if(F.portee === 'campagne' || k === 'personnages') d.campagne = formeCampagneDe(t, k, x);
+  if(k === 'objets' || k === 'argent') d.perso = String(x.perso || '');
+  return d;
+}
+/* un document → l'entrée, telle que la table la normalise ensuite */
+function depuisDoc(k, doc){
+  const x = Object.assign({}, formeJson(doc.f), formeJson(doc.e), formeJson(doc.c));
+  if(k === 'pnj'){
+    const g = x.engage; delete x.engage;
+    if(x.combat && typeof x.combat === 'object' && g && typeof g === 'object') x.combat = Object.assign({}, x.combat, {dans:!!g.dans, seance:g.seance || ''});
+  }
+  return x;
+}
+function formeJson(s){
+  if(typeof s !== 'string' || !s) return {};
+  try{ const o = JSON.parse(s); return o && typeof o === 'object' ? o : {}; }catch(e){ return {}; }
+}
+
+/* les jets : un document chacun, jamais retouché */
+function jetVersDoc(j, t){ return {f:JSON.stringify(j), campagne:formeCampagneEff(t, j.campagne)}; }
+function jetDepuisDoc(doc){ return formeJson(doc.f); }
+
+// ── commun/monde-en-ligne.js ──
+/* ============ le monde en ligne : écouter et écrire les documents Firestore ============
+   La mécanique commune aux registres qui vivent dans Firestore (FB_DB et COMPTE viennent du paquet compte).
+   - On ne relit que le neuf : chaque écoute demande les documents dont majS (l'heure du serveur) est
+     plus récente que le dernier vu, gardé dans ce navigateur avec le cache local. Un nouvel appareil
+     lit tout une fois, puis seulement ce qui change : c'est ce qui tient le forfait gratuit.
+   - On n'écrit que ce qui a changé : chaque document est comparé à son « ombre », la dernière version
+     reçue du serveur, groupe par groupe (f, e, c) ; seuls les groupes différents partent.
+   - Ce que le serveur refuse (ce n'est pas à toi) revient à l'ombre, et on le dit.
+   Les règles de firestore.rules ont le dernier mot ; ce module ne fait que les suivre. */
+
+const MONDE_MARGE = 120000;          // on relit deux minutes avant le dernier vu : rien ne passe entre deux écritures
+const MONDE_OMBRES = {};             // collection → id → le document tel que le serveur l'a
+const MONDE_ECOUTES = {};            // clé d'écoute → fonction pour l'arrêter
+
+function mondeCleCurseurs(){ return 'faelorenn.curseurs.' + COMPTE.uid; }
+function mondeCurseurs(){
+  try{ return JSON.parse(localStorage.getItem(mondeCleCurseurs()) || '{}') || {}; }catch(e){ return {}; }
+}
+function mondeGarderCurseur(cle, t){
+  const c = mondeCurseurs();
+  if((c[cle] || 0) >= t) return;
+  c[cle] = t;
+  try{ localStorage.setItem(mondeCleCurseurs(), JSON.stringify(c)); }catch(e){}
+}
+/* le cache local a été vidé (autre compte, navigateur nettoyé) : on relit tout */
+function mondeOublierCurseurs(){ try{ localStorage.removeItem(mondeCleCurseurs()); }catch(e){} }
+
+function mondeOmbre(col, id){ return (MONDE_OMBRES[col] || {})[id] || null; }
+function mondeGarderOmbre(col, id, d){ (MONDE_OMBRES[col] = MONDE_OMBRES[col] || {})[id] = d; }
+function mondeProprio(col, id){ const o = mondeOmbre(col, id); return o ? {uid:o.proprietaire, nom:o.proprietaireNom} : null; }
+function mondeTemps(t){ return t && typeof t.toMillis === 'function' ? t.toMillis() : 0; }
+
+/* écouter une requête, seulement le neuf. surDocs reçoit [{id, data}] ; la clé distingue les écoutes.
+   surServeur est appelé une fois, à la première réponse du serveur (pas du cache), même vide */
+function mondeEcouter(cle, requete, surDocs, surErreur, depuisMin, surServeur){
+  mondeArreter(cle);
+  const depuis = Math.max(0, (mondeCurseurs()[cle] || 0) - MONDE_MARGE, depuisMin || 0);
+  const q = requete.where('majS', '>', firebase.firestore.Timestamp.fromMillis(depuis));
+  let servi = false;
+  MONDE_ECOUTES[cle] = q.onSnapshot({includeMetadataChanges:true}, snap => {
+    if(!servi && !snap.metadata.fromCache){ servi = true; setTimeout(() => { if(surServeur) surServeur(); }, 0); }
+    const docs = [];
+    let max = 0;
+    snap.docChanges().forEach(ch => {
+      if(ch.type === 'removed') return;
+      const data = ch.doc.data({serverTimestamps:'estimate'});
+      docs.push({id:ch.doc.id, data:data});
+      if(!ch.doc.metadata.hasPendingWrites) max = Math.max(max, mondeTemps(data.majS));
+    });
+    if(docs.length) surDocs(docs);
+    // le curseur n'avance que sur ce que le serveur a confirmé
+    if(max && !snap.metadata.fromCache) mondeGarderCurseur(cle, max);
+  }, e => { if(surErreur) surErreur(e); });
+}
+function mondeArreter(cle){ if(MONDE_ECOUTES[cle]){ MONDE_ECOUTES[cle](); delete MONDE_ECOUTES[cle]; } }
+function mondeToutArreter(){ Object.keys(MONDE_ECOUTES).forEach(mondeArreter); }
+
+/* écrire un document : création s'il n'a pas d'ombre, sinon seulement les champs qui diffèrent.
+   champs : {f, e?, c?, campagne?, perso?, statut?, membres?}. Rend une promesse ; refuse : {code} */
+function mondeEcrire(col, id, champs){
+  const ref = FB_DB.collection(col).doc(id), ombre = mondeOmbre(col, id);
+  const heure = firebase.firestore.FieldValue.serverTimestamp();
+  if(!ombre){
+    const d = Object.assign({}, champs, {proprietaire:COMPTE.uid, proprietaireNom:COMPTE.nom, cree:heure, majS:heure, modifiePar:COMPTE.uid});
+    mondeGarderOmbre(col, id, Object.assign({}, d, {cree:null, majS:null}));
+    return ref.set(d).catch(e => { delete MONDE_OMBRES[col][id]; throw e; });
+  }
+  const maj = {};
+  Object.keys(champs).forEach(k => { if(JSON.stringify(champs[k]) !== JSON.stringify(ombre[k])) maj[k] = champs[k]; });
+  if(!Object.keys(maj).length) return Promise.resolve(false);
+  const avant = Object.assign({}, ombre);
+  mondeGarderOmbre(col, id, Object.assign({}, ombre, maj));
+  return ref.update(Object.assign(maj, {majS:heure, modifiePar:COMPTE.uid})).catch(e => { mondeGarderOmbre(col, id, avant); throw e; });
+}
+
+/* ce que le serveur refuse, dit simplement */
+function mondeRefus(e){
+  if(e && e.code === 'permission-denied') return 'Ce n’est pas à toi de changer ça.';
+  if(e && e.code === 'resource-exhausted') return 'Le forfait du jour est atteint : tout reste gardé ici, et repartira demain matin.';
+  if(e && (e.code === 'unavailable' || e.code === 'deadline-exceeded')) return 'Hors ligne : tout reste gardé ici, et repartira au retour de la connexion.';
+  return 'Erreur en ligne : ' + ((e && (e.message || e.code)) || e);
+}
+
+// ── registre/table-en-ligne.js ──
+/* ============ la table en ligne : le monde partagé dans Firestore ============
+   Chaque entrée de la table (personnage, séance, paragraphe, PNJ…) est un document (commun/formes-en-ligne.js).
+   On écoute le neuf (commun/monde-en-ligne.js) : ce qui arrive est fondu dans T comme avant, par fusionner().
+   On écrit ce que T a de plus que le serveur, entrée par entrée. Les règles décident de ce qui est permis :
+   ce qu'un joueur n'a pas le droit de changer revient tel que le serveur l'a.
+   Les séances, paragraphes, jets et rencontres d'une campagne ne se lisent que si l'on en est membre :
+   on écoute une requête par campagne. */
+
+const EN_LIGNE = {
+  pret: false,             // la première lecture est faite : on peut écrire
+  attendues: 0,            // écoutes qui n'ont pas encore donné leur première réponse
+  minuteur: null, dessin: null,
+  membres: {},             // id de campagne → [uid]
+  suivies: {},             // id de campagne → écoutes ouvertes pour elle
+  normes: {},              // clé → id → JSON des groupes, tel que ce navigateur normalise le document reçu
+  jetsVus: {},             // id de jet → 1
+  depart: null
+};
+const COLS_CAMPAGNE = ['journal', 'blocs', 'rencontres', 'adversaires'];
+
+/* ---------- recevoir ---------- */
+function tableRecevoir(k, docs){
+  const partiel = {};
+  partiel[k] = {};
+  docs.forEach(({id, data}) => {
+    mondeGarderOmbre(FORMES[k].col, id, data);
+    if(k === 'campagnes') EN_LIGNE.membres[id] = Array.isArray(data.membres) ? data.membres : [];
+    partiel[k][id] = Object.assign(depuisDoc(k, data), {id:id});
+  });
+  const norme = normTable(partiel);
+  docs.forEach(({id}) => {
+    const x = norme[k][id];
+    if(x) (EN_LIGNE.normes[k] = EN_LIGNE.normes[k] || {})[id] = groupesDe(k, x);
+  });
+  T = fusionner(T, norme);
+  if(k === 'campagnes') suivreMesCampagnes();
+  apresReception();
+}
+function tableRecevoirJets(docs){
+  const jets = docs.map(({id, data}) => { EN_LIGNE.jetsVus[id] = 1; return Object.assign(jetDepuisDoc(data), {id:id}); });
+  T = fusionner(T, normTable({jets:jets, campagnes:T.campagnes}));
+  apresReception();
+}
+function tableRecevoirMonde(data){
+  mondeGarderOmbre('monde', 'table', data);
+  const f = formeJson(data.f), e = formeJson(data.e);
+  T = fusionner(T, normTable({nom:f.nom, viderAvant:f.viderAvant, oracle:e.oracle, maj:0}));
+  apresReception();
+}
+function apresReception(){
+  SYNC.dernier = Date.now(); SYNC.erreur = '';
+  sauverLocal();
+  // une salve de documents : un seul dessin, et une seule passe d'écriture (ce que T a de plus)
+  clearTimeout(EN_LIGNE.dessin);
+  EN_LIGNE.dessin = setTimeout(() => { dessiner(); }, 60);
+  if(EN_LIGNE.pret) tablePlanifier();
+}
+// les groupes d'une entrée, en texte, pour comparer d'un coup
+function groupesDe(k, x){ return JSON.stringify(versDoc(k, x, T)); }
+
+/* ---------- les campagnes dont on est membre : leurs séances, paragraphes, rencontres et jets ---------- */
+function suivreMesCampagnes(){
+  const miennes = Object.keys(EN_LIGNE.membres).filter(cid => EN_LIGNE.membres[cid].indexOf(COMPTE.uid) >= 0 || estAdmin());
+  miennes.forEach(cid => { if(!EN_LIGNE.suivies[cid]) suivreCampagne(cid); });
+  Object.keys(EN_LIGNE.suivies).forEach(cid => {
+    if(miennes.indexOf(cid) < 0){ EN_LIGNE.suivies[cid].forEach(mondeArreter); delete EN_LIGNE.suivies[cid]; }
+  });
+}
+function suivreCampagne(cid){
+  const cles = [];
+  COLS_CAMPAGNE.forEach(k => {
+    const cle = FORMES[k].col + '@' + cid;
+    cles.push(cle);
+    tableEcoute(cle, FB_DB.collection(FORMES[k].col).where('campagne', '==', cid), docs => tableRecevoir(k, docs));
+  });
+  // les jets : ceux des trente derniers jours suffisent à un appareil qui arrive
+  const cj = 'jets@' + cid;
+  cles.push(cj);
+  tableEcoute(cj, FB_DB.collection('jets').where('campagne', '==', cid), tableRecevoirJets, Date.now() - 30 * 86400000);
+  EN_LIGNE.suivies[cid] = cles;
+}
+// une écoute qui compte dans la première lecture
+function tableEcoute(cle, requete, surDocs, depuisMin){
+  let premiere = true;
+  if(!EN_LIGNE.pret) EN_LIGNE.attendues++;
+  const fin = () => { if(premiere){ premiere = false; if(!EN_LIGNE.pret && --EN_LIGNE.attendues <= 0) premiereLectureFaite(); } };
+  mondeEcouter(cle, requete, surDocs, e => { SYNC.erreur = mondeRefus(e); dessinerTable(); fin(); }, depuisMin, fin);
+  // hors ligne, le serveur ne répond pas : on avance quand même, ce qu'on écrit attendra la connexion
+  setTimeout(fin, 15000);
+}
+function premiereLectureFaite(){
+  if(EN_LIGNE.pret) return;
+  EN_LIGNE.pret = true;
+  SYNC.dernier = Date.now();
+  dessiner();
+  if(EN_LIGNE.depart){ EN_LIGNE.depart(); EN_LIGNE.depart = null; }
+  tablePlanifier();
+}
+
+/* ---------- écrire ce que T a de plus que le serveur ---------- */
+function tablePlanifier(){
+  if(SYNC.etat !== 'enligne') return;
+  clearTimeout(EN_LIGNE.minuteur);
+  EN_LIGNE.minuteur = setTimeout(tableEcrire, 1200);
+}
+function membreDe(cid){ return estAdmin() || (EN_LIGNE.membres[cid] || []).indexOf(COMPTE.uid) >= 0; }
+// ce que ce compte peut changer d'une entrée qui existe déjà (les règles le redisent de toute façon)
+function groupesPermis(k, id, champs){
+  const o = mondeOmbre(FORMES[k].col, id);
+  if(!o || estAdmin() || o.proprietaire === COMPTE.uid) return null;            // tout
+  const camp = o.campagne || '';
+  if(k === 'personnages') return membreDe(camp) ? ['e'] : [];
+  if(k === 'journal') return membreDe(camp) ? ['e', 'c'] : [];
+  if(k === 'rencontres' || k === 'adversaires') return membreDe(camp) && membreDe(champs.campagne) ? null : [];
+  if(k === 'pnj' || k === 'missions') return ['e'];
+  if(k === 'campagnes') return (EN_LIGNE.membres[id] || []).indexOf(COMPTE.uid) >= 0 ? ['e'] : [];
+  if(k === 'objets' || k === 'argent'){
+    const p = mondeOmbre('personnages', champs.perso);
+    return p && p.proprietaire === COMPTE.uid ? null : [];
+  }
+  return [];
+}
+function tableEcrire(){
+  if(!EN_LIGNE.pret || SYNC.etat !== 'enligne') return;
+  const refus = [];
+  FORMES_CLES.forEach(k => {
+    const col = FORMES[k].col, normes = EN_LIGNE.normes[k] || {};
+    Object.keys(T[k] || {}).forEach(id => {
+      const x = T[k][id];
+      const champs = versDoc(k, x, T);
+      const texte = JSON.stringify(champs);
+      if(normes[id] === texte) return;
+      const o = mondeOmbre(col, id);
+      // une entrée nouvelle d'une campagne dont on n'est pas membre : elle ne partira pas
+      if(!o && (FORMES[k].portee === 'campagne') && !membreDe(champs.campagne)) return;
+      const permis = groupesPermis(k, id, champs);
+      if(permis){
+        const avant = o ? JSON.parse(normes[id] || '{}') : {};
+        const touches = Object.keys(champs).filter(c => JSON.stringify(champs[c]) !== JSON.stringify(avant[c]));
+        if(touches.some(c => permis.indexOf(c) < 0)){ refus.push([k, id]); return; }
+      }
+      if(k === 'campagnes' && !o) champs.membres = [COMPTE.uid];
+      normes[id] = texte;
+      EN_LIGNE.normes[k] = normes;
+      mondeEcrire(col, id, champs).catch(e => {
+        delete normes[id];
+        if(e && e.code === 'permission-denied'){ revenir(k, id); remplacerDansLocal([[k, id]]); sauverLocal(); dessiner(); msgTable(mondeRefus(e), false); }
+        else { SYNC.erreur = mondeRefus(e); dessinerTable(); }
+      });
+    });
+  });
+  // les jets : chacun part une fois
+  (T.jets || []).forEach(j => {
+    if(EN_LIGNE.jetsVus[j.id]) return;
+    const d = jetVersDoc(j, T);
+    if(!membreDe(d.campagne)) return;
+    EN_LIGNE.jetsVus[j.id] = 1;
+    mondeEcrire('jets', j.id, d).catch(() => { delete EN_LIGNE.jetsVus[j.id]; });
+  });
+  // la table elle-même : son nom et la purge (admins), les seuils de l'oracle (tous)
+  const m = mondeOmbre('monde', 'table');
+  const tm = {f:JSON.stringify({nom:T.nom || '', viderAvant:T.viderAvant || 0}), e:JSON.stringify({oracle:T.oracle || null})};
+  if(m ? (m.e !== tm.e || (estAdmin() && m.f !== tm.f)) : estAdmin()){
+    const champs = m && !estAdmin() ? {e:tm.e} : tm;
+    mondeEcrire('monde', 'table', champs).catch(e => { SYNC.erreur = mondeRefus(e); });
+  }
+  tableEcrirePrefs();
+  if(refus.length){
+    refus.forEach(([k, id]) => revenir(k, id));
+    msgTable('Ce n’est pas à toi de changer ça : la fiche est revenue telle que son joueur l’a laissée.', false);
+    remplacerDansLocal(refus); sauverLocal(); dessiner();
+  }
+}
+/* la copie du navigateur reprend aussi la version du serveur : sinon, plus récente, elle reviendrait à la fusion */
+function remplacerDansLocal(liste){
+  try{
+    const r = JSON.parse(localStorage.getItem(CLE_TABLE) || 'null');
+    if(!r) return;
+    liste.forEach(([k, id]) => { r[k] = r[k] || {}; if(T[k] && T[k][id]) r[k][id] = T[k][id]; else delete r[k][id]; });
+    localStorage.setItem(CLE_TABLE, JSON.stringify(r));
+  }catch(e){}
+}
+// une entrée revient à ce que le serveur en a
+function revenir(k, id){
+  const o = mondeOmbre(FORMES[k].col, id);
+  if(!o){ delete T[k][id]; return; }
+  const p = {}; p[k] = {}; p[k][id] = Object.assign(depuisDoc(k, o), {id:id});
+  const x = normTable(p)[k][id];
+  if(x){ T[k][id] = x; (EN_LIGNE.normes[k] = EN_LIGNE.normes[k] || {})[id] = groupesDe(k, x); }
+}
+
+/* ---------- les réglages de chacun : la disposition de la table, et où il a posé les visages du réseau ---------- */
+function tableEcrirePrefs(){
+  const f = JSON.stringify({hub:T.hub || {}, positions:T.positions || {}});
+  if(f === EN_LIGNE.prefs) return;
+  EN_LIGNE.prefs = f;
+  FB_DB.collection('comptes').doc(COMPTE.uid).collection('prefs').doc('table').set({f:f}).catch(() => { EN_LIGNE.prefs = ''; });
+}
+function tableLirePrefs(){
+  return FB_DB.collection('comptes').doc(COMPTE.uid).collection('prefs').doc('table').get().then(s => {
+    if(!s.exists) return;
+    const p = formeJson(s.data().f);
+    T = fusionner(T, normTable({hub:p.hub, positions:p.positions}));
+    EN_LIGNE.prefs = JSON.stringify({hub:T.hub || {}, positions:T.positions || {}});
+  }, () => {});
+}
+
+/* ---------- le démarrage ---------- */
+/* Le cache de ce navigateur appartient à un compte : un autre compte (ou la première fois en ligne) repart de rien,
+   pour qu'aucune campagne privée ne passe d'un compte à l'autre, et que la table d'avant (le fichier, GitHub) ne
+   reparte pas dans le monde sous un autre nom : c'est l'import qui l'y a mise. */
+function tableEnLigneDemarrer(){
+  return new Promise(fini => {
+    compteQuandPret(() => {
+      if(!FB_DB){ fini(false); return; }
+      let dernier = '';
+      try{ dernier = localStorage.getItem('faelorenn.compte.dernier') || ''; }catch(e){}
+      if(dernier !== COMPTE.uid){
+        T = videTable();
+        try{ localStorage.removeItem(CLE_TABLE); localStorage.setItem('faelorenn.compte.dernier', COMPTE.uid); }catch(e){}
+        mondeOublierCurseurs();
+      }
+      if(SYNC.poignee){ SYNC.poignee = null; if(SYNC.boucle){ clearInterval(SYNC.boucle); SYNC.boucle = null; } }
+      SYNC.etat = 'enligne'; SYNC.nom = 'le monde en ligne'; SYNC.erreur = '';
+      EN_LIGNE.depart = () => fini(true);
+      dessinerTable();
+      tableLirePrefs().then(() => {
+        FORMES_CLES.filter(k => FORMES[k].portee === 'monde').forEach(k => {
+          tableEcoute(FORMES[k].col, FB_DB.collection(FORMES[k].col), docs => tableRecevoir(k, docs));
+        });
+        // les tables de tirage : celles validées, et les siennes ; un admin les voit toutes
+        if(estAdmin()) tableEcoute('tables', FB_DB.collection('tables'), docs => tableRecevoir('tables', docs));
+        else {
+          tableEcoute('tables@valide', FB_DB.collection('tables').where('statut', '==', 'valide'), docs => tableRecevoir('tables', docs));
+          tableEcoute('tables@moi', FB_DB.collection('tables').where('proprietaire', '==', COMPTE.uid), docs => tableRecevoir('tables', docs));
+        }
+        FB_DB.collection('monde').doc('table').onSnapshot(s => { if(s.exists) tableRecevoirMonde(s.data({serverTimestamps:'estimate'})); }, () => {});
+      });
+    });
+  });
+}
+
 // ── registre/personnages-du-havre.js ──
 /* ============ les personnages du Registre du Havre, à faire entrer dans la table ============
    Le Havre les garde dans ce navigateur, et dans personnages.json du dépôt quand la sauvegarde
@@ -14335,10 +14758,12 @@ function dessinerTable(){
 
   const p = $('tbPastille'), e = $('tbEtat');
   const attache = !!SYNC.poignee && SYNC.etat === 'fichier';
-  const gh = SYNC.etat === 'github';
+  const enLigne = SYNC.etat === 'enligne';
+  const gh = SYNC.etat === 'github' || enLigne;
   if(p) p.className = 'pastille' + ((attache || gh) && !SYNC.erreur ? ' on' : SYNC.etat === 'attente' || SYNC.erreur ? ' off' : '');
   if(e){
-    if(gh) e.textContent = 'GitHub · ' + SYNC.nom + ' · dernier échange ' + ilYA(SYNC.dernier);
+    if(enLigne) e.textContent = (EN_LIGNE.pret ? 'En ligne · dernier échange ' + ilYA(SYNC.dernier) : 'En ligne · lecture du monde…');
+    else if(gh) e.textContent = 'GitHub · ' + SYNC.nom + ' · dernier échange ' + ilYA(SYNC.dernier);
     else if(attache) e.textContent = 'Fichier « ' + SYNC.nom + ' » · dernier échange ' + ilYA(SYNC.dernier);
     else if(SYNC.etat === 'attente') e.textContent = 'Le fichier « ' + SYNC.nom + ' » attend ton feu vert.';
     else e.textContent = 'Enregistré dans ce navigateur seulement.';
@@ -14356,7 +14781,8 @@ function dessinerTable(){
 
   const aide = $('tbAide');
   if(aide){
-    if(gh) aide.textContent = 'La table passe par la sauvegarde en ligne : chaque changement part dans le dépôt, et ceux qui y sont reliés le reçoivent en quelques secondes.';
+    if(enLigne) aide.textContent = 'La table vit dans le monde en ligne : chaque changement part tout seul, et les autres joueurs de la campagne le reçoivent en quelques secondes.';
+    else if(gh) aide.textContent = 'La table passe par la sauvegarde en ligne : chaque changement part dans le dépôt, et ceux qui y sont reliés le reçoivent en quelques secondes.';
     else if(!FSA()) aide.textContent = 'Ce navigateur ne sait pas ouvrir un fichier partagé : passe par la sauvegarde en ligne, ou échangez le .json. Depuis la page en ligne, le fichier partagé est bloqué de toute façon.';
     else aide.textContent = 'Pose le fichier de table dans un dossier synchronisé, Drive, OneDrive ou Dropbox, et que chacun l’ouvre ici. Les changements passent d’un joueur à l’autre en quelques secondes. Sinon, échangez le .json à la main.';
   }
@@ -14500,6 +14926,7 @@ if(PAGE === 'table'){
 /* la sauvegarde en ligne */
 sur('tbEnLigne', () => {
   const b = $('tbEnLigne');
+  if(SYNC.etat === 'enligne'){ tableEcrire(); msgTable('Tout part tout seul dans le monde en ligne : c’est fait.', true); return; }
   if(!ghcPret() || SYNC.etat !== 'github'){
     msgTable('Relie d’abord ton dépôt GitHub, une seule fois : c’est le panneau « Sauvegarde en ligne », juste en dessous. Ensuite, chaque changement part tout seul.', false);
     ghcOuvrirPanneau();
@@ -14521,17 +14948,8 @@ function etatGithub(){
   if(!GH.actif && !GH.erreur) return null;
   return {nom:PAGE === 'table' ? 'La table' : PAGE === 'fiche' ? 'La table et ses fiches' : PAGE === 'progression' ? 'La table et la progression' : PAGE === 'missions' ? 'La table et ses missions' : 'La table et ses PNJ', texte: GH.actif ? 'dernier échange ' + ilYA(GH.dernier) : 'à l’arrêt', erreur:GH.erreur};
 }
-PANNEAU = ghcPanneau($('ghPlace'), {
-  table:true,
-  etat: etatGithub,
-  apresRelier: r => ghTableRelier(r),
-  apresDetacher: () => { ghTableArreter(); dessiner(); }
-});
-ghcSurveiller(() => {
-  if(ghcPret()) ghTableDemarrer();
-  else if(SYNC.etat === 'github') ghTableArreter();
-  dessiner();
-});
+/* la table vit dans le monde en ligne (table-en-ligne.js) : plus de panneau GitHub pour elle */
+if($('ghPlace')) $('ghPlace').hidden = true;
 
 /* un autre onglet de ce navigateur a gardé la table : la table, ou le Registre des Visages. Ce qu'il n'a pas eu
    le temps d'envoyer part d'ici : l'écriture ne part que s'il y a du neuf pour le dépôt */
@@ -14627,11 +15045,10 @@ window.addEventListener('hashchange', suivreAncre);
 chargerLocal();
 if(PAGE === 'table'){ batirHub(); brancherBarre(); }
 if(PAGE === 'fiche') lireChoixFiche();   /* le personnage et l'onglet de la dernière fois, dans ce navigateur */
-const parGithub = ghReprendre();
+/* le monde en ligne : la première lecture faite, le sac et la bourse d'avant migrent (inventaire.js) */
+const parGithub = tableEnLigneDemarrer();
 dessiner();
-/* le sac et la bourse d'avant attendent la première lecture de la table partagée (inventaire.js) */
-if(!parGithub){ const fait = () => { DEPART_FAIT = true; planifierMigration(); }; reprendreFichier().then(fait, fait); }
-else DEPART_FAIT = true;
+parGithub.then(() => { DEPART_FAIT = true; planifierMigration(); });
 /* une rencontre qui attend : on la pose après la première lecture du dépôt, dans la séance la plus récente */
 if(PAGE === 'missions') chargerBestiaire();   /* les familles maison du dépôt, pour la rencontre prévue */
 if(PAGE === 'table'){
@@ -14641,7 +15058,7 @@ if(PAGE === 'table'){
   else entrees();
 }
 setTimeout(suivreAncre, 60);
-setInterval(() => { if(SYNC.poignee || SYNC.etat === 'github') dessinerTable(); }, 10000);
+setInterval(() => { if(SYNC.poignee || SYNC.etat === 'github' || SYNC.etat === 'enligne') dessinerTable(); }, 10000);
 document.addEventListener('visibilitychange', () => {
   if(!document.hidden && SYNC.poignee && SYNC.etat === 'fichier') lireFichier(false);
 });

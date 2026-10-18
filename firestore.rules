@@ -99,7 +99,155 @@ service cloud.firestore {
       allow update: if false;
     }
 
-    // ---------- tout le reste : fermé pour l'instant ----------
+    // ================= le monde : la table et ce qui l'entoure =================
+    // Chaque document : f (la fiche, JSON), e (l'état de jeu, JSON), c (la carte de combat, JSON),
+    // proprietaire, proprietaireNom, cree, majS (heure du serveur), modifiePar,
+    // et selon la collection campagne, perso, statut, membres. Voir src/js/commun/formes-en-ligne.js.
+
+    function campagneDe(cid) { return /databases/$(db)/documents/campagnes/$(cid); }
+    // membre d'une campagne : elle existe et l'a parmi ses membres
+    function membreDe(cid) {
+      return cid is string && cid != '' && exists(campagneDe(cid)) && moi() in get(campagneDe(cid)).data.membres;
+    }
+    function aMoi() { return a().proprietaire == moi(); }
+    function formeOk() {
+      return n().keys().hasOnly(['f', 'e', 'c', 'campagne', 'perso', 'statut', 'membres',
+                                 'proprietaire', 'proprietaireNom', 'cree', 'majS', 'modifiePar'])
+        && n().f is string && n().get('e', '') is string && n().get('c', '') is string
+        && n().majS == request.time && n().modifiePar == moi()
+        && n().proprietaire is string && n().proprietaireNom is string;
+    }
+    // une création : à son nom (un admin peut créer au nom d'un autre : c'est l'import)
+    function creation() {
+      return invite() && formeOk() && n().cree == request.time
+        && (n().proprietaire == moi() || admin());
+    }
+    // une modification : le créateur et la date de création ne changent jamais
+    function modification() {
+      return invite() && formeOk() && !touche().hasAny(['proprietaire', 'proprietaireNom', 'cree']);
+    }
+    // ne touche que ces champs-là (plus les dates)
+    function seulement(champs) { return touche().hasOnly(champs.concat(['majS', 'modifiePar'])); }
+
+    // ---------- les campagnes : chacune a ses membres ----------
+    match /campagnes/{cid} {
+      allow read: if invite();
+      allow create: if creation() && n().membres is list && (n().proprietaire in n().membres);
+      allow update: if modification() && n().membres is list && (
+        (aMoi() && (moi() in n().membres))                    // son créateur : tout, les membres compris
+        || (moi() in a().membres && seulement(['e']))         // un membre : le jour de jeu, la purge des jets
+        || admin());
+    }
+
+    // ---------- les personnages : la fiche au joueur, l'état de jeu aux membres de sa campagne ----------
+    match /personnages/{id} {
+      allow read: if invite();
+      allow create: if creation();
+      allow update: if modification() && (
+        aMoi() || (membreDe(a().campagne) && seulement(['e'])) || admin());
+    }
+
+    // ---------- ce qui appartient à une campagne : lu par ses seuls membres ----------
+    match /seances/{id} {
+      allow read: if invite() && (membreDe(resource.data.campagne) || admin());
+      allow create: if creation() && (membreDe(n().campagne) || admin());
+      allow update: if modification() && (
+        (aMoi() && membreDe(n().campagne))
+        || (membreDe(a().campagne) && seulement(['e', 'c']))  // les cartes du round, la carte, les jetons, les états
+        || admin());
+    }
+    match /paragraphes/{id} {
+      allow read: if invite() && (membreDe(resource.data.campagne) || admin());
+      allow create: if creation() && (membreDe(n().campagne) || admin());
+      // chacun ses paragraphes
+      allow update: if modification() && ((aMoi() && membreDe(n().campagne)) || admin());
+    }
+    // une rencontre et ses adversaires : tous les membres s'y battent
+    match /rencontres/{id} {
+      allow read: if invite() && (membreDe(resource.data.campagne) || admin());
+      allow create: if creation() && (membreDe(n().campagne) || admin());
+      allow update: if modification() && ((membreDe(a().campagne) && membreDe(n().campagne)) || admin());
+    }
+    match /adversaires/{id} {
+      allow read: if invite() && (membreDe(resource.data.campagne) || admin());
+      allow create: if creation() && (membreDe(n().campagne) || admin());
+      allow update: if modification() && ((membreDe(a().campagne) && membreDe(n().campagne)) || admin());
+    }
+    // les jets : écrits une fois, jamais retouchés
+    match /jets/{id} {
+      allow read: if invite() && (membreDe(resource.data.campagne) || admin());
+      allow create: if creation() && (membreDe(n().campagne) || admin());
+      allow update: if false;
+      allow delete: if admin();
+    }
+
+    // ---------- le monde commun : lu par tous les invités ----------
+    match /pnj/{id} {
+      allow read: if invite();
+      allow create: if creation();
+      // ses PV, ses coups, son entrée en combat : tout le monde ; sa fiche et sa description : son créateur
+      allow update: if modification() && (aMoi() || seulement(['e']) || admin());
+      // le lore : chacun en ajoute, personne ne réécrit celui des autres
+      match /lore/{lid} {
+        allow read: if invite();
+        allow create: if invite() && n().keys().hasOnly(['texte', 'proprietaire', 'proprietaireNom', 't'])
+          && n().proprietaire == moi() && n().proprietaireNom == get(compteDe(moi())).data.nom
+          && n().t == request.time && n().texte is string && n().texte.size() > 0 && n().texte.size() <= 4000;
+        allow update: if false;
+        allow delete: if admin();
+      }
+    }
+    // une mission : son texte à son créateur, où elle en est à tous (la lancer, la boucler)
+    match /missions/{id} {
+      allow read: if invite();
+      allow create: if creation();
+      allow update: if modification() && (aMoi() || seulement(['e']) || admin());
+    }
+    match /lieux/{id} {
+      allow read: if invite();
+      allow create: if creation();
+      allow update: if modification() && (aMoi() || admin());
+    }
+    match /liens/{id} {
+      allow read: if invite();
+      allow create: if creation();
+      allow update: if modification() && (aMoi() || admin());
+    }
+    // le sac et la bourse : on peut donner à un autre (une ligne à son nom), seul celui qui l'a écrite
+    // ou le joueur du personnage la retouche
+    function joueurDe(pid) {
+      return pid is string && pid != '' && exists(/databases/$(db)/documents/personnages/$(pid))
+        && get(/databases/$(db)/documents/personnages/$(pid)).data.proprietaire == moi();
+    }
+    match /objets/{id} {
+      allow read: if invite();
+      allow create: if creation() && n().perso is string;
+      allow update: if modification() && n().perso == a().perso && (aMoi() || joueurDe(a().perso) || admin());
+    }
+    match /argent/{id} {
+      allow read: if invite();
+      allow create: if creation() && n().perso is string;
+      allow update: if modification() && n().perso == a().perso && (aMoi() || joueurDe(a().perso) || admin());
+    }
+
+    // ---------- les tables de tirage : privées tant qu'un admin ne les a pas validées ----------
+    match /tables/{id} {
+      allow read: if invite() && (resource.data.statut == 'valide' || resource.data.proprietaire == moi() || admin());
+      allow create: if creation() && (n().statut in ['prive', 'propose'] || (admin() && n().statut == 'valide'));
+      // une table validée que son créateur retouche repasse en proposition
+      allow update: if modification() && (
+        (aMoi() && n().statut in ['prive', 'propose'])
+        || admin());
+    }
+
+    // ---------- la table elle-même : son nom, la purge des jets, les seuils de l'oracle ----------
+    match /monde/{doc} {
+      allow read: if invite();
+      allow create: if creation() && admin();
+      allow update: if modification() && (seulement(['e']) || admin());
+    }
+
+    // ---------- tout le reste : fermé ----------
     match /{document=**} {
       allow read, write: if false;
     }

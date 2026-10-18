@@ -18,31 +18,14 @@
 
 <section id="secTable">
   <h2><span class="num">1</span> La table</h2>
-  <p class="hint">Dis qui tu es et choisis ta campagne : plusieurs peuvent se jouer en même temps dans le même monde, chacune avec sa compagnie et ses séances. Puis choisis comment partager la table : la sauvegarde en ligne sur GitHub, un fichier dans un dossier partagé, ou un .json qu’on s’envoie. Sans rien de tout ça, tout reste dans ce navigateur.</p>
+  <p class="hint">Choisis ta campagne : plusieurs peuvent se jouer en même temps dans le même monde, chacune avec sa compagnie et ses séances. Tout part tout seul dans le monde en ligne, et les autres joueurs de la campagne le reçoivent en quelques secondes.</p>
   <div class="card">
-    <div class="table">
-      <div>
-        <label class="lab" for="tbJoueur">Tu es</label>
-        <input type="text" id="tbJoueur" placeholder="Gaël" style="width:100%">
-      </div>
-      <div>
-        <label class="lab" for="tbCampagne">Campagne</label>
-        <select id="tbCampagne" style="width:100%" aria-describedby="tbCampagnes"></select>
-      </div>
+    <div>
+      <label class="lab" for="tbCampagne">Campagne</label>
+      <select id="tbCampagne" style="width:100%" aria-describedby="tbCampagnes"></select>
     </div>
     <div id="tbCampagnes" class="campagnes"></div>
-    <div class="acts" style="margin-top:12px">
-      <button class="btn" id="tbEnLigne" type="button">Sauvegarder en ligne</button>
-      <button class="btn ghost sm" id="tbOuvrir" type="button">Ouvrir le fichier de table</button>
-      <button class="btn ghost sm" id="tbCreer" type="button">Créer un fichier de table</button>
-      <button class="btn ghost sm" id="tbDetacher" type="button" hidden>Détacher le fichier</button>
-      <button class="btn ghost sm" id="tbJson" type="button">Enregistrer un .json</button>
-      <button class="btn ghost sm" id="tbImport" type="button">Importer un .json</button>
-      <input type="file" id="tbFichier" accept=".json,application/json" hidden>
-    </div>
     <div class="etatsync"><span class="pastille" id="tbPastille"></span><span id="tbEtat"></span></div>
-    <p class="note" id="tbAide"></p>
-    <div id="ghPlace"></div>
   </div>
 </section>
 

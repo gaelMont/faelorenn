@@ -404,6 +404,7 @@ function sansAuto(){
   COMPO.vies = COMPO.vies.filter(v => !v.auto);
 }
 function choisirQui(q){
+  if(q.k === 'perso' && !estAMoi('personnages', q.id)){ msgTable((q.nom || 'Ce personnage') + ' est à ' + (joueurDe(perso(q.id) || {id:q.id}) || 'un autre joueur') + ' : seul son joueur écrit en son nom.', false); return; }
   const avant = persoCompo();
   if(avant) COMPO.quoiPar[avant.id] = COMPO.quoi;
   COMPO.qui = q;
@@ -422,6 +423,7 @@ function choisirQui(q){
   dessinerCompositeur(true);
 }
 function composerPour(c){
+  if(!estAMoi('personnages', c.id)){ choisirQui({k:'perso', id:c.id, nom:c.nom}); return; }
   choisirQui({k:'perso', id:c.id, nom:c.nom});
   COMPO.genre = 'fait'; COMPO.panneau = 'jet';
   dessinerCompositeur(true);
@@ -684,10 +686,11 @@ function dessinerCompositeur(force){
   if(!e) return;
   if(!COMPO.pret){
     COMPO.pret = true;
-    const c = MOI.perso ? perso(MOI.perso) : null;
+    const c = MOI.perso && estAMoi('personnages', MOI.perso) ? perso(MOI.perso) : null;
     if(c){ COMPO.qui = {k:'perso', id:c.id, nom:c.nom}; COMPO.genre = 'fait'; COMPO.pvId = c.id; }
   }
-  if(COMPO.qui.k === 'perso' && !persoCompo()){
+  /* le personnage d'un autre joueur ne s'écrit pas en son nom : son joueur le fait */
+  if(COMPO.qui.k === 'perso' && (!persoCompo() || !estAMoi('personnages', COMPO.qui.id))){
     COMPO.qui = {k:'mj', id:'', nom:''}; COMPO.genre = 'narration'; COMPO.quoi = ''; COMPO.jet = null; sansAuto();
   }
   const focus = document.activeElement && box.contains(document.activeElement) ? document.activeElement.id : '';
@@ -703,7 +706,7 @@ function dessinerCompositeur(force){
       return b;
     };
     lq.append(chip('MJ', {k:'mj', id:'', nom:''}, COMPO.qui.k === 'mj'));
-    persos().forEach(c => lq.append(chip(c.nom || 'Sans nom', {k:'perso', id:c.id, nom:c.nom}, COMPO.qui.k === 'perso' && COMPO.qui.id === c.id)));
+    persos().filter(c => estAMoi('personnages', c.id)).forEach(c => lq.append(chip(c.nom || 'Sans nom', {k:'perso', id:c.id, nom:c.nom}, COMPO.qui.k === 'perso' && COMPO.qui.id === c.id)));
     /* ceux qui se battent à nos côtés se choisissent comme les personnages */
     const allies = pnjsAuCombat().filter(p => p.combat.cote === 'nous');
     allies.forEach(p => lq.append(chip(p.nom || 'Sans nom', {k:'pnj', id:p.id, nom:p.nom}, COMPO.qui.k === 'pnj' && COMPO.qui.id === p.id)));

@@ -24,7 +24,6 @@ function ilYA(t){
   return m < 60 ? 'il y a ' + m + ' minute' + (m > 1 ? 's' : '') : 'il y a plus d’une heure';
 }
 function dessinerTable(){
-  const j = $('tbJoueur'); if(j && document.activeElement !== j) j.value = MOI.joueur;
   dessinerCampagnes();
 
   const p = $('tbPastille'), e = $('tbEtat');
@@ -88,11 +87,9 @@ function dessiner(){
 
 /* ---------- les boutons ---------- */
 const sur = (id, fn) => { const x = $(id); if(x) x.onclick = fn; };
-/* « Tu es » : le pseudo du compte connecté, qu'on change depuis la pastille du compte */
+/* qui joue : le pseudo du compte connecté, qu'on change depuis la pastille du compte */
 function adopterCompte(c){
   if(MOI.joueur !== c.nom){ MOI.joueur = c.nom; sauverLocal(); dessiner(); }
-  const j = $('tbJoueur');
-  if(j){ j.value = c.nom; j.readOnly = true; j.title = 'Ton nom de joueur : il se change depuis la pastille du compte, en haut.'; }
 }
 if($('tbCampagne')) $('tbCampagne').onchange = e => { choisirCampagne(e.target.value); e.target.blur(); };
 sur('tbOuvrir', () => {
@@ -335,6 +332,6 @@ document.addEventListener('visibilitychange', () => {
 });
 /* ce que le Registre des Compétences retouche : relu dans le dépôt, avec un avis s'il y a du neuf */
 regSurveiller();
-/* le compte : une fois tout démarré, son pseudo devient « Tu es » (et le redevient s'il change) */
+/* le compte : une fois tout démarré, son pseudo devient le nom de joueur (et le redevient s'il change) */
 compteQuandPret(adopterCompte);
 window.addEventListener('fae-compte', e => adopterCompte(e.detail));

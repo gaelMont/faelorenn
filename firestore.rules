@@ -126,6 +126,14 @@ service cloud.firestore {
     function modification() {
       return invite() && formeOk() && !touche().hasAny(['proprietaire', 'proprietaireNom', 'cree']);
     }
+    // un admin rend une pièce mal attribuée (l'import ne savait pas toujours qui l'avait créée) à son vrai
+    // créateur : il ne change que ça, vers un compte qui existe, sous son pseudo
+    function transfert() {
+      return admin() && touche().hasOnly(['proprietaire', 'proprietaireNom', 'membres', 'majS', 'modifiePar'])
+        && n().majS == request.time && n().modifiePar == moi()
+        && n().proprietaire is string && exists(compteDe(n().proprietaire))
+        && n().proprietaireNom == get(compteDe(n().proprietaire)).data.nom;
+    }
     // ne touche que ces champs-là (plus les dates)
     function seulement(champs) { return touche().hasOnly(champs.concat(['majS', 'modifiePar'])); }
 
@@ -136,7 +144,8 @@ service cloud.firestore {
       allow update: if modification() && n().membres is list && (
         (aMoi() && (moi() in n().membres))                    // son créateur : tout, les membres compris
         || (moi() in a().membres && seulement(['e']))         // un membre : le jour de jeu, la purge des jets
-        || admin());
+        || admin())
+        || (transfert() && n().membres is list && (n().proprietaire in n().membres));
     }
 
     // ---------- les personnages : la fiche au joueur, l'état de jeu aux membres de sa campagne ----------
@@ -144,7 +153,8 @@ service cloud.firestore {
       allow read: if invite();
       allow create: if creation();
       allow update: if modification() && (
-        aMoi() || (membreDe(a().campagne) && seulement(['e'])) || admin());
+        aMoi() || (membreDe(a().campagne) && seulement(['e'])) || admin())
+        || (transfert() && !touche().hasAny(['membres']));
     }
 
     // ---------- ce qui appartient à une campagne : lu par ses seuls membres ----------

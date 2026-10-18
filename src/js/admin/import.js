@@ -37,6 +37,19 @@ function proprioImp(k, x){
   const uid = (nom && IMP.choix[nom]) || IMP.defaut;
   return {uid:uid, nom:(COMPTES[uid] || {}).nom || nom || '?'};
 }
+// une campagne sans auteur (l'ancienne table ne le notait pas toujours) : à celui qui y joue, s'il est seul à y jouer
+function proprioCampagneImp(t, cid){
+  const c = t.campagnes[cid];
+  if(String(c.auteur || '').trim()) return proprioImp('campagnes', c);
+  const joueurs = new Set();
+  Object.keys(t.personnages || {}).forEach(id => {
+    const x = t.personnages[id];
+    if(x && !x.supprime && formeCampagneEff(t, x.campagne) === cid && String(x.joueur || '').trim()) joueurs.add(proprioImp('personnages', x).uid);
+  });
+  if(joueurs.size !== 1) return proprioImp('campagnes', c);
+  const uid = Array.from(joueurs)[0];
+  return {uid:uid, nom:(COMPTES[uid] || {}).nom || '?'};
+}
 
 function lireFichiers(ev){
   const fs = Array.from(ev.target.files || []);
@@ -63,7 +76,7 @@ function lireFichiers(ev){
 // les membres de chaque campagne : son créateur, les joueurs de ses personnages, les auteurs de ses séances et paragraphes
 function membresImp(t){
   const m = {};
-  Object.keys(t.campagnes || {}).forEach(cid => { m[cid] = new Set([proprioImp('campagnes', t.campagnes[cid]).uid]); });
+  Object.keys(t.campagnes || {}).forEach(cid => { m[cid] = new Set([proprioCampagneImp(t, cid).uid]); });
   const ajoute = (cid, uid) => { if(cid && m[cid] && uid) m[cid].add(uid); };
   Object.keys(t.personnages || {}).forEach(id => { const x = t.personnages[id]; ajoute(formeCampagneEff(t, x.campagne), proprioImp('personnages', x).uid); });
   ['blocs', 'journal'].forEach(k => Object.keys(t[k] || {}).forEach(id => { const x = t[k][id]; ajoute(formeCampagneDe(t, k, x), proprioImp(k, x).uid); }));
@@ -109,11 +122,18 @@ function dessinerImport(){
     const ul = el('ul', 'adfichiers');
     Object.keys(t.campagnes || {}).forEach(cid => {
       const c = t.campagnes[cid];
-      ul.append(el('li', null, (c.nom || cid) + ' : ' + (mb[cid] || []).map(uid => (COMPTES[uid] || {}).nom || uid).join(', ')));
+      ul.append(el('li', null, (c.nom || cid) + ' · créée par ' + proprioCampagneImp(t, cid).nom + ' · membres : ' + (mb[cid] || []).map(uid => (COMPTES[uid] || {}).nom || uid).join(', ')));
     });
     b.append(ul);
+    b.append(el('span', 'lab', 'Les personnages et leurs joueurs'));
+    const up = el('ul', 'adfichiers');
+    Object.keys(t.personnages || {}).forEach(id => {
+      const x = t.personnages[id];
+      if(x && !x.supprime) up.append(el('li', null, (x.nom || id) + ' · joué par ' + proprioImp('personnages', x).nom + (x.joueur ? '' : ' (aucun joueur noté)')));
+    });
+    b.append(up);
   }
-  b.append(el('p', 'note', 'Les membres se changent ensuite dans la section « Les campagnes ». Le bestiaire et les plans d’avant arrivent validés : ils étaient déjà partagés. Les réglages personnels (disposition de la table, positions du réseau) ne sont pas importés : chacun refera les siens.'));
+  b.append(el('p', 'note', 'Les membres, le créateur d’une campagne et le joueur d’un personnage se changent ensuite dans la section « Les campagnes ». Le bestiaire et les plans d’avant arrivent validés : ils étaient déjà partagés. Les réglages personnels (disposition de la table, positions du réseau) ne sont pas importés : chacun refera les siens.'));
   const go = bouton('Importer dans le monde en ligne', '', () => importer(go));
   b.append(go);
   const r = el('div'); r.id = 'impRapport';
@@ -145,7 +165,7 @@ function importer(btn){
         const membres = membresImp(t);
         Object.keys(t.campagnes || {}).forEach(id => {
           const x = Object.assign({}, t.campagnes[id], {id:id});
-          doc('campagnes', id, Object.assign(versDoc('campagnes', x, t), {membres:membres[id] || [COMPTE.uid]}), proprioImp('campagnes', x));
+          doc('campagnes', id, Object.assign(versDoc('campagnes', x, t), {membres:membres[id] || [COMPTE.uid]}), proprioCampagneImp(t, id));
         });
         FORMES_CLES.filter(k => k !== 'campagnes').forEach(k => Object.keys(t[k] || {}).forEach(id => {
           const x = Object.assign({}, t[k][id], {id:id});

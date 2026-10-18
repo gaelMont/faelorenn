@@ -115,7 +115,7 @@ function passerACampagne(cid){
   MOI.campagne = cid;
   /* « le mien » : mon personnage de cette campagne, s'il y en a un */
   const l = persos();
-  if(!l.some(x => x.id === MOI.perso)){ const m = l.find(x => MOI.joueur && x.joueur === MOI.joueur); MOI.perso = m ? m.id : ''; }
+  if(!l.some(x => x.id === MOI.perso && estAMoi('personnages', x.id))){ const m = l.find(jeLeJoue); MOI.perso = m ? m.id : ''; }
   BED = null; BLOC_SUPPR = null; SEANCE_SUPPR = false; A_SUPPRIMER = null;
   if(PED && $('pEditeur')) fermerEditeurPerso();
   COMPO.pret = false; COMPO.qui = {k:'mj', id:'', nom:''}; COMPO.genre = 'narration'; COMPO.quoi = '';
@@ -460,8 +460,10 @@ function dessinerGestionCampagnes(force){
   const im = el('button','btn ghost sm','Ajouter une table comme campagne'); im.type = 'button'; im.id = 'campImporter';
   im.title = 'Le .json d’une table jouée à part devient une campagne de plus';
   im.onclick = () => { CAMP.mode = 'importer'; CAMP.nom = ''; CAMP.arme = ''; CAMP.fichier = ''; CAMP.fichierNom = ''; CAMP.apercu = null; dessinerGestionCampagnes(true); const y = $('campFichier'); if(y) y.focus(); };
-  a.append(im);
-  if(c){
+  /* en ligne, tout le monde est déjà dans la même table : plus de .json à fondre (l'import de l'ancien monde est dans l'administration) */
+  if(SYNC.etat !== 'enligne') a.append(im);
+  /* la renommer, la clore ou la retirer : à celui qui l'a créée */
+  if(c && estAMoi('campagnes', c.id)){
     const rn = el('button','btn ghost sm','Renommer'); rn.type = 'button'; rn.id = 'campRenommer';
     rn.onclick = () => { CAMP.mode = 'renommer'; CAMP.nom = c.nom; CAMP.arme = ''; dessinerGestionCampagnes(true); const y = $('campNom'); if(y){ y.focus(); y.select(); } };
     a.append(rn);

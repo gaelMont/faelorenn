@@ -212,7 +212,9 @@ function blocMort(z){
     const st = el('button','btn ghost xs','Stabiliser'); st.type = 'button'; st.className = 'btn ghost xs jstab';
     st.setAttribute('aria-label', 'Stabiliser ' + z.nom + ' : un soin, une fiole, un jet de Médecine');
     st.onclick = () => stabiliser(z);
-    g.append(b, n, ok, st);
+    /* son jet de mort, c'est son joueur qui le lance ; le stabiliser, n'importe quel allié */
+    if(z.k !== 'perso' || estAMoi('personnages', z.id)) g.append(b, n, ok, st);
+    else g.append(st);
     w.append(g);
     w.append(el('p','mini', 'Un jet par round, sous ' + seuilDeMort(z) + ' au d20. Trois réussites, il est stabilisé ; trois échecs, il meurt. Un 1 le relève à 1 PV, un 20 compte double. Un soin, une fiole ou un jet de Médecine le stabilisent sans jet.'));
   } else if(f === 'stable'){

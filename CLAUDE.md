@@ -44,13 +44,14 @@ All data lives in Firebase (Auth + Firestore, project `faelorenn`, free Spark pl
   - Reads are deltas on `majS` (server time) with cursors in localStorage. Campaign-private collections (séances, paragraphes, rencontres, adversaires, jets) are read with one query per campaign the user belongs to.
   - Writes send only the changed groups. A refused change reverts to the server version.
   - The local cache is per account (`faelorenn.compte.dernier`): another account, or the first online start, starts from an empty `T`.
+  - **UI guards**: `estAMoi(k, id)` / `jeLeJoue(c)` / `joueurDe(c)` (in `table-en-ligne.js`, from the server's `proprietaire`). Another player's character never appears as "who speaks" in the composer (`choisirQui` refuses it), its card only offers "Voir la fiche" / "Sa fiche", and its Marchefleurs sheet is read-only. Its game state (HP, PP, conditions, token, initiative) stays open to campaign members. Renaming, closing or removing a campaign is for its creator. There is no "Tu es" field and no save/.json buttons any more: the nickname is the player name and everything syncs by itself.
 - **The other registries** (Havre, bestiary, skills, plans) still call the old GitHub API in `commun/sync-github.js`, which is now a **façade**.
   - Once logged in, `ghcDoc`, `ghcPret`, `ghcLireUnFichier` and `ghcPanneau` go to `mondeDoc`, `mondeActif`, `mondeLireFichier` and an online panel (`compte/monde-en-ligne.js`, `MONDE_FICHIERS`). GitHub is never called.
   - `mondeDoc` splits each "file" into one doc per piece: `havre`, `creatures`, `familles`, `butins`, `plans` (ids `section:id`), plus the single doc `regles/maison`.
 - **Validation**: creatures, familles, butins, plans and draw tables (`tables`) carry `statut` (`prive` → `propose` → `valide`). Players propose from the home page (`index/creations.js`); admins validate in `admin.html`. An owner editing a validated piece sends it back to `propose`.
 - **Skills**: admins only. Players see them read-only and send `propositions` (`competences/propositions.js`).
-- **`admin.html`**: invitations, entry requests, accounts, the validation queue, skill proposals, campaign members, and the **import** of the old private repo's JSON files (lossless, idempotent, name → account mapping).
-- **`firestore.rules` is the real security**: the config in `src/js/compte/config.js` is public by design. Every rule change needs tests in `outils/tests-regles/` (30 today, allowed and refused cases) before deploying:
+- **`admin.html`**: invitations, entry requests, accounts, the validation queue, skill proposals, campaign members, campaign creators and character players (an admin hands a misattributed piece back with the `transfert()` rule: only `proprietaire`/`proprietaireNom`/`membres` change, to an existing account under its nickname), and the **import** of the old private repo's JSON files (lossless, idempotent, name → account mapping).
+- **`firestore.rules` is the real security**: the config in `src/js/compte/config.js` is public by design. Every rule change needs tests in `outils/tests-regles/` (31 today, allowed and refused cases) before deploying:
 
   ```
   cd outils/tests-regles && npm install && npm test   # Firebase emulator, needs Java 21; CI runs it too
@@ -58,7 +59,7 @@ All data lives in Firebase (Auth + Firestore, project `faelorenn`, free Spark pl
   ```
 
 - `?emulateur` on localhost points the site at local emulators (`firebase emulators:start --only auth,firestore`). Snapshots inject a fake account (`window.FAE_ESSAI`) that skips Firebase.
-- The plan and its decisions: `C:\Users\gmont\.claude\plans\en-attendant-tu-peux-declarative-map.md` (on Gaël's machine). Still to do: lore UI on PNJ sheets, campaign member management from the table, per-entry UI guards in the registers (the rules already refuse), and removal of the GitHub code (`ghc*`, FSA shared-file mode).
+- The plan and its decisions: `C:\Users\gmont\.claude\plans\en-attendant-tu-peux-declarative-map.md` (on Gaël's machine). Still to do: lore UI on PNJ sheets, campaign member management from the table, UI guards for the other registers' entries (PNJ, places, plans, creatures: the rules already refuse), and removal of the GitHub code (`ghc*`, FSA shared-file mode).
 
 ## Privacy constraint
 

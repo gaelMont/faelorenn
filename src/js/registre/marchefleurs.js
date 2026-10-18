@@ -102,6 +102,12 @@ function dessinerFiche(force){
   const vue = {fiche:vueFiche, equipement:vueEquipement, bourse:vueBourse, marche:vueMarche, progression:vueProgression, histoire:vueHistoire}[FICHE.vue] || vueFiche;
   box.append(pan);
   vue(c, pan);
+  /* la fiche d'un autre joueur : elle se lit, seul son joueur la change (les règles du monde en ligne le redisent) */
+  if(!estAMoi('personnages', c.id)){
+    pan.querySelectorAll('input, select, textarea, button').forEach(x => { x.disabled = true; });
+    const nom = c.nom || 'ce personnage', de = /^[aeiouyàâäéèêëîïôöûüh]/i.test(nom) ? 'd’' : 'de ';
+    pan.prepend(el('p','note', 'La fiche ' + de + nom + ' est à ' + (joueurDe(c) || 'un autre joueur') + ' : tu la lis, seul son joueur la change.'));
+  }
   dessinerMonde();
   if(focus && $(focus)) $(focus).focus({preventScroll:true});
 }
@@ -129,7 +135,7 @@ function heros(c){
   const med = el('div','fmed', initiales(c.nom)); med.setAttribute('aria-hidden', 'true');
   const id = el('div','fid');
   id.append(el('h2','fnom', c.nom || 'Sans nom'));
-  id.append(el('p','fqui', [c.peuple, c.voie, c.joueur ? 'joué par ' + c.joueur : ''].filter(Boolean).join(' · ') || 'personne ne le tient'));
+  id.append(el('p','fqui', [c.peuple, c.voie, joueurDe(c) ? 'joué par ' + joueurDe(c) : ''].filter(Boolean).join(' · ') || 'personne ne le tient'));
   const tu = el('div','ftuiles');
   const tuile = (v, l, aide, cle) => {
     const d = el('button','ftuile'); d.type = 'button';
@@ -153,7 +159,8 @@ function heros(c){
   mien.setAttribute('aria-pressed', MOI.perso === c.id ? 'true' : 'false');
   mien.onclick = () => { MOI.perso = MOI.perso === c.id ? '' : c.id; sauverLocal(); dessinerFiche(true); };
   const table = el('a','btn ghost sm','À la table'); table.href = 'table.html'; table.target = ONGLET_TABLE;
-  act.append(imp, mod, mien, table);
+  if(estAMoi('personnages', c.id)) act.append(imp, mod, mien, table);
+  else act.append(imp, table);
   w.append(med, id, tu, j, act);
   return w;
 }
@@ -328,7 +335,9 @@ function indexArme(y, a, i){
 function formDonArme(c, a, i){
   const f = el('div','fform');
   const s = el('select'); s.id = 'fdon-qui'; s.setAttribute('aria-label', 'À qui');
-  persos().filter(x => x.id !== c.id).forEach(x => s.add(new Option(x.nom || 'Sans nom', x.id)));
+  /* une arme vit sur la fiche : elle ne se donne qu'à ses propres personnages (la fiche d'un autre est à lui) */
+  persos().filter(x => x.id !== c.id && estAMoi('personnages', x.id)).forEach(x => s.add(new Option(x.nom || 'Sans nom', x.id)));
+  if(!s.options.length){ f.append(el('p','mini', 'Une arme ne se donne qu’à un autre de tes personnages : la fiche des autres est à leur joueur.')); return f; }
   const ok = el('button','btn sm','Donner'); ok.type = 'button'; ok.id = 'fdon-ok';
   ok.onclick = () => {
     const cible = perso(s.value); if(!cible) return;
@@ -716,11 +725,12 @@ function dessinerMonde(){
       msgTable((c.nom || 'Il') + ' revient à la table' + chez + ', avec ses liens. Sa fiche de PNJ s’efface.', true);
     }, 'ghost sm');
     b.id = 'fReprendre-' + c.id;
-    w.append(b);
+    if(estAMoi('personnages', c.id)) w.append(b);
     box.append(w);
   });
   const n = persos().length, camp = campagneCourante();
-  if(n){
+  /* clore la campagne : à celui qui l'a créée */
+  if(n && (!camp || estAMoi('campagnes', camp.id))){
     const b = deuxTemps('clore', 'Clore la campagne', 'Confirmer : les ' + (n > 1 ? n + ' personnages' : 'le personnage') + ' de la table entrent dans le monde', () => {
       /* la campagne se termine, et sa compagnie entre dans le monde ; une campagne déjà terminée ne fait que renvoyer ses personnages */
       if(camp && camp.etat !== 'finie'){ const r = cloreCampagne(camp.id); msgTable(r.msg, r.ok); return; }

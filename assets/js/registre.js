@@ -1803,7 +1803,7 @@ function passerACampagne(cid){
   MOI.campagne = cid;
   /* « le mien » : mon personnage de cette campagne, s'il y en a un */
   const l = persos();
-  if(!l.some(x => x.id === MOI.perso)){ const m = l.find(x => MOI.joueur && x.joueur === MOI.joueur); MOI.perso = m ? m.id : ''; }
+  if(!l.some(x => x.id === MOI.perso && estAMoi('personnages', x.id))){ const m = l.find(jeLeJoue); MOI.perso = m ? m.id : ''; }
   BED = null; BLOC_SUPPR = null; SEANCE_SUPPR = false; A_SUPPRIMER = null;
   if(PED && $('pEditeur')) fermerEditeurPerso();
   COMPO.pret = false; COMPO.qui = {k:'mj', id:'', nom:''}; COMPO.genre = 'narration'; COMPO.quoi = '';
@@ -2148,8 +2148,10 @@ function dessinerGestionCampagnes(force){
   const im = el('button','btn ghost sm','Ajouter une table comme campagne'); im.type = 'button'; im.id = 'campImporter';
   im.title = 'Le .json d’une table jouée à part devient une campagne de plus';
   im.onclick = () => { CAMP.mode = 'importer'; CAMP.nom = ''; CAMP.arme = ''; CAMP.fichier = ''; CAMP.fichierNom = ''; CAMP.apercu = null; dessinerGestionCampagnes(true); const y = $('campFichier'); if(y) y.focus(); };
-  a.append(im);
-  if(c){
+  /* en ligne, tout le monde est déjà dans la même table : plus de .json à fondre (l'import de l'ancien monde est dans l'administration) */
+  if(SYNC.etat !== 'enligne') a.append(im);
+  /* la renommer, la clore ou la retirer : à celui qui l'a créée */
+  if(c && estAMoi('campagnes', c.id)){
     const rn = el('button','btn ghost sm','Renommer'); rn.type = 'button'; rn.id = 'campRenommer';
     rn.onclick = () => { CAMP.mode = 'renommer'; CAMP.nom = c.nom; CAMP.arme = ''; dessinerGestionCampagnes(true); const y = $('campNom'); if(y){ y.focus(); y.select(); } };
     a.append(rn);
@@ -2619,6 +2621,8 @@ function detailPerso(c){
 
   d.append(el('h3', null, 'Ce qu’il est'));
   const zone = el('textarea'); zone.rows = 5; zone.value = c.texte;
+  /* sa fiche est à son joueur : les autres la lisent */
+  if(!estAMoi('personnages', c.id)){ zone.readOnly = true; zone.title = joueurDe(c) ? 'Seul son joueur, ' + joueurDe(c) + ', l’écrit.' : 'Seul son joueur l’écrit.'; }
   zone.placeholder = 'Son histoire, sa voix, ce qu’il cherche. « / » puis un nom cite quelqu’un, « -- » puis un nom cite un lieu. Ce que tu écris ici part dans la table.';
   zone.onchange = () => surPerso(c.id, y => { y.texte = zone.value; });
   d.append(zone);
@@ -2631,7 +2635,7 @@ function carte(c){
   w.setAttribute('data-perso', c.id);
   const t = el('div');
   t.append(el('div','pnom', c.nom || 'Sans nom'));
-  const qui = [c.joueur ? 'joué par ' + c.joueur : '', c.peuple, c.voie].filter(Boolean).join(' · ');
+  const qui = [joueurDe(c) ? 'joué par ' + joueurDe(c) : '', c.peuple, c.voie].filter(Boolean).join(' · ');
   t.append(el('div','pqui', qui || 'personne ne le tient'));
   w.append(t);
 
@@ -2662,7 +2666,9 @@ function carte(c){
   const b6 = el('button','btn ghost sm','Sa fiche'); b6.type = 'button';
   b6.title = 'Sa fiche, son sac, sa bourse et sa progression, dans le Registre des Marchefleurs';
   b6.onclick = () => ouvrirPage('marchefleurs.html#pj=' + encodeURIComponent(c.id), ONGLET_FICHE);
-  act.append(b1, b2, b3, b4, b6, b5);
+  /* le personnage d'un autre joueur : on le voit, on suit ses PV à la table, mais sa fiche et ses jets sont à lui */
+  if(estAMoi('personnages', c.id)) act.append(b1, b2, b3, b4, b6, b5);
+  else act.append(b1, b6);
   w.append(act);
   if(ouvert) w.append(detailPerso(c));
   return w;
@@ -3738,6 +3744,7 @@ function sansAuto(){
   COMPO.vies = COMPO.vies.filter(v => !v.auto);
 }
 function choisirQui(q){
+  if(q.k === 'perso' && !estAMoi('personnages', q.id)){ msgTable((q.nom || 'Ce personnage') + ' est à ' + (joueurDe(perso(q.id) || {id:q.id}) || 'un autre joueur') + ' : seul son joueur écrit en son nom.', false); return; }
   const avant = persoCompo();
   if(avant) COMPO.quoiPar[avant.id] = COMPO.quoi;
   COMPO.qui = q;
@@ -3756,6 +3763,7 @@ function choisirQui(q){
   dessinerCompositeur(true);
 }
 function composerPour(c){
+  if(!estAMoi('personnages', c.id)){ choisirQui({k:'perso', id:c.id, nom:c.nom}); return; }
   choisirQui({k:'perso', id:c.id, nom:c.nom});
   COMPO.genre = 'fait'; COMPO.panneau = 'jet';
   dessinerCompositeur(true);
@@ -4018,10 +4026,11 @@ function dessinerCompositeur(force){
   if(!e) return;
   if(!COMPO.pret){
     COMPO.pret = true;
-    const c = MOI.perso ? perso(MOI.perso) : null;
+    const c = MOI.perso && estAMoi('personnages', MOI.perso) ? perso(MOI.perso) : null;
     if(c){ COMPO.qui = {k:'perso', id:c.id, nom:c.nom}; COMPO.genre = 'fait'; COMPO.pvId = c.id; }
   }
-  if(COMPO.qui.k === 'perso' && !persoCompo()){
+  /* le personnage d'un autre joueur ne s'écrit pas en son nom : son joueur le fait */
+  if(COMPO.qui.k === 'perso' && (!persoCompo() || !estAMoi('personnages', COMPO.qui.id))){
     COMPO.qui = {k:'mj', id:'', nom:''}; COMPO.genre = 'narration'; COMPO.quoi = ''; COMPO.jet = null; sansAuto();
   }
   const focus = document.activeElement && box.contains(document.activeElement) ? document.activeElement.id : '';
@@ -4037,7 +4046,7 @@ function dessinerCompositeur(force){
       return b;
     };
     lq.append(chip('MJ', {k:'mj', id:'', nom:''}, COMPO.qui.k === 'mj'));
-    persos().forEach(c => lq.append(chip(c.nom || 'Sans nom', {k:'perso', id:c.id, nom:c.nom}, COMPO.qui.k === 'perso' && COMPO.qui.id === c.id)));
+    persos().filter(c => estAMoi('personnages', c.id)).forEach(c => lq.append(chip(c.nom || 'Sans nom', {k:'perso', id:c.id, nom:c.nom}, COMPO.qui.k === 'perso' && COMPO.qui.id === c.id)));
     /* ceux qui se battent à nos côtés se choisissent comme les personnages */
     const allies = pnjsAuCombat().filter(p => p.combat.cote === 'nous');
     allies.forEach(p => lq.append(chip(p.nom || 'Sans nom', {k:'pnj', id:p.id, nom:p.nom}, COMPO.qui.k === 'pnj' && COMPO.qui.id === p.id)));
@@ -5682,7 +5691,7 @@ function frapper(a, propre){
 function viser(a){
   if(!seanceCourante()) return;
   if(!peutViser()){ msgTable(motPasSonTour(monCombattant()), false); return; }
-  const moi = MOI.perso && perso(MOI.perso);
+  const moi = MOI.perso && estAMoi('personnages', MOI.perso) && perso(MOI.perso);
   if(moi && !(COMPO.qui.k === 'perso' && COMPO.qui.id === moi.id)) choisirQui({k:'perso', id:moi.id, nom:moi.nom});
   if(COMPO.qui.k === 'perso'){ COMPO.genre = 'fait'; if(!COMPO.quoi) COMPO.quoi = 'comp:Combat'; }
   COMPO.panneau = 'jet';
@@ -7254,7 +7263,9 @@ function blocMort(z){
     const st = el('button','btn ghost xs','Stabiliser'); st.type = 'button'; st.className = 'btn ghost xs jstab';
     st.setAttribute('aria-label', 'Stabiliser ' + z.nom + ' : un soin, une fiole, un jet de Médecine');
     st.onclick = () => stabiliser(z);
-    g.append(b, n, ok, st);
+    /* son jet de mort, c'est son joueur qui le lance ; le stabiliser, n'importe quel allié */
+    if(z.k !== 'perso' || estAMoi('personnages', z.id)) g.append(b, n, ok, st);
+    else g.append(st);
     w.append(g);
     w.append(el('p','mini', 'Un jet par round, sous ' + seuilDeMort(z) + ' au d20. Trois réussites, il est stabilisé ; trois échecs, il meurt. Un 1 le relève à 1 PV, un 20 compte double. Un soin, une fiole ou un jet de Médecine le stabilisent sans jet.'));
   } else if(f === 'stable'){
@@ -10385,7 +10396,7 @@ function dessinerPjVisages(){
     const w = el('div','pcarte' + (MOI.perso === c.id ? ' moi' : ''));
     w.setAttribute('data-pj', c.id);
     w.append(el('div','pnom', c.nom || 'Sans nom'));
-    w.append(el('div','pqui', [c.joueur ? 'joué par ' + c.joueur : '', c.peuple, c.voie].filter(Boolean).join(' · ') || 'personne ne le tient'));
+    w.append(el('div','pqui', [joueurDe(c) ? 'joué par ' + joueurDe(c) : '', c.peuple, c.voie].filter(Boolean).join(' · ') || 'personne ne le tient'));
     const ls = liensDe(ref);
     const zl = el('div','vliens');
     if(!ls.length) zl.append(el('p','mini','Aucun lien pour l’instant.'));
@@ -12941,7 +12952,16 @@ function tableRecevoir(k, docs){
   });
   T = fusionner(T, norme);
   if(k === 'campagnes') suivreMesCampagnes();
+  if(k === 'personnages') verifierMonPerso();
   apresReception();
+}
+/* « le mien », gardé dans ce navigateur, désigne peut-être le personnage d'un autre joueur (choisi avant les comptes) :
+   on le rend, et l'on prend le sien s'il en a un dans cette campagne */
+function verifierMonPerso(){
+  if(!MOI.perso || estAMoi('personnages', MOI.perso)) return;
+  const m = persos().find(jeLeJoue);
+  MOI.perso = m ? m.id : '';
+  sauverLocal();
 }
 function tableRecevoirJets(docs){
   const jets = docs.map(({id, data}) => { EN_LIGNE.jetsVus[id] = 1; return Object.assign(jetDepuisDoc(data), {id:id}); });
@@ -13011,6 +13031,19 @@ function tablePlanifier(){
   EN_LIGNE.minuteur = setTimeout(tableEcrire, 1200);
 }
 function membreDe(cid){ return estAdmin() || (EN_LIGNE.membres[cid] || []).indexOf(COMPTE.uid) >= 0; }
+
+/* ---------- à qui est une entrée ---------- */
+// son créateur, tel que le serveur le connaît ; null hors ligne, ou pour ce qui n'est pas encore parti
+function proprioDe(k, id){ return SYNC.etat === 'enligne' && FORMES[k] ? mondeProprio(FORMES[k].col, id) : null; }
+// ce qu'on peut faire en son nom : le sien (un admin aussi ne joue que les siens). Pas encore parti : c'est le sien
+function estAMoi(k, id){ const p = proprioDe(k, id); return !p || !p.uid || (typeof COMPTE !== 'undefined' && p.uid === COMPTE.uid); }
+// « je le joue » : en ligne, le personnage de mon compte ; sinon, celui qui porte mon nom
+function jeLeJoue(c){
+  const p = proprioDe('personnages', c.id);
+  return p ? p.uid === COMPTE.uid : !!MOI.joueur && c.joueur === MOI.joueur;
+}
+// le joueur d'un personnage : le pseudo de son compte en ligne, sinon le nom écrit sur la fiche
+function joueurDe(c){ const p = proprioDe('personnages', c.id); return (p && p.nom) || c.joueur || ''; }
 // ce que ce compte peut changer d'une entrée qui existe déjà (les règles le redisent de toute façon)
 function groupesPermis(k, id, champs){
   const o = mondeOmbre(FORMES[k].col, id);
@@ -13044,6 +13077,12 @@ function tableEcrire(){
       if(permis){
         const avant = o ? JSON.parse(normes[id] || '{}') : {};
         const touches = Object.keys(champs).filter(c => JSON.stringify(champs[c]) !== JSON.stringify(avant[c]));
+        // la date de l'entrée (maj) bouge aussi quand on ne change que l'état de jeu (les points d'une mission,
+        // donnés à toute la compagnie) : si la fiche ne diffère que par elle, on envoie celle du serveur
+        if(touches.indexOf('f') >= 0 && permis.indexOf('f') < 0 && avant.f){
+          const sansMaj = g => { const y = formeJson(g); delete y.maj; return JSON.stringify(y); };
+          if(sansMaj(champs.f) === sansMaj(avant.f)){ champs.f = avant.f; touches.splice(touches.indexOf('f'), 1); }
+        }
         if(touches.some(c => permis.indexOf(c) < 0)){ refus.push([k, id]); return; }
       }
       if(k === 'campagnes' && !o) champs.membres = [COMPTE.uid];
@@ -13051,6 +13090,8 @@ function tableEcrire(){
       EN_LIGNE.normes[k] = normes;
       mondeEcrire(col, id, champs).catch(e => {
         delete normes[id];
+        // il existait déjà en ligne (ce navigateur ne l'avait pas lu) : on le fond, comme s'il venait d'arriver
+        if(e && e.code === 'deja-la'){ tableRecevoir(k, [{id:id, data:e.data}]); return; }
         if(e && e.code === 'permission-denied'){ revenir(k, id); remplacerDansLocal([[k, id]]); sauverLocal(); dessiner(); msgTable(mondeRefus(e), false); }
         else { SYNC.erreur = mondeRefus(e); dessinerTable(); }
       });
@@ -13062,7 +13103,7 @@ function tableEcrire(){
     const d = jetVersDoc(j, T);
     if(!membreDe(d.campagne)) return;
     EN_LIGNE.jetsVus[j.id] = 1;
-    mondeEcrire('jets', j.id, d).catch(() => { delete EN_LIGNE.jetsVus[j.id]; });
+    mondeEcrire('jets', j.id, d).catch(e => { if(!e || e.code !== 'deja-la') delete EN_LIGNE.jetsVus[j.id]; });
   });
   // la table elle-même : son nom et la purge (admins), les seuils de l'oracle (tous)
   const m = mondeOmbre('monde', 'table');
@@ -13607,6 +13648,12 @@ function dessinerFiche(force){
   const vue = {fiche:vueFiche, equipement:vueEquipement, bourse:vueBourse, marche:vueMarche, progression:vueProgression, histoire:vueHistoire}[FICHE.vue] || vueFiche;
   box.append(pan);
   vue(c, pan);
+  /* la fiche d'un autre joueur : elle se lit, seul son joueur la change (les règles du monde en ligne le redisent) */
+  if(!estAMoi('personnages', c.id)){
+    pan.querySelectorAll('input, select, textarea, button').forEach(x => { x.disabled = true; });
+    const nom = c.nom || 'ce personnage', de = /^[aeiouyàâäéèêëîïôöûüh]/i.test(nom) ? 'd’' : 'de ';
+    pan.prepend(el('p','note', 'La fiche ' + de + nom + ' est à ' + (joueurDe(c) || 'un autre joueur') + ' : tu la lis, seul son joueur la change.'));
+  }
   dessinerMonde();
   if(focus && $(focus)) $(focus).focus({preventScroll:true});
 }
@@ -13634,7 +13681,7 @@ function heros(c){
   const med = el('div','fmed', initiales(c.nom)); med.setAttribute('aria-hidden', 'true');
   const id = el('div','fid');
   id.append(el('h2','fnom', c.nom || 'Sans nom'));
-  id.append(el('p','fqui', [c.peuple, c.voie, c.joueur ? 'joué par ' + c.joueur : ''].filter(Boolean).join(' · ') || 'personne ne le tient'));
+  id.append(el('p','fqui', [c.peuple, c.voie, joueurDe(c) ? 'joué par ' + joueurDe(c) : ''].filter(Boolean).join(' · ') || 'personne ne le tient'));
   const tu = el('div','ftuiles');
   const tuile = (v, l, aide, cle) => {
     const d = el('button','ftuile'); d.type = 'button';
@@ -13658,7 +13705,8 @@ function heros(c){
   mien.setAttribute('aria-pressed', MOI.perso === c.id ? 'true' : 'false');
   mien.onclick = () => { MOI.perso = MOI.perso === c.id ? '' : c.id; sauverLocal(); dessinerFiche(true); };
   const table = el('a','btn ghost sm','À la table'); table.href = 'table.html'; table.target = ONGLET_TABLE;
-  act.append(imp, mod, mien, table);
+  if(estAMoi('personnages', c.id)) act.append(imp, mod, mien, table);
+  else act.append(imp, table);
   w.append(med, id, tu, j, act);
   return w;
 }
@@ -13833,7 +13881,9 @@ function indexArme(y, a, i){
 function formDonArme(c, a, i){
   const f = el('div','fform');
   const s = el('select'); s.id = 'fdon-qui'; s.setAttribute('aria-label', 'À qui');
-  persos().filter(x => x.id !== c.id).forEach(x => s.add(new Option(x.nom || 'Sans nom', x.id)));
+  /* une arme vit sur la fiche : elle ne se donne qu'à ses propres personnages (la fiche d'un autre est à lui) */
+  persos().filter(x => x.id !== c.id && estAMoi('personnages', x.id)).forEach(x => s.add(new Option(x.nom || 'Sans nom', x.id)));
+  if(!s.options.length){ f.append(el('p','mini', 'Une arme ne se donne qu’à un autre de tes personnages : la fiche des autres est à leur joueur.')); return f; }
   const ok = el('button','btn sm','Donner'); ok.type = 'button'; ok.id = 'fdon-ok';
   ok.onclick = () => {
     const cible = perso(s.value); if(!cible) return;
@@ -14221,11 +14271,12 @@ function dessinerMonde(){
       msgTable((c.nom || 'Il') + ' revient à la table' + chez + ', avec ses liens. Sa fiche de PNJ s’efface.', true);
     }, 'ghost sm');
     b.id = 'fReprendre-' + c.id;
-    w.append(b);
+    if(estAMoi('personnages', c.id)) w.append(b);
     box.append(w);
   });
   const n = persos().length, camp = campagneCourante();
-  if(n){
+  /* clore la campagne : à celui qui l'a créée */
+  if(n && (!camp || estAMoi('campagnes', camp.id))){
     const b = deuxTemps('clore', 'Clore la campagne', 'Confirmer : les ' + (n > 1 ? n + ' personnages' : 'le personnage') + ' de la table entrent dans le monde', () => {
       /* la campagne se termine, et sa compagnie entre dans le monde ; une campagne déjà terminée ne fait que renvoyer ses personnages */
       if(camp && camp.etat !== 'finie'){ const r = cloreCampagne(camp.id); msgTable(r.msg, r.ok); return; }
@@ -14695,7 +14746,6 @@ function ilYA(t){
   return m < 60 ? 'il y a ' + m + ' minute' + (m > 1 ? 's' : '') : 'il y a plus d’une heure';
 }
 function dessinerTable(){
-  const j = $('tbJoueur'); if(j && document.activeElement !== j) j.value = MOI.joueur;
   dessinerCampagnes();
 
   const p = $('tbPastille'), e = $('tbEtat');
@@ -14759,11 +14809,9 @@ function dessiner(){
 
 /* ---------- les boutons ---------- */
 const sur = (id, fn) => { const x = $(id); if(x) x.onclick = fn; };
-/* « Tu es » : le pseudo du compte connecté, qu'on change depuis la pastille du compte */
+/* qui joue : le pseudo du compte connecté, qu'on change depuis la pastille du compte */
 function adopterCompte(c){
   if(MOI.joueur !== c.nom){ MOI.joueur = c.nom; sauverLocal(); dessiner(); }
-  const j = $('tbJoueur');
-  if(j){ j.value = c.nom; j.readOnly = true; j.title = 'Ton nom de joueur : il se change depuis la pastille du compte, en haut.'; }
 }
 if($('tbCampagne')) $('tbCampagne').onchange = e => { choisirCampagne(e.target.value); e.target.blur(); };
 sur('tbOuvrir', () => {
@@ -15006,6 +15054,6 @@ document.addEventListener('visibilitychange', () => {
 });
 /* ce que le Registre des Compétences retouche : relu dans le dépôt, avec un avis s'il y a du neuf */
 regSurveiller();
-/* le compte : une fois tout démarré, son pseudo devient « Tu es » (et le redevient s'il change) */
+/* le compte : une fois tout démarré, son pseudo devient le nom de joueur (et le redevient s'il change) */
 compteQuandPret(adopterCompte);
 window.addEventListener('fae-compte', e => adopterCompte(e.detail));

@@ -11,7 +11,7 @@
 <body>
 <link rel="stylesheet" href="assets/css/compte.css?v=7f15b187f9">
 <script src="assets/js/firebase.js?v=9a3a030513"></script>
-<script src="assets/js/compte.js?v=bc01e49581"></script>
+<script src="assets/js/compte.js?v=5ebabdc6c9"></script>
 <script src="assets/js/site.js?v=24971e46c0"></script>
 <nav class="fae-site" aria-label="Les registres de Faelorenn">
   <a class="fae-accueil" href="./">Faelorenn</a>
@@ -35,7 +35,6 @@
   <nav class="saut noprint" aria-label="Aller à">
     <a href="#secFiche">Les fiches</a>
     <a href="#secMonde">Entrés dans le monde</a>
-    <a href="#secSauve">La sauvegarde</a>
     <a href="table.html" target="faelorenn-table">La séance, dans le Registre de la Table</a>
     <a href="pnj.html" target="faelorenn-visages">Les PNJ, dans le Registre des Visages</a>
   </nav>
@@ -57,30 +56,10 @@
   <div class="card" id="fMonde"></div>
 </section>
 
-<section id="secSauve" class="noprint">
-  <h2><span class="num">3</span> La sauvegarde</h2>
-  <p class="hint">Les fiches vivent dans le même fichier que la table : relier la sauvegarde en ligne ici ou dans un autre registre revient au même.</p>
-  <div class="card">
-    <div class="table">
-      <div>
-        <label class="lab" for="tbJoueur">Tu es</label>
-        <input type="text" id="tbJoueur" placeholder="Gaël" style="width:100%">
-      </div>
-    </div>
-    <div class="acts" style="margin-top:12px">
-      <button class="btn" id="tbEnLigne" type="button">Sauvegarder en ligne</button>
-      <button class="btn ghost sm" id="tbOuvrir" type="button" hidden>Reconnecter le fichier</button>
-      <button class="btn ghost sm" id="tbJson" type="button">Enregistrer la table en .json</button>
-      <button class="btn ghost sm" id="tbImport" type="button">Importer un .json</button>
-      <input type="file" id="tbFichier" accept=".json,application/json" hidden>
-    </div>
-    <div id="ghPlace"></div>
-  </div>
-</section>
 </div>
 <div id="ficheImpr"></div>
 <p class="note toast" id="tbMsg" hidden role="status"></p>
 
-<script src="assets/js/registre.js?v=cf3ee15eeb"></script>
+<script src="assets/js/registre.js?v=532950de5d"></script>
 </body>
 </html>

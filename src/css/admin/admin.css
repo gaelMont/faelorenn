@@ -23,3 +23,7 @@
 #impCorps .adtable{margin-bottom:14px}
 .adreponse{flex:1 1 220px;min-width:0;font:inherit;font-size:14px;padding:6px 9px;border:1px solid var(--rule);border-radius:2px;background:var(--paper);color:var(--ink)}
 .propTexte{margin:4px 0 8px;white-space:pre-wrap}
+.adligne{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:14px;margin:4px 0}
+.adproprio{font:inherit;font-size:14px;padding:4px 8px;border:1px solid var(--rule);border-radius:2px;background:var(--paper);color:var(--ink)}
+.adcamp .lab{display:block;margin-top:10px}
+.adpersos{list-style:none;margin:4px 0 0;padding:0}

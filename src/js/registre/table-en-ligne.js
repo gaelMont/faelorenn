@@ -34,7 +34,16 @@ function tableRecevoir(k, docs){
   });
   T = fusionner(T, norme);
   if(k === 'campagnes') suivreMesCampagnes();
+  if(k === 'personnages') verifierMonPerso();
   apresReception();
+}
+/* « le mien », gardé dans ce navigateur, désigne peut-être le personnage d'un autre joueur (choisi avant les comptes) :
+   on le rend, et l'on prend le sien s'il en a un dans cette campagne */
+function verifierMonPerso(){
+  if(!MOI.perso || estAMoi('personnages', MOI.perso)) return;
+  const m = persos().find(jeLeJoue);
+  MOI.perso = m ? m.id : '';
+  sauverLocal();
 }
 function tableRecevoirJets(docs){
   const jets = docs.map(({id, data}) => { EN_LIGNE.jetsVus[id] = 1; return Object.assign(jetDepuisDoc(data), {id:id}); });
@@ -104,6 +113,19 @@ function tablePlanifier(){
   EN_LIGNE.minuteur = setTimeout(tableEcrire, 1200);
 }
 function membreDe(cid){ return estAdmin() || (EN_LIGNE.membres[cid] || []).indexOf(COMPTE.uid) >= 0; }
+
+/* ---------- à qui est une entrée ---------- */
+// son créateur, tel que le serveur le connaît ; null hors ligne, ou pour ce qui n'est pas encore parti
+function proprioDe(k, id){ return SYNC.etat === 'enligne' && FORMES[k] ? mondeProprio(FORMES[k].col, id) : null; }
+// ce qu'on peut faire en son nom : le sien (un admin aussi ne joue que les siens). Pas encore parti : c'est le sien
+function estAMoi(k, id){ const p = proprioDe(k, id); return !p || !p.uid || (typeof COMPTE !== 'undefined' && p.uid === COMPTE.uid); }
+// « je le joue » : en ligne, le personnage de mon compte ; sinon, celui qui porte mon nom
+function jeLeJoue(c){
+  const p = proprioDe('personnages', c.id);
+  return p ? p.uid === COMPTE.uid : !!MOI.joueur && c.joueur === MOI.joueur;
+}
+// le joueur d'un personnage : le pseudo de son compte en ligne, sinon le nom écrit sur la fiche
+function joueurDe(c){ const p = proprioDe('personnages', c.id); return (p && p.nom) || c.joueur || ''; }
 // ce que ce compte peut changer d'une entrée qui existe déjà (les règles le redisent de toute façon)
 function groupesPermis(k, id, champs){
   const o = mondeOmbre(FORMES[k].col, id);
@@ -137,6 +159,12 @@ function tableEcrire(){
       if(permis){
         const avant = o ? JSON.parse(normes[id] || '{}') : {};
         const touches = Object.keys(champs).filter(c => JSON.stringify(champs[c]) !== JSON.stringify(avant[c]));
+        // la date de l'entrée (maj) bouge aussi quand on ne change que l'état de jeu (les points d'une mission,
+        // donnés à toute la compagnie) : si la fiche ne diffère que par elle, on envoie celle du serveur
+        if(touches.indexOf('f') >= 0 && permis.indexOf('f') < 0 && avant.f){
+          const sansMaj = g => { const y = formeJson(g); delete y.maj; return JSON.stringify(y); };
+          if(sansMaj(champs.f) === sansMaj(avant.f)){ champs.f = avant.f; touches.splice(touches.indexOf('f'), 1); }
+        }
         if(touches.some(c => permis.indexOf(c) < 0)){ refus.push([k, id]); return; }
       }
       if(k === 'campagnes' && !o) champs.membres = [COMPTE.uid];
@@ -144,6 +172,8 @@ function tableEcrire(){
       EN_LIGNE.normes[k] = normes;
       mondeEcrire(col, id, champs).catch(e => {
         delete normes[id];
+        // il existait déjà en ligne (ce navigateur ne l'avait pas lu) : on le fond, comme s'il venait d'arriver
+        if(e && e.code === 'deja-la'){ tableRecevoir(k, [{id:id, data:e.data}]); return; }
         if(e && e.code === 'permission-denied'){ revenir(k, id); remplacerDansLocal([[k, id]]); sauverLocal(); dessiner(); msgTable(mondeRefus(e), false); }
         else { SYNC.erreur = mondeRefus(e); dessinerTable(); }
       });
@@ -155,7 +185,7 @@ function tableEcrire(){
     const d = jetVersDoc(j, T);
     if(!membreDe(d.campagne)) return;
     EN_LIGNE.jetsVus[j.id] = 1;
-    mondeEcrire('jets', j.id, d).catch(() => { delete EN_LIGNE.jetsVus[j.id]; });
+    mondeEcrire('jets', j.id, d).catch(e => { if(!e || e.code !== 'deja-la') delete EN_LIGNE.jetsVus[j.id]; });
   });
   // la table elle-même : son nom et la purge (admins), les seuils de l'oracle (tous)
   const m = mondeOmbre('monde', 'table');

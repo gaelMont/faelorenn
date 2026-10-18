@@ -375,26 +375,41 @@ function mondeProprio(col, id){ const o = mondeOmbre(col, id); return o ? {uid:o
 function mondeTemps(t){ return t && typeof t.toMillis === 'function' ? t.toMillis() : 0; }
 
 /* écouter une requête, seulement le neuf. surDocs reçoit [{id, data}] ; la clé distingue les écoutes.
-   surServeur est appelé une fois, à la première réponse du serveur (pas du cache), même vide */
+   surServeur est appelé une fois, à la première réponse du serveur (pas du cache), même vide.
+   Ce que ce navigateur a déjà lu (jusqu'au curseur) n'est plus redemandé au serveur : on le reprend d'abord
+   dans le cache de Firestore, gratuitement, pour que chaque document retrouve son ombre (son propriétaire,
+   sa dernière version) après un rechargement. Rien en cache (cache vidé, navigateur sans cache) : on relit tout. */
 function mondeEcouter(cle, requete, surDocs, surErreur, depuisMin, surServeur){
   mondeArreter(cle);
-  const depuis = Math.max(0, (mondeCurseurs()[cle] || 0) - MONDE_MARGE, depuisMin || 0);
-  const q = requete.where('majS', '>', firebase.firestore.Timestamp.fromMillis(depuis));
-  let servi = false;
-  MONDE_ECOUTES[cle] = q.onSnapshot({includeMetadataChanges:true}, snap => {
-    if(!servi && !snap.metadata.fromCache){ servi = true; setTimeout(() => { if(surServeur) surServeur(); }, 0); }
-    const docs = [];
-    let max = 0;
-    snap.docChanges().forEach(ch => {
-      if(ch.type === 'removed') return;
-      const data = ch.doc.data({serverTimestamps:'estimate'});
-      docs.push({id:ch.doc.id, data:data});
-      if(!ch.doc.metadata.hasPendingWrites) max = Math.max(max, mondeTemps(data.majS));
-    });
-    if(docs.length) surDocs(docs);
-    // le curseur n'avance que sur ce que le serveur a confirmé
-    if(max && !snap.metadata.fromCache) mondeGarderCurseur(cle, max);
-  }, e => { if(surErreur) surErreur(e); });
+  const curseur = mondeCurseurs()[cle] || 0, min = depuisMin || 0;
+  const avecMin = q => min ? q.where('majS', '>', firebase.firestore.Timestamp.fromMillis(min)) : q;
+  const ecouter = depuis => {
+    const q = requete.where('majS', '>', firebase.firestore.Timestamp.fromMillis(depuis));
+    let servi = false;
+    MONDE_ECOUTES[cle] = q.onSnapshot({includeMetadataChanges:true}, snap => {
+      if(!servi && !snap.metadata.fromCache){ servi = true; setTimeout(() => { if(surServeur) surServeur(); }, 0); }
+      const docs = [];
+      let max = 0;
+      snap.docChanges().forEach(ch => {
+        if(ch.type === 'removed') return;
+        const data = ch.doc.data({serverTimestamps:'estimate'});
+        docs.push({id:ch.doc.id, data:data});
+        if(!ch.doc.metadata.hasPendingWrites) max = Math.max(max, mondeTemps(data.majS));
+      });
+      if(docs.length) surDocs(docs);
+      // le curseur n'avance que sur ce que le serveur a confirmé
+      if(max && !snap.metadata.fromCache) mondeGarderCurseur(cle, max);
+    }, e => { if(surErreur) surErreur(e); });
+  };
+  if(!curseur){ ecouter(min); return; }
+  let arrete = false;
+  MONDE_ECOUTES[cle] = () => { arrete = true; };
+  avecMin(requete).get({source:'cache'}).then(snap => {
+    if(arrete) return;
+    if(snap.empty){ ecouter(min); return; }
+    surDocs(snap.docs.map(d => ({id:d.id, data:d.data({serverTimestamps:'estimate'})})));
+    if(!arrete) ecouter(Math.max(0, curseur - MONDE_MARGE, min));
+  }, () => { if(!arrete) ecouter(min); });
 }
 function mondeArreter(cle){ if(MONDE_ECOUTES[cle]){ MONDE_ECOUTES[cle](); delete MONDE_ECOUTES[cle]; } }
 function mondeToutArreter(){ Object.keys(MONDE_ECOUTES).forEach(mondeArreter); }
@@ -407,7 +422,18 @@ function mondeEcrire(col, id, champs){
   if(!ombre){
     const d = Object.assign({}, champs, {proprietaire:COMPTE.uid, proprietaireNom:COMPTE.nom, cree:heure, majS:heure, modifiePar:COMPTE.uid});
     mondeGarderOmbre(col, id, Object.assign({}, d, {cree:null, majS:null}));
-    return ref.set(d).catch(e => { delete MONDE_OMBRES[col][id]; throw e; });
+    return ref.set(d).catch(e => {
+      delete MONDE_OMBRES[col][id];
+      if(!e || e.code !== 'permission-denied') throw e;
+      // refusé à la création : le plus souvent, le document existe déjà et ce navigateur ne l'avait pas lu.
+      // On le reprend tel que le serveur l'a ; l'appelant le fond dans ce qu'il garde (code « deja-la »)
+      return ref.get().then(x => {
+        if(!x.exists) throw e;
+        const data = x.data({serverTimestamps:'estimate'});
+        mondeGarderOmbre(col, id, data);
+        throw Object.assign(new Error('Déjà en ligne'), {code:'deja-la', data:data});
+      }, () => { throw e; });
+    });
   }
   const maj = {};
   Object.keys(champs).forEach(k => { if(JSON.stringify(champs[k]) !== JSON.stringify(ombre[k])) maj[k] = champs[k]; });
@@ -528,6 +554,7 @@ function mondeDoc(o, cfg){
     const c = o.contenu();
     if(c && c.version) version = c.version;
     const travaux = [], refus = [];
+    let repris = false;          // des pièces déjà en ligne, reprises du serveur : le registre les reçoit
     if(cfg.doc){
       const f = JSON.stringify(c);
       if(JSON.stringify(recu.doc) !== f){
@@ -545,7 +572,11 @@ function mondeDoc(o, cfg){
         if(cfg.prefixe) champs.section = s;
         // une pièce nouvelle reste privée ; une pièce validée que son créateur retouche repasse en proposition
         if(cfg.statut) champs.statut = !ombre ? 'prive' : (ombre.statut === 'valide' && !estAdmin() ? 'propose' : (ombre.statut || 'prive'));
-        travaux.push(mondeEcrire(col, did, champs).then(() => { (recu[s] = recu[s] || {})[id] = JSON.parse(f); }));
+        travaux.push(mondeEcrire(col, did, champs).then(() => { (recu[s] = recu[s] || {})[id] = JSON.parse(f); }, e => {
+          // déjà en ligne : on reprend la version du serveur, qui sera servie au registre
+          if(e && e.code === 'deja-la'){ (recu[s] = recu[s] || {})[id] = formeJson(e.data.f); repris = true; return; }
+          throw e;
+        }));
       });
     });
     return Promise.all(travaux).then(() => {
@@ -560,6 +591,7 @@ function mondeDoc(o, cfg){
       return false;
     }).then(v => {
       d.occupe = false;
+      if(repris && d.lu) servir();
       if(d.encore){ d.encore = false; d.planifier(0); }
       d.dernier = Date.now();
       signaler();

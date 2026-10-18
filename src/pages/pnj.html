@@ -9,7 +9,6 @@
   <nav class="saut noprint" aria-label="Aller à">
     <a href="#secPnj">Les PNJ</a>
     <a href="#secPjV">Les personnages</a>
-    <a href="#secSauve">La sauvegarde</a>
     <a href="table.html" target="faelorenn-table">La séance, dans le Registre de la Table</a>
   </nav>
   <div class="etatsync"><span class="pastille" id="tbPastille"></span><span id="tbEtat"></span></div>
@@ -47,26 +46,6 @@
   <div id="vPjListe" class="pgrille"></div>
 </section>
 
-<section id="secSauve">
-  <h2><span class="num">3</span> La sauvegarde</h2>
-  <p class="hint">Les fiches et les liens vivent dans le même fichier que la table : relier la sauvegarde en ligne ici ou dans le Registre de la Table revient au même.</p>
-  <div class="card">
-    <div class="table">
-      <div>
-        <label class="lab" for="tbJoueur">Tu es</label>
-        <input type="text" id="tbJoueur" placeholder="Gaël" style="width:100%">
-      </div>
-    </div>
-    <div class="acts" style="margin-top:12px">
-      <button class="btn" id="tbEnLigne" type="button">Sauvegarder en ligne</button>
-      <button class="btn ghost sm" id="tbOuvrir" type="button" hidden>Reconnecter le fichier</button>
-      <button class="btn ghost sm" id="tbJson" type="button">Enregistrer la table en .json</button>
-      <button class="btn ghost sm" id="tbImport" type="button">Importer un .json</button>
-      <input type="file" id="tbFichier" accept=".json,application/json" hidden>
-    </div>
-    <div id="ghPlace"></div>
-  </div>
-</section>
 </div>
 <p class="note toast" id="tbMsg" hidden role="status"></p>
 

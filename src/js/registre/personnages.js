@@ -152,6 +152,8 @@ function detailPerso(c){
 
   d.append(el('h3', null, 'Ce qu’il est'));
   const zone = el('textarea'); zone.rows = 5; zone.value = c.texte;
+  /* sa fiche est à son joueur : les autres la lisent */
+  if(!estAMoi('personnages', c.id)){ zone.readOnly = true; zone.title = joueurDe(c) ? 'Seul son joueur, ' + joueurDe(c) + ', l’écrit.' : 'Seul son joueur l’écrit.'; }
   zone.placeholder = 'Son histoire, sa voix, ce qu’il cherche. « / » puis un nom cite quelqu’un, « -- » puis un nom cite un lieu. Ce que tu écris ici part dans la table.';
   zone.onchange = () => surPerso(c.id, y => { y.texte = zone.value; });
   d.append(zone);
@@ -164,7 +166,7 @@ function carte(c){
   w.setAttribute('data-perso', c.id);
   const t = el('div');
   t.append(el('div','pnom', c.nom || 'Sans nom'));
-  const qui = [c.joueur ? 'joué par ' + c.joueur : '', c.peuple, c.voie].filter(Boolean).join(' · ');
+  const qui = [joueurDe(c) ? 'joué par ' + joueurDe(c) : '', c.peuple, c.voie].filter(Boolean).join(' · ');
   t.append(el('div','pqui', qui || 'personne ne le tient'));
   w.append(t);
 
@@ -195,7 +197,9 @@ function carte(c){
   const b6 = el('button','btn ghost sm','Sa fiche'); b6.type = 'button';
   b6.title = 'Sa fiche, son sac, sa bourse et sa progression, dans le Registre des Marchefleurs';
   b6.onclick = () => ouvrirPage('marchefleurs.html#pj=' + encodeURIComponent(c.id), ONGLET_FICHE);
-  act.append(b1, b2, b3, b4, b6, b5);
+  /* le personnage d'un autre joueur : on le voit, on suit ses PV à la table, mais sa fiche et ses jets sont à lui */
+  if(estAMoi('personnages', c.id)) act.append(b1, b2, b3, b4, b6, b5);
+  else act.append(b1, b6);
   w.append(act);
   if(ouvert) w.append(detailPerso(c));
   return w;

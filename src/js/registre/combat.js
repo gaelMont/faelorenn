@@ -144,7 +144,7 @@ function frapper(a, propre){
 function viser(a){
   if(!seanceCourante()) return;
   if(!peutViser()){ msgTable(motPasSonTour(monCombattant()), false); return; }
-  const moi = MOI.perso && perso(MOI.perso);
+  const moi = MOI.perso && estAMoi('personnages', MOI.perso) && perso(MOI.perso);
   if(moi && !(COMPO.qui.k === 'perso' && COMPO.qui.id === moi.id)) choisirQui({k:'perso', id:moi.id, nom:moi.nom});
   if(COMPO.qui.k === 'perso'){ COMPO.genre = 'fait'; if(!COMPO.quoi) COMPO.quoi = 'comp:Combat'; }
   COMPO.panneau = 'jet';

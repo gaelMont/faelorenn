@@ -439,7 +439,7 @@ function dessinerPjVisages(){
     const w = el('div','pcarte' + (MOI.perso === c.id ? ' moi' : ''));
     w.setAttribute('data-pj', c.id);
     w.append(el('div','pnom', c.nom || 'Sans nom'));
-    w.append(el('div','pqui', [c.joueur ? 'joué par ' + c.joueur : '', c.peuple, c.voie].filter(Boolean).join(' · ') || 'personne ne le tient'));
+    w.append(el('div','pqui', [joueurDe(c) ? 'joué par ' + joueurDe(c) : '', c.peuple, c.voie].filter(Boolean).join(' · ') || 'personne ne le tient'));
     const ls = liensDe(ref);
     const zl = el('div','vliens');
     if(!ls.length) zl.append(el('p','mini','Aucun lien pour l’instant.'));

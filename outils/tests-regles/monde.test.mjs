@@ -146,6 +146,19 @@ test('un admin corrige tout et importe au nom des autres', async () => {
   await assertSucceeds(updateDoc(doc(qui('gael'), 'paragraphes/b1'), retouche('gael', { f: '{}' })));
 });
 
+test('un admin rend une campagne ou un personnage à son vrai créateur, et rien d’autre', async () => {
+  const rend = (uid, nom, plus) => retouche('gael', Object.assign({ proprietaire: uid, proprietaireNom: nom }, plus || {}));
+  await assertSucceeds(updateDoc(doc(qui('gael'), 'campagnes/c1'), rend('oce', 'Océane')));
+  await assertSucceeds(updateDoc(doc(qui('gael'), 'personnages/p1'), rend('oce', 'Océane')));
+  await assertFails(updateDoc(doc(qui('gael'), 'personnages/p1'), rend('luc', 'Pas son nom')));           // sous un autre nom
+  await assertFails(updateDoc(doc(qui('gael'), 'personnages/p1'), rend('fantome', 'Fantôme')));           // un compte qui n'existe pas
+  await assertFails(updateDoc(doc(qui('gael'), 'campagnes/c2'), rend('oce', 'Océane')));                  // pas membre de la campagne
+  await assertSucceeds(updateDoc(doc(qui('gael'), 'campagnes/c2'), rend('oce', 'Océane', { membres: ['luc', 'oce'] })));
+  await assertFails(updateDoc(doc(qui('gael'), 'personnages/p1'), rend('gael', 'Gaël', { cree: T0() })));  // la date de création reste
+  await assertFails(updateDoc(doc(qui('oce'), 'personnages/p1'), rend('oce', 'Océane')));                 // un joueur ne se l'attribue pas
+  await assertFails(updateDoc(doc(qui('gael'), 'paragraphes/b1'), rend('oce', 'Océane')));                // seulement campagnes et personnages
+});
+
 test('sans invitation, ou en pause : rien', async () => {
   await assertFails(getDoc(doc(qui('inconnu'), 'pnj/n1')));
   await assertFails(getDoc(doc(qui('eteint'), 'pnj/n1')));

@@ -1,0 +1,48 @@
+<!--@ inclure en-tete titre="Administration" feuille="admin" -->
+<body>
+<!--@ inclure barre-registres -->
+
+<div class="wrap">
+<header>
+  <h1>Administration</h1>
+  <p class="sub">Faelorenn · qui entre dans le monde, et avec quel rôle</p>
+</header>
+
+<p class="note err" id="adRefus" hidden>Cette page est réservée aux admins.</p>
+
+<div id="adCorps" hidden>
+<section id="secInvitations">
+  <h2><span class="num">1</span> Les invitations</h2>
+  <p class="hint">Une invitation est un lien à envoyer à un ami, par message privé. Il crée son compte (Google ou e-mail), clique le lien, choisit son nom de joueur : il est dans le monde. Un lien ne sert qu’une fois. Si tu donnes un e-mail, seul ce compte-là pourra l’utiliser.</p>
+  <div class="card">
+    <form class="adform" id="invForm">
+      <label class="adchamp"><span class="lab">Rôle</span>
+        <select id="invRole"><option value="joueur">Joueur</option><option value="admin">Admin</option></select></label>
+      <label class="adchamp"><span class="lab">Valable</span>
+        <select id="invDuree"><option value="1">1 jour</option><option value="7" selected>7 jours</option><option value="30">30 jours</option></select></label>
+      <label class="adchamp large"><span class="lab">E-mail (facultatif)</span><input type="email" id="invEmail" autocomplete="off"></label>
+      <label class="adchamp large"><span class="lab">Pour qui (note)</span><input type="text" id="invNote" maxlength="60" autocomplete="off"></label>
+      <button class="btn" type="submit">Créer le lien</button>
+    </form>
+    <div id="invNeuve"></div>
+    <div id="invListe"></div>
+  </div>
+</section>
+
+<section id="secDemandes">
+  <h2><span class="num">2</span> Les demandes d’entrée</h2>
+  <p class="hint">Quelqu’un s’est connecté sans lien et demande à entrer. L’accepter lui crée un compte de joueur.</p>
+  <div class="card"><div id="demListe"></div></div>
+</section>
+
+<section id="secComptes">
+  <h2><span class="num">3</span> Les comptes</h2>
+  <p class="hint">Un admin invite, accepte, valide (bientôt : ennemis, plans, tables, compétences) et peut corriger ce que d’autres ont créé. Un compte mis en pause ne voit plus rien du monde. Le fondateur ne peut être ni rétrogradé ni mis en pause.</p>
+  <div class="card"><div id="cptListe"></div></div>
+</section>
+</div>
+</div>
+
+<!--@ js admin -->
+</body>
+</html>

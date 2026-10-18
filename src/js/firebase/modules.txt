@@ -1,0 +1,4 @@
+# Le SDK Firebase « compat » (scripts classiques), version figée.
+vendor/firebase/app.js
+vendor/firebase/auth.js
+vendor/firebase/firestore.js

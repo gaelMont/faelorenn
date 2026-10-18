@@ -25,9 +25,32 @@ node outils/build.mjs --verifier   # writes nothing; fails if a generated file i
 - **The `registre` bundle serves 5 pages**: table, missions, pnj, marchefleurs, tirages. They share one script and work out which page they are from the DOM (`const PAGE = $('ficheBox') ? 'fiche' : $('secSeance') ? 'table' : …` in `src/js/registre/demarrage.js`). `table` has its own CSS bundle, which reuses the `src/css/registre/` modules and swaps in a few variants from `src/css/table/`. The comments at the top of both `modules.txt` say which.
 - **Shared code lives once, in `src/js/commun/`**: GitHub sync (`sync-github.js`), house rules (`reglesmaison.js`), Pratiques, the book's bestiary (`bestiaire.js`, `const ADV`, generated from Gaël's spreadsheet by an external `classeur/vers_site.py`), encounter draw (`tirage.js`), traits, loot (`butin.js`), characteristics, downloads, the HTML/XML escape (`echappement.js`: `echapperHtml`, used everywhere except `plans`, which keeps its own `esc` because it is strict), the `.docx` factory (`docx.js`: UTF-8, CRC, uncompressed zip and the fixed package parts; `rencontres/docx.js` and `createur/export-word.js` each still write their own document, styles and properties), the printable Word sheet (`fiche-du-word.js` draws it from a description that `createur/fiche-imprimable.js` and `registre/marchefleurs.js` each prepare; its CSS is `src/css/commun/fiche-du-word.css`, for `.fiche` and `.fimp`). It is listed in each bundle that uses it.
 - **`plans` is `'use strict'`** (its first module). Never put a `commun/` module in it, or it would become strict. `plans` and `index` load `sync-github` as a separate `<script>`.
-- **Similar code that is *not* shared on purpose**: some copies differ in behaviour (e.g. the creature normalisation in `rencontres/bestiaire-maison.js` vs `registre/rencontre-a-la-table.js`, the colour tokens in each CSS `:root`). Unifying them changes behaviour, so don't do it silently.
+- **Similar code that is *not* shared on purpose**: some copies differ in behaviour (e.g. the creature normalisation in `rencontres/bestiaire-maison.js` vs `registre/rencontre-a-la-table.js`). Unifying them changes behaviour, so don't do it silently.
+- **Stylesheets are files, not `<style>` tags**: code that needs the page's CSS (the clipboard copy for Word, the combat map's second window) goes through `commun/feuilles.js` (`texteDesFeuilles()`, `liensDesFeuilles()`), never `querySelectorAll('style')`.
 - **Cross-page communication**: pages talk through `localStorage` (`faelorenn.*` keys) plus `storage` event listeners, through named windows (`ONGLET_*`), and through `postMessage` (plans → table combat map). Inline mentions in text: `/Nom` cites a person, `--Lieu` cites a place.
 - **Claude artifact runtime**: the code checks for `claude.use` (`ghcBloque()`, the `downloads` capability). Inside a Claude artifact, GitHub sync is off and downloads go through the runtime. Keep both paths working.
+
+## Accounts (Firebase), being rolled out
+
+The plan is to move the shared world from the GitHub sync to Firebase (Auth + Firestore, project `faelorenn`, free Spark plan), registry by registry. **Step 1 (done)**:
+- every page starts veiled: the `compte` bundle (`src/js/compte/`, loaded with the vendored `firebase` compat SDK by `src/morceaux/compte.html`, included in `barre-registres` and in index/livre) shows a gate until the user is signed in (Google or e-mail) **and** has an account doc;
+- an account comes from a one-time invitation link (`index.html?invitation=CODE`) or an admin accepting an entry request. Roles are `joueur` and `admin`, and the founder can't be demoted;
+- `admin.html` manages invitations, requests and accounts;
+- the account's nickname becomes `MOI.joueur` (the "Tu es" field is read-only);
+- the registry data itself is still local plus GitHub sync.
+
+The other pieces:
+- `compteQuandPret(fn)` runs code once the user is in. `COMPTE = {etat, uid, nom, role}`. `FB_DB` and `FB_AUTH` are the Firebase handles.
+- **`firestore.rules` is the real security**: the config in `src/js/compte/config.js` is public by design. Every rule change needs tests in `outils/tests-regles/` (both allowed and refused cases):
+
+  ```
+  cd outils/tests-regles && npm install && npm test   # Firebase emulator, needs Java 21; CI runs it too
+  firebase deploy --only firestore:rules              # only after the tests pass
+  ```
+
+- `?emulateur` on localhost points the site at local emulators (`firebase emulators:start --only auth,firestore`).
+- Snapshots inject a fake account (`window.FAE_ESSAI`) that skips Firebase.
+- The full plan and its decisions: `C:\Users\gmont\.claude\plans\en-attendant-tu-peux-declarative-map.md` (on Gaël's machine). Next: a sync layer mapping each table entry to a Firestore document (ownership tracked in that layer, not in `T`, because the `norm*` functions rebuild objects field by field), campaign-private reads, admin validation of enemies, plans and draw tables, skill proposals, then the import of the private JSON files.
 
 ## Privacy constraint
 
@@ -35,7 +58,7 @@ This repo is public and contains only code and rulebook content. Player data (ch
 
 ## Checking a change
 
-There is no test suite. The behaviour check is a page snapshot (needs Chrome or Edge; set `CHROME=<path>` if it isn't found):
+Besides the Firestore rules tests above, the behaviour check is a page snapshot (needs Chrome or Edge; set `CHROME=<path>` if it isn't found):
 
 ```
 node outils/instantanes.mjs prendre instantanes/avant     # before the change

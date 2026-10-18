@@ -1,2 +1,9 @@
 # Les instantanés de outils/instantanes.mjs
 /instantanes/
+
+# Les dépendances de développement (tests des règles, SDK à recopier)
+node_modules/
+# Les journaux de l'émulateur Firebase
+*-debug.log
+# Le cache de l'outil firebase
+.firebase/

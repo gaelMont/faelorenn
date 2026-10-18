@@ -1,0 +1,13 @@
+{
+  "name": "faelorenn-tests-regles",
+  "private": true,
+  "description": "Tests des règles Firestore sur l'émulateur ; fournit aussi le SDK Firebase compat copié dans src/js/vendor/.",
+  "type": "module",
+  "scripts": {
+    "test": "firebase emulators:exec --only firestore,auth --project demo-faelorenn \"node --test\""
+  },
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "5.0.2",
+    "firebase": "12.19.0"
+  }
+}

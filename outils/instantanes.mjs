@@ -4,7 +4,8 @@
 //   node outils/instantanes.mjs comparer <avant> <après>  dit ce qui a changé entre deux instantanés
 //
 // Chaque page est ouverte dans Chrome sans fenêtre, servie en http depuis la racine du dépôt,
-// avec le hasard et l'horloge figés : deux instantanés du même code sont identiques.
+// avec le hasard et l'horloge figés, et un faux compte connecté (FAE_ESSAI) : deux instantanés
+// du même code sont identiques.
 // On garde, page par page : les erreurs JavaScript et les ressources introuvables, le DOM une fois
 // les scripts passés, et les styles calculés de chaque élément sur écran large, sur téléphone
 // et à l'impression, en thème clair et en thème sombre. Le stockage du navigateur part vide et se remplit de page en page, dans l'ordre.
@@ -41,6 +42,9 @@ const FIGER = `(() => {
   class DateFigee extends D { constructor(...x) { super(...(x.length ? x : [T])); } static now() { return T; } }
   window.Date = DateFigee;
   let k = 0; try { crypto.randomUUID = () => '00000000-0000-4000-8000-' + String(++k).padStart(12, '0'); } catch (e) {}
+  // un faux compte : la porte du compte (src/js/compte/compte.js) laisse entrer sans serveur
+  // resemer : le SDK Firebase tire des nombres en se chargeant ; on repart de la même graine après lui
+  window.FAE_ESSAI = { uid: 'essai', nom: 'Essai', role: 'joueur', resemer: () => { s = 12345; } };
 })()`;
 
 // Lus dans la page : le DOM sans scripts ni styles, et les styles calculés de chaque élément.

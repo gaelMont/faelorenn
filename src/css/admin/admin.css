@@ -1,0 +1,14 @@
+/* la page d'administration : formulaires et tableaux */
+.adform{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:flex-end;margin-bottom:10px}
+.adchamp{display:flex;flex-direction:column;min-width:120px}
+.adchamp.large{flex:1 1 200px}
+.adform select,.adform input,.adlien input{font:inherit;font-size:14px;padding:7px 9px;border:1px solid var(--rule);border-radius:2px;background:var(--paper);color:var(--ink)}
+.adlien{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:4px 0 14px;padding:10px;background:var(--fill);border-radius:3px}
+.adlien .lab{flex:1 0 100%;margin:0}
+.adlien input{flex:1 1 320px;min-width:0;font-family:ui-monospace,Consolas,monospace;font-size:12.5px}
+.adtable{width:100%;border-collapse:collapse;font-size:14px}
+.adtable th{text-align:left;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:500;padding:6px 8px;border-bottom:1px solid var(--rule)}
+.adtable td{padding:8px;border-bottom:1px solid var(--rule);vertical-align:middle;overflow-wrap:anywhere}
+.adtable .pale{color:var(--muted)}
+.adactions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+@media (max-width:640px){.adtable th:nth-child(2),.adtable td:nth-child(2){display:none}}

@@ -85,7 +85,12 @@ function dessiner(){
 
 /* ---------- les boutons ---------- */
 const sur = (id, fn) => { const x = $(id); if(x) x.onclick = fn; };
-if($('tbJoueur')) $('tbJoueur').oninput = e => { MOI.joueur = e.target.value; sauverLocal(); };
+/* « Tu es » : le pseudo du compte connecté, qu'on change depuis la pastille du compte */
+function adopterCompte(c){
+  if(MOI.joueur !== c.nom){ MOI.joueur = c.nom; sauverLocal(); dessiner(); }
+  const j = $('tbJoueur');
+  if(j){ j.value = c.nom; j.readOnly = true; j.title = 'Ton nom de joueur : il se change depuis la pastille du compte, en haut.'; }
+}
 if($('tbCampagne')) $('tbCampagne').onchange = e => { choisirCampagne(e.target.value); e.target.blur(); };
 sur('tbOuvrir', () => {
   if(SYNC.etat === 'attente'){ redemander(); return; }
@@ -336,3 +341,6 @@ document.addEventListener('visibilitychange', () => {
 });
 /* ce que le Registre des Compétences retouche : relu dans le dépôt, avec un avis s'il y a du neuf */
 regSurveiller();
+/* le compte : une fois tout démarré, son pseudo devient « Tu es » (et le redevient s'il change) */
+compteQuandPret(adopterCompte);
+window.addEventListener('fae-compte', e => adopterCompte(e.detail));

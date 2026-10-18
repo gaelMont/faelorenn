@@ -1,0 +1,47 @@
+/* ============ la porte du compte, et sa pastille dans la barre des registres ============
+   Tant que le compte n'est pas reconnu, <html> porte fae-verrou : la page se construit derrière,
+   invisible (visibility, pas display : les registres mesurent leur mise en page au démarrage). */
+html.fae-verrou body{overflow:hidden}
+html.fae-verrou body > :not(#faePorte){visibility:hidden}
+
+.fae-porte{position:fixed;inset:0;z-index:2147483000;display:flex;align-items:center;justify-content:center;
+  padding:16px;overflow:auto;background:var(--paper,#F4F2EA);color:var(--ink,#1B1C18);
+  font:15px/1.5 "IBM Plex Sans",system-ui,sans-serif}
+.fae-porte-carte{width:100%;max-width:420px;margin:auto;padding:28px 26px;background:var(--surface,#fff);
+  border:1px solid var(--rule,#CBD6C9);border-radius:4px;box-shadow:var(--shadow,0 1px 2px rgba(31,61,43,.07))}
+.fae-porte-marque{font:700 15px/1 Spectral,Georgia,serif;letter-spacing:.06em;text-transform:uppercase;color:var(--sage,#4A6B52)}
+.fae-porte h1{margin:6px 0 8px;font:600 26px/1.15 Spectral,Georgia,serif;color:var(--forest,#1F3D2B)}
+.fae-porte-texte{margin:0 0 18px;color:var(--muted,#646D62)}
+.fae-porte-qui{margin:-8px 0 16px;font-weight:600;overflow-wrap:anywhere}
+.fae-porte-form{display:flex;flex-direction:column;gap:10px;margin:0 0 14px}
+.fae-porte-champ{display:flex;flex-direction:column;gap:4px;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted,#646D62)}
+.fae-porte-champ input{font:15px/1.3 "IBM Plex Sans",system-ui,sans-serif;letter-spacing:0;text-transform:none;color:var(--ink,#1B1C18);
+  background:var(--paper,#F4F2EA);border:1px solid var(--rule,#CBD6C9);border-radius:3px;padding:9px 10px}
+.fae-porte-champ input:focus{outline:2px solid var(--sage,#4A6B52);outline-offset:1px}
+.fae-porte-actions{display:flex;gap:8px;flex-wrap:wrap}
+.fae-porte-btn{font:500 15px/1.2 "IBM Plex Sans",system-ui,sans-serif;padding:10px 16px;border-radius:3px;cursor:pointer;
+  border:1px solid var(--rule,#CBD6C9);background:var(--fill,#E9EFE8);color:var(--forest,#1F3D2B)}
+.fae-porte-btn.principal{width:100%;background:var(--forest,#1F3D2B);border-color:var(--forest,#1F3D2B);color:var(--paper,#F4F2EA)}
+.fae-porte-btn.discret{background:transparent}
+.fae-porte-btn.lien{align-self:flex-start;border:0;background:none;padding:2px 0;font-size:13.5px;color:var(--sage,#4A6B52);text-decoration:underline}
+.fae-porte-btn:disabled{opacity:.45;cursor:default}
+.fae-porte-btn:focus-visible{outline:2px solid var(--sage,#4A6B52);outline-offset:2px}
+.fae-porte-ou{margin:14px 0 10px;text-align:center;font-size:12.5px;color:var(--muted,#646D62)}
+.fae-porte-note{margin:4px 0 8px;font-size:13.5px;color:var(--muted,#646D62)}
+.fae-porte-id{margin:14px 0 6px;font-size:12px;color:var(--muted,#646D62);overflow-wrap:anywhere;user-select:all}
+.fae-porte-msg{min-height:1.4em;margin:8px 0 0;font-size:14px;color:var(--rust,#9A4A28)}
+.fae-porte-msg.bon{color:var(--sage,#4A6B52)}
+
+/* la pastille : au bout de la barre des registres, ou en haut à droite sur une page sans barre */
+.fae-compte{position:relative;margin-left:auto}
+.fae-compte.flottante{position:fixed;top:10px;right:14px;z-index:50}
+.fae-compte-nom{font:600 13px/1.4 "IBM Plex Sans",system-ui,sans-serif;color:var(--forest,#1F3D2B);cursor:pointer;
+  background:var(--surface,#fff);border:1px solid var(--rule,#CBD6C9);border-radius:999px;padding:3px 12px}
+.fae-compte-nom::after{content:" ▾";color:var(--muted,#646D62)}
+.fae-compte-menu{position:absolute;right:0;top:calc(100% + 4px);z-index:60;min-width:190px;display:flex;flex-direction:column;
+  background:var(--surface,#fff);border:1px solid var(--rule,#CBD6C9);border-radius:4px;box-shadow:0 4px 14px rgba(0,0,0,.12);padding:4px}
+.fae-compte-menu[hidden]{display:none}
+.fae-compte-menu button{text-align:left;font:14px/1.3 "IBM Plex Sans",system-ui,sans-serif;color:var(--ink,#1B1C18);
+  background:none;border:0;border-radius:3px;padding:8px 10px;cursor:pointer}
+.fae-compte-menu button:hover,.fae-compte-menu button:focus-visible{background:var(--fill,#E9EFE8)}
+@media print{.fae-compte{display:none!important}}

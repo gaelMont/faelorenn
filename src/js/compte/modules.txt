@@ -1,0 +1,3 @@
+# Le compte : la porte d'entrée et la pastille. Chargé après le paquet firebase.
+compte/config.js
+compte/compte.js

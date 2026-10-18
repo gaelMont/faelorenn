@@ -1,0 +1,107 @@
+rules_version = '2';
+
+// Les règles de sécurité du monde de Faelorenn. Ce sont elles qui protègent les données :
+// la configuration Firebase est publique (elle est dans le code du site), ces règles ne le sont pas
+// moins, mais personne ne peut les contourner.
+//
+// Étape 1 (le socle) : comptes, invitations, demandes d'entrée et réglages personnels.
+// Tout le reste est fermé tant que les registres n'ont pas basculé en ligne.
+//
+// Déployer : firebase deploy --only firestore:rules   (tests d'abord : cd outils/tests-regles && npm test)
+
+service cloud.firestore {
+  match /databases/{db}/documents {
+
+    function connecte() { return request.auth != null; }
+    function moi() { return request.auth.uid; }
+    function compteDe(uid) { return /databases/$(db)/documents/comptes/$(uid); }
+    function invitationDe(code) { return /databases/$(db)/documents/invitations/$(code); }
+    // un compte invité, et pas désactivé
+    function invite() {
+      return connecte() && exists(compteDe(moi())) && get(compteDe(moi())).data.actif == true;
+    }
+    function admin() { return invite() && get(compteDe(moi())).data.role == 'admin'; }
+    function n() { return request.resource.data; }
+    function a() { return resource.data; }
+    function touche() { return n().diff(a()).affectedKeys(); }
+    // un pseudo : du texte, 2 à 30 caractères, sans balise
+    function pseudoValable(p) { return p is string && p.size() >= 2 && p.size() <= 30 && !p.matches('.*[<>].*'); }
+
+    // ---------- les invitations ----------
+    // Le code est le secret : on peut lire SON invitation (get), pas la liste (list).
+    match /invitations/{code} {
+      allow get: if connecte();
+      allow list: if admin();
+      allow create: if admin()
+        && n().keys().hasOnly(['role', 'creePar', 'cree', 'expire', 'utilisee', 'email', 'note'])
+        && n().role in ['joueur', 'admin'] && n().creePar == moi() && n().cree == request.time
+        && n().expire is timestamp && n().expire > request.time && n().utilisee == false
+        && (!('email' in n()) || n().email is string)
+        && code.size() >= 20;
+      // on consomme une invitation en créant son compte, dans le même lot d'écritures
+      allow update: if admin() || (
+        connecte() && a().utilisee == false && a().expire > request.time
+        && touche().hasOnly(['utilisee', 'par', 'le'])
+        && n().utilisee == true && n().par == moi() && n().le == request.time
+        && existsAfter(compteDe(moi()))
+        && getAfter(compteDe(moi())).data.invitation == code);
+      allow delete: if admin();
+    }
+
+    // ---------- les comptes ----------
+    match /comptes/{uid} {
+      // tous les invités voient les pseudos et les rôles ; chacun voit toujours son propre compte
+      allow read: if invite() || (connecte() && uid == moi());
+      allow create: if connecte() && (
+        // soi-même, avec une invitation valable, consommée dans le même lot
+        (uid == moi()
+          && n().keys().hasOnly(['nom', 'role', 'actif', 'invitation', 'cree'])
+          && pseudoValable(n().nom) && n().actif == true && n().cree == request.time
+          && n().invitation is string
+          && exists(invitationDe(n().invitation))
+          && get(invitationDe(n().invitation)).data.utilisee == false
+          && get(invitationDe(n().invitation)).data.expire > request.time
+          && n().role == get(invitationDe(n().invitation)).data.role
+          && (!('email' in get(invitationDe(n().invitation)).data)
+              || get(invitationDe(n().invitation)).data.email == ''
+              || (request.auth.token.email == get(invitationDe(n().invitation)).data.email
+                  && request.auth.token.email_verified == true))
+          && getAfter(invitationDe(n().invitation)).data.par == moi())
+        // ou un admin qui accepte une demande d'entrée
+        || (admin()
+          && n().keys().hasOnly(['nom', 'role', 'actif', 'invitation', 'cree'])
+          && pseudoValable(n().nom) && n().role in ['joueur', 'admin'] && n().actif == true
+          && n().cree == request.time));
+      allow update: if
+        // chacun change son pseudo, rien d'autre
+        (uid == moi() && invite() && touche().hasOnly(['nom']) && pseudoValable(n().nom))
+        // un admin change le rôle, l'activité ou le pseudo, mais jamais ceux du fondateur
+        || (admin() && touche().hasOnly(['nom', 'role', 'actif'])
+            && pseudoValable(n().nom) && n().role in ['joueur', 'admin'] && n().actif is bool
+            && !(a().get('fondateur', false) == true && uid != moi())
+            && !(uid == moi() && touche().hasAny(['role', 'actif'])));
+      allow delete: if false;
+
+      // les réglages de chacun (disposition de la table, préférences) : à lui seul
+      match /prefs/{cle} {
+        allow read, write: if uid == moi() && invite();
+      }
+    }
+
+    // ---------- les demandes d'entrée ----------
+    // un compte connecté mais pas invité demande à entrer ; un admin accepte ou refuse
+    match /demandes/{uid} {
+      allow create: if connecte() && uid == moi() && !exists(compteDe(uid))
+        && n().keys().hasOnly(['nom', 'email', 'cree'])
+        && pseudoValable(n().nom) && n().email == request.auth.token.get('email', '') && n().cree == request.time;
+      allow read: if admin() || (connecte() && uid == moi());
+      allow delete: if admin() || (connecte() && uid == moi());
+      allow update: if false;
+    }
+
+    // ---------- tout le reste : fermé pour l'instant ----------
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -887,39 +887,266 @@ function remettreEnOrdre(){
   ALLSKILLS.forEach(o => { if(!isFinite(+S.sk[o.s])) S.sk[o.s] = 0; });
 }
 
-// ── createur/fiche-imprimable.js ──
-/* ============ la fiche imprimable, calquee sur le Word ============ */
+// ── commun/fiche-du-word.js ──
+/* ============ la fiche imprimable, calquee sur le Word ============
+   Une seule mise en page pour le Registre du Havre (le personnage en création, createur/fiche-imprimable.js)
+   et pour les Marchefleurs (le personnage tel qu'il est à la table, registre/marchefleurs.js). Chacun prépare
+   une description de sa fiche, avec ses chiffres et ses textes à lui ; ficheDuWord la dessine, avec les textes
+   fixes du livre qui valent pour les deux. Le style est dans src/css/commun/fiche-du-word.css.
+   Les noms commencent par fw (ou FW_) : le module rejoint le paquet registre, qui a déjà beaucoup de noms.
+   Il s'appuie sur el(), et sur SKILLS, nomComp et titreCompetences (commun/), que les deux paquets ont. */
 
-function fh(txt){ return el('h3','fh', txt); }
-function fnote(bold, rest){
+/* ---- les briques ---- */
+function fwSection(txt){ return el('h3','fh', txt); }
+function fwNote(gras, reste){
   const p = el('p','fnote');
-  if(bold) p.append(el('b', null, bold + ' '));
-  if(rest) p.append(document.createTextNode(rest));
+  if(gras) p.append(el('b', null, gras + ' '));
+  if(reste) p.append(document.createTextNode(reste));
   return p;
 }
-function fsm(txt, strong){
+function fwPetit(txt, gras){
   const p = el('p','fsm');
   p.append(document.createTextNode(txt));
-  if(strong) p.append(el('b', null, ' ' + strong));
+  if(gras) p.append(el('b', null, ' ' + gras));
   return p;
 }
-function fld(label, value, w){
+function fwChamp(label, valeur, largeur){
   const td = el('td','fd');
-  if(w) td.style.width = w;
+  if(largeur) td.style.width = largeur;
   if(label) td.append(el('div','lb', label));
   const v = el('div','vl');
-  (String(value == null || value === '' ? '\u2013' : value)).split('\n').forEach((line, i) => {
+  String(valeur == null || valeur === '' ? '–' : valeur).split('\n').forEach((ligne, i) => {
     if(i) v.append(el('br'));
-    v.append(document.createTextNode(line));
+    v.append(document.createTextNode(ligne));
   });
   td.append(v); return td;
 }
-function cols(t, widths){
+function fwColonnes(t, largeurs){
   const cg = el('colgroup');
-  widths.forEach(w => { const c = el('col'); c.style.width = w; cg.append(c); });
+  largeurs.forEach(w => { const c = el('col'); c.style.width = w; cg.append(c); });
   t.append(cg); return t;
 }
-function frow(cells){ const t = el('table','fx'), tr = el('tr'); cells.forEach(c => tr.append(c)); t.append(tr); return t; }
+function fwRangee(cellules){ const t = el('table','fx'), tr = el('tr'); cellules.forEach(c => tr.append(c)); t.append(tr); return t; }
+/* des lignes vides, pour écrire à la main : un tableau en a toujours au moins `jusque` */
+function fwLignesVides(t, depuis, jusque, nCol){
+  for(let i = depuis; i < jusque; i++){
+    const tr = el('tr'); for(let j = 0; j < nCol; j++) tr.append(el('td','vide')); t.append(tr);
+  }
+}
+/* divisé par cinq, et un seul arrondi dans tout le jeu : vers le bas. Le mod d'une caractéristique, le d20 d'une valeur */
+function fwSurCinq(v){ return Math.floor(v / 5); }
+
+/* ---- les textes fixes, les mêmes sur les deux fiches ---- */
+const FW_MOD = 'Ton mod, c’est ta caractéristique divisée par cinq. La même division que pour le d20, et un seul arrondi dans tout le jeu : vers le bas.';
+const FW_MATIERE = ['La Sève, l’eau, la pierre, le vent et la Mue envoient de la matière : la réduction d’armure s’applique.', 'Le feu, l’onde, l’ombre et le sacré traversent les armures.'];
+const FW_DEGATS = 'Dégâts = dé de l’arme + mod FOR, ou mod DEX pour une arme légère et l’arbalète, moins la réduction d’armure de la cible. Minimum 0. On retire la réduction, puis la contrainte du corps, et on arrondit vers le bas.';
+const FW_ARMES = 'Légère d4 · à une main d6 · de guerre d8 · à deux mains d10 · arc court et arc de chasse d6 · arc long d8, et 12 en Force pour le bander · arbalète d8, une action pour recharger · lance ori’ican d8, d10 ou d12 selon les mues. On vise à la Dextérité, on blesse à la Force, sauf l’arme légère et l’arbalète qui blessent à la Dextérité.';
+const FW_ARMURES = 'Cuir ou matelassé 1 · cuir clouté ou écailles 2, −10 Discrétion · maille 3, −10 Discrétion et Acrobatie · plates 4, −10 Discrétion et −20 Acrobatie · bouclier +1, occupe une main.';
+/* l'aide-mémoire : ** pour une ligne en gras, // pour une ligne en italique */
+const FW_AIDE_MEMOIRE = [
+  ['La règle unique', ['**Tu lances sous une valeur.**','Ta valeur, c’est ta caractéristique fois deux, plus ton bonus.','Hors combat d100, en combat d20 sous la même valeur divisée par cinq.','//01 à 05 réussite critique, 96 à 100 échec critique. Au d20 : 1 et 20 naturels.']],
+  ['Ce qui compte, c’est de combien tu rates', ['Marge de 1 à 10, au d20 de 1 à 2 : ça ne marche pas, rien de mauvais.','Marge de 11 à 30, au d20 de 3 à 6 : ça ne marche pas, et ça coûte.','Marge de 31 et plus, au d20 de 7 et plus : la situation empire.','//Rater le jet ne veut pas dire échouer.']],
+  ['Quand l’ennemi attaque', ['Il touche d’office. C’est toi qui lances, une seule réaction par round.','d20 sous Acrobatie divisée par cinq pour esquiver, sous Combat pour parer.','//Réussite : aucun dégât. Échec de moins de 4 : aucun dégât, mais tu n’attaques pas au prochain round. Échec de 4 ou plus : tu prends les dégâts.']],
+  ['Tomber à zéro', ['À 0 PV tu tombes, inconscient, tu ne joues plus.','Un allié peut te stabiliser pendant le combat : un soin, une fiole, un jet de Médecine.','//En groupe, personne ne l’a fait avant la fin du combat : tu meurs. En solo, on tire ce qui t’est arrivé pendant que tu n’étais pas là.']],
+  ['Ce que rend le repos', ['Court, une heure : 1d6 PV et 1d4 PC.','Long, une nuit complète : tous tes PV et tous tes PC.','//Le repos ne rend rien d’autre : ce qu’une Floraison t’a fait ne part pas en dormant.']],
+  ['Progression', ['Les points se gagnent en bouclant des missions. Le Havre annonce combien avant le départ.','Une compétence jusqu’à +40 : 1 point par +1. De +41 à +60 : 2 points. Au-delà : 3 points.','Une Pratique de plus : 10 points, et quelqu’un pour te l’enseigner. Une caractéristique de +1 : 20 points, une fois chacune, plafond 18. +5 PV : 20 points.','//Il n’y a pas de niveaux.']]
+];
+
+/* ---- la fiche ----
+   box reçoit la fiche ; d la décrit :
+     nom, joueur          le titre, et qui le joue ('' : personne)
+     identite             {peuple, voie, banniere, ecole, type, branche} : null quand ça ne le concerne pas
+     apport               les deux rangées de « Ce que ton peuple apporte » : [[libellé, valeur, largeur], …]
+     car                  {Force:12, …} : les sept caractéristiques, bonus compris
+     noteCar              [gras, suite] au-dessus des caractéristiques, ou null
+     derivees             [[libellé, d'où ça vient, valeur], …] : PV, PC et réduction
+     noteComp, comp       [gras, suite], et {nom de la compétence: {bonus:'+5', total:34}}
+     notePrat, pratiques  [gras, suite], et [{nom, cout, lance, valeur, effet}] : valeur null pour ce qui ne se lance pas,
+                          lance dit alors seulement ce qu'il en est
+     armes                [{nom, de, notes}]
+     noteArmure, pieces   la suite de « Chaque pièce a ses propres chiffres. », et [[nom, réduction, ce qu'elle apporte]]
+     titreSac, sac, bourse  le libellé du sac, ses lignes, et le texte de la bourse
+     charge               la capacité de la Charge (les PV maximum) pour un Ciméran, sinon null
+     notes                le texte du cadre Notes ('' : vide, pour écrire à la main) */
+function ficheDuWord(box, d){
+  const ident = d.identite;
+
+  /* ---------- titre ---------- */
+  box.append(el('div','ft', d.nom ? 'Fiche de ' + d.nom : 'Fiche de personnage'));
+  box.append(el('div','fsub', 'Faelorenn · le jeu des Marchefleurs' + (d.joueur ? ' · joué par ' + d.joueur : '')));
+
+  /* ---------- identite ---------- */
+  box.append(fwSection('Identité'));
+  box.append(fwRangee([fwChamp('Nom', d.nom, '40%'), fwChamp('Peuple', ident.peuple, '30%'), fwChamp('Voie', ident.voie, '30%')]));
+  box.append(fwRangee([
+    fwChamp('Bannière · humains', ident.banniere, '25%'),
+    fwChamp('École ou Église · humains', ident.ecole, '25%'),
+    fwChamp('Type · Ori’Ican', ident.type, '25%'),
+    fwChamp('Branche · Nyréens', ident.branche, '25%')
+  ]));
+
+  /* ---------- ce que le peuple apporte ---------- */
+  box.append(fwSection('Ce que ton peuple apporte'));
+  d.apport.forEach(r => box.append(fwRangee(r.map(x => fwChamp(x[0], x[1], x[2])))));
+
+  /* ---------- caracteristiques ---------- */
+  box.append(fwSection('Caractéristiques'));
+  if(d.noteCar) box.append(fwNote(d.noteCar[0], d.noteCar[1]));
+  const tc = el('table','fx car');
+  const r1 = el('tr'), r2 = el('tr'), r3 = el('tr');
+  CARS.forEach(c => {
+    r1.append(el('th', null, c));
+    const v = d.car[c], m = fwSurCinq(v);
+    r2.append(el('td','big2', String(v)));
+    r3.append(el('td','sub2', '×2 ' + (v * 2) + ' · mod ' + (m >= 0 ? '+' : '') + m));
+  });
+  tc.append(r1, r2, r3); box.append(tc);
+
+  const td2 = el('table','fx der'), rd = el('tr');
+  d.derivees.forEach(x => {
+    const td = el('td','dv');
+    td.append(el('div','lb', x[0]), el('div','dvs', x[1]), el('div','big2', String(x[2])));
+    rd.append(td);
+  });
+  td2.append(rd); box.append(td2);
+  box.append(fwPetit(FW_MOD));
+
+  /* ---------- competences : deux colonnes, chaque caractéristique avec les siennes ---------- */
+  box.append(fwSection(titreCompetences()));
+  box.append(fwNote(d.noteComp[0], d.noteComp[1]));
+  const groupe = cs => { const o = []; cs.forEach(c => { o.push({head:c}); SKILLS[c].forEach(s => o.push({skill:s})); }); return o; };
+  const L = groupe(['Force','Dextérité','Intelligence']), R = groupe(['Sagesse','Charisme']);
+  R.push({note:'Constitution et Contenance n’ont aucune compétence.'}, {note:'La Contenance sert à lancer les Pratiques.'});
+  const ts = el('table','fx sk');
+  fwColonnes(ts, ['23%','9%','9%','9%','23%','9%','9%','9%']);
+  const hr = el('tr');
+  ['Compétence','Bonus','Total','d20','Compétence','Bonus','Total','d20'].forEach((h, i) => hr.append(el('th', i % 4 ? 'c' : null, h)));
+  ts.append(hr);
+  const cote = (e, tr) => {
+    if(!e){ for(let i = 0; i < 4; i++) tr.append(el('td')); return; }
+    if(e.head){
+      const td = el('td','grp'); td.colSpan = 4;
+      td.append(el('b', null, e.head), el('i', null, '  base ×2 ' + (d.car[e.head] * 2)));
+      tr.append(td); return;
+    }
+    if(e.note){ const td = el('td','nte', e.note); td.colSpan = 4; tr.append(td); return; }
+    const k = d.comp[e.skill];
+    tr.append(el('td', null, nomComp(e.skill)), el('td','c', k.bonus), el('td','c b', String(k.total)), el('td','c', String(fwSurCinq(k.total))));
+  };
+  for(let i = 0; i < Math.max(L.length, R.length); i++){
+    const tr = el('tr'); cote(L[i], tr); cote(R[i], tr); ts.append(tr);
+  }
+  box.append(ts);
+
+  /* ---------- pratiques ---------- */
+  box.append(el('div','brk'));
+  box.append(fwSection('Pratiques'));
+  box.append(fwNote(d.notePrat[0], d.notePrat[1]));
+  box.append(fwPetit(FW_MATIERE[0], FW_MATIERE[1]));
+  const tp = el('table','fx prt'); fwColonnes(tp, ['21%','12%','8%','7%','52%']);
+  const hp = el('tr');
+  ['Pratique','Se lance','Valeur','d20','Ce qu’elle fait'].forEach((h, i) => hp.append(el('th', i > 0 && i < 4 ? 'c' : null, h)));
+  tp.append(hp);
+  d.pratiques.forEach(p => {
+    const tr = el('tr'), td = el('td');
+    td.append(el('b', null, p.nom), el('i', null, ' (' + p.cout + ')'));
+    tr.append(td);
+    if(p.valeur == null) tr.append(el('td','c', p.lance), el('td','c', '–'), el('td','c', '–'));
+    else tr.append(el('td','c', p.lance), el('td','c b', String(p.valeur)), el('td','c', String(fwSurCinq(p.valeur))));
+    tr.append(el('td','de', p.effet || ''));
+    tp.append(tr);
+  });
+  fwLignesVides(tp, d.pratiques.length, 5, 5);
+  box.append(tp);
+
+  /* ---------- armes ---------- */
+  box.append(fwSection('Armes'));
+  box.append(fwNote('', FW_DEGATS));
+  const ta = el('table','fx arm'); fwColonnes(ta, ['32%','8%','60%']);
+  const ha = el('tr');
+  ['Arme','Dé','Notes'].forEach((h, i) => ha.append(el('th', i === 1 ? 'c' : null, h)));
+  ta.append(ha);
+  d.armes.forEach(a => {
+    const tr = el('tr');
+    tr.append(el('td', null, a.nom), el('td','c b', a.de), el('td','de', a.notes));
+    ta.append(tr);
+  });
+  fwLignesVides(ta, d.armes.length, 4, 3);
+  box.append(ta);
+  box.append(fwPetit(FW_ARMES));
+
+  /* ---------- armure et equipement ---------- */
+  box.append(fwSection('Armure et équipement'));
+  box.append(fwNote('Chaque pièce a ses propres chiffres.', d.noteArmure));
+  const tq = el('table','fx arm'); fwColonnes(tq, ['30%','14%','56%']);
+  const hq = el('tr');
+  ['Pièce','Réduction','Ce qu’elle coûte, ce qu’elle apporte'].forEach((h, i) => hq.append(el('th', i === 1 ? 'c' : null, h)));
+  tq.append(hq);
+  d.pieces.forEach(p => {
+    const tr = el('tr');
+    tr.append(el('td', null, p[0]), el('td','c b', p[1]), el('td','de', p[2] || ''));
+    tq.append(tr);
+  });
+  fwLignesVides(tq, d.pieces.length, 4, 3);
+  box.append(tq);
+  box.append(fwPetit(FW_ARMURES));
+
+  /* ---------- sac et bourse ---------- */
+  const tsac = el('table','fx'), trs = el('tr');
+  const tdS = el('td','fd'); tdS.style.width = '75%';
+  tdS.append(el('div','lb', d.titreSac));
+  if(d.sac.length){
+    const ul = el('ul','sac');
+    d.sac.forEach(x => ul.append(el('li', null, x)));
+    tdS.append(ul);
+  } else tdS.append(el('div','vl', '–'));
+  const tdB = el('td','fd'); tdB.style.width = '25%';
+  tdB.append(el('div','lb', 'Bourse · ors et argents'), el('div','big2', d.bourse));
+  trs.append(tdS, tdB); tsac.append(trs); box.append(tsac);
+
+  /* ---------- la charge, cimerans seulement ; sinon la page se tourne avant les notes ---------- */
+  box.append(el('div','brk'));
+  if(d.charge != null){
+    box.append(fwSection('La Charge'));
+    box.append(fwNote('Une piste à part, à côté de tes PV.', 'Capacité : tes PV maximum, soit ' + d.charge + '. Tu portes automatiquement la moitié des dégâts d’un allié à dix pas, réduction déduite. Les soins n’y touchent pas. Au-delà de ta capacité tu passes en morne, et le surplus te rentre dedans en dégâts réels.'));
+    const tch = el('table','fx chg'), rch = el('tr');
+    for(let i = 0; i < 10; i++) rch.append(el('td','vide'));
+    tch.append(rch); box.append(tch);
+    box.append(fwPetit('Se vider : Darguer, ou la dargue du festin, hors combat, trois convives au minimum. Un Ciméran seul ne se vide pas.'));
+  }
+
+  /* ---------- notes ---------- */
+  box.append(fwSection('Notes'));
+  const tn = el('table','fx'), rn = el('tr'), tdn = el('td','fd notes');
+  if(d.notes) d.notes.split('\n').forEach((l, i) => { if(i) tdn.append(el('br')); tdn.append(document.createTextNode(l)); });
+  rn.append(tdn); tn.append(rn); box.append(tn);
+
+  /* ---------- aide-memoire ---------- */
+  box.append(fwSection('Aide-mémoire'));
+  const tam = el('table','fx am');
+  for(let i = 0; i < FW_AIDE_MEMOIRE.length; i += 2){
+    const tr = el('tr');
+    [FW_AIDE_MEMOIRE[i], FW_AIDE_MEMOIRE[i + 1]].forEach(c => {
+      const td = el('td','amc');
+      if(!c){ tr.append(td); return; }
+      td.append(el('div','lb', c[0]));
+      c[1].forEach(ligne => {
+        if(ligne.slice(0, 2) === '**') td.append(el('p','amb', ligne.replace(/\*\*/g, '')));
+        else if(ligne.slice(0, 2) === '//') td.append(el('p','ami', ligne.slice(2)));
+        else td.append(el('p', null, ligne));
+      });
+      tr.append(td);
+    });
+    tam.append(tr);
+  }
+  box.append(tam);
+  return box;
+}
+
+// ── createur/fiche-imprimable.js ──
+/* ============ la fiche imprimable, calquee sur le Word ============
+   La mise en page et les textes du livre sont dans commun/fiche-du-word.js, partagés avec les Marchefleurs ;
+   ici, ce que la création met dessus. */
 
 /* ---- petits calculs de la fiche ---- */
 function domCourt(){
@@ -994,249 +1221,72 @@ function resteDuSac(){
   return out;
 }
 
+/* la fiche du personnage en création : ce que la création donne, et les règles de la création à côté */
 function drawFiche(){
   const box = $('fiche'); box.innerHTML = '';
-  const p = PEUPLES[S.peuple], v = VOIES[S.voie];
+  const p = PEUPLES[S.peuple];
+  const humain = S.peuple === 'Humains';
 
-  /* ---------- titre ---------- */
-  box.append(el('div','ft', S.nom ? 'Fiche de ' + S.nom : 'Fiche de personnage'));
-  box.append(el('div','fsub', 'Faelorenn · le jeu des Marchefleurs'));
+  const comp = {};
+  Object.keys(SKILLS).forEach(c => SKILLS[c].forEach(s => {
+    const b = skBonus(s), tot = (S.sk[s]||0) + b.voie + b.trait;
+    comp[s] = {bonus: tot ? '+' + tot : '', total: skTotal(s)};
+  }));
 
-  /* ---------- identite ---------- */
-  box.append(fh('Identité'));
-  box.append(frow([fld('Nom', S.nom, '40%'), fld('Peuple', S.peuple, '30%'), fld('Voie', S.voie, '30%')]));
-  box.append(frow([
-    fld('Bannière · humains', S.peuple === 'Humains' ? S.sub.ban : null, '25%'),
-    fld('École ou Église · humains', S.peuple === 'Humains' ? S.sub.ecole : null, '25%'),
-    fld('Type · Ori\u2019Ican', S.peuple === "Ori'Ican" ? S.sub.type : null, '25%'),
-    fld('Branche · Nyréens', S.peuple === 'Nyréens' ? S.sub.branche : null, '25%')
-  ]));
-
-  /* ---------- ce que le peuple apporte ---------- */
-  box.append(fh('Ce que ton peuple apporte'));
-  box.append(frow([
-    fld('Caractéristique', bonusPeupleTxt(), '25%'),
-    fld('Traits chiffrés', p.traits, '37%'),
-    fld('Domaine et bonus', domCourt() ? domCourt() + (S.peuple === 'Humains' ? ' · +10 par son école' : ' · +20') : null, '19%'),
-    fld('Contrainte', p.contrainte, '19%')
-  ]));
-  box.append(frow([
-    fld('Compétence de peuple', p.comp || (S.peuple === 'Humains' && S.banComp ? S.banComp + ' (Bannière)' : null), '50%'),
-    fld('Armure que ton corps supporte', p.armure, '25%'),
-    fld('Ce que ton peuple ajoute au sac', paqPeuple(), '25%')
-  ]));
-
-  /* ---------- caracteristiques ---------- */
-  box.append(fh('Caractéristiques'));
-  box.append(fnote('21 points à répartir.', 'Elles démarrent à 8 et ne dépassent pas 15 à la création. Le bonus de peuple s\u2019ajoute après. Plafond 18 en cours de jeu.'));
-  const tc = el('table','fx car');
-  const r1 = el('tr'), r2 = el('tr'), r3 = el('tr');
-  CARS.forEach(c => {
-    r1.append(el('th', null, c));
-    const val = carVal(c);
-    r2.append(el('td','big2', String(val)));
-    r3.append(el('td','sub2', '×2 ' + (val * 2) + ' · mod ' + (near(val/5) >= 0 ? '+' : '') + near(val/5)));
-  });
-  tc.append(r1, r2, r3); box.append(tc);
-
-  const td2 = el('table','fx der');
-  const rd = el('tr');
-  [['Points de vie','ta Constitution', pv()],
-   ['Points de Contenance','la moitié de ta Contenance', pc()],
-   ['Réduction d\u2019armure','ta pièce, plus ton armure naturelle', p.red]].forEach(x => {
-    const td = el('td','dv');
-    td.append(el('div','lb', x[0]), el('div','dvs', x[1]), el('div','big2', String(x[2])));
-    rd.append(td);
-  });
-  td2.append(rd); box.append(td2);
-  box.append(fsm('Ton mod, c\u2019est ta caractéristique divisée par cinq. La même division que pour le d20, et un seul arrondi dans tout le jeu : vers le bas.'));
-
-  /* ---------- competences ---------- */
-  box.append(fh(titreCompetences()));
-  box.append(fnote('100 points de bonus à répartir, aucune dépense au-dessus de +40 dans une compétence. Voie, peuple et trait s’ajoutent par-dessus.', 'Total = caractéristique fois deux, plus le bonus. Le d20 est ce total divisé par cinq.'));
-
-  const GA = [['Force',SKILLS['Force']],['Dextérité',SKILLS['Dextérité']],['Intelligence',SKILLS['Intelligence']]];
-  const DR = [['Sagesse',SKILLS['Sagesse']],['Charisme',SKILLS['Charisme']]];
-  const flat = gs => { const o = []; gs.forEach(g => { o.push({head:g[0]}); g[1].forEach(s => o.push({skill:s})); }); return o; };
-  const L = flat(GA), R = flat(DR);
-  R.push({note:'Constitution et Contenance n\u2019ont aucune compétence.'});
-  R.push({note:'La Contenance sert à lancer les Pratiques.'});
-
-  const ts = el('table','fx sk');
-  cols(ts, ['23%','9%','9%','9%','23%','9%','9%','9%']);
-  const hr = el('tr');
-  ['Compétence','Bonus','Total','d20','Compétence','Bonus','Total','d20'].forEach((h, i) => {
-    const th = el('th', i % 4 ? 'c' : null, h); hr.append(th);
-  });
-  ts.append(hr);
-  const side = (e, tr) => {
-    if(!e){ for(let i=0;i<4;i++) tr.append(el('td')); return; }
-    if(e.head){
-      const td = el('td','grp'); td.colSpan = 4;
-      td.append(el('b', null, e.head), el('i', null, '  base ×2 ' + (carVal(e.head) * 2)));
-      tr.append(td); return;
-    }
-    if(e.note){ const td = el('td','nte', e.note); td.colSpan = 4; tr.append(td); return; }
-    const b = skBonus(e.skill), tot = (S.sk[e.skill]||0) + b.voie + b.trait, t = skTotal(e.skill);
-    tr.append(el('td', null, nomComp(e.skill)));
-    tr.append(el('td','c', tot ? '+' + tot : ''));
-    tr.append(el('td','c b', String(t)));
-    tr.append(el('td','c', String(d20(t))));
-  };
-  for(let i = 0; i < Math.max(L.length, R.length); i++){
-    const tr = el('tr'); side(L[i], tr); side(R[i], tr); ts.append(tr);
-  }
-  box.append(ts);
-
-  /* ---------- pratiques ---------- */
-  box.append(el('div','brk'));
-  box.append(fh('Pratiques'));
-  box.append(fnote('L\u2019attaque de base d\u2019office, plus trois Pratiques choisies dans la liste de ton domaine.',
-    'Une Pratique démarre à +20, ton peuple ajoute +20 sur son domaine, l\u2019école d\u2019un humain +10. Elle se lance sous sa caractéristique, celle qui est écrite à côté d’elle, fois deux, plus ce bonus, ou sous ta compétence de la même caractéristique si elle est plus haute. Ce qui n\u2019a pas de cible hostile ne se lance pas, et une zone fait tester ceux qui sont dedans. Un échec consomme le PC, sauf l\u2019attaque de base, qui ne coûte rien et se contente de rater.'));
-  box.append(fsm('La Sève, l\u2019eau, la pierre, le vent et la Mue envoient de la matière : la réduction d\u2019armure s\u2019applique.', 'Le feu, l\u2019onde, l\u2019ombre et le sacré traversent les armures.'));
-  const tp = el('table','fx prt'); cols(tp, ['21%','12%','8%','7%','52%']);
-  const hp = el('tr');
-  ['Pratique','Se lance','Valeur','d20','Ce qu\u2019elle fait'].forEach((h, i) => hp.append(el('th', i > 0 && i < 4 ? 'c' : null, h)));
-  tp.append(hp);
   const ix = pratIndex();
   const lignes = pratNoms();
   if(S.banComp) lignes.push(S.banComp);
-  lignes.forEach(n => {
-    const it = ix[n] || {}, tr = el('tr'), v = pratValeur(it);
-    const td = el('td');
-    td.append(el('b', null, n));
-    td.append(el('i', null, ' (' + coutTxt(it) + ')'));
-    tr.append(td);
-    if(v.val == null){
-      tr.append(el('td','c', v.jet), el('td','c', '\u2013'), el('td','c', '\u2013'));
-    } else {
-      tr.append(el('td','c', ABR_JET[v.jet] + (v.par ? ' \u00b7 ' + v.par : '')), el('td','c b', String(v.val)), el('td','c', String(d20(v.val))));
-    }
-    tr.append(el('td','de', it.d || ''));
-    tp.append(tr);
+  const pratiques = lignes.map(n => {
+    const it = ix[n] || {}, v = pratValeur(it);
+    return {nom:n, cout:coutTxt(it), effet:it.d,
+      lance: v.val == null ? v.jet : ABR_JET[v.jet] + (v.par ? ' · ' + v.par : ''), valeur:v.val};
   });
-  for(let i = lignes.length; i < 5; i++){
-    const tr = el('tr'); for(let j = 0; j < 5; j++) tr.append(el('td','vide')); tp.append(tr);
-  }
-  box.append(tp);
 
-  /* ---------- armes ---------- */
-  box.append(fh('Armes'));
-  box.append(fnote('', 'Dégâts = dé de l\u2019arme + mod FOR, ou mod DEX pour une arme légère et l\u2019arbalète, moins la réduction d\u2019armure de la cible. Minimum 0. On retire la réduction, puis la contrainte du corps, et on arrondit vers le bas.'));
-  const ta = el('table','fx arm'); cols(ta, ['32%','8%','60%']);
-  const ha = el('tr');
-  ['Arme','Dé','Notes'].forEach((h, i) => ha.append(el('th', i === 1 ? 'c' : null, h)));
-  ta.append(ha);
-  const armes = armesDuPaquetage();
-  armes.forEach(a => {
-    const tr = el('tr');
-    tr.append(el('td', null, a.nom), el('td','c b', a.de), el('td','de', a.notes));
-    ta.append(tr);
+  const car = {};
+  CARS.forEach(c => car[c] = carVal(c));
+
+  ficheDuWord(box, {
+    nom: S.nom, joueur: '',
+    identite: {peuple:S.peuple, voie:S.voie,
+      banniere: humain ? S.sub.ban : null, ecole: humain ? S.sub.ecole : null,
+      type: S.peuple === "Ori'Ican" ? S.sub.type : null, branche: S.peuple === 'Nyréens' ? S.sub.branche : null},
+    apport: [
+      [['Caractéristique', bonusPeupleTxt(), '25%'],
+       ['Traits chiffrés', p.traits, '37%'],
+       ['Domaine et bonus', domCourt() ? domCourt() + (humain ? ' · +10 par son école' : ' · +20') : null, '19%'],
+       ['Contrainte', p.contrainte, '19%']],
+      [['Compétence de peuple', p.comp || (humain && S.banComp ? S.banComp + ' (Bannière)' : null), '50%'],
+       ['Armure que ton corps supporte', p.armure, '25%'],
+       ['Ce que ton peuple ajoute au sac', paqPeuple(), '25%']]
+    ],
+    car: car,
+    noteCar: ['21 points à répartir.', 'Elles démarrent à 8 et ne dépassent pas 15 à la création. Le bonus de peuple s’ajoute après. Plafond 18 en cours de jeu.'],
+    derivees: [['Points de vie','ta Constitution', pv()],
+      ['Points de Contenance','la moitié de ta Contenance', pc()],
+      ['Réduction d’armure','ta pièce, plus ton armure naturelle', p.red]],
+    noteComp: ['100 points de bonus à répartir, aucune dépense au-dessus de +40 dans une compétence. Voie, peuple et trait s’ajoutent par-dessus.', 'Total = caractéristique fois deux, plus le bonus. Le d20 est ce total divisé par cinq.'],
+    comp: comp,
+    notePrat: ['L’attaque de base d’office, plus trois Pratiques choisies dans la liste de ton domaine.',
+      'Une Pratique démarre à +20, ton peuple ajoute +20 sur son domaine, l’école d’un humain +10. Elle se lance sous sa caractéristique, celle qui est écrite à côté d’elle, fois deux, plus ce bonus, ou sous ta compétence de la même caractéristique si elle est plus haute. Ce qui n’a pas de cible hostile ne se lance pas, et une zone fait tester ceux qui sont dedans. Un échec consomme le PC, sauf l’attaque de base, qui ne coûte rien et se contente de rater.'],
+    pratiques: pratiques,
+    armes: armesDuPaquetage(),
+    noteArmure: 'Les réductions s’additionnent : ta pièce plus ton armure naturelle. Ton corps supporte ' + p.armure.charAt(0).toLowerCase() + p.armure.slice(1) + '.',
+    pieces: p.red ? [['Ton armure naturelle', String(p.red), p.traits.split('·')[0].trim()]] : [],
+    titreSac: 'Le reste du sac', sac: resteDuSac(), bourse: bourse(),
+    charge: S.peuple === 'Cimérans' ? pv() : null,
+    notes: ''
   });
-  for(let i = armes.length; i < 4; i++){
-    const tr = el('tr'); for(let j = 0; j < 3; j++) tr.append(el('td','vide')); ta.append(tr);
-  }
-  box.append(ta);
-  box.append(fsm('Légère d4 · à une main d6 · de guerre d8 · à deux mains d10 · arc court et arc de chasse d6 · arc long d8, et 12 en Force pour le bander · arbalète d8, une action pour recharger · lance ori’ican d8, d10 ou d12 selon les mues. On vise à la Dextérité, on blesse à la Force, sauf l’arme légère et l’arbalète qui blessent à la Dextérité.'));
-
-  /* ---------- armure et equipement ---------- */
-  box.append(fh('Armure et équipement'));
-  box.append(fnote('Chaque pièce a ses propres chiffres.', 'Les réductions s\u2019additionnent : ta pièce plus ton armure naturelle. Ton corps supporte ' + p.armure.charAt(0).toLowerCase() + p.armure.slice(1) + '.'));
-  const tq = el('table','fx arm'); cols(tq, ['30%','14%','56%']);
-  const hq = el('tr');
-  ['Pièce','Réduction','Ce qu\u2019elle coûte, ce qu\u2019elle apporte'].forEach((h, i) => hq.append(el('th', i === 1 ? 'c' : null, h)));
-  tq.append(hq);
-  let nq = 0;
-  if(p.red){
-    const tr = el('tr');
-    tr.append(el('td', null, 'Ton armure naturelle'), el('td','c b', String(p.red)), el('td','de', p.traits.split('·')[0].trim()));
-    tq.append(tr); nq++;
-  }
-  for(let i = nq; i < 4; i++){
-    const tr = el('tr'); for(let j = 0; j < 3; j++) tr.append(el('td','vide')); tq.append(tr);
-  }
-  box.append(tq);
-  box.append(fsm('Cuir ou matelassé 1 · cuir clouté ou écailles 2, \u221210 Discrétion · maille 3, \u221210 Discrétion et Acrobatie · plates 4, \u221210 Discrétion et \u221220 Acrobatie · bouclier +1, occupe une main.'));
-
-  /* ---------- sac et bourse ---------- */
-  const reste = resteDuSac();
-  const ul = el('ul','sac');
-  reste.forEach(x => ul.append(el('li', null, x)));
-  const tsac = el('table','fx'), trs = el('tr');
-  const tdS = el('td','fd'); tdS.style.width = '75%';
-  tdS.append(el('div','lb','Le reste du sac'));
-  if(reste.length) tdS.append(ul); else tdS.append(el('div','vl','\u2013'));
-  const tdB = el('td','fd'); tdB.style.width = '25%';
-  tdB.append(el('div','lb','Bourse · ors et argents'), el('div','big2', bourse()));
-  trs.append(tdS, tdB); tsac.append(trs); box.append(tsac);
-
-  /* ---------- charge, cimerans seulement ---------- */
-  if(S.peuple === 'Cimérans'){
-    box.append(el('div','brk'));
-    box.append(fh('La Charge'));
-    box.append(fnote('Une piste à part, à côté de tes PV.', 'Capacité : tes PV maximum, soit ' + pv() + '. Tu portes automatiquement la moitié des dégâts d\u2019un allié à dix pas, réduction déduite. Les soins n\u2019y touchent pas. Au-delà de ta capacité tu passes en morne, et le surplus te rentre dedans en dégâts réels.'));
-    const tch = el('table','fx chg'), rch = el('tr');
-    for(let i = 0; i < 10; i++) rch.append(el('td','vide'));
-    tch.append(rch); box.append(tch);
-    box.append(fsm('Se vider : Darguer, ou la dargue du festin, hors combat, trois convives au minimum. Un Ciméran seul ne se vide pas.'));
-  }
-
-  /* ---------- notes ---------- */
-  if(S.peuple !== 'Cimérans') box.append(el('div','brk'));
-  box.append(fh('Notes'));
-  const tn = el('table','fx'), rn = el('tr'), tdn = el('td','fd notes');
-  rn.append(tdn); tn.append(rn); box.append(tn);
-
-  /* ---------- aide-memoire ---------- */
-  box.append(fh('Aide-mémoire'));
-  const AM = [
-    ['La règle unique', ['**Tu lances sous une valeur.**','Ta valeur, c\u2019est ta caractéristique fois deux, plus ton bonus.','Hors combat d100, en combat d20 sous la même valeur divisée par cinq.','//01 à 05 réussite critique, 96 à 100 échec critique. Au d20 : 1 et 20 naturels.']],
-    ['Ce qui compte, c\u2019est de combien tu rates', ['Marge de 1 à 10, au d20 de 1 à 2 : ça ne marche pas, rien de mauvais.','Marge de 11 à 30, au d20 de 3 à 6 : ça ne marche pas, et ça coûte.','Marge de 31 et plus, au d20 de 7 et plus : la situation empire.','//Rater le jet ne veut pas dire échouer.']],
-    ['Quand l\u2019ennemi attaque', ['Il touche d\u2019office. C\u2019est toi qui lances, une seule réaction par round.','d20 sous Acrobatie divisée par cinq pour esquiver, sous Combat pour parer.','//Réussite : aucun dégât. Échec de moins de 4 : aucun dégât, mais tu n\u2019attaques pas au prochain round. Échec de 4 ou plus : tu prends les dégâts.']],
-    ['Tomber à zéro', ['À 0 PV tu tombes, inconscient, tu ne joues plus.','Un allié peut te stabiliser pendant le combat : un soin, une fiole, un jet de Médecine.','//En groupe, personne ne l\u2019a fait avant la fin du combat : tu meurs. En solo, on tire ce qui t\u2019est arrivé pendant que tu n\u2019étais pas là.']],
-    ['Ce que rend le repos', ['Court, une heure : 1d6 PV et 1d4 PC.','Long, une nuit complète : tous tes PV et tous tes PC.','//Le repos ne rend rien d\u2019autre : ce qu\u2019une Floraison t\u2019a fait ne part pas en dormant.']],
-    ['Progression', ['Les points se gagnent en bouclant des missions. Le Havre annonce combien avant le départ.','Une compétence jusqu\u2019à +40 : 1 point par +1. De +41 à +60 : 2 points. Au-delà : 3 points.','Une Pratique de plus : 10 points, et quelqu\u2019un pour te l\u2019enseigner. Une caractéristique de +1 : 20 points, une fois chacune, plafond 18. +5 PV : 20 points.','//Il n\u2019y a pas de niveaux.']]
-  ];
-  const tam = el('table','fx am');
-  for(let i = 0; i < AM.length; i += 2){
-    const tr = el('tr');
-    [AM[i], AM[i+1]].forEach(c => {
-      const td = el('td','amc');
-      if(!c){ tr.append(td); return; }
-      td.append(el('div','lb', c[0]));
-      c[1].forEach(line => {
-        if(line.slice(0,2) === '**') td.append(el('p','amb', line.replace(/\*\*/g,'')));
-        else if(line.slice(0,2) === '//') td.append(el('p','ami', line.slice(2)));
-        else td.append(el('p', null, line));
-      });
-      tr.append(td);
-    });
-    tam.append(tr);
-  }
-  box.append(tam);
 }
 
-// ── createur/export-word.js ──
-/* ============ export Word (.docx) ============
-   On ecrit l'OOXML a la main et on le zippe sans compression.
-   Aucune bibliotheque, aucun appel reseau. ============ */
+// ── commun/docx.js ──
+/* ============ fabrique de .docx, sans bibliothèque ============
+   La mécanique commune aux exports Word : l'encodage, le zip non compressé (« stored »),
+   l'échappement XML et les parties fixes du paquet. Chaque registre écrit lui-même son document,
+   ses styles et ses propriétés : leurs tailles, interlignes et marges ne sont pas les mêmes.
+   Rien que des déclarations « function », préfixées docx : le module reste sûr si une page
+   charge un jour deux paquets qui le contiennent. */
 
-/* ---------- zip, methode « stored » ---------- */
-const CRCT = (function(){
-  const t = new Uint32Array(256);
-  for(let n = 0; n < 256; n++){
-    let c = n;
-    for(let k = 0; k < 8; k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
-    t[n] = c >>> 0;
-  }
-  return t;
-})();
-function crc32(buf){
-  let c = 0xFFFFFFFF;
-  for(let i = 0; i < buf.length; i++) c = CRCT[(c ^ buf[i]) & 0xFF] ^ (c >>> 8);
-  return (c ^ 0xFFFFFFFF) >>> 0;
-}
-function utf8(str){
+function docxUtf8(str){
   if(typeof TextEncoder !== 'undefined') return new TextEncoder().encode(str);
   const b = []; // repli
   for(let i = 0; i < str.length; i++){
@@ -1247,11 +1297,30 @@ function utf8(str){
   }
   return new Uint8Array(b);
 }
-function zipStore(fichiers){
+
+/* la table du CRC est calculée au premier appel et gardée sur la fonction */
+function docxCrc32(buf){
+  let t = docxCrc32.table;
+  if(!t){
+    t = docxCrc32.table = new Uint32Array(256);
+    for(let n = 0; n < 256; n++){
+      let c = n;
+      for(let k = 0; k < 8; k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+      t[n] = c >>> 0;
+    }
+  }
+  let c = 0xFFFFFFFF;
+  for(let i = 0; i < buf.length; i++) c = t[(c ^ buf[i]) & 0xFF] ^ (c >>> 8);
+  return (c ^ 0xFFFFFFFF) >>> 0;
+}
+
+/* une archive zip sans compression : [{nom, txt}] -> octets. La date est fixe (2020-01-01) :
+   le même document donne toujours le même fichier */
+function docxZip(fichiers){
   const parts = [], central = [];
   let offset = 0;
   fichiers.forEach(f => {
-    const nom = utf8(f.nom), data = utf8(f.txt), crc = crc32(data);
+    const nom = docxUtf8(f.nom), data = docxUtf8(f.txt), crc = docxCrc32(data);
     const lfh = new Uint8Array(30 + nom.length);
     const v = new DataView(lfh.buffer);
     v.setUint32(0, 0x04034b50, true);
@@ -1292,9 +1361,54 @@ function zipStore(fichiers){
   return out;
 }
 
+/* l'échappement du texte posé dans l'OOXML */
+function docxXml(s){
+  return String(s == null ? '' : s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* le paquet complet : les trois parties fixes autour du document, des styles et des propriétés
+   du registre, toujours dans le même ordre */
+function docxPaquet(doc, styles, core){
+  const types = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+    '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">' +
+    '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>' +
+    '<Default Extension="xml" ContentType="application/xml"/>' +
+    '<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>' +
+    '<Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/>' +
+    '<Override PartName="/docProps/core.xml" ContentType="application/vnd.openxmlformats-package.core-properties+xml"/>' +
+    '</Types>';
+
+  const rels = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+    '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
+    '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>' +
+    '<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" Target="docProps/core.xml"/>' +
+    '</Relationships>';
+
+  const drels = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+    '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
+    '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>' +
+    '</Relationships>';
+
+  return docxZip([
+    {nom:'[Content_Types].xml', txt:types},
+    {nom:'_rels/.rels', txt:rels},
+    {nom:'docProps/core.xml', txt:core},
+    {nom:'word/_rels/document.xml.rels', txt:drels},
+    {nom:'word/document.xml', txt:doc},
+    {nom:'word/styles.xml', txt:styles}
+  ]);
+}
+
+// ── createur/export-word.js ──
+/* ============ export Word (.docx) ============
+   On ecrit l'OOXML a la main ; le zip et les parties fixes du paquet viennent de commun/docx.js.
+   Aucune bibliotheque, aucun appel reseau. ============ */
+
 /* ---------- briques OOXML ---------- */
 const WC = {h1:'1F3D2B', h2:'2E5A3E', txt:'1A1A1A', lbl:'6B7469', fill:'F1F5F1', head:'E6EDE7', line:'C3D2C6'};
 const WLARG = 10506;
+/* l'OOXML s'échappe avec docxXml ; xe ne sert plus qu'au titre HTML de « Copier pour Word » */
 const xe = s => String(s == null ? '' : s)
   .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 
@@ -1308,7 +1422,7 @@ function wr(txt, o){
   const sz = o.sz || 18;
   pr += '<w:sz w:val="' + sz + '"/><w:szCs w:val="' + sz + '"/>';
   if(o.sp) pr += '<w:spacing w:val="' + o.sp + '"/>';
-  return '<w:r><w:rPr>' + pr + '</w:rPr><w:t xml:space="preserve">' + xe(txt) + '</w:t></w:r>';
+  return '<w:r><w:rPr>' + pr + '</w:rPr><w:t xml:space="preserve">' + docxXml(txt) + '</w:t></w:r>';
 }
 function wp(runs, o){
   o = o || {};
@@ -1632,26 +1746,6 @@ function docxOctets(){
     '<w:pgMar w:top="700" w:right="700" w:bottom="600" w:left="700" w:header="0" w:footer="0" w:gutter="0"/>' +
     '</w:sectPr></w:body></w:document>';
 
-  const types = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
-    '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">' +
-    '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>' +
-    '<Default Extension="xml" ContentType="application/xml"/>' +
-    '<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>' +
-    '<Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/>' +
-    '<Override PartName="/docProps/core.xml" ContentType="application/vnd.openxmlformats-package.core-properties+xml"/>' +
-    '</Types>';
-
-  const rels = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
-    '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
-    '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>' +
-    '<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" Target="docProps/core.xml"/>' +
-    '</Relationships>';
-
-  const drels = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
-    '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
-    '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>' +
-    '</Relationships>';
-
   const styles = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
     '<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">' +
     '<w:docDefaults><w:rPrDefault><w:rPr>' +
@@ -1666,18 +1760,11 @@ function docxOctets(){
   const core = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
     '<cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties"' +
     ' xmlns:dc="http://purl.org/dc/elements/1.1/">' +
-    '<dc:title>' + xe(S.nom ? 'Fiche de ' + S.nom : 'Fiche de personnage') + '</dc:title>' +
+    '<dc:title>' + docxXml(S.nom ? 'Fiche de ' + S.nom : 'Fiche de personnage') + '</dc:title>' +
     '<dc:creator>Faelorenn</dc:creator><cp:lastModifiedBy>Faelorenn</cp:lastModifiedBy>' +
     '</cp:coreProperties>';
 
-  return zipStore([
-    {nom:'[Content_Types].xml', txt:types},
-    {nom:'_rels/.rels', txt:rels},
-    {nom:'docProps/core.xml', txt:core},
-    {nom:'word/_rels/document.xml.rels', txt:drels},
-    {nom:'word/document.xml', txt:doc},
-    {nom:'word/styles.xml', txt:styles}
-  ]);
+  return docxPaquet(doc, styles, core);
 }
 
 /* la page hebergee tourne dans un cadre : le telechargement direct y est bloque,

@@ -1,4 +1,5 @@
 commun/bestiaire.js
+commun/docx.js
 rencontres/docx.js
 commun/tirage.js
 commun/butin.js

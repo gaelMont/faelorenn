@@ -100,54 +100,75 @@ tr.grp td{background:var(--fill);font-family:Spectral,Georgia,serif;font-style:i
 .mouvert{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--sage);padding:0 4px}
 .mvide{margin:10px 0 2px}
 
-/* ── createur/fiche.css ── */
-/* ============ la fiche, calquee sur le Word ============ */
-.fiche{
+/* ── commun/fiche-du-word.css ── */
+/* ============ la fiche, calquee sur le Word ============
+   La même pour le Registre du Havre (.fiche, à l'écran et à l'impression) et pour les Marchefleurs (.fimp,
+   à l'impression seulement) ; ce qui ne vaut que pour l'une est dans createur/fiche.css ou registre/fiche-du-word.css */
+:is(.fiche,.fimp){
   --fp:#FFFFFF; --fi:#1A1A1A; --fl:#6B7469; --fh:#1F3D2B; --fh2:#2E5A3E;
   --fr:#C3D2C6; --ff:#F1F5F1; --fhd:#E6EDE7;
   background:var(--fp);color:var(--fi);font-family:Spectral,Cambria,Georgia,serif;
-  font-size:12.5px;line-height:1.3;padding:20px 22px;border:1px solid var(--rule);border-radius:3px;
+  font-size:12.5px;line-height:1.3;
   print-color-adjust:exact;-webkit-print-color-adjust:exact
 }
-.fiche .ft{font-size:25px;font-weight:700;color:var(--fh);line-height:1.1;margin-bottom:1px;text-wrap:balance}
-.fiche .fsub{font-style:italic;color:var(--fh2);font-size:12px;border-bottom:2px solid var(--fh);padding-bottom:6px;margin-bottom:4px}
-.fiche .fh{font-family:"IBM Plex Sans",sans-serif;font-size:10.5px;font-weight:700;letter-spacing:.18em;
+:is(.fiche,.fimp) .ft{font-size:25px;font-weight:700;color:var(--fh);line-height:1.1;margin-bottom:1px;text-wrap:balance}
+:is(.fiche,.fimp) .fsub{font-style:italic;color:var(--fh2);font-size:12px;border-bottom:2px solid var(--fh);padding-bottom:6px;margin-bottom:4px}
+:is(.fiche,.fimp) .fh{font-family:"IBM Plex Sans",sans-serif;font-size:10.5px;font-weight:700;letter-spacing:.18em;
   text-transform:uppercase;color:var(--fh);border-bottom:1px solid var(--fh);padding-bottom:2px;margin:13px 0 5px}
-.fiche .fnote{font-size:11.5px;color:var(--fl);margin:0 0 5px}
-.fiche .fnote b{color:var(--fh2)}
-.fiche .fsm{font-size:10.5px;font-style:italic;color:var(--fl);margin:4px 0 0}
-.fiche .fsm b{font-style:normal;color:var(--fh2)}
-.fiche table.fx{width:100%;border-collapse:collapse;margin:0 0 5px;table-layout:fixed;font-variant-numeric:tabular-nums}
-.fiche table.fx + table.fx{margin-top:-1px}
-.fiche .fx th,.fiche .fx td{border:1px solid var(--fr);padding:3px 6px;vertical-align:top;text-align:left;
+:is(.fiche,.fimp) .fnote{font-size:11.5px;color:var(--fl);margin:0 0 5px}
+:is(.fiche,.fimp) .fnote b{color:var(--fh2)}
+:is(.fiche,.fimp) .fsm{font-size:10.5px;font-style:italic;color:var(--fl);margin:4px 0 0}
+:is(.fiche,.fimp) .fsm b{font-style:normal;color:var(--fh2)}
+:is(.fiche,.fimp) table.fx{width:100%;border-collapse:collapse;margin:0 0 5px;table-layout:fixed;font-variant-numeric:tabular-nums}
+:is(.fiche,.fimp) table.fx + table.fx{margin-top:-1px}
+:is(.fiche,.fimp) .fx th,:is(.fiche,.fimp) .fx td{border:1px solid var(--fr);padding:3px 6px;vertical-align:top;text-align:left;
   font-weight:400;font-size:12px;overflow-wrap:break-word}
-.fiche .fx th{background:var(--fhd);font-family:"IBM Plex Sans",sans-serif;font-size:9px;font-weight:600;
+:is(.fiche,.fimp) .fx th{background:var(--fhd);font-family:"IBM Plex Sans",sans-serif;font-size:9px;font-weight:600;
   letter-spacing:.1em;text-transform:uppercase;color:var(--fh)}
-.fiche .fx th.c,.fiche .fx td.c{text-align:center}
-.fiche .fx th.c{white-space:nowrap;letter-spacing:.04em}
-.fiche .fx td.b,.fiche .fx th.b{font-weight:700}
-.fiche .lb{font-family:"IBM Plex Sans",sans-serif;font-size:8.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--fl);margin-bottom:2px}
-.fiche td.fd .vl{font-size:12.5px;min-height:15px}
-.fiche td.notes{height:62px}
-.fiche .car th{text-align:center;font-size:7.5px;letter-spacing:.02em}
-.fiche .big2,.fiche .fx td.big2{font-size:17px;font-weight:700;color:var(--fh);text-align:center;line-height:1.15}
-.fiche .car .sub2{text-align:center;font-size:9.5px;color:var(--fl)}
-.fiche .der td.dv{background:var(--ff);text-align:center}
-.fiche .der .lb{text-align:center}
-.fiche .der .dvs{font-size:9.5px;font-style:italic;color:var(--fl);margin-bottom:1px;line-height:1.2}
-.fiche .sk td.grp{background:var(--ff);color:var(--fh2);font-size:11.5px}
-.fiche .sk td.grp i{font-size:10px;color:var(--fl)}
-.fiche .sk td.nte{font-size:10px;font-style:italic;color:var(--fl)}
-.fiche .prt td.de,.fiche .arm td.de{font-size:11px;color:var(--fl)}
-.fiche td.vide{height:19px}
-.fiche .chg td{height:24px}
-.fiche ul.sac{margin:2px 0 0;padding-left:16px}
-.fiche ul.sac li{margin:0}
-.fiche .am td.amc{background:var(--ff);width:50%;padding:6px 8px}
-.fiche .am p{margin:0 0 1px;font-size:11px;line-height:1.28}
-.fiche .am p.amb{font-weight:700;font-size:11.5px}
-.fiche .am p.ami{font-style:italic;color:var(--fl);font-size:10px;margin-top:3px}
-.fiche .brk{height:0}
+:is(.fiche,.fimp) .fx th.c,:is(.fiche,.fimp) .fx td.c{text-align:center}
+:is(.fiche,.fimp) .fx th.c{white-space:nowrap;letter-spacing:.04em}
+:is(.fiche,.fimp) .fx td.b,:is(.fiche,.fimp) .fx th.b{font-weight:700}
+:is(.fiche,.fimp) .lb{font-family:"IBM Plex Sans",sans-serif;font-size:8.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--fl);margin-bottom:2px}
+:is(.fiche,.fimp) td.fd .vl{font-size:12.5px;min-height:15px}
+:is(.fiche,.fimp) td.notes{height:62px}
+:is(.fiche,.fimp) .car th{text-align:center;font-size:7.5px;letter-spacing:.02em}
+:is(.fiche,.fimp) .big2,:is(.fiche,.fimp) .fx td.big2{font-size:17px;font-weight:700;color:var(--fh);text-align:center;line-height:1.15}
+:is(.fiche,.fimp) .car .sub2{text-align:center;font-size:9.5px;color:var(--fl)}
+:is(.fiche,.fimp) .der td.dv{background:var(--ff);text-align:center}
+:is(.fiche,.fimp) .der .lb{text-align:center}
+:is(.fiche,.fimp) .der .dvs{font-size:9.5px;font-style:italic;color:var(--fl);margin-bottom:1px;line-height:1.2}
+:is(.fiche,.fimp) .sk td.grp{background:var(--ff);color:var(--fh2);font-size:11.5px}
+:is(.fiche,.fimp) .sk td.grp i{font-size:10px;color:var(--fl)}
+:is(.fiche,.fimp) .sk td.nte{font-size:10px;font-style:italic;color:var(--fl)}
+:is(.fiche,.fimp) .prt td.de,:is(.fiche,.fimp) .arm td.de{font-size:11px;color:var(--fl)}
+:is(.fiche,.fimp) td.vide{height:19px}
+:is(.fiche,.fimp) .chg td{height:24px}
+:is(.fiche,.fimp) ul.sac{margin:2px 0 0;padding-left:16px}
+:is(.fiche,.fimp) ul.sac li{margin:0}
+:is(.fiche,.fimp) .am td.amc{background:var(--ff);width:50%;padding:6px 8px}
+:is(.fiche,.fimp) .am p{margin:0 0 1px;font-size:11px;line-height:1.28}
+:is(.fiche,.fimp) .am p.amb{font-weight:700;font-size:11.5px}
+:is(.fiche,.fimp) .am p.ami{font-style:italic;color:var(--fl);font-size:10px;margin-top:3px}
+:is(.fiche,.fimp) .brk{height:0}
+/* sur la feuille : plus serrée, et la page se tourne aux mêmes endroits que dans le Word */
+@media print{
+  :is(.fiche,.fimp){font-size:8.9pt;line-height:1.26}
+  :is(.fiche,.fimp) .ft{font-size:19pt}
+  :is(.fiche,.fimp) .fx th,:is(.fiche,.fimp) .fx td{font-size:8.4pt;padding:2px 5px}
+  :is(.fiche,.fimp) .fx th{font-size:7.4pt;letter-spacing:.05em}
+  :is(.fiche,.fimp) .big2,:is(.fiche,.fimp) .fx td.big2{font-size:13pt}
+  :is(.fiche,.fimp) .car th{font-size:6.8pt;letter-spacing:.01em}
+  :is(.fiche,.fimp) .am p{font-size:7.8pt}
+  :is(.fiche,.fimp) .brk{break-before:page;page-break-before:always}
+  :is(.fiche,.fimp) tr,:is(.fiche,.fimp) .fh,:is(.fiche,.fimp) .ft{break-inside:avoid}
+  :is(.fiche,.fimp) .fh{break-after:avoid}
+  :is(.fiche,.fimp) table.fx{break-inside:auto}
+}
+
+/* ── createur/fiche.css ── */
+/* ============ la fiche du Havre : à l'écran aussi, dans un cadre, et dans les couleurs sombres ============
+   le reste de la fiche est dans commun/fiche-du-word.css */
+.fiche{padding:20px 22px;border:1px solid var(--rule);border-radius:3px}
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]) .fiche{--fp:#1B211C;--fi:#E6E7DF;--fl:#94A08F;--fh:#9DC2A6;--fh2:#7FA88A;--fr:#2E3A30;--ff:#212A22;--fhd:#253027}
 }
@@ -160,18 +181,9 @@ tr.grp td{background:var(--fill);font-family:Spectral,Georgia,serif;font-style:i
   html,body{background:#fff;color:#000}
   .wrap{padding:0;max-width:none}
   section{margin:0}
+  /* la fiche reprend les couleurs claires sur la feuille, sans son cadre ; sa taille est dans commun/fiche-du-word.css */
   .fiche{--fp:#FFFFFF;--fi:#1A1A1A;--fl:#6B7469;--fh:#1F3D2B;--fh2:#2E5A3E;--fr:#C3D2C6;--ff:#F1F5F1;--fhd:#E6EDE7;
-    border:0;border-radius:0;padding:0;font-size:8.9pt;line-height:1.26}
-  .fiche .ft{font-size:19pt}
-  .fiche .fx th,.fiche .fx td{font-size:8.4pt;padding:2px 5px}
-  .fiche .fx th{font-size:7.4pt;letter-spacing:.05em}
-  .fiche .big2,.fiche .fx td.big2{font-size:13pt}
-  .fiche .car th{font-size:6.8pt;letter-spacing:.01em}
-  .fiche .am p{font-size:7.8pt}
-  .fiche .brk{break-before:page;page-break-before:always}
-  .fiche tr,.fiche .fh,.fiche .ft{break-inside:avoid}
-  .fiche .fh{break-after:avoid}
-  .fiche table.fx{break-inside:auto}
+    border:0;border-radius:0;padding:0}
 }
 
 /* ── commun/mouvement-reduit.css ── */

@@ -751,166 +751,56 @@ if($('ficheBox')){
   window.addEventListener('beforeprint', () => { preparerImpression(FICHE.perso); });
   window.addEventListener('afterprint', () => { document.body.classList.remove('imprime-fiche'); });
 }
+/* la mise en page et les textes du livre sont dans commun/fiche-du-word.js, partagés avec le Registre du Havre ;
+   ici, ce que la table sait de lui aujourd'hui : son joueur, ce qu'il porte, son sac, sa bourse, sa progression */
 function ficheImprimee(c){
-  const box = el('div','fimp');
-  const fh = t => el('h3','fh', t);
-  const fnote = (gras, reste) => { const p = el('p','fnote'); if(gras) p.append(el('b', null, gras + ' ')); if(reste) p.append(document.createTextNode(reste)); return p; };
-  const fsm = t => el('p','fsm', t);
-  const fld = (label, valeur, w) => {
-    const td = el('td','fd'); if(w) td.style.width = w;
-    if(label) td.append(el('div','lb', label));
-    const v = el('div','vl');
-    String(valeur == null || valeur === '' ? '–' : valeur).split('\n').forEach((l, i) => { if(i) v.append(el('br')); v.append(document.createTextNode(l)); });
-    td.append(v); return td;
-  };
-  const cols = (t, ws) => { const cg = el('colgroup'); ws.forEach(w => { const x = el('col'); x.style.width = w; cg.append(x); }); t.append(cg); return t; };
-  const frow = cells => { const t = el('table','fx'), tr = el('tr'); cells.forEach(x => tr.append(x)); t.append(tr); return t; };
   const humain = /humain/i.test(c.peuple) || c.bonusPratique === 30;
   const s = c.sub || {};
-
-  box.append(el('div','ft', c.nom ? 'Fiche de ' + c.nom : 'Fiche de personnage'));
-  box.append(el('div','fsub', 'Faelorenn · le jeu des Marchefleurs' + (c.joueur ? ' · joué par ' + c.joueur : '')));
-
-  box.append(fh('Identité'));
-  box.append(frow([fld('Nom', c.nom, '40%'), fld('Peuple', c.peuple, '30%'), fld('Voie', c.voie, '30%')]));
-  box.append(frow([fld('Bannière · humains', humain ? s.ban : null, '25%'), fld('École ou Église · humains', humain ? s.ecole : null, '25%'),
-    fld('Type · Ori’Ican', /ori.?ican/i.test(c.peuple) ? s.type : null, '25%'), fld('Branche · Nyréens', /nyr/i.test(c.peuple) ? s.branche : null, '25%')]));
-
-  box.append(fh('Ce que ton peuple apporte'));
-  box.append(frow([fld('Traits chiffrés', c.traits, '46%'), fld('Domaine et bonus', c.domaine ? 'Pratiques ' + c.domaine.replace(/\s*\([^)]*\)\s*$/, '') + (humain ? ' · +10 par son école' : ' · +20') : null, '27%'), fld('Contrainte', c.contrainte, '27%')]));
-  box.append(frow([fld('Compétence de peuple', c.peupleComp, '50%'), fld('Armure que ton corps supporte', c.armure, '50%')]));
-
-  box.append(fh('Caractéristiques'));
-  const tc = el('table','fx car'), r1 = el('tr'), r2 = el('tr'), r3 = el('tr');
-  CARS.forEach(x => {
-    r1.append(el('th', null, x));
-    const v = c.car[x];
-    r2.append(el('td','big2', String(v)));
-    r3.append(el('td','sub2', '×2 ' + (v * 2) + ' · mod ' + (near(v / 5) >= 0 ? '+' : '') + near(v / 5)));
-  });
-  tc.append(r1, r2, r3); box.append(tc);
-  const td2 = el('table','fx der'), rd = el('tr');
   const bouclier = porteDe(c.id, 'bouclier');
-  [['Points de vie', 'au maximum', c.pvMax], ['Points de Contenance', 'au maximum', c.pcMax], ['Réduction d’armure', bouclier ? 'ta pièce, ton bouclier, ton armure naturelle' : 'ta pièce, plus ton armure naturelle', redDe(c)]].forEach(x => {
-    const td = el('td','dv'); td.append(el('div','lb', x[0]), el('div','dvs', x[1]), el('div','big2', String(x[2]))); rd.append(td);
+
+  const comp = {};
+  Object.keys(SKILLS).forEach(x => SKILLS[x].forEach(k => {
+    const tot = compTotal(c, k), bonus = tot - c.car[CAR_DE[k]] * 2;
+    comp[k] = {bonus: bonus ? (bonus > 0 ? '+' : '') + bonus : '', total: tot};
+  }));
+
+  const pratiques = c.pratiques.map(p => {
+    const v = pratValeur(c, p);
+    return {nom:p.n, cout: p.base ? 'de base' : p.banniere ? 'Bannière' : p.pct ? p.pct : p.pc ? p.pc + ' PC' : 'gratuit', effet:p.d,
+      lance: v.val == null ? p.j : (ABR_JET[v.jet] || v.jet) + (v.par ? ' · ' + v.par : ''), valeur:v.val};
   });
-  td2.append(rd); box.append(td2);
-  box.append(fsm('Ton mod, c’est ta caractéristique divisée par cinq. La même division que pour le d20, et un seul arrondi dans tout le jeu : vers le bas.'));
 
-  box.append(fh(titreCompetences()));
-  box.append(fnote('Total = caractéristique fois deux, plus le bonus.', 'Le d20 est ce total divisé par cinq. Les chiffres sont ceux d’aujourd’hui, progression comprise.'));
-  const groupe = cs => { const o = []; cs.forEach(x => { o.push({head:x}); SKILLS[x].forEach(k => o.push({skill:k})); }); return o; };
-  const L = groupe(['Force','Dextérité','Intelligence']), R = groupe(['Sagesse','Charisme']);
-  R.push({note:'Constitution et Contenance n’ont aucune compétence.'}, {note:'La Contenance sert à lancer les Pratiques.'});
-  const ts = el('table','fx sk');
-  cols(ts, ['23%','9%','9%','9%','23%','9%','9%','9%']);
-  const hr = el('tr');
-  ['Compétence','Bonus','Total','d20','Compétence','Bonus','Total','d20'].forEach((h, i) => hr.append(el('th', i % 4 ? 'c' : null, h)));
-  ts.append(hr);
-  const cote = (e, tr) => {
-    if(!e){ for(let i = 0; i < 4; i++) tr.append(el('td')); return; }
-    if(e.head){ const td = el('td','grp'); td.colSpan = 4; td.append(el('b', null, e.head), el('i', null, '  base ×2 ' + (c.car[e.head] * 2))); tr.append(td); return; }
-    if(e.note){ const td = el('td','nte', e.note); td.colSpan = 4; tr.append(td); return; }
-    const tot = compTotal(c, e.skill), bonus = tot - c.car[CAR_DE[e.skill]] * 2;
-    tr.append(el('td', null, nomComp(e.skill)), el('td','c', bonus ? (bonus > 0 ? '+' : '') + bonus : ''), el('td','c b', String(tot)), el('td','c', String(d20v(tot))));
-  };
-  for(let i = 0; i < Math.max(L.length, R.length); i++){ const tr = el('tr'); cote(L[i], tr); cote(R[i], tr); ts.append(tr); }
-  box.append(ts);
-
-  box.append(el('div','brk'));
-  box.append(fh('Pratiques'));
-  box.append(fnote('Elles se lancent chacune sous sa caractéristique, celle qui est écrite à côté d’elle, fois deux, plus leur bonus, ou sous ta compétence de la même caractéristique si elle est plus haute.', 'Ce qui n’a pas de cible hostile ne se lance pas, et une zone fait tester ceux qui sont dedans. Un échec consomme le PC, sauf l’attaque de base.'));
-  box.append(fsm('La Sève, l’eau, la pierre, le vent et la Mue envoient de la matière : la réduction d’armure s’applique. Le feu, l’onde, l’ombre et le sacré traversent les armures.'));
-  const tp = el('table','fx prt'); cols(tp, ['21%','12%','8%','7%','52%']);
-  const hp = el('tr'); ['Pratique','Se lance','Valeur','d20','Ce qu’elle fait'].forEach((h, i) => hp.append(el('th', i > 0 && i < 4 ? 'c' : null, h))); tp.append(hp);
-  c.pratiques.forEach(p => {
-    const v = pratValeur(c, p), tr = el('tr'), td = el('td');
-    td.append(el('b', null, p.n), el('i', null, ' (' + (p.base ? 'de base' : p.banniere ? 'Bannière' : p.pct ? p.pct : p.pc ? p.pc + ' PC' : 'gratuit') + ')'));
-    tr.append(td);
-    if(v.val == null) tr.append(el('td','c', p.j), el('td','c', '–'), el('td','c', '–'));
-    else tr.append(el('td','c', (ABR_JET[v.jet] || v.jet) + (v.par ? ' · ' + v.par : '')), el('td','c b', String(v.val)), el('td','c', String(d20v(v.val))));
-    tr.append(el('td','de', p.d || ''));
-    tp.append(tr);
-  });
-  for(let i = c.pratiques.length; i < 5; i++){ const tr = el('tr'); for(let j = 0; j < 5; j++) tr.append(el('td','vide')); tp.append(tr); }
-  box.append(tp);
-
-  box.append(fh('Armes'));
-  box.append(fnote('', 'Dégâts = dé de l’arme + mod FOR, ou mod DEX pour une arme légère et l’arbalète, moins la réduction d’armure de la cible. Minimum 0. On retire la réduction, puis la contrainte du corps, et on arrondit vers le bas.'));
-  const ta = el('table','fx arm'); cols(ta, ['32%','8%','60%']);
-  const ha = el('tr'); ['Arme','Dé','Notes'].forEach((h, i) => ha.append(el('th', i === 1 ? 'c' : null, h))); ta.append(ha);
-  c.armes.forEach(a => { const tr = el('tr'); tr.append(el('td', null, a.nom), el('td','c b', a.de), el('td','de', a.notes)); ta.append(tr); });
-  for(let i = c.armes.length; i < 4; i++){ const tr = el('tr'); for(let j = 0; j < 3; j++) tr.append(el('td','vide')); ta.append(tr); }
-  box.append(ta);
-  box.append(fsm('Légère d4 · à une main d6 · de guerre d8 · à deux mains d10 · arc court et arc de chasse d6 · arc long d8, et 12 en Force pour le bander · arbalète d8, une action pour recharger · lance ori’ican d8, d10 ou d12 selon les mues. On vise à la Dextérité, on blesse à la Force, sauf l’arme légère et l’arbalète qui blessent à la Dextérité.'));
-
-  box.append(fh('Armure et équipement'));
-  box.append(fnote('Chaque pièce a ses propres chiffres.', 'Les réductions s’additionnent : ta pièce' + (bouclier ? ', ton bouclier' : '') + ' plus ton armure naturelle.' + (c.armure ? ' Ton corps supporte ' + c.armure.charAt(0).toLowerCase() + c.armure.slice(1).replace(/\.$/, '') + '.' : '')));
-  const tq = el('table','fx arm'); cols(tq, ['30%','14%','56%']);
-  const hq = el('tr'); ['Pièce','Réduction','Ce qu’elle coûte, ce qu’elle apporte'].forEach((h, i) => hq.append(el('th', i === 1 ? 'c' : null, h))); tq.append(hq);
   const pieces = [];
   if(c.red) pieces.push(['Ton armure naturelle', String(c.red), (c.traits || '').split('·')[0].trim()]);
   objetsDe(c.id).filter(o => o.porte).forEach(o => pieces.push([o.nom, (o.sorte === 'bouclier' ? '+' : '') + o.red, o.sorte === 'bouclier' ? 'Occupe une main' : o.note]));
-  pieces.forEach(p => { const tr = el('tr'); tr.append(el('td', null, p[0]), el('td','c b', p[1]), el('td','de', p[2] || '')); tq.append(tr); });
-  for(let i = pieces.length; i < 4; i++){ const tr = el('tr'); for(let j = 0; j < 3; j++) tr.append(el('td','vide')); tq.append(tr); }
-  box.append(tq);
-  box.append(fsm('Cuir ou matelassé 1 · cuir clouté ou écailles 2, −10 Discrétion · maille 3, −10 Discrétion et Acrobatie · plates 4, −10 Discrétion et −20 Acrobatie · bouclier +1, occupe une main.'));
-
-  const reste = objetsDe(c.id).filter(o => !o.porte);
-  const ul = el('ul','sac');
-  reste.forEach(o => ul.append(el('li', null, o.nom + (o.n > 1 ? ' ×' + o.n : '') + (o.sorte === 'conso' && o.effet ? ' (' + o.effet.replace(/[\s.]+$/, '') + ')' : ''))));
-  const tsac = el('table','fx'), trs = el('tr');
-  const tdS = el('td','fd'); tdS.style.width = '75%';
-  tdS.append(el('div','lb', 'Le sac'));
-  if(reste.length) tdS.append(ul); else tdS.append(el('div','vl', '–'));
-  const tdB = el('td','fd'); tdB.style.width = '25%';
+  const sac = objetsDe(c.id).filter(o => !o.porte)
+    .map(o => o.nom + (o.n > 1 ? ' ×' + o.n : '') + (o.sorte === 'conso' && o.effet ? ' (' + o.effet.replace(/[\s.]+$/, '') + ')' : ''));
   const b = bourseDe(c.id);
-  tdB.append(el('div','lb', 'Bourse · ors et argents'), el('div','big2', b ? texteArgent(b) : '–'));
-  trs.append(tdS, tdB); tsac.append(trs); box.append(tsac);
-
-  if(/cim[ée]ran/i.test(c.peuple)){
-    box.append(el('div','brk'));
-    box.append(fh('La Charge'));
-    box.append(fnote('Une piste à part, à côté de tes PV.', 'Capacité : tes PV maximum, soit ' + c.pvMax + '. Tu portes automatiquement la moitié des dégâts d’un allié à dix pas, réduction déduite. Les soins n’y touchent pas. Au-delà de ta capacité tu passes en morne, et le surplus te rentre dedans en dégâts réels.'));
-    const tch = el('table','fx chg'), rch = el('tr');
-    for(let i = 0; i < 10; i++) rch.append(el('td','vide'));
-    tch.append(rch); box.append(tch);
-    box.append(fsm('Se vider : Darguer, ou la dargue du festin, hors combat, trois convives au minimum. Un Ciméran seul ne se vide pas.'));
-  }
-
-  if(!/cim[ée]ran/i.test(c.peuple)) box.append(el('div','brk'));
-  box.append(fh('Notes'));
-  const tn = el('table','fx'), rn = el('tr'), tdn = el('td','fd notes');
   const texte = sansMarques(c.texte || '', gensCitables()).trim();
-  const pr = [texte, 'Progression : ' + pointsGagnes(c) + ' points gagnés, ' + pointsDepenses(c) + ' dépensés, ' + pointsRestants(c) + ' à dépenser.'].filter(Boolean).join('\n\n');
-  pr.split('\n').forEach((l, i) => { if(i) tdn.append(el('br')); tdn.append(document.createTextNode(l)); });
-  rn.append(tdn); tn.append(rn); box.append(tn);
 
-  box.append(fh('Aide-mémoire'));
-  const AM = [
-    ['La règle unique', ['**Tu lances sous une valeur.**','Ta valeur, c’est ta caractéristique fois deux, plus ton bonus.','Hors combat d100, en combat d20 sous la même valeur divisée par cinq.','//01 à 05 réussite critique, 96 à 100 échec critique. Au d20 : 1 et 20 naturels.']],
-    ['Ce qui compte, c’est de combien tu rates', ['Marge de 1 à 10, au d20 de 1 à 2 : ça ne marche pas, rien de mauvais.','Marge de 11 à 30, au d20 de 3 à 6 : ça ne marche pas, et ça coûte.','Marge de 31 et plus, au d20 de 7 et plus : la situation empire.','//Rater le jet ne veut pas dire échouer.']],
-    ['Quand l’ennemi attaque', ['Il touche d’office. C’est toi qui lances, une seule réaction par round.','d20 sous Acrobatie divisée par cinq pour esquiver, sous Combat pour parer.','//Réussite : aucun dégât. Échec de moins de 4 : aucun dégât, mais tu n’attaques pas au prochain round. Échec de 4 ou plus : tu prends les dégâts.']],
-    ['Tomber à zéro', ['À 0 PV tu tombes, inconscient, tu ne joues plus.','Un allié peut te stabiliser pendant le combat : un soin, une fiole, un jet de Médecine.','//En groupe, personne ne l’a fait avant la fin du combat : tu meurs. En solo, on tire ce qui t’est arrivé pendant que tu n’étais pas là.']],
-    ['Ce que rend le repos', ['Court, une heure : 1d6 PV et 1d4 PC.','Long, une nuit complète : tous tes PV et tous tes PC.','//Le repos ne rend rien d’autre : ce qu’une Floraison t’a fait ne part pas en dormant.']],
-    ['Progression', ['Les points se gagnent en bouclant des missions. Le Havre annonce combien avant le départ.','Une compétence jusqu’à +40 : 1 point par +1. De +41 à +60 : 2 points. Au-delà : 3 points.','Une Pratique de plus : 10 points, et quelqu’un pour te l’enseigner. Une caractéristique de +1 : 20 points, une fois chacune, plafond 18. +5 PV : 20 points.','//Il n’y a pas de niveaux.']]
-  ];
-  const tam = el('table','fx am');
-  for(let i = 0; i < AM.length; i += 2){
-    const tr = el('tr');
-    [AM[i], AM[i + 1]].forEach(x => {
-      const td = el('td','amc');
-      if(!x){ tr.append(td); return; }
-      td.append(el('div','lb', x[0]));
-      x[1].forEach(l => {
-        if(l.slice(0, 2) === '**') td.append(el('p','amb', l.replace(/\*\*/g, '')));
-        else if(l.slice(0, 2) === '//') td.append(el('p','ami', l.slice(2)));
-        else td.append(el('p', null, l));
-      });
-      tr.append(td);
-    });
-    tam.append(tr);
-  }
-  box.append(tam);
-  return box;
+  return ficheDuWord(el('div','fimp'), {
+    nom: c.nom, joueur: c.joueur,
+    identite: {peuple:c.peuple, voie:c.voie,
+      banniere: humain ? s.ban : null, ecole: humain ? s.ecole : null,
+      type: /ori.?ican/i.test(c.peuple) ? s.type : null, branche: /nyr/i.test(c.peuple) ? s.branche : null},
+    apport: [
+      [['Traits chiffrés', c.traits, '46%'],
+       ['Domaine et bonus', c.domaine ? 'Pratiques ' + c.domaine.replace(/\s*\([^)]*\)\s*$/, '') + (humain ? ' · +10 par son école' : ' · +20') : null, '27%'],
+       ['Contrainte', c.contrainte, '27%']],
+      [['Compétence de peuple', c.peupleComp, '50%'], ['Armure que ton corps supporte', c.armure, '50%']]
+    ],
+    car: c.car, noteCar: null,
+    derivees: [['Points de vie', 'au maximum', c.pvMax], ['Points de Contenance', 'au maximum', c.pcMax],
+      ['Réduction d’armure', bouclier ? 'ta pièce, ton bouclier, ton armure naturelle' : 'ta pièce, plus ton armure naturelle', redDe(c)]],
+    noteComp: ['Total = caractéristique fois deux, plus le bonus.', 'Le d20 est ce total divisé par cinq. Les chiffres sont ceux d’aujourd’hui, progression comprise.'],
+    comp: comp,
+    notePrat: ['Elles se lancent chacune sous sa caractéristique, celle qui est écrite à côté d’elle, fois deux, plus leur bonus, ou sous ta compétence de la même caractéristique si elle est plus haute.', 'Ce qui n’a pas de cible hostile ne se lance pas, et une zone fait tester ceux qui sont dedans. Un échec consomme le PC, sauf l’attaque de base.'],
+    pratiques: pratiques,
+    armes: c.armes,
+    noteArmure: 'Les réductions s’additionnent : ta pièce' + (bouclier ? ', ton bouclier' : '') + ' plus ton armure naturelle.' + (c.armure ? ' Ton corps supporte ' + c.armure.charAt(0).toLowerCase() + c.armure.slice(1).replace(/\.$/, '') + '.' : ''),
+    pieces: pieces,
+    titreSac: 'Le sac', sac: sac, bourse: b ? texteArgent(b) : '–',
+    charge: /cim[ée]ran/i.test(c.peuple) ? c.pvMax : null,
+    notes: [texte, 'Progression : ' + pointsGagnes(c) + ' points gagnés, ' + pointsDepenses(c) + ' dépensés, ' + pointsRestants(c) + ' à dépenser.'].filter(Boolean).join('\n\n')
+  });
 }

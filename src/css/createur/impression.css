@@ -4,16 +4,7 @@
   html,body{background:#fff;color:#000}
   .wrap{padding:0;max-width:none}
   section{margin:0}
+  /* la fiche reprend les couleurs claires sur la feuille, sans son cadre ; sa taille est dans commun/fiche-du-word.css */
   .fiche{--fp:#FFFFFF;--fi:#1A1A1A;--fl:#6B7469;--fh:#1F3D2B;--fh2:#2E5A3E;--fr:#C3D2C6;--ff:#F1F5F1;--fhd:#E6EDE7;
-    border:0;border-radius:0;padding:0;font-size:8.9pt;line-height:1.26}
-  .fiche .ft{font-size:19pt}
-  .fiche .fx th,.fiche .fx td{font-size:8.4pt;padding:2px 5px}
-  .fiche .fx th{font-size:7.4pt;letter-spacing:.05em}
-  .fiche .big2,.fiche .fx td.big2{font-size:13pt}
-  .fiche .car th{font-size:6.8pt;letter-spacing:.01em}
-  .fiche .am p{font-size:7.8pt}
-  .fiche .brk{break-before:page;page-break-before:always}
-  .fiche tr,.fiche .fh,.fiche .ft{break-inside:avoid}
-  .fiche .fh{break-after:avoid}
-  .fiche table.fx{break-inside:auto}
+    border:0;border-radius:0;padding:0}
 }

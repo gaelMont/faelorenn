@@ -19,15 +19,4 @@
   /* la fiche du Word, seule sur la feuille */
   body.imprime-fiche .wrap{display:none!important}
   body.imprime-fiche #ficheImpr{display:block}
-  .fimp{font-size:8.9pt;line-height:1.26}
-  .fimp .ft{font-size:19pt}
-  .fimp .fx th,.fimp .fx td{font-size:8.4pt;padding:2px 5px}
-  .fimp .fx th{font-size:7.4pt;letter-spacing:.05em}
-  .fimp .big2,.fimp .fx td.big2{font-size:13pt}
-  .fimp .car th{font-size:6.8pt;letter-spacing:.01em}
-  .fimp .am p{font-size:7.8pt}
-  .fimp .brk{break-before:page;page-break-before:always}
-  .fimp tr,.fimp .fh,.fimp .ft{break-inside:avoid}
-  .fimp .fh{break-after:avoid}
-  .fimp table.fx{break-inside:auto}
 }

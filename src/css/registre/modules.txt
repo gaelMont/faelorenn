@@ -25,6 +25,7 @@ registre/tete-de-seance.css
 registre/ecran-moyen.css
 registre/petits-ecrans.css
 registre/marchefleurs.css
+commun/fiche-du-word.css
 registre/fiche-du-word.css
 registre/impression.css
 commun/mouvement-reduit.css

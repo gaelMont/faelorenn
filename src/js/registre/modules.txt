@@ -30,6 +30,7 @@ registre/missions.js
 commun/sync-github.js
 registre/table-sur-github.js
 registre/personnages-du-havre.js
+commun/fiche-du-word.js
 registre/marchefleurs.js
 registre/oracle.js
 registre/demarrage.js

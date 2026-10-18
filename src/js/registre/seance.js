@@ -1069,7 +1069,7 @@ function dessinerGensSeance(){
     li.append(b);
     const q = [libelle(ATTITUDES, p.attitude).toLowerCase(), p.pvMax != null ? (p.pv == null ? p.pvMax : p.pv) + '/' + p.pvMax + ' PV' : ''].filter(Boolean).join(' · ');
     if(q) li.append(el('span','mini', q));
-    const a = el('a','fiche', 'fiche'); a.href = 'pnj.html#grand=' + encodeURIComponent('pnj:' + p.id); a.target = ONGLET_VISAGES;
+    const a = el('a','versfiche', 'fiche'); a.href = 'pnj.html#grand=' + encodeURIComponent('pnj:' + p.id); a.target = ONGLET_VISAGES;
     a.title = 'La fiche de ' + p.nom + ' en grand, dans le Registre des Visages';
     li.append(a);
     u.append(li);

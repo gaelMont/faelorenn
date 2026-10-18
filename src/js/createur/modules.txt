@@ -3,7 +3,9 @@ commun/reglesmaison.js
 commun/caracteristiques.js
 createur/regles-du-livre.js
 createur/creation.js
+commun/fiche-du-word.js
 createur/fiche-imprimable.js
+commun/docx.js
 createur/export-word.js
 createur/export-json.js
 commun/sync-github.js

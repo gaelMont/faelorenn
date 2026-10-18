@@ -4,7 +4,7 @@ ul.gens li{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 8px;padding:
 ul.gens li:first-child{border-top:0}
 .nomlien{border:0;background:transparent;padding:0;font:inherit;font-family:Spectral,Georgia,serif;font-size:15px;color:var(--forest);cursor:pointer;text-decoration:underline;text-decoration-color:var(--rule);text-underline-offset:3px}
 .nomlien:hover{text-decoration-color:var(--forest)}
-ul.gens .fiche{margin-left:auto}
+ul.gens .versfiche{margin-left:auto}
 ul.gens li.mort .nomlien{color:var(--muted)}
 /* ce que dit le livre */
 .aide summary{cursor:pointer;font-family:Spectral,Georgia,serif;font-size:15px;font-weight:700;color:var(--forest)}

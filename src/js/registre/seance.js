@@ -1078,33 +1078,32 @@ function dessinerGensSeance(){
 }
 
 /* ---------- vers Google Docs ---------- */
-const ech = s => String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 function blocHtml(b){
-  const gris = t => '<span style="color:#646D62">' + ech(t) + '</span>';
-  const br = t => ech(t).replace(/\n/g, '<br>');
+  const gris = t => '<span style="color:#646D62">' + echapperHtml(t) + '</span>';
+  const br = t => echapperHtml(t).replace(/\n/g, '<br>');
   const j = joints(b), ph = sansMarques(phrase(b));
   const suite = !j.length ? '' : ph ? ' ' + gris('(' + j.join(' · ') + ')') : gris(majuscule(j.join(' · ')));
   if(b.type === 'encadre'){
     const sep = '<p style="text-align:center">' + SEPARATEUR + '</p>';
     const corps = sansMarques(b.texte).split('\n').map((x, i) => {
-      if(!i) return '<b>' + ech(x) + '</b>';
+      if(!i) return '<b>' + echapperHtml(x) + '</b>';
       const m = /^([^:]{2,40}?) :\s*(.*)$/.exec(x);
-      return m ? '<b>' + ech(m[1]) + '</b> : ' + ech(m[2]) : ech(x);
+      return m ? '<b>' + echapperHtml(m[1]) + '</b> : ' + echapperHtml(m[2]) : echapperHtml(x);
     }).join('<br>');
     return sep + '<p>' + corps + (j.length ? '<br>' + gris('(' + j.join(' · ') + ')') : '') + '</p>' + sep;
   }
   if(b.type === 'rencontre'){
     const sep = '<p style="text-align:center">' + SEPARATEUR + '</p>';
     const l = lignesRencontre(b);
-    return sep + '<p><b>' + ech(l[0]) + '</b>' + (l.length > 1 ? '<br>' + l.slice(1).map(ech).join('<br>') : '') + '</p>' + sep;
+    return sep + '<p><b>' + echapperHtml(l[0]) + '</b>' + (l.length > 1 ? '<br>' + l.slice(1).map(echapperHtml).join('<br>') : '') + '</p>' + sep;
   }
   if(b.type === 'scene') return '<p><b>' + br(ph) + '</b>' + suite + '</p>';
   if(b.type === 'achat' || b.type === 'note') return '<p><i>' + gris(ph) + '</i></p>';
   return '<p>' + br(ph) + suite + '</p>';
 }
 function seanceHtml(e){
-  const tete = '<h2>Séance ' + ech(e.seance) + (e.titre ? ' · ' + ech(e.titre) : '') + '</h2>' +
-    (e.date ? '<p><i>' + ech(dateLongue(e.date)) + '</i></p>' : '');
+  const tete = '<h2>Séance ' + echapperHtml(e.seance) + (e.titre ? ' · ' + echapperHtml(e.titre) : '') + '</h2>' +
+    (e.date ? '<p><i>' + echapperHtml(dateLongue(e.date)) + '</i></p>' : '');
   return '<div style="font-family:Arial,sans-serif;font-size:11pt;line-height:1.5;color:#000">' + tete + blocsDe(e.id).map(blocHtml).join('') + '</div>';
 }
 function seanceTexte(e){

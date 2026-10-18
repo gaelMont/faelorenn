@@ -12,7 +12,7 @@ const DX = (function(){
     const sz = o.sz || 19; pr += '<w:sz w:val="' + sz + '"/><w:szCs w:val="' + sz + '"/>';
     if(o.sp) pr += '<w:spacing w:val="' + o.sp + '"/>';
     /* un retour à la ligne reste un retour à la ligne : une liste de butin, une description en plusieurs lignes */
-    return '<w:r><w:rPr>' + pr + '</w:rPr><w:t xml:space="preserve">' + String(txt == null ? '' : txt).split('\n').map(docxXml).join('</w:t><w:br/><w:t xml:space="preserve">') + '</w:t></w:r>';
+    return '<w:r><w:rPr>' + pr + '</w:rPr><w:t xml:space="preserve">' + String(txt == null ? '' : txt).split('\n').map(echapperHtml).join('</w:t><w:br/><w:t xml:space="preserve">') + '</w:t></w:r>';
   }
   function p(runs, o){
     o = o || {};
@@ -50,7 +50,7 @@ const DX = (function(){
       '<w:pPrDefault><w:pPr><w:spacing w:after="60" w:line="260" w:lineRule="auto"/></w:pPr></w:pPrDefault></w:docDefaults>' +
       '<w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/><w:qFormat/></w:style></w:styles>';
     const core = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/">' +
-      '<dc:title>' + docxXml(nomDoc) + '</dc:title><dc:creator>Faelorenn</dc:creator></cp:coreProperties>';
+      '<dc:title>' + echapperHtml(nomDoc) + '</dc:title><dc:creator>Faelorenn</dc:creator></cp:coreProperties>';
     return docxPaquet(doc, styles, core);
   }
 

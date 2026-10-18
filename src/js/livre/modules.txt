@@ -1,2 +1,3 @@
+commun/echappement.js
 livre/texte.js
 livre/lecteur.js

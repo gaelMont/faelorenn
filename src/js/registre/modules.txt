@@ -1,3 +1,5 @@
+commun/echappement.js
+commun/feuilles.js
 commun/caracteristiques.js
 registre/regles-du-livre.js
 commun/pratiques.js

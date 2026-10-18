@@ -5,9 +5,6 @@
 /* ---------- briques OOXML ---------- */
 const WC = {h1:'1F3D2B', h2:'2E5A3E', txt:'1A1A1A', lbl:'6B7469', fill:'F1F5F1', head:'E6EDE7', line:'C3D2C6'};
 const WLARG = 10506;
-/* l'OOXML s'échappe avec docxXml ; xe ne sert plus qu'au titre HTML de « Copier pour Word » */
-const xe = s => String(s == null ? '' : s)
-  .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 
 function wr(txt, o){
   o = o || {};
@@ -19,7 +16,7 @@ function wr(txt, o){
   const sz = o.sz || 18;
   pr += '<w:sz w:val="' + sz + '"/><w:szCs w:val="' + sz + '"/>';
   if(o.sp) pr += '<w:spacing w:val="' + o.sp + '"/>';
-  return '<w:r><w:rPr>' + pr + '</w:rPr><w:t xml:space="preserve">' + docxXml(txt) + '</w:t></w:r>';
+  return '<w:r><w:rPr>' + pr + '</w:rPr><w:t xml:space="preserve">' + echapperHtml(txt) + '</w:t></w:r>';
 }
 function wp(runs, o){
   o = o || {};
@@ -357,7 +354,7 @@ function docxOctets(){
   const core = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
     '<cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties"' +
     ' xmlns:dc="http://purl.org/dc/elements/1.1/">' +
-    '<dc:title>' + docxXml(S.nom ? 'Fiche de ' + S.nom : 'Fiche de personnage') + '</dc:title>' +
+    '<dc:title>' + echapperHtml(S.nom ? 'Fiche de ' + S.nom : 'Fiche de personnage') + '</dc:title>' +
     '<dc:creator>Faelorenn</dc:creator><cp:lastModifiedBy>Faelorenn</cp:lastModifiedBy>' +
     '</cp:coreProperties>';
 
@@ -438,10 +435,10 @@ function exporterWord(){
 function copierPourWord(){
   const btn = $('wcopy');
   const dire = (t, ms) => { btn.textContent = t; setTimeout(() => { btn.textContent = 'Copier pour Word'; }, ms || 2000); };
-  const css = Array.prototype.map.call(document.querySelectorAll('style'), s => s.textContent).join('\n');
+  const css = texteDesFeuilles();
   const html = '<html xmlns:o="urn:schemas-microsoft-com:office:office" ' +
     'xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">' +
-    '<head><meta charset="utf-8"><title>' + xe(nomFichier()) + '</title>' +
+    '<head><meta charset="utf-8"><title>' + echapperHtml(nomFichier()) + '</title>' +
     '<style>@page{size:A4;margin:11mm}body{font-family:Cambria,Georgia,serif}' + css + '</style></head>' +
     '<body>' + $('fiche').outerHTML + '</body></html>';
   try {

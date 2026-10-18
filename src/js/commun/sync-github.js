@@ -487,7 +487,6 @@ function ghcPanneau(boite, opt){
       '</div>' +
     '</details>';
   const $g = id => document.getElementById(id);
-  const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;'})[c]);
   let enCours = false;
   function dire(t, ok){
     const m = $g('ghcMsg');
@@ -506,7 +505,7 @@ function ghcPanneau(boite, opt){
     $g('ghcTexte').innerHTML = bloque
       ? 'Depuis cette page-ci, GitHub est hors d’atteinte : ouvre le registre sur le site pour garder tes données en ligne.'
       : relie
-        ? 'Relié à <b>' + esc(GHC.depot) + '</b>' + (GHC.branche ? ', branche <i>' + esc(GHC.branche) + '</i>' : '') + '. Les registres de ce navigateur y gardent chacun leur fichier : la table et ses PNJ, les personnages, le bestiaire, les compétences, les plans.'
+        ? 'Relié à <b>' + echapperHtml(GHC.depot) + '</b>' + (GHC.branche ? ', branche <i>' + echapperHtml(GHC.branche) + '</i>' : '') + '. Les registres de ce navigateur y gardent chacun leur fichier : la table et ses PNJ, les personnages, le bestiaire, les compétences, les plans.'
         : 'Tout peut se garder dans un dépôt GitHub privé : la table et ses PNJ, les personnages, le bestiaire, les compétences, les plans. On le relie une fois dans ce navigateur, et les registres s’en servent. À plusieurs, chacun relie le même dépôt.';
     /* le registre ne parle ici que s'il a un souci : sinon, le résumé suffit */
     const o = $g('ghcOutil');

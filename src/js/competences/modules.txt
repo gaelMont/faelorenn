@@ -1,3 +1,4 @@
+commun/echappement.js
 commun/pratiques.js
 commun/caracteristiques.js
 competences/competences-du-livre.js

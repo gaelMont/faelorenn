@@ -1,6 +1,5 @@
 (function(){
   const $ = id => document.getElementById(id);
-  const esc = t => String(t).replace(/[&<>"]/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;'})[c]);
   const taille = n => n < 1024 ? n + ' octets' : Math.round(n / 1024) + ' Ko';
   function inventaire(){
     const box = $('inventaire');
@@ -17,10 +16,10 @@
       (liste || []).forEach(f => { noms[f.nom] = f; });
       $('invListe').innerHTML = lignes.map(l => {
         const f = noms[l.fic];
-        return '<li class="' + (f ? 'la' : '') + '"><span class="quoi">' + esc(l.quoi) + '</span><span class="fic">' + esc(l.fic) + '</span>' +
-          '<span class="ou">' + (f ? 'Dans le dépôt, ' + taille(f.taille) + '.' : esc(l.pas)) + '</span></li>';
+        return '<li class="' + (f ? 'la' : '') + '"><span class="quoi">' + echapperHtml(l.quoi) + '</span><span class="fic">' + echapperHtml(l.fic) + '</span>' +
+          '<span class="ou">' + (f ? 'Dans le dépôt, ' + taille(f.taille) + '.' : echapperHtml(l.pas)) + '</span></li>';
       }).join('');
-      $('invNote').innerHTML = '<a href="https://github.com/' + esc(GHC.depot) + '" target="_blank" rel="noopener">Ouvrir le dépôt sur GitHub</a>, pour voir l’historique de chaque fichier.';
+      $('invNote').innerHTML = '<a href="https://github.com/' + echapperHtml(GHC.depot) + '" target="_blank" rel="noopener">Ouvrir le dépôt sur GitHub</a>, pour voir l’historique de chaque fichier.';
       box.hidden = false;
     }, () => { box.hidden = true; });
   }

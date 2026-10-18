@@ -1,7 +1,8 @@
 /* ============ fabrique de .docx, sans bibliothèque ============
-   La mécanique commune aux exports Word : l'encodage, le zip non compressé (« stored »),
-   l'échappement XML et les parties fixes du paquet. Chaque registre écrit lui-même son document,
-   ses styles et ses propriétés : leurs tailles, interlignes et marges ne sont pas les mêmes.
+   La mécanique commune aux exports Word : l'encodage, le zip non compressé (« stored ») et les
+   parties fixes du paquet ; le texte s'échappe avec echapperHtml (commun/echappement.js).
+   Chaque registre écrit lui-même son document, ses styles et ses propriétés : leurs tailles,
+   interlignes et marges ne sont pas les mêmes.
    Rien que des déclarations « function », préfixées docx : le module reste sûr si une page
    charge un jour deux paquets qui le contiennent. */
 
@@ -80,11 +81,6 @@ function docxZip(fichiers){
   return out;
 }
 
-/* l'échappement du texte posé dans l'OOXML */
-function docxXml(s){
-  return String(s == null ? '' : s)
-    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
 
 /* le paquet complet : les trois parties fixes autour du document, des styles et des propriétés
    du registre, toujours dans le même ordre */

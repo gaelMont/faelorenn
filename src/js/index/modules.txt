@@ -1,1 +1,2 @@
+commun/echappement.js
 index/accueil.js

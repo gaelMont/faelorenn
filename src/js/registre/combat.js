@@ -1345,11 +1345,10 @@ function sortirCarte(){
   let w = null;
   try{ w = window.open('', 'faelorenn-carte', 'width=1200,height=900'); }catch(e){ w = null; }
   if(!w){ msgTable('Le navigateur a refusé la fenêtre. Autorise les fenêtres pour ce site, puis réessaie.', false); return; }
-  const styles = [].map.call(document.querySelectorAll('style'), s => s.textContent).join('\n');
   w.document.open();
   w.document.write('<!doctype html><html lang="fr"><head><meta charset="utf-8">'
     + '<meta name="viewport" content="width=device-width,initial-scale=1">'
-    + '<title>La carte · Faelorenn</title><style>' + styles
+    + '<title>La carte · Faelorenn</title>' + liensDesFeuilles() + '<style>'
     + '\nbody{margin:0;padding:10px;background:var(--paper)}#seCarte{margin:0;height:calc(100vh - 20px);display:flex;flex-direction:column}'
     + '\n#seCarte .ctzone{flex:1 1 auto;display:flex;align-items:center;justify-content:center}'
     + '\n#seCarte .ctsvg{max-height:100%;width:100%}'

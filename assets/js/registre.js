@@ -1,5 +1,41 @@
 // Fichier généré par outils/build.mjs depuis src/js/registre/ : ne pas le modifier, modifier les modules.
 
+// ── commun/echappement.js ──
+/* ============ l'échappement : un texte posé dans du HTML ou du XML ============
+   & < > et " deviennent des entités : un nom comme « Gorm <le Rouge> » s'affiche tel quel au lieu
+   d'être lu comme une balise, et un texte venu d'un autre joueur ne peut rien glisser dans la page.
+   Une valeur absente (null, undefined) donne une chaîne vide. L'apostrophe n'est pas touchée :
+   les attributs s'écrivent entre guillemets doubles.
+   Une déclaration « function » : ce module peut se trouver dans deux scripts d'une même page
+   (index et plans chargent le paquet sync-github en plus du leur). */
+function echapperHtml(s){
+  return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;'})[c]);
+}
+
+// ── commun/feuilles.js ──
+/* ============ les feuilles de style de la page, pour les emporter ailleurs ============
+   Les styles vivent dans des fichiers (<link>, assets/css/), plus dans des <style> de la page.
+   - texteDesFeuilles() : leurs règles en texte, pour un HTML qui part seul (le presse-papiers vers Word).
+     Seules les feuilles du site se laissent lire : celle des polices Google est sautée, comme avant
+     quand on recopiait les <style> ; une page ouverte en file:// peut aussi refuser, on rend alors ''.
+   - liensDesFeuilles() : des <link> vers ces mêmes fichiers, adresse complète, pour une fenêtre
+     ouverte par la page (la carte sur l'autre écran) ; ça marche aussi en file://.
+   Des déclarations « function » : ce module peut se trouver dans deux scripts d'une même page. */
+function texteDesFeuilles(){
+  const out = [];
+  for(const f of Array.from(document.styleSheets)){
+    let regles;
+    try{ regles = f.cssRules; }catch(e){ continue; }
+    if(regles) out.push(Array.from(regles, r => r.cssText).join('\n'));
+  }
+  return out.join('\n');
+}
+function liensDesFeuilles(){
+  return Array.from(document.querySelectorAll('link[rel="stylesheet"]'))
+    .filter(l => { try{ return new URL(l.href).origin === location.origin; }catch(e){ return false; } })
+    .map(l => '<link rel="stylesheet" href="' + echapperHtml(l.href) + '">').join('');
+}
+
 // ── commun/caracteristiques.js ──
 /* ============ ce que dit le livre : les sept caractéristiques et leurs compétences ============
    Une seule liste pour le créateur, la table et le Registre des Compétences. */
@@ -4375,33 +4411,32 @@ function dessinerGensSeance(){
 }
 
 /* ---------- vers Google Docs ---------- */
-const ech = s => String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 function blocHtml(b){
-  const gris = t => '<span style="color:#646D62">' + ech(t) + '</span>';
-  const br = t => ech(t).replace(/\n/g, '<br>');
+  const gris = t => '<span style="color:#646D62">' + echapperHtml(t) + '</span>';
+  const br = t => echapperHtml(t).replace(/\n/g, '<br>');
   const j = joints(b), ph = sansMarques(phrase(b));
   const suite = !j.length ? '' : ph ? ' ' + gris('(' + j.join(' · ') + ')') : gris(majuscule(j.join(' · ')));
   if(b.type === 'encadre'){
     const sep = '<p style="text-align:center">' + SEPARATEUR + '</p>';
     const corps = sansMarques(b.texte).split('\n').map((x, i) => {
-      if(!i) return '<b>' + ech(x) + '</b>';
+      if(!i) return '<b>' + echapperHtml(x) + '</b>';
       const m = /^([^:]{2,40}?) :\s*(.*)$/.exec(x);
-      return m ? '<b>' + ech(m[1]) + '</b> : ' + ech(m[2]) : ech(x);
+      return m ? '<b>' + echapperHtml(m[1]) + '</b> : ' + echapperHtml(m[2]) : echapperHtml(x);
     }).join('<br>');
     return sep + '<p>' + corps + (j.length ? '<br>' + gris('(' + j.join(' · ') + ')') : '') + '</p>' + sep;
   }
   if(b.type === 'rencontre'){
     const sep = '<p style="text-align:center">' + SEPARATEUR + '</p>';
     const l = lignesRencontre(b);
-    return sep + '<p><b>' + ech(l[0]) + '</b>' + (l.length > 1 ? '<br>' + l.slice(1).map(ech).join('<br>') : '') + '</p>' + sep;
+    return sep + '<p><b>' + echapperHtml(l[0]) + '</b>' + (l.length > 1 ? '<br>' + l.slice(1).map(echapperHtml).join('<br>') : '') + '</p>' + sep;
   }
   if(b.type === 'scene') return '<p><b>' + br(ph) + '</b>' + suite + '</p>';
   if(b.type === 'achat' || b.type === 'note') return '<p><i>' + gris(ph) + '</i></p>';
   return '<p>' + br(ph) + suite + '</p>';
 }
 function seanceHtml(e){
-  const tete = '<h2>Séance ' + ech(e.seance) + (e.titre ? ' · ' + ech(e.titre) : '') + '</h2>' +
-    (e.date ? '<p><i>' + ech(dateLongue(e.date)) + '</i></p>' : '');
+  const tete = '<h2>Séance ' + echapperHtml(e.seance) + (e.titre ? ' · ' + echapperHtml(e.titre) : '') + '</h2>' +
+    (e.date ? '<p><i>' + echapperHtml(dateLongue(e.date)) + '</i></p>' : '');
   return '<div style="font-family:Arial,sans-serif;font-size:11pt;line-height:1.5;color:#000">' + tete + blocsDe(e.id).map(blocHtml).join('') + '</div>';
 }
 function seanceTexte(e){
@@ -6847,11 +6882,10 @@ function sortirCarte(){
   let w = null;
   try{ w = window.open('', 'faelorenn-carte', 'width=1200,height=900'); }catch(e){ w = null; }
   if(!w){ msgTable('Le navigateur a refusé la fenêtre. Autorise les fenêtres pour ce site, puis réessaie.', false); return; }
-  const styles = [].map.call(document.querySelectorAll('style'), s => s.textContent).join('\n');
   w.document.open();
   w.document.write('<!doctype html><html lang="fr"><head><meta charset="utf-8">'
     + '<meta name="viewport" content="width=device-width,initial-scale=1">'
-    + '<title>La carte · Faelorenn</title><style>' + styles
+    + '<title>La carte · Faelorenn</title>' + liensDesFeuilles() + '<style>'
     + '\nbody{margin:0;padding:10px;background:var(--paper)}#seCarte{margin:0;height:calc(100vh - 20px);display:flex;flex-direction:column}'
     + '\n#seCarte .ctzone{flex:1 1 auto;display:flex;align-items:center;justify-content:center}'
     + '\n#seCarte .ctsvg{max-height:100%;width:100%}'
@@ -12585,7 +12619,6 @@ function ghcPanneau(boite, opt){
       '</div>' +
     '</details>';
   const $g = id => document.getElementById(id);
-  const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;'})[c]);
   let enCours = false;
   function dire(t, ok){
     const m = $g('ghcMsg');
@@ -12604,7 +12637,7 @@ function ghcPanneau(boite, opt){
     $g('ghcTexte').innerHTML = bloque
       ? 'Depuis cette page-ci, GitHub est hors d’atteinte : ouvre le registre sur le site pour garder tes données en ligne.'
       : relie
-        ? 'Relié à <b>' + esc(GHC.depot) + '</b>' + (GHC.branche ? ', branche <i>' + esc(GHC.branche) + '</i>' : '') + '. Les registres de ce navigateur y gardent chacun leur fichier : la table et ses PNJ, les personnages, le bestiaire, les compétences, les plans.'
+        ? 'Relié à <b>' + echapperHtml(GHC.depot) + '</b>' + (GHC.branche ? ', branche <i>' + echapperHtml(GHC.branche) + '</i>' : '') + '. Les registres de ce navigateur y gardent chacun leur fichier : la table et ses PNJ, les personnages, le bestiaire, les compétences, les plans.'
         : 'Tout peut se garder dans un dépôt GitHub privé : la table et ses PNJ, les personnages, le bestiaire, les compétences, les plans. On le relie une fois dans ce navigateur, et les registres s’en servent. À plusieurs, chacun relie le même dépôt.';
     /* le registre ne parle ici que s'il a un souci : sinon, le résumé suffit */
     const o = $g('ghcOutil');

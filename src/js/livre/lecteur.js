@@ -5,7 +5,6 @@
    Rien ne se sauve ici : la page ne fait que lire. */
 
 const $ = id => document.getElementById(id);
-const ech = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
 /* ---------- le texte ---------- */
 
@@ -13,7 +12,7 @@ const ech = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(
 const net = s => String(s == null ? '' : s).replace(/\*\*\*\*/g, '');
 
 /* le gras, l'italique, et les deux repères de surlignage posés par la recherche */
-const enrichir = s => ech(s)
+const enrichir = s => echapperHtml(s)
   .replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>')
   .replace(/\*([^*]+)\*/g, '<i>$1</i>')
   .replace(/\u0001/g, '<mark>')
@@ -181,14 +180,14 @@ function dessinerSommaire() {
     const nl = dedans.reduce((a, id) => a + (CHERCHE.par[id] || 0), 0);
     const mort = q && !nl;
     h.push('<div class="slv' + (mort ? ' mort' : '') + '">');
-    h.push('<a class="sl1' + (cour === l.id ? ' ici' : '') + '" href="#' + l.id + '">' + ech(l.t) + bulle(q, nl) + '</a>');
+    h.push('<a class="sl1' + (cour === l.id ? ' ici' : '') + '" href="#' + l.id + '">' + echapperHtml(l.t) + bulle(q, nl) + '</a>');
     l.ch.forEach(c => {
       const nc = (CHERCHE.par[c.id] || 0);
       const ouvert = cour === c.id || (q && nc);
-      h.push('<a class="sl2' + (cour === c.id ? ' ici' : '') + (q && !nc ? ' mort' : '') + '" href="#' + c.id + '">' + ech(c.t) + bulle(q, nc) + '</a>');
+      h.push('<a class="sl2' + (cour === c.id ? ' ici' : '') + (q && !nc ? ' mort' : '') + '" href="#' + c.id + '">' + echapperHtml(c.t) + bulle(q, nc) + '</a>');
       if (ouvert && c.sous.length) {
         h.push('<div class="sl3w">');
-        c.sous.forEach(s => h.push('<a class="sl3" href="#' + s.id + '">' + ech(s.t) + '</a>'));
+        c.sous.forEach(s => h.push('<a class="sl3" href="#' + s.id + '">' + echapperHtml(s.t) + '</a>'));
         h.push('</div>');
       }
     });

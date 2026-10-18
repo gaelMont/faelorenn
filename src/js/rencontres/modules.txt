@@ -1,3 +1,4 @@
+commun/echappement.js
 commun/bestiaire.js
 commun/docx.js
 rencontres/docx.js
